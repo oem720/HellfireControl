@@ -6,12 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(
 	math_source_list
-	"math/vector/Vec2.h"
-	"math/vector/Vec2.cpp"
-	"math/vector/Vec3.h"
-	"math/vector/Vec3.cpp"
-	"math/vector/Vec4.h"
-	"math/vector/Vec4.cpp"
+	"math/Vector.h"
+	"math/Vector.cpp"
 )
 
 set(

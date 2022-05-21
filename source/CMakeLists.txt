@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(
 	math_source_list
-	"math/Vector.h"
-	"math/Vector.cpp"
+	"HCMath/Vector.h"
+	"HCMath/Vector.cpp"
 )
 
 set(

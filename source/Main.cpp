@@ -1,6 +1,6 @@
 
 #include <iostream>
-#include "HCMath/Vector.h"
+#include "HCMath/HCVector.h"
 
 int main() {
 	std::cout << "Hello World!" << std::endl;

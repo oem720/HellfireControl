@@ -212,7 +212,84 @@ inline Vec2 Vec2::GG() const {
 
 #pragma region Vec3
 
+inline Vec3::Vec3() : x(0.0f), y(0.0f), z(0.0f) {}
 
+inline Vec3::Vec3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+
+inline Vec3::Vec3(const Vec2& _xy, float _z) : x(_xy.X()), y(_xy.Y()), z(_z) {}
+
+inline Vec3::Vec3(float _x, const Vec2& _yz) : x(_x), y(_yz.X()), z(_yz.Y()) {}
+
+inline Vec3::Vec3(const Vec3& _other) {
+	*this = _other;
+}
+
+inline Vec3& Vec3::operator=(const Vec3& _other) {
+	if (this != &_other) {
+		this->x = _other.x;
+		this->y = _other.y;
+		this->z = _other.z;
+	}
+	return *this;
+}
+
+inline Vec3& Vec3::operator+=(const Vec3& _other) {
+	*this = *this + _other;
+	return *this;
+}
+
+inline Vec3& Vec3::operator-=(const Vec3& _other) {
+	*this = *this - _other;
+	return *this;
+}
+
+inline Vec3& Vec3::operator*=(const float _scale) {
+	*this = *this * _scale;
+	return *this;
+}
+
+inline Vec3& Vec3::operator&=(const Vec3& _other) {
+	*this = *this & _other;
+	return *this;
+}
+
+inline float& Vec3::operator[](int _ndx) {
+	assert(_ndx < 3);
+	return xyz[_ndx];
+}
+
+inline float Vec3::operator[](int _ndx) const {
+	assert(_ndx < 3);
+	return xyz[_ndx];
+}
+
+inline Vec3 Vec3::operator+(const Vec3& _other) const {
+	return Vec3(this->x + _other.x, this->y + _other.y, this->z + _other.z);
+}
+
+inline Vec3 Vec3::operator-(const Vec3& _other) const {
+	return Vec3(this->x - _other.x, this->y - _other.y, this->z - _other.z);
+}
+
+inline Vec3 Vec3::operator*(const float _scale) const {
+	return Vec3(this->x * _scale, this->y * _scale, this->z * _scale);
+}
+
+inline float Vec3::operator*(const Vec3& _other) const {
+	return (this->x * _other.x) + (this->y * _other.y) + (this->z * _other.z);
+}
+
+inline Vec3 Vec3::operator&(const Vec3& _other) const {
+	return Vec3();
+}
+
+inline Vec3 Vec3::operator~() const {
+	return Vec3();
+}
+
+inline Vec3 Vec3::operator-() const {
+	return Vec3();
+}
 
 #pragma endregion
 

@@ -130,7 +130,7 @@ public:
 
 	//Operator Alternatives
 	inline float Dot(const Vec3& _other) const;					//Dot Product
-	inline float Cross(const Vec3& _other) const;				//Cross Product
+	inline void Cross(const Vec3& _other);						//Cross Product
 	inline void Add(const Vec3& _other);						//Addition
 	inline void Subtract(const Vec3& _other);					//Subtraction
 	inline void Scale(const float _scale);						//Scaling

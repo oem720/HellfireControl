@@ -80,19 +80,19 @@ inline bool Vec2::operator==(const Vec2& _other) const {
 }
 
 inline bool Vec2::operator<(const Vec2& _other) const {
-	return this->x < _other.x && this->y < _other.y;
+	return this->Length() < _other.Length();
 }
 
 inline bool Vec2::operator>(const Vec2& _other) const {
-	return this->x > _other.x && this->y > _other.y;
+	return this->Length() > _other.Length();
 }
 
 inline bool Vec2::operator<=(const Vec2& _other) const {
-	return this->x <= _other.x && this->y <= _other.y;
+	return this->Length() <= _other.Length();
 }
 
 inline bool Vec2::operator>=(const Vec2& _other) const {
-	return this->x >= _other.x && this->y >= _other.y;
+	return this->Length() >= _other.Length();
 }
 
 inline bool Vec2::operator!=(const Vec2& _other) const {
@@ -109,6 +109,7 @@ inline float Vec2::LengthSquared() const {
 
 inline void Vec2::Normalize() {
 	float len = Length();
+	if (!len) return;
 
 	this->x /= len;
 	this->y /= len;
@@ -116,12 +117,13 @@ inline void Vec2::Normalize() {
 
 inline Vec2 Vec2::Normalized() const {
 	float len = Length();
+	if (!len) return Vec2();
 
 	return Vec2(this->x / len, this->x / len);
 }
 
 inline float Vec2::AngleBetween(const Vec2& _other) const {
-	return acosf(Normalized() * _other.Normalized());
+	return acosf(this->Normalized() * _other.Normalized());
 }
 
 inline float Vec2::Dot(const Vec2& _other) const {
@@ -280,15 +282,143 @@ inline float Vec3::operator*(const Vec3& _other) const {
 }
 
 inline Vec3 Vec3::operator&(const Vec3& _other) const {
-	return Vec3();
+	return Vec3((this->y * _other.z) - (this->z * _other.y), (this->x * _other.z) - (this->z * _other.x), (this->x * _other.y) - (this->y * _other.x));
 }
 
 inline Vec3 Vec3::operator~() const {
-	return Vec3();
+	return Vec3(0.0f, 0.0f, 0.0f);
 }
 
 inline Vec3 Vec3::operator-() const {
-	return Vec3();
+	return Vec3(-this->x, -this->y, -this->z);
+}
+
+inline bool Vec3::operator==(const Vec3& _other) const {
+	return this->x == _other.x && this->y == _other.y && this->z == _other.z;
+}
+
+inline bool Vec3::operator<(const Vec3& _other) const {
+	return this->Length() < _other.Length();
+}
+
+inline bool Vec3::operator>(const Vec3& _other) const {
+	return this->Length() > _other.Length();
+}
+
+inline bool Vec3::operator<=(const Vec3& _other) const {
+	return this->Length() <= _other.Length();
+}
+
+inline bool Vec3::operator>=(const Vec3& _other) const {
+	return this->Length() >= _other.Length();
+}
+
+inline bool Vec3::operator!=(const Vec3& _other) const {
+	return this->x != _other.x || this->y != _other.y || this->z != _other.z;
+}
+
+inline float Vec3::Length() const {
+	return sqrtf((*this) * (*this));
+}
+
+inline float Vec3::LengthSquared() const {
+	return (*this) * (*this);
+}
+
+inline void Vec3::Normalize() {
+	float len = Length();
+	if (!len) return;
+
+	this->x /= len;
+	this->y /= len;
+	this->z /= len;
+}
+
+inline Vec3 Vec3::Normalized() const {
+	float len = Length();
+	if (!len) return Vec3();
+
+	return Vec3(this->x / len, this->y / len, this->z / len);
+}
+
+inline float Vec3::AngleBetween(const Vec3& _other) const {
+	return acosf(this->Normalized() * _other.Normalized());
+}
+
+inline float Vec3::Dot(const Vec3& _other) const {
+	return (*this) * _other;
+}
+
+inline void Vec3::Cross(const Vec3& _other) {
+	(*this) &= _other;
+}
+
+inline void Vec3::Add(const Vec3& _other) {
+	(*this) += _other;
+}
+
+inline void Vec3::Subtract(const Vec3& _other) {
+	(*this) -= _other;
+}
+
+inline void Vec3::Scale(const float _scale) {
+	(*this) *= _scale;
+}
+
+inline void Vec3::Negate() {
+	(*this) = -(*this);
+}
+
+inline void Vec3::Zero() {
+	(*this) = ~(*this);
+}
+
+inline bool Vec3::Equals(const Vec3& _other) const {
+	return (*this) == _other;
+}
+
+inline bool Vec3::Less(const Vec3& _other) const {
+	return (*this) < _other;
+}
+
+inline bool Vec3::LessThanOrEquals(const Vec3& _other) const {
+	return (*this) <= _other;
+}
+
+inline bool Vec3::Greater(const Vec3& _other) const {
+	return (*this) > _other;
+}
+
+inline bool Vec3::GreaterThanOrEquals(const Vec3& _other) const {
+	return (*this) >= _other;
+}
+
+inline bool Vec3::NotEquals(const Vec3& _other) const {
+	return (*this) != _other;
+}
+
+inline float& Vec3::X() {
+	return this->x;
+}
+
+inline float Vec3::X() const {
+	return this->x;
+}
+
+inline float& Vec3::Y() {
+	return this->y;
+}
+
+inline float Vec3::Y() const {
+	return this->y;
+}
+
+inline float& Vec3::Z() {
+	return this->z;
+}
+
+inline float Vec3::Z() const {
+	return this->z;
 }
 
 #pragma endregion

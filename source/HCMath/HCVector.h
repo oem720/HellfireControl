@@ -2,6 +2,8 @@
 #ifndef VECTOR_LIBRARY_HEADER
 #define VECTOR_LIBRARY_HEADER
 
+#pragma region TraditionalVectors
+
 class alignas(8) Vec2 {
 private:
 	union {
@@ -242,4 +244,99 @@ private:
 public:
 
 };
+
+#pragma endregion
+
+#pragma region DoublePrecisionVectors
+
+class alignas(16) Vec2Double {
+private:
+	union {
+		double xy[2];
+		struct {
+			double x;
+			double y;
+		};
+	};
+public:
+
+};
+
+class alignas(32) Vec3Double {
+private:
+	union {
+		double xyz[3];
+		struct {
+			double x;
+			double y;
+			double z;
+		};
+	};
+public:
+
+};
+
+class alignas(32) Vec4Double {
+private:
+	union {
+		double xyzw[4];
+		struct {
+			double x;
+			double y;
+			double z;
+			double w;
+		};
+	};
+public:
+
+};
+
+#pragma endregion
+
+#pragma region IntegerVectors
+
+class alignas(8) Vec2Int {
+private:
+	union {
+		int xy[2];
+		struct {
+			int x;
+			int y;
+		};
+	};
+public:
+
+};
+
+class alignas(16) Vec3Int {
+private:
+	union {
+		int xyz[3];
+		struct {
+			int x;
+			int y;
+			int z;
+		};
+	};
+public:
+
+};
+
+class alignas(16) Vec4Int {
+private:
+	union {
+		int xyzw[4];
+		struct {
+			int x;
+			int y;
+			int z;
+			int w;
+		};
+	};
+public:
+
+};
+
+#pragma endregion
+
 #endif

@@ -70,11 +70,13 @@ public:
 	inline float& Y();											//Vector Y Component (Modifiable)
 	inline float Y() const;										//Vector Y Component (Const)
 
-	//Swizzle Operations
+	//Swizzle Operations (Vec2)
 	inline Vec2 XX() const;										//Swizzle to XX Vector
 	inline Vec2 YY() const;										//Swizzle to YY Vector
+	inline Vec2 YX() const;										//Swizzle to YX Vector
 	inline Vec2 RR() const;										//Swizzle to RR Vector
 	inline Vec2 GG() const;										//Swizzle to GG Vector
+	inline Vec2 GR() const;										//Swizzle to GR Vector
 };
 
 class alignas(16) Vec3 {
@@ -156,12 +158,20 @@ public:
 	inline Vec2 YY() const;										//Swizzle to YY Vector
 	inline Vec2 ZZ() const;										//Swizzle to ZZ Vector
 	inline Vec2 XY() const;										//Swizzle to XY Vector
+	inline Vec2 XZ() const;										//Swizzle to XZ Vector
+	inline Vec2 YX() const;										//Swizzle to YX Vector
 	inline Vec2 YZ() const;										//Swizzle to YZ Vector
+	inline Vec2 ZX() const;										//Swizzle to ZX Vector
+	inline Vec2 ZY() const;										//Swizzle to ZY Vector
 	inline Vec2 RR() const;										//Swizzle to RR Vector
 	inline Vec2 GG() const;										//Swizzle to GG Vector
 	inline Vec2 BB() const;										//Swizzle to BB Vector
 	inline Vec2 RG() const;										//Swizzle to RG Vector
+	inline Vec2 RB() const;										//Swizzle to RB Vector
+	inline Vec2 GR() const;										//Swizzle to GR Vector
 	inline Vec2 GB() const;										//Swizzle to GB Vector
+	inline Vec2 BR() const;										//Swizzle to BR Vector
+	inline Vec2 BG() const;										//Swizzle to BG Vector
 
 	//Swizzle Operations (Vec3)
 	inline Vec3 XXX() const;									//Swizzle to XXX Vector

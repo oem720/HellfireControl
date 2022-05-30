@@ -179,35 +179,44 @@ inline bool Vec2::NotEquals(const Vec2& _other) const {
 }
 
 inline float& Vec2::X() {
-	return x;
+	return this->x;
 }
 
 inline float Vec2::X() const {
-	return x;
+	return this->x;
 }
 
 inline float& Vec2::Y() {
-	return y;
+	return this->y;
 }
 
 inline float Vec2::Y() const {
-	return y;
+	return this->y;
 }
 
 inline Vec2 Vec2::XX() const {
-	return Vec2(x, x);
+	return Vec2(this->x, this->x);
 }
 
 inline Vec2 Vec2::YY() const {
-	return Vec2(y, y);
+	return Vec2(this->y, this->y);
+}
+
+inline Vec2 Vec2::YX() const {
+	return Vec2(this->y, this->x);
 }
 
 inline Vec2 Vec2::RR() const {
-	return Vec2(x, x);
+	return Vec2(this->x, this->x);
 }
 
 inline Vec2 Vec2::GG() const {
-	return Vec2(y, y);
+	return Vec2(this->y, this->y);
+}
+
+inline Vec2 Vec2::GR() const
+{
+	return Vec2(this->y, this->x);
 }
 
 #pragma endregion
@@ -419,6 +428,78 @@ inline float& Vec3::Z() {
 
 inline float Vec3::Z() const {
 	return this->z;
+}
+
+inline Vec2 Vec3::XX() const {
+	return Vec2(this->x, this->x);
+}
+
+inline Vec2 Vec3::YY() const {
+	return Vec2(this->y, this->y);
+}
+
+inline Vec2 Vec3::ZZ() const {
+	return Vec2(this->z, this->z);
+}
+
+inline Vec2 Vec3::XY() const {
+	return Vec2(this->x, this->y);
+}
+
+inline Vec2 Vec3::XZ() const {
+	return Vec2(this->x, this->z);
+}
+
+inline Vec2 Vec3::YX() const {
+	return Vec2(this->y, this->x);
+}
+
+inline Vec2 Vec3::YZ() const {
+	return Vec2(this->y, this->z);
+}
+
+inline Vec2 Vec3::ZX() const {
+	return Vec2(this->z, this->x);
+}
+
+inline Vec2 Vec3::ZY() const {
+	return Vec2(this->z, this->y);
+}
+
+inline Vec2 Vec3::RR() const {
+	return Vec2(this->x, this->x);
+}
+
+inline Vec2 Vec3::GG() const {
+	return Vec2(this->y, this->y);
+}
+
+inline Vec2 Vec3::BB() const {
+	return Vec2(this->z, this->z);
+}
+
+inline Vec2 Vec3::RG() const {
+	return Vec2(this->x, this->y);
+}
+
+inline Vec2 Vec3::RB() const {
+	return Vec2(this->x, this->z);
+}
+
+inline Vec2 Vec3::GR() const {
+	return Vec2(this->y, this->x);
+}
+
+inline Vec2 Vec3::GB() const {
+	return Vec2(this->y, this->z);
+}
+
+inline Vec2 Vec3::BR() const {
+	return Vec2(this->z, this->x);
+}
+
+inline Vec2 Vec3::BG() const {
+	return Vec2(this->z, this->y);
 }
 
 #pragma endregion

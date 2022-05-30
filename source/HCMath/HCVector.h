@@ -2,7 +2,7 @@
 #ifndef VECTOR_LIBRARY_HEADER
 #define VECTOR_LIBRARY_HEADER
 
-#pragma region TraditionalVectors
+#pragma region FloatingPointVectors
 
 class alignas(8) Vec2 {
 private:
@@ -68,8 +68,8 @@ public:
 
 	//Member Modification
 	inline float& X();											//Vector X Component (Modifiable)
-	inline float X() const;										//Vector X Component (Const)
 	inline float& Y();											//Vector Y Component (Modifiable)
+	inline float X() const;										//Vector X Component (Const)
 	inline float Y() const;										//Vector Y Component (Const)
 
 	//Swizzle Operations (Vec2)
@@ -149,10 +149,10 @@ public:
 
 	//Member Modification
 	inline float& X();											//Vector X Component (Modifiable)
-	inline float X() const;										//Vector X Component (Const)
 	inline float& Y();											//Vector Y Component (Modifiable)
-	inline float Y() const;										//Vector Y Component (Const)
 	inline float& Z();											//Vector Z Component (Modifiable)
+	inline float X() const;										//Vector X Component (Const)
+	inline float Y() const;										//Vector Y Component (Const)
 	inline float Z() const;										//Vector Z Component (Const)
 
 	//Swizzle Operations (Vec2)

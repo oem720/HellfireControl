@@ -77,19 +77,19 @@ inline bool Vec2::operator==(const Vec2& _other) const {
 }
 
 inline bool Vec2::operator<(const Vec2& _other) const {
-	return this->Length() < _other.Length();
+	return this->LengthSquared() < _other.LengthSquared();
 }
 
 inline bool Vec2::operator>(const Vec2& _other) const {
-	return this->Length() > _other.Length();
+	return this->LengthSquared() > _other.LengthSquared();
 }
 
 inline bool Vec2::operator<=(const Vec2& _other) const {
-	return this->Length() <= _other.Length();
+	return this->LengthSquared() <= _other.LengthSquared();
 }
 
 inline bool Vec2::operator>=(const Vec2& _other) const {
-	return this->Length() >= _other.Length();
+	return this->LengthSquared() >= _other.LengthSquared();
 }
 
 inline bool Vec2::operator!=(const Vec2& _other) const {
@@ -269,19 +269,19 @@ inline bool Vec3::operator==(const Vec3& _other) const {
 }
 
 inline bool Vec3::operator<(const Vec3& _other) const {
-	return this->Length() < _other.Length();
+	return this->LengthSquared() < _other.LengthSquared();
 }
 
 inline bool Vec3::operator>(const Vec3& _other) const {
-	return this->Length() > _other.Length();
+	return this->LengthSquared() > _other.LengthSquared();
 }
 
 inline bool Vec3::operator<=(const Vec3& _other) const {
-	return this->Length() <= _other.Length();
+	return this->LengthSquared() <= _other.LengthSquared();
 }
 
 inline bool Vec3::operator>=(const Vec3& _other) const {
-	return this->Length() >= _other.Length();
+	return this->LengthSquared() >= _other.LengthSquared();
 }
 
 inline bool Vec3::operator!=(const Vec3& _other) const {
@@ -474,216 +474,176 @@ inline Vec4& Vec4::operator=(const Vec4& _other) {
 }
 
 inline Vec4& Vec4::operator+=(const Vec4& _other) {
-	// TODO: insert return statement here
+	*this = *this + _other;
+	return *this;
 }
 
 inline Vec4& Vec4::operator-=(const Vec4& _other) {
-	// TODO: insert return statement here
+	*this = *this - _other;
+	return *this;
 }
 
 inline Vec4& Vec4::operator*=(const float _scale) {
-	// TODO: insert return statement here
+	*this = *this * _scale;
+	return *this;
 }
 
 inline Vec4& Vec4::operator&=(const Vec4& _other) {
-	// TODO: insert return statement here
+	*this = *this & _other;
+	return *this;
 }
 
 inline float& Vec4::operator[](int _ndx) {
-	// TODO: insert return statement here
+	assert(_ndx < 4);
+	return xyzw[_ndx];
 }
 
 inline float Vec4::operator[](int _ndx) const {
-	return 0.0f;
+	assert(_ndx < 4);
+	return xyzw[_ndx];
 }
 
-inline Vec4 Vec4::operator+(const Vec4& _other) const
-{
+inline Vec4 Vec4::operator+(const Vec4& _other) const {
+	return Vec4(this->x + _other.x, this->y + _other.y, this->z + _other.z, this->w + _other.w);
+}
+
+inline Vec4 Vec4::operator-(const Vec4& _other) const {
+	return Vec4(this->x - _other.x, this->y - _other.y, this->z - _other.z, this->w - _other.w);
+}
+
+inline Vec4 Vec4::operator*(const float _scale) const {
+	return Vec4(this->x * _scale, this->y * _scale, this->z * _scale, this->w * _scale);
+}
+
+inline float Vec4::operator*(const Vec4& _other) const {
+	return (this->x * _other.x) + (this->y * _other.y) + (this->z * _other.z);
+}
+
+inline Vec4 Vec4::operator&(const Vec4& _other) const {
+	return Vec4((this->y * _other.z) - (this->z * _other.y), (this->x * _other.z) - (this->z * _other.x), (this->x * _other.y) - (this->y * _other.x), 0.0f);
+}
+
+inline Vec4 Vec4::operator~() const {
 	return Vec4();
 }
 
-inline Vec4 Vec4::operator-(const Vec4& _other) const
-{
-	return Vec4();
+inline Vec4 Vec4::operator-() const {
+	return Vec4(-this->x, -this->y, -this->z, -this->w);
 }
 
-inline Vec4 Vec4::operator*(const float _scale) const
-{
-	return Vec4();
+inline bool Vec4::operator==(const Vec4& _other) const {
+	return this->x == _other.x && this->y == _other.y && this->z == _other.z && this->w == _other.w;
 }
 
-inline float Vec4::operator*(const Vec4& _other) const
-{
-	return 0.0f;
+inline bool Vec4::operator<(const Vec4& _other) const {
+	return this->LengthSquared() < _other.LengthSquared();
 }
 
-inline Vec4 Vec4::operator&(const Vec4& _other) const
-{
-	return Vec4();
+inline bool Vec4::operator>(const Vec4& _other) const {
+	return this->LengthSquared() > _other.LengthSquared();
 }
 
-inline Vec4 Vec4::operator~() const
-{
-	return Vec4();
+inline bool Vec4::operator<=(const Vec4& _other) const {
+	return this->LengthSquared() <= _other.LengthSquared();
 }
 
-inline Vec4 Vec4::operator-() const
-{
-	return Vec4();
+inline bool Vec4::operator>=(const Vec4& _other) const {
+	return this->LengthSquared() >= _other.LengthSquared();
 }
 
-inline bool Vec4::operator==(const Vec4& _other) const
-{
-	return false;
+inline bool Vec4::operator!=(const Vec4& _other) const {
+	return this->x != _other.x || this->y != _other.y || this->z != _other.z || this->w != _other.w;
 }
 
-inline bool Vec4::operator<(const Vec4& _other) const
-{
-	return false;
+inline float Vec4::Length() const {
+	return sqrtf((*this) * (*this));
 }
 
-inline bool Vec4::operator>(const Vec4& _other) const
-{
-	return false;
+inline float Vec4::LengthSquared() const {
+	return (*this) * (*this);
 }
 
-inline bool Vec4::operator<=(const Vec4& _other) const
-{
-	return false;
+inline void Vec4::Normalize() {
+	float len = this->Length();
+	if (len == 0.0f) return;
+
+	this->x /= len;
+	this->y /= len;
+	this->z /= len;
+	this->w /= len;
 }
 
-inline bool Vec4::operator>=(const Vec4& _other) const
-{
-	return false;
+inline Vec4 Vec4::Normalized() const {
+	float len = this->Length();
+	if (len == 0.0f) return;
+
+	return Vec4(this->x / len, this->y / len, this->z / len, this->w / len);
 }
 
-inline bool Vec4::operator!=(const Vec4& _other) const
-{
-	return false;
+inline float Vec4::AngleBetween(const Vec4& _other) const {
+	return acosf(*this * _other);
 }
 
-inline float Vec4::Length() const
-{
-	return 0.0f;
+inline float Vec4::Dot(const Vec4& _other) const {
+	return *this * _other;
 }
 
-inline float Vec4::LengthSquared() const
-{
-	return 0.0f;
+inline void Vec4::Cross(const Vec4& _other) {
+	*this &= _other;
 }
 
-inline void Vec4::Normalize()
-{
+inline void Vec4::Add(const Vec4& _other) {
+	*this += _other;
 }
 
-inline Vec4 Vec4::Normalized() const
-{
-	return Vec4();
+inline void Vec4::Subtract(const Vec4& _other) {
+	*this -= _other;
 }
 
-inline float Vec4::AngleBetween(const Vec4& _other) const
-{
-	return 0.0f;
+inline void Vec4::Scale(const float _scale) {
+	*this *= _scale;
 }
 
-inline float Vec4::Dot(const Vec4& _other) const
-{
-	return 0.0f;
+inline void Vec4::Negate() {
+	*this = -(*this);
 }
 
-inline void Vec4::Cross(const Vec4& _other)
-{
+inline void Vec4::Zero() {
+	*this = ~(*this);
 }
 
-inline void Vec4::Add(const Vec4& _other)
-{
+inline bool Vec4::Equals(const Vec4& _other) const {
+	return *this == _other;
 }
 
-inline void Vec4::Subtract(const Vec4& _other)
-{
+inline bool Vec4::Less(const Vec4& _other) const {
+	return *this < _other;
 }
 
-inline void Vec4::Scale(const float _scale)
-{
+inline bool Vec4::LessThanOrEquals(const Vec4& _other) const {
+	return *this <= _other;
 }
 
-inline void Vec4::Negate()
-{
+inline bool Vec4::Greater(const Vec4& _other) const {
+	return *this > _other;
 }
 
-inline void Vec4::Zero()
-{
+inline bool Vec4::GreaterThanOrEquals(const Vec4& _other) const {
+	return *this >= _other;
 }
 
-inline bool Vec4::Equals(const Vec4& _other) const
-{
-	return false;
+inline bool Vec4::NotEquals(const Vec4& _other) const {
+	return *this != _other;
 }
 
-inline bool Vec4::Less(const Vec4& _other) const
-{
-	return false;
-}
-
-inline bool Vec4::LessThanOrEquals(const Vec4& _other) const
-{
-	return false;
-}
-
-inline bool Vec4::Greater(const Vec4& _other) const
-{
-	return false;
-}
-
-inline bool Vec4::GreaterThanOrEquals(const Vec4& _other) const
-{
-	return false;
-}
-
-inline bool Vec4::NotEquals(const Vec4& _other) const
-{
-	return false;
-}
-
-inline float& Vec4::X()
-{
-	// TODO: insert return statement here
-}
-
-inline float& Vec4::Y()
-{
-	// TODO: insert return statement here
-}
-
-inline float& Vec4::Z()
-{
-	// TODO: insert return statement here
-}
-
-inline float& Vec4::W()
-{
-	// TODO: insert return statement here
-}
-
-inline float Vec4::X() const
-{
-	return 0.0f;
-}
-
-inline float Vec4::Y() const
-{
-	return 0.0f;
-}
-
-inline float Vec4::Z() const
-{
-	return 0.0f;
-}
-
-inline float Vec4::W() const
-{
-	return 0.0f;
-}
+inline float& Vec4::X() { return this->x; }
+inline float& Vec4::Y() { return this->y; }
+inline float& Vec4::Z() { return this->z; }
+inline float& Vec4::W() { return this->w; }
+inline float Vec4::X() const { return this->x; }
+inline float Vec4::Y() const { return this->y; }
+inline float Vec4::Z() const { return this->z; }
+inline float Vec4::W() const { return this->w; }
 
 #pragma endregion
 #pragma endregion

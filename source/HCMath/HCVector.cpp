@@ -8,12 +8,8 @@
 #pragma region Vec2
 
 inline Vec2::Vec2() : x(0.0f), y(0.0f) {}
-
 inline Vec2::Vec2(float _x, float _y) : x(_x), y(_y) {}
-
-inline Vec2::Vec2(const Vec2& _other) {
-	*this = _other;
-}
+inline Vec2::Vec2(const Vec2& _other) { (*this) = _other; }
 
 inline Vec2& Vec2::operator=(const Vec2& _other) {
 	if (this != &_other) {
@@ -128,55 +124,55 @@ inline float Vec2::AngleBetween(const Vec2& _other) const {
 }
 
 inline float Vec2::Dot(const Vec2& _other) const {
-	return (*this) * _other;
+	return *this * _other;
 }
 
 inline float Vec2::Cross(const Vec2& _other) const {
-	return (*this) & _other;
+	return *this & _other;
 }
 
 inline void Vec2::Add(const Vec2& _other) {
-	(*this) += _other;
+	*this += _other;
 }
 
 inline void Vec2::Subtract(const Vec2& _other) {
-	(*this) -= _other;
+	*this -= _other;
 }
 
 inline void Vec2::Scale(const float _scale) {
-	(*this) *= _scale;
+	*this *= _scale;
 }
 
 inline void Vec2::Zero() {
-	(*this) = ~(*this);
+	*this = ~(*this);
 }
 
 inline void Vec2::Negate() {
-	(*this) = -(*this);
+	*this = -(*this);
 }
 
 inline bool Vec2::Equals(const Vec2& _other) const {
-	return (*this) == _other;
+	return *this == _other;
 }
 
 inline bool Vec2::Less(const Vec2& _other) const {
-	return (*this) < _other;
+	return *this < _other;
 }
 
 inline bool Vec2::LessThanOrEquals(const Vec2& _other) const {
-	return (*this) <= _other;
+	return *this <= _other;
 }
 
 inline bool Vec2::Greater(const Vec2& _other) const {
-	return (*this) > _other;
+	return *this > _other;
 }
 
 inline bool Vec2::GreaterThanOrEquals(const Vec2& _other) const {
-	return (*this) >= _other;
+	return *this >= _other;
 }
 
 inline bool Vec2::NotEquals(const Vec2& _other) const {
-	return (*this) != _other;
+	return *this != _other;
 }
 
 inline float& Vec2::X() { return this->x; }
@@ -196,16 +192,10 @@ inline Vec2 Vec2::GR() const { return Vec2(this->y, this->x); }
 #pragma region Vec3
 
 inline Vec3::Vec3() : x(0.0f), y(0.0f), z(0.0f) {}
-
 inline Vec3::Vec3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
-
 inline Vec3::Vec3(const Vec2& _xy, float _z) : x(_xy.X()), y(_xy.Y()), z(_z) {}
-
 inline Vec3::Vec3(float _x, const Vec2& _yz) : x(_x), y(_yz.X()), z(_yz.Y()) {}
-
-inline Vec3::Vec3(const Vec3& _other) {
-	*this = _other;
-}
+inline Vec3::Vec3(const Vec3& _other) { *this = _other; }
 
 inline Vec3& Vec3::operator=(const Vec3& _other) {
 	if (this != &_other) {
@@ -327,55 +317,55 @@ inline float Vec3::AngleBetween(const Vec3& _other) const {
 }
 
 inline float Vec3::Dot(const Vec3& _other) const {
-	return (*this) * _other;
+	return *this * _other;
 }
 
 inline void Vec3::Cross(const Vec3& _other) {
-	(*this) &= _other;
+	*this &= _other;
 }
 
 inline void Vec3::Add(const Vec3& _other) {
-	(*this) += _other;
+	*this += _other;
 }
 
 inline void Vec3::Subtract(const Vec3& _other) {
-	(*this) -= _other;
+	*this -= _other;
 }
 
 inline void Vec3::Scale(const float _scale) {
-	(*this) *= _scale;
+	*this *= _scale;
 }
 
 inline void Vec3::Negate() {
-	(*this) = -(*this);
+	*this = -(*this);
 }
 
 inline void Vec3::Zero() {
-	(*this) = ~(*this);
+	*this = ~(*this);
 }
 
 inline bool Vec3::Equals(const Vec3& _other) const {
-	return (*this) == _other;
+	return *this == _other;
 }
 
 inline bool Vec3::Less(const Vec3& _other) const {
-	return (*this) < _other;
+	return *this < _other;
 }
 
 inline bool Vec3::LessThanOrEquals(const Vec3& _other) const {
-	return (*this) <= _other;
+	return *this <= _other;
 }
 
 inline bool Vec3::Greater(const Vec3& _other) const {
-	return (*this) > _other;
+	return *this > _other;
 }
 
 inline bool Vec3::GreaterThanOrEquals(const Vec3& _other) const {
-	return (*this) >= _other;
+	return *this >= _other;
 }
 
 inline bool Vec3::NotEquals(const Vec3& _other) const {
-	return (*this) != _other;
+	return *this != _other;
 }
 
 inline float& Vec3::X() { return this->x; }
@@ -463,7 +453,237 @@ inline Vec3 Vec3::BBB() const { return Vec3(this->z, this->z, this->z); }
 
 #pragma region Vec4
 
+inline Vec4::Vec4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
+inline Vec4::Vec4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {}
+inline Vec4::Vec4(const Vec2& _xy, float _z, float _w) : x(_xy.X()), y(_xy.Y()), z(_z), w(_w) {}
+inline Vec4::Vec4(float _x, const Vec2& _yz, float _w) : x(_x), y(_yz.X()), z(_yz.Y()), w(_w) {}
+inline Vec4::Vec4(float _x, float _y, const Vec2& _zw) : x(_x), y(_y), z(_zw.X()), w(_zw.Y()) {}
+inline Vec4::Vec4(const Vec2& _xy, const Vec2& _zw) : x(_xy.X()), y(_xy.Y()), z(_zw.X()), w(_zw.Y()) {}
+inline Vec4::Vec4(const Vec3& _xyz, float _w) : x(_xyz.X()), y(_xyz.Y()), z(_xyz.Z()), w(_w) {}
+inline Vec4::Vec4(float _x, const Vec3& _yzw) : x(_x), y(_yzw.X()), z(_yzw.Y()), w(_yzw.Z()) {}
+inline Vec4::Vec4(const Vec4& _other) { (*this) = _other; }
 
+inline Vec4& Vec4::operator=(const Vec4& _other) {
+	if (this != &_other) {
+		this->x = _other.x;
+		this->y = _other.y;
+		this->z = _other.z;
+		this->w = _other.w;
+	}
+	return *this;
+}
+
+inline Vec4& Vec4::operator+=(const Vec4& _other) {
+	// TODO: insert return statement here
+}
+
+inline Vec4& Vec4::operator-=(const Vec4& _other) {
+	// TODO: insert return statement here
+}
+
+inline Vec4& Vec4::operator*=(const float _scale) {
+	// TODO: insert return statement here
+}
+
+inline Vec4& Vec4::operator&=(const Vec4& _other) {
+	// TODO: insert return statement here
+}
+
+inline float& Vec4::operator[](int _ndx) {
+	// TODO: insert return statement here
+}
+
+inline float Vec4::operator[](int _ndx) const {
+	return 0.0f;
+}
+
+inline Vec4 Vec4::operator+(const Vec4& _other) const
+{
+	return Vec4();
+}
+
+inline Vec4 Vec4::operator-(const Vec4& _other) const
+{
+	return Vec4();
+}
+
+inline Vec4 Vec4::operator*(const float _scale) const
+{
+	return Vec4();
+}
+
+inline float Vec4::operator*(const Vec4& _other) const
+{
+	return 0.0f;
+}
+
+inline Vec4 Vec4::operator&(const Vec4& _other) const
+{
+	return Vec4();
+}
+
+inline Vec4 Vec4::operator~() const
+{
+	return Vec4();
+}
+
+inline Vec4 Vec4::operator-() const
+{
+	return Vec4();
+}
+
+inline bool Vec4::operator==(const Vec4& _other) const
+{
+	return false;
+}
+
+inline bool Vec4::operator<(const Vec4& _other) const
+{
+	return false;
+}
+
+inline bool Vec4::operator>(const Vec4& _other) const
+{
+	return false;
+}
+
+inline bool Vec4::operator<=(const Vec4& _other) const
+{
+	return false;
+}
+
+inline bool Vec4::operator>=(const Vec4& _other) const
+{
+	return false;
+}
+
+inline bool Vec4::operator!=(const Vec4& _other) const
+{
+	return false;
+}
+
+inline float Vec4::Length() const
+{
+	return 0.0f;
+}
+
+inline float Vec4::LengthSquared() const
+{
+	return 0.0f;
+}
+
+inline void Vec4::Normalize()
+{
+}
+
+inline Vec4 Vec4::Normalized() const
+{
+	return Vec4();
+}
+
+inline float Vec4::AngleBetween(const Vec4& _other) const
+{
+	return 0.0f;
+}
+
+inline float Vec4::Dot(const Vec4& _other) const
+{
+	return 0.0f;
+}
+
+inline void Vec4::Cross(const Vec4& _other)
+{
+}
+
+inline void Vec4::Add(const Vec4& _other)
+{
+}
+
+inline void Vec4::Subtract(const Vec4& _other)
+{
+}
+
+inline void Vec4::Scale(const float _scale)
+{
+}
+
+inline void Vec4::Negate()
+{
+}
+
+inline void Vec4::Zero()
+{
+}
+
+inline bool Vec4::Equals(const Vec4& _other) const
+{
+	return false;
+}
+
+inline bool Vec4::Less(const Vec4& _other) const
+{
+	return false;
+}
+
+inline bool Vec4::LessThanOrEquals(const Vec4& _other) const
+{
+	return false;
+}
+
+inline bool Vec4::Greater(const Vec4& _other) const
+{
+	return false;
+}
+
+inline bool Vec4::GreaterThanOrEquals(const Vec4& _other) const
+{
+	return false;
+}
+
+inline bool Vec4::NotEquals(const Vec4& _other) const
+{
+	return false;
+}
+
+inline float& Vec4::X()
+{
+	// TODO: insert return statement here
+}
+
+inline float& Vec4::Y()
+{
+	// TODO: insert return statement here
+}
+
+inline float& Vec4::Z()
+{
+	// TODO: insert return statement here
+}
+
+inline float& Vec4::W()
+{
+	// TODO: insert return statement here
+}
+
+inline float Vec4::X() const
+{
+	return 0.0f;
+}
+
+inline float Vec4::Y() const
+{
+	return 0.0f;
+}
+
+inline float Vec4::Z() const
+{
+	return 0.0f;
+}
+
+inline float Vec4::W() const
+{
+	return 0.0f;
+}
 
 #pragma endregion
 #pragma endregion

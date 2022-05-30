@@ -242,7 +242,74 @@ private:
 		};
 	};
 public:
+	//Constructors
+	inline Vec4();												//Init to Zero
+	inline Vec4(float _x, float _y, float _z, float _w);		//Init to X, Y, Z, and W
+	inline Vec4(const Vec2& _xy, float _z, float _w);			//Init from a Vec2 for X and Y, and from a float for Z and W
+	inline Vec4(float _x, const Vec2& _yz, float _w);			//Init from X, from a Vec2 for Y and Z and a float for W
+	inline Vec4(float _x, float _y, const Vec2& _zw);			//Init from X and Y, and from a Vec2 for Z and W
+	inline Vec4(const Vec2& _xy, const Vec2& _zw);				//Init from 2 Vec2's
+	inline Vec4(const Vec3& _xyz, float _w);					//Init from a Vec3 and a float for W
+	inline Vec4(float _x, const Vec3& _yzw);					//Init from a float for X and a Vec3
+	inline Vec4(const Vec4& _other);							//Init from Copy
 
+	//Assignment
+	inline Vec4& operator=(const Vec4& _other);					//Assignment
+	inline Vec4& operator+=(const Vec4& _other);				//Addition
+	inline Vec4& operator-=(const Vec4& _other);				//Subtraction
+	inline Vec4& operator*=(const float _scale);				//Scaling
+	inline Vec4& operator&=(const Vec4& _other);				//Cross Product
+	inline float& operator[](int _ndx);							//Array access (Modifiable)
+	inline float operator[](int _ndx) const;					//Array access (Const)
+
+	//Arithmetic
+	inline Vec4 operator+(const Vec4& _other) const;			//Addition
+	inline Vec4 operator-(const Vec4& _other) const;			//Subtraction
+	inline Vec4 operator*(const float _scale) const;			//Scaling
+	inline float operator*(const Vec4& _other) const;			//Dot Product
+	inline Vec4 operator&(const Vec4& _other) const;			//Cross Product
+	inline Vec4 operator~() const;								//Zero
+	inline Vec4 operator-() const;								//Negate
+
+	//Comparison
+	inline bool operator==(const Vec4& _other) const;			//Check Equality
+	inline bool operator<(const Vec4& _other) const;			//Check Less Than
+	inline bool operator>(const Vec4& _other) const;			//Check Greater Than
+	inline bool operator<=(const Vec4& _other) const;			//Check Less Than or Equal To
+	inline bool operator>=(const Vec4& _other) const;			//Check Greater Than or Equal To
+	inline bool operator!=(const Vec4& _other) const;			//Check Not Equal
+
+	//Measurement
+	inline float Length() const;								//Vector Length
+	inline float LengthSquared() const;							//Vector Length Squared
+	inline void Normalize();									//Vector Normalize
+	inline Vec4 Normalized() const;								//Return Normalized Version of this Vector
+	inline float AngleBetween(const Vec4& _other) const;		//Measure the angle between 2 Vectors
+
+	//Operator Alternatives
+	inline float Dot(const Vec4& _other) const;					//Dot Product
+	inline void Cross(const Vec4& _other);						//Cross Product
+	inline void Add(const Vec4& _other);						//Addition
+	inline void Subtract(const Vec4& _other);					//Subtraction
+	inline void Scale(const float _scale);						//Scaling
+	inline void Negate();										//Negate
+	inline void Zero();											//Zero
+	inline bool Equals(const Vec4& _other) const;				//Check Equality
+	inline bool Less(const Vec4& _other) const;					//Check Less Than
+	inline bool LessThanOrEquals(const Vec4& _other) const;		//Check Less Than or Equal To
+	inline bool Greater(const Vec4& _other) const;				//Check Greater Than
+	inline bool GreaterThanOrEquals(const Vec4& _other) const;	//Check Greater Than or Equal To
+	inline bool NotEquals(const Vec4& _other) const;			//Check Not Equal
+
+	//Member Modification
+	inline float& X();											//Vector X Component (Modifiable)
+	inline float& Y();											//Vector Y Component (Modifiable)
+	inline float& Z();											//Vector Z Component (Modifiable)
+	inline float& W();											//Vector W Component (Modifiable)
+	inline float X() const;										//Vector X Component (Const)
+	inline float Y() const;										//Vector Y Component (Const)
+	inline float Z() const;										//Vector Z Component (Const)
+	inline float W() const;										//Vector W Component (Const)
 };
 
 #pragma endregion

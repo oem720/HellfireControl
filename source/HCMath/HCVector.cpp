@@ -645,6 +645,171 @@ inline float Vec4::Y() const { return this->y; }
 inline float Vec4::Z() const { return this->z; }
 inline float Vec4::W() const { return this->w; }
 
+//Vec2 Swizzle
+inline Vec2 Vec4::XX() const { return Vec2(this->x, this->x); }
+inline Vec2 Vec4::YY() const { return Vec2(this->y, this->y); }
+inline Vec2 Vec4::ZZ() const { return Vec2(this->z, this->z); }
+inline Vec2 Vec4::WW() const { return Vec2(this->w, this->w); }
+inline Vec2 Vec4::XY() const { return Vec2(this->x, this->y); }
+inline Vec2 Vec4::XZ() const { return Vec2(this->x, this->z); }
+inline Vec2 Vec4::XW() const { return Vec2(this->x, this->w); }
+inline Vec2 Vec4::YX() const { return Vec2(this->y, this->x); }
+inline Vec2 Vec4::YZ() const { return Vec2(this->y, this->z); }
+inline Vec2 Vec4::YW() const { return Vec2(this->y, this->w); }
+inline Vec2 Vec4::ZX() const { return Vec2(this->z, this->x); }
+inline Vec2 Vec4::ZY() const { return Vec2(this->z, this->y); }
+inline Vec2 Vec4::ZW() const { return Vec2(this->z, this->w); }
+inline Vec2 Vec4::WX() const { return Vec2(this->w, this->x); }
+inline Vec2 Vec4::WY() const { return Vec2(this->w, this->y); }
+inline Vec2 Vec4::WZ() const { return Vec2(this->w, this->z); }
+inline Vec2 Vec4::RR() const { return Vec2(this->x, this->x); }
+inline Vec2 Vec4::GG() const { return Vec2(this->y, this->y); }
+inline Vec2 Vec4::BB() const { return Vec2(this->z, this->z); }
+inline Vec2 Vec4::AA() const { return Vec2(this->w, this->w); }
+inline Vec2 Vec4::RG() const { return Vec2(this->x, this->y); }
+inline Vec2 Vec4::RB() const { return Vec2(this->x, this->z); }
+inline Vec2 Vec4::RA() const { return Vec2(this->x, this->w); }
+inline Vec2 Vec4::GR() const { return Vec2(this->y, this->x); }
+inline Vec2 Vec4::GB() const { return Vec2(this->y, this->z); }
+inline Vec2 Vec4::GA() const { return Vec2(this->y, this->w); }
+inline Vec2 Vec4::BR() const { return Vec2(this->z, this->x); }
+inline Vec2 Vec4::BG() const { return Vec2(this->z, this->y); }
+inline Vec2 Vec4::BA() const { return Vec2(this->z, this->w); }
+inline Vec2 Vec4::AR() const { return Vec2(this->w, this->x); }
+inline Vec2 Vec4::AG() const { return Vec2(this->w, this->y); }
+inline Vec2 Vec4::AB() const { return Vec2(this->w, this->z); }
+
+//Vec3 Swizzle
+inline Vec3 Vec4::XXX() const { return Vec3(this->x, this->x, this->x); }
+inline Vec3 Vec4::XXY() const { return Vec3(this->x, this->x, this->y); }
+inline Vec3 Vec4::XXZ() const { return Vec3(this->x, this->x, this->z); }
+inline Vec3 Vec4::XXW() const { return Vec3(this->x, this->x, this->w); }
+inline Vec3 Vec4::XYX() const { return Vec3(this->x, this->y, this->x); }
+inline Vec3 Vec4::XYY() const { return Vec3(this->x, this->y, this->y); }
+inline Vec3 Vec4::XYW() const { return Vec3(this->x, this->y, this->w); }
+inline Vec3 Vec4::XZX() const { return Vec3(this->x, this->z, this->x); }
+inline Vec3 Vec4::XZY() const { return Vec3(this->x, this->z, this->y); }
+inline Vec3 Vec4::XZZ() const { return Vec3(this->x, this->z, this->z); }
+inline Vec3 Vec4::XZW() const { return Vec3(this->x, this->z, this->w); }
+inline Vec3 Vec4::XWX() const { return Vec3(this->x, this->w, this->x); }
+inline Vec3 Vec4::XWY() const { return Vec3(this->x, this->w, this->y); }
+inline Vec3 Vec4::XWZ() const { return Vec3(this->x, this->w, this->z); }
+inline Vec3 Vec4::XWW() const { return Vec3(this->x, this->w, this->w); }
+inline Vec3 Vec4::YXX() const { return Vec3(this->y, this->x, this->x); }
+inline Vec3 Vec4::YXY() const { return Vec3(this->y, this->x, this->y); }
+inline Vec3 Vec4::YXZ() const { return Vec3(this->y, this->x, this->z); }
+inline Vec3 Vec4::YXW() const { return Vec3(this->y, this->x, this->w); }
+inline Vec3 Vec4::YYX() const { return Vec3(this->y, this->y, this->x); }
+inline Vec3 Vec4::YYY() const { return Vec3(this->y, this->y, this->y); }
+inline Vec3 Vec4::YYZ() const { return Vec3(this->y, this->y, this->z); }
+inline Vec3 Vec4::YYW() const { return Vec3(this->y, this->y, this->w); }
+inline Vec3 Vec4::YZX() const { return Vec3(this->y, this->z, this->x); }
+inline Vec3 Vec4::YZY() const { return Vec3(this->y, this->z, this->y); }
+inline Vec3 Vec4::YZZ() const { return Vec3(this->y, this->z, this->z); }
+inline Vec3 Vec4::YZW() const { return Vec3(this->y, this->z, this->w); }
+inline Vec3 Vec4::YWX() const { return Vec3(this->y, this->w, this->x); }
+inline Vec3 Vec4::YWY() const { return Vec3(this->y, this->w, this->y); }
+inline Vec3 Vec4::YWZ() const { return Vec3(this->y, this->w, this->z); }
+inline Vec3 Vec4::YWW() const { return Vec3(this->y, this->w, this->w); }
+inline Vec3 Vec4::ZXX() const { return Vec3(this->z, this->x, this->x); }
+inline Vec3 Vec4::ZXY() const { return Vec3(this->z, this->x, this->y); }
+inline Vec3 Vec4::ZXZ() const { return Vec3(this->z, this->x, this->z); }
+inline Vec3 Vec4::ZXW() const { return Vec3(this->z, this->x, this->w); }
+inline Vec3 Vec4::ZYX() const { return Vec3(this->z, this->y, this->x); }
+inline Vec3 Vec4::ZYY() const { return Vec3(this->z, this->y, this->y); }
+inline Vec3 Vec4::ZYZ() const { return Vec3(this->z, this->y, this->z); }
+inline Vec3 Vec4::ZYW() const { return Vec3(this->z, this->y, this->w); }
+inline Vec3 Vec4::ZZX() const { return Vec3(this->z, this->z, this->x); }
+inline Vec3 Vec4::ZZY() const { return Vec3(this->z, this->z, this->y); }
+inline Vec3 Vec4::ZZZ() const { return Vec3(this->z, this->z, this->z); }
+inline Vec3 Vec4::ZZW() const { return Vec3(this->z, this->z, this->w); }
+inline Vec3 Vec4::ZWX() const { return Vec3(this->z, this->w, this->x); }
+inline Vec3 Vec4::ZWY() const { return Vec3(this->z, this->w, this->y); }
+inline Vec3 Vec4::ZWZ() const { return Vec3(this->z, this->w, this->z); }
+inline Vec3 Vec4::ZWW() const { return Vec3(this->z, this->w, this->w); }
+inline Vec3 Vec4::WXX() const { return Vec3(this->w, this->x, this->x); }
+inline Vec3 Vec4::WXY() const { return Vec3(this->w, this->x, this->y); }
+inline Vec3 Vec4::WXZ() const { return Vec3(this->w, this->x, this->z); }
+inline Vec3 Vec4::WXW() const { return Vec3(this->w, this->x, this->w); }
+inline Vec3 Vec4::WYX() const { return Vec3(this->w, this->y, this->x); }
+inline Vec3 Vec4::WYY() const { return Vec3(this->w, this->y, this->y); }
+inline Vec3 Vec4::WYZ() const { return Vec3(this->w, this->y, this->z); }
+inline Vec3 Vec4::WYW() const { return Vec3(this->w, this->y, this->w); }
+inline Vec3 Vec4::WZX() const { return Vec3(this->w, this->z, this->x); }
+inline Vec3 Vec4::WZY() const { return Vec3(this->w, this->z, this->y); }
+inline Vec3 Vec4::WZZ() const { return Vec3(this->w, this->z, this->z); }
+inline Vec3 Vec4::WZW() const { return Vec3(this->w, this->z, this->w); }
+inline Vec3 Vec4::WWX() const { return Vec3(this->w, this->w, this->x); }
+inline Vec3 Vec4::WWY() const { return Vec3(this->w, this->w, this->y); }
+inline Vec3 Vec4::WWZ() const { return Vec3(this->w, this->w, this->z); }
+inline Vec3 Vec4::WWW() const { return Vec3(this->w, this->w, this->w); }
+inline Vec3 Vec4::RRR() const { return Vec3(this->x, this->x, this->x); }
+inline Vec3 Vec4::RRG() const { return Vec3(this->x, this->x, this->y); }
+inline Vec3 Vec4::RRB() const { return Vec3(this->x, this->x, this->z); }
+inline Vec3 Vec4::RRA() const { return Vec3(this->x, this->x, this->w); }
+inline Vec3 Vec4::RGR() const { return Vec3(this->x, this->y, this->x); }
+inline Vec3 Vec4::RGG() const { return Vec3(this->x, this->y, this->y); }
+inline Vec3 Vec4::RGA() const { return Vec3(this->x, this->y, this->w); }
+inline Vec3 Vec4::RBR() const { return Vec3(this->x, this->z, this->x); }
+inline Vec3 Vec4::RBG() const { return Vec3(this->x, this->z, this->y); }
+inline Vec3 Vec4::RBB() const { return Vec3(this->x, this->z, this->z); }
+inline Vec3 Vec4::RBA() const { return Vec3(this->x, this->z, this->w); }
+inline Vec3 Vec4::RAR() const { return Vec3(this->x, this->w, this->x); }
+inline Vec3 Vec4::RAG() const { return Vec3(this->x, this->w, this->y); }
+inline Vec3 Vec4::RAB() const { return Vec3(this->x, this->w, this->z); }
+inline Vec3 Vec4::RAA() const { return Vec3(this->x, this->w, this->w); }
+inline Vec3 Vec4::GRR() const { return Vec3(this->y, this->x, this->x); }
+inline Vec3 Vec4::GRG() const { return Vec3(this->y, this->x, this->y); }
+inline Vec3 Vec4::GRB() const { return Vec3(this->y, this->x, this->z); }
+inline Vec3 Vec4::GRA() const { return Vec3(this->y, this->x, this->w); }
+inline Vec3 Vec4::GGR() const { return Vec3(this->y, this->y, this->x); }
+inline Vec3 Vec4::GGG() const { return Vec3(this->y, this->y, this->y); }
+inline Vec3 Vec4::GGB() const { return Vec3(this->y, this->y, this->z); }
+inline Vec3 Vec4::GGA() const { return Vec3(this->y, this->y, this->w); }
+inline Vec3 Vec4::GBR() const { return Vec3(this->y, this->z, this->x); }
+inline Vec3 Vec4::GBG() const { return Vec3(this->y, this->z, this->y); }
+inline Vec3 Vec4::GBB() const { return Vec3(this->y, this->z, this->z); }
+inline Vec3 Vec4::GBA() const { return Vec3(this->y, this->z, this->w); }
+inline Vec3 Vec4::GAR() const { return Vec3(this->y, this->w, this->x); }
+inline Vec3 Vec4::GAG() const { return Vec3(this->y, this->w, this->y); }
+inline Vec3 Vec4::GAB() const { return Vec3(this->y, this->w, this->z); }
+inline Vec3 Vec4::GAA() const { return Vec3(this->y, this->w, this->w); }
+inline Vec3 Vec4::BRR() const { return Vec3(this->z, this->x, this->x); }
+inline Vec3 Vec4::BRG() const { return Vec3(this->z, this->x, this->y); }
+inline Vec3 Vec4::BRB() const { return Vec3(this->z, this->x, this->z); }
+inline Vec3 Vec4::BRA() const { return Vec3(this->z, this->x, this->w); }
+inline Vec3 Vec4::BGR() const { return Vec3(this->z, this->y, this->x); }
+inline Vec3 Vec4::BGG() const { return Vec3(this->z, this->y, this->y); }
+inline Vec3 Vec4::BGB() const { return Vec3(this->z, this->y, this->z); }
+inline Vec3 Vec4::BGA() const { return Vec3(this->z, this->y, this->w); }
+inline Vec3 Vec4::BBR() const { return Vec3(this->z, this->z, this->x); }
+inline Vec3 Vec4::BBG() const { return Vec3(this->z, this->z, this->y); }
+inline Vec3 Vec4::BBB() const { return Vec3(this->z, this->z, this->z); }
+inline Vec3 Vec4::BBA() const { return Vec3(this->z, this->z, this->w); }
+inline Vec3 Vec4::BAR() const { return Vec3(this->z, this->w, this->x); }
+inline Vec3 Vec4::BAG() const { return Vec3(this->z, this->w, this->y); }
+inline Vec3 Vec4::BAB() const { return Vec3(this->z, this->w, this->z); }
+inline Vec3 Vec4::BAA() const { return Vec3(this->z, this->w, this->w); }
+inline Vec3 Vec4::ARR() const { return Vec3(this->w, this->x, this->x); }
+inline Vec3 Vec4::ARG() const { return Vec3(this->w, this->x, this->y); }
+inline Vec3 Vec4::ARB() const { return Vec3(this->w, this->x, this->z); }
+inline Vec3 Vec4::ARA() const { return Vec3(this->w, this->x, this->w); }
+inline Vec3 Vec4::AGR() const { return Vec3(this->w, this->y, this->x); }
+inline Vec3 Vec4::AGG() const { return Vec3(this->w, this->y, this->y); }
+inline Vec3 Vec4::AGB() const { return Vec3(this->w, this->y, this->z); }
+inline Vec3 Vec4::AGA() const { return Vec3(this->w, this->y, this->w); }
+inline Vec3 Vec4::ABR() const { return Vec3(this->w, this->z, this->x); }
+inline Vec3 Vec4::ABG() const { return Vec3(this->w, this->z, this->y); }
+inline Vec3 Vec4::ABB() const { return Vec3(this->w, this->z, this->z); }
+inline Vec3 Vec4::ABA() const { return Vec3(this->w, this->z, this->w); }
+inline Vec3 Vec4::AAR() const { return Vec3(this->w, this->w, this->x); }
+inline Vec3 Vec4::AAG() const { return Vec3(this->w, this->w, this->y); }
+inline Vec3 Vec4::AAB() const { return Vec3(this->w, this->w, this->z); }
+inline Vec3 Vec4::AAA() const { return Vec3(this->w, this->w, this->w); }
+
+//Vec4 Swizzle
+
+
 #pragma endregion
 #pragma endregion
 
@@ -663,6 +828,20 @@ inline float Vec4::W() const { return this->w; }
 #pragma endregion
 
 #pragma region IntegerVectors
+#pragma region Vec2
+
+#pragma endregion
+
+#pragma region Vec3
+
+#pragma endregion
+
+#pragma region Vec4
+
+#pragma endregion
+#pragma endregion
+
+#pragma region LongVectors
 #pragma region Vec2
 
 #pragma endregion

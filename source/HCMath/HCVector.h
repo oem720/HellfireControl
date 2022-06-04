@@ -995,43 +995,985 @@ public:
 class alignas(16) Vec2Double {
 private:
 	union {
-		double xy[2];
+		double xy[2];														//Array Storage
 		struct {
-			double x;
-			double y;
+			double x;														//X Member
+			double y;														//Y Member
 		};
 	};
 public:
+	//Constructors
+	inline Vec2Double();													//Init to Zero
+	inline Vec2Double(double _x, double _y);								//Init to X and Y
+	inline Vec2Double(const Vec2Double& _other);							//Init from Copy
 
+	//Assignment
+	inline Vec2Double& operator=(const Vec2Double& _other);					//Assignment
+	inline Vec2Double& operator+=(const Vec2Double& _other);				//Addition
+	inline Vec2Double& operator-=(const Vec2Double& _other);				//Subtraction
+	inline Vec2Double& operator*=(const double _scale);						//Scaling
+	inline double& operator[](int _ndx);									//Array access (Modifiable)
+	inline double operator[](int _ndx) const;								//Array access (Const)
+
+	//Arithmetic
+	inline Vec2Double operator+(const Vec2Double& _other) const;			//Addition
+	inline Vec2Double operator-(const Vec2Double& _other) const;			//Subtraction
+	inline Vec2Double operator*(const double _scale) const;					//Scaling
+	inline double operator*(const Vec2Double& _other) const;				//Dot Product
+	inline double operator&(const Vec2Double& _other) const;				//Cross Product
+	inline Vec2Double operator~() const;									//Zero
+	inline Vec2Double operator-() const;									//Negate
+
+	//Comparison
+	inline bool operator==(const Vec2Double& _other) const;					//Check Equality
+	inline bool operator<(const Vec2Double& _other) const;					//Check Less Than
+	inline bool operator>(const Vec2Double& _other) const;					//Check Greater Than
+	inline bool operator<=(const Vec2Double& _other) const;					//Check Less Than or Equal To
+	inline bool operator>=(const Vec2Double& _other) const;					//Check Greater Than or Equal To
+	inline bool operator!=(const Vec2Double& _other) const;					//Check Not Equal
+
+	//Measurement
+	inline double Length() const;											//Vector Length
+	inline double LengthSquared() const;									//Vector Length Squared
+	inline void Normalize();												//Vector Normalize
+	inline Vec2Double Normalized() const;									//Return Normalized Version of this Vector
+	inline double AngleBetween(const Vec2Double& _other) const;				//Measure the angle between 2 Vectors
+
+	//Operator Alternatives
+	inline double Dot(const Vec2Double& _other) const;						//Dot Product
+	inline double Cross(const Vec2Double& _other) const;					//Cross Product
+	inline void Add(const Vec2Double& _other);								//Addition
+	inline void Subtract(const Vec2Double& _other);							//Subtraction
+	inline void Scale(const double _scale);									//Scaling
+	inline void Negate();													//Negate
+	inline void Zero();														//Zero
+	inline bool Equals(const Vec2Double& _other) const;						//Check Equality
+	inline bool Less(const Vec2Double& _other) const;						//Check Less Than
+	inline bool LessThanOrEquals(const Vec2Double& _other) const;			//Check Less Than or Equal To
+	inline bool Greater(const Vec2Double& _other) const;					//Check Greater Than
+	inline bool GreaterThanOrEquals(const Vec2Double& _other) const;		//Check Greater Than or Equal To
+	inline bool NotEquals(const Vec2Double& _other) const;					//Check Not Equal
+
+	//Member Modification
+	inline double& X();														//Vector X Component (Modifiable)
+	inline double& Y();														//Vector Y Component (Modifiable)
+	inline double X() const;												//Vector X Component (Const)
+	inline double Y() const;												//Vector Y Component (Const)
+
+	//Swizzle Operations (Vec2Double)
+	inline Vec2Double XX() const;											//Swizzle to XX Vector
+	inline Vec2Double YY() const;											//Swizzle to YY Vector
+	inline Vec2Double YX() const;											//Swizzle to YX Vector
+	inline Vec2Double RR() const;											//Swizzle to RR Vector
+	inline Vec2Double GG() const;											//Swizzle to GG Vector
+	inline Vec2Double GR() const;											//Swizzle to GR Vector
 };
 
 class alignas(32) Vec3Double {
 private:
 	union {
-		double xyz[3];
+		double xyz[3];														//Array Storage
 		struct {
-			double x;
-			double y;
-			double z;
+			double x;														//X Member
+			double y;														//Y Member
+			double z;														//Z Member
 		};
 	};
 public:
+	//Constructors
+	inline Vec3Double();													//Init to Zero
+	inline Vec3Double(double _x, double _y, double _z);						//Init to X, Y, and Z
+	inline Vec3Double(const Vec2Double& _xy, double _z);							//Init from a Vec2 for X and Y, and from a double for Z
+	inline Vec3Double(double _x, const Vec2Double& _yz);							//Init from X, and from a Vec2 for Y and Z
+	inline Vec3Double(const Vec3Double& _other);							//Init from Copy
 
+	//Assignment
+	inline Vec3Double& operator=(const Vec3Double& _other);					//Assignment
+	inline Vec3Double& operator+=(const Vec3Double& _other);				//Addition
+	inline Vec3Double& operator-=(const Vec3Double& _other);				//Subtraction
+	inline Vec3Double& operator*=(const double _scale);						//Scaling
+	inline Vec3Double& operator&=(const Vec3Double& _other);				//Cross Product
+	inline double& operator[](int _ndx);									//Array access (Modifiable)
+	inline double operator[](int _ndx) const;								//Array access (Const)
+
+	//Arithmetic
+	inline Vec3Double operator+(const Vec3Double& _other) const;			//Addition
+	inline Vec3Double operator-(const Vec3Double& _other) const;			//Subtraction
+	inline Vec3Double operator*(const double _scale) const;					//Scaling
+	inline double operator*(const Vec3Double& _other) const;				//Dot Product
+	inline Vec3Double operator&(const Vec3Double& _other) const;			//Cross Product
+	inline Vec3Double operator~() const;									//Zero
+	inline Vec3Double operator-() const;									//Negate
+
+	//Comparison
+	inline bool operator==(const Vec3Double& _other) const;					//Check Equality
+	inline bool operator<(const Vec3Double& _other) const;					//Check Less Than
+	inline bool operator>(const Vec3Double& _other) const;					//Check Greater Than
+	inline bool operator<=(const Vec3Double& _other) const;					//Check Less Than or Equal To
+	inline bool operator>=(const Vec3Double& _other) const;					//Check Greater Than or Equal To
+	inline bool operator!=(const Vec3Double& _other) const;					//Check Not Equal
+
+	//Measurement
+	inline double Length() const;											//Vector Length
+	inline double LengthSquared() const;									//Vector Length Squared
+	inline void Normalize();												//Vector Normalize
+	inline Vec3Double Normalized() const;									//Return Normalized Version of this Vector
+	inline double AngleBetween(const Vec3Double& _other) const;				//Measure the angle between 2 Vectors
+
+	//Operator Alternatives
+	inline double Dot(const Vec3Double& _other) const;						//Dot Product
+	inline void Cross(const Vec3Double& _other);							//Cross Product
+	inline void Add(const Vec3Double& _other);								//Addition
+	inline void Subtract(const Vec3Double& _other);							//Subtraction
+	inline void Scale(const double _scale);									//Scaling
+	inline void Negate();													//Negate
+	inline void Zero();														//Zero
+	inline bool Equals(const Vec3Double& _other) const;						//Check Equality
+	inline bool Less(const Vec3Double& _other) const;						//Check Less Than
+	inline bool LessThanOrEquals(const Vec3Double& _other) const;			//Check Less Than or Equal To
+	inline bool Greater(const Vec3Double& _other) const;					//Check Greater Than
+	inline bool GreaterThanOrEquals(const Vec3Double& _other) const;		//Check Greater Than or Equal To
+	inline bool NotEquals(const Vec3Double& _other) const;					//Check Not Equal
+
+	//Member Modification
+	inline double& X();														//Vector X Component (Modifiable)
+	inline double& Y();														//Vector Y Component (Modifiable)
+	inline double& Z();														//Vector Z Component (Modifiable)
+	inline double X() const;												//Vector X Component (Const)
+	inline double Y() const;												//Vector Y Component (Const)
+	inline double Z() const;												//Vector Z Component (Const)
+
+	//Swizzle Operations (Vec2DoubleDouble)
+	inline Vec2Double XX() const;													//Swizzle to XX Vector
+	inline Vec2Double YY() const;													//Swizzle to YY Vector
+	inline Vec2Double ZZ() const;													//Swizzle to ZZ Vector
+	inline Vec2Double XY() const;													//Swizzle to XY Vector
+	inline Vec2Double XZ() const;													//Swizzle to XZ Vector
+	inline Vec2Double YX() const;													//Swizzle to YX Vector
+	inline Vec2Double YZ() const;													//Swizzle to YZ Vector
+	inline Vec2Double ZX() const;													//Swizzle to ZX Vector
+	inline Vec2Double ZY() const;													//Swizzle to ZY Vector
+	inline Vec2Double RR() const;													//Swizzle to RR Vector
+	inline Vec2Double GG() const;													//Swizzle to GG Vector
+	inline Vec2Double BB() const;													//Swizzle to BB Vector
+	inline Vec2Double RG() const;													//Swizzle to RG Vector
+	inline Vec2Double RB() const;													//Swizzle to RB Vector
+	inline Vec2Double GR() const;													//Swizzle to GR Vector
+	inline Vec2Double GB() const;													//Swizzle to GB Vector
+	inline Vec2Double BR() const;													//Swizzle to BR Vector
+	inline Vec2Double BG() const;													//Swizzle to BG Vector
+
+	//Swizzle Operations (Vec3Double)
+	inline Vec3Double XXX() const;											//Swizzle to XXX Vector
+	inline Vec3Double XXY() const;											//Swizzle to XXY Vector
+	inline Vec3Double XXZ() const;											//Swizzle to XXZ Vector
+	inline Vec3Double XYX() const;											//Swizzle to XYX Vector
+	inline Vec3Double XYY() const;											//Swizzle to XYY Vector
+	inline Vec3Double XZX() const;											//Swizzle to XZX Vector
+	inline Vec3Double XZY() const;											//Swizzle to XZY Vector
+	inline Vec3Double XZZ() const;											//Swizzle to XZZ Vector
+	inline Vec3Double YXX() const;											//Swizzle to YXX Vector
+	inline Vec3Double YXY() const;											//Swizzle to YXY Vector
+	inline Vec3Double YXZ() const;											//Swizzle to YXZ Vector
+	inline Vec3Double YYX() const;											//Swizzle to YYX Vector
+	inline Vec3Double YYY() const;											//Swizzle to YYY Vector
+	inline Vec3Double YYZ() const;											//Swizzle to YYZ Vector
+	inline Vec3Double YZX() const;											//Swizzle to YZX Vector
+	inline Vec3Double YZY() const;											//Swizzle to YZY Vector
+	inline Vec3Double YZZ() const;											//Swizzle to YZZ Vector
+	inline Vec3Double ZXX() const;											//Swizzle to ZXX Vector
+	inline Vec3Double ZXY() const;											//Swizzle to ZXY Vector
+	inline Vec3Double ZXZ() const;											//Swizzle to ZXZ Vector
+	inline Vec3Double ZYX() const;											//Swizzle to ZYX Vector
+	inline Vec3Double ZYY() const;											//Swizzle to ZYY Vector
+	inline Vec3Double ZYZ() const;											//Swizzle to ZYZ Vector
+	inline Vec3Double ZZX() const;											//Swizzle to ZZX Vector
+	inline Vec3Double ZZY() const;											//Swizzle to ZZY Vector
+	inline Vec3Double ZZZ() const;											//Swizzle to ZZZ Vector
+	inline Vec3Double RRR() const;											//Swizzle to RRR Vector
+	inline Vec3Double RRG() const;											//Swizzle to RRG Vector
+	inline Vec3Double RRB() const;											//Swizzle to RRB Vector
+	inline Vec3Double RGR() const;											//Swizzle to RGR Vector
+	inline Vec3Double RGG() const;											//Swizzle to RGG Vector
+	inline Vec3Double RBR() const;											//Swizzle to RBR Vector
+	inline Vec3Double RBG() const;											//Swizzle to RBG Vector
+	inline Vec3Double RBB() const;											//Swizzle to RBB Vector
+	inline Vec3Double GRR() const;											//Swizzle to GRR Vector
+	inline Vec3Double GRG() const;											//Swizzle to GRG Vector
+	inline Vec3Double GRB() const;											//Swizzle to GRB Vector
+	inline Vec3Double GGR() const;											//Swizzle to GGR Vector
+	inline Vec3Double GGG() const;											//Swizzle to GGG Vector
+	inline Vec3Double GGB() const;											//Swizzle to GGB Vector
+	inline Vec3Double GBR() const;											//Swizzle to GBR Vector
+	inline Vec3Double GBG() const;											//Swizzle to GBG Vector
+	inline Vec3Double GBB() const;											//Swizzle to GBB Vector
+	inline Vec3Double BRR() const;											//Swizzle to BRR Vector
+	inline Vec3Double BRG() const;											//Swizzle to BRG Vector
+	inline Vec3Double BRB() const;											//Swizzle to BRB Vector
+	inline Vec3Double BGR() const;											//Swizzle to BGR Vector
+	inline Vec3Double BGG() const;											//Swizzle to BGG Vector
+	inline Vec3Double BGB() const;											//Swizzle to BGB Vector
+	inline Vec3Double BBR() const;											//Swizzle to BBR Vector
+	inline Vec3Double BBG() const;											//Swizzle to BBG Vector
+	inline Vec3Double BBB() const;											//Swizzle to BBB Vector
 };
 
 class alignas(32) Vec4Double {
 private:
 	union {
-		double xyzw[4];
+		double xyzw[4];														//Array Storage
 		struct {
-			double x;
-			double y;
-			double z;
-			double w;
+			double x;														//X Member
+			double y;														//Y Member
+			double z;														//Z Member
+			double w;														//W Member
 		};
 	};
 public:
+	//Constructors
+	inline Vec4Double();													//Init to Zero
+	inline Vec4Double(double _x, double _y, double _z, double _w);			//Init to X, Y, Z, and W
+	inline Vec4Double(const Vec2Double& _xy, double _z, double _w);			//Init from a Vec2Double for X and Y, and from a double for Z and W
+	inline Vec4Double(double _x, const Vec2Double& _yz, double _w);			//Init from X, from a Vec2Double for Y and Z and a double for W
+	inline Vec4Double(double _x, double _y, const Vec2Double& _zw);			//Init from X and Y, and from a Vec2Double for Z and W
+	inline Vec4Double(const Vec2Double& _xy, const Vec2Double& _zw);		//Init from 2 Vec2Double's
+	inline Vec4Double(const Vec3Double& _xyz, double _w);					//Init from a Vec3Double and a double for W
+	inline Vec4Double(double _x, const Vec3Double& _yzw);					//Init from a double for X and a Vec3Double
+	inline Vec4Double(const Vec4Double& _other);							//Init from Copy
 
+	//Assignment
+	inline Vec4Double& operator=(const Vec4Double& _other);					//Assignment
+	inline Vec4Double& operator+=(const Vec4Double& _other);				//Addition
+	inline Vec4Double& operator-=(const Vec4Double& _other);				//Subtraction
+	inline Vec4Double& operator*=(const double _scale);						//Scaling
+	inline Vec4Double& operator&=(const Vec4Double& _other);				//Cross Product
+	inline double& operator[](int _ndx);									//Array access (Modifiable)
+	inline double operator[](int _ndx) const;								//Array access (Const)
+
+	//Arithmetic
+	inline Vec4Double operator+(const Vec4Double& _other) const;			//Addition
+	inline Vec4Double operator-(const Vec4Double& _other) const;			//Subtraction
+	inline Vec4Double operator*(const double _scale) const;					//Scaling
+	inline double operator*(const Vec4Double& _other) const;				//Dot Product
+	inline Vec4Double operator&(const Vec4Double& _other) const;			//Cross Product
+	inline Vec4Double operator~() const;									//Zero
+	inline Vec4Double operator-() const;									//Negate
+
+	//Comparison
+	inline bool operator==(const Vec4Double& _other) const;					//Check Equality
+	inline bool operator<(const Vec4Double& _other) const;					//Check Less Than
+	inline bool operator>(const Vec4Double& _other) const;					//Check Greater Than
+	inline bool operator<=(const Vec4Double& _other) const;					//Check Less Than or Equal To
+	inline bool operator>=(const Vec4Double& _other) const;					//Check Greater Than or Equal To
+	inline bool operator!=(const Vec4Double& _other) const;					//Check Not Equal
+
+	//Measurement
+	inline double Length() const;											//Vector Length
+	inline double LengthSquared() const;									//Vector Length Squared
+	inline void Normalize();												//Vector Normalize
+	inline Vec4Double Normalized() const;									//Return Normalized Version of this Vector
+	inline double AngleBetween(const Vec4Double& _other) const;				//Measure the angle between 2 Vectors
+
+	//Operator Alternatives
+	inline double Dot(const Vec4Double& _other) const;						//Dot Product
+	inline void Cross(const Vec4Double& _other);							//Cross Product
+	inline void Add(const Vec4Double& _other);								//Addition
+	inline void Subtract(const Vec4Double& _other);							//Subtraction
+	inline void Scale(const double _scale);									//Scaling
+	inline void Negate();													//Negate
+	inline void Zero();														//Zero
+	inline bool Equals(const Vec4Double& _other) const;						//Check Equality
+	inline bool Less(const Vec4Double& _other) const;						//Check Less Than
+	inline bool LessThanOrEquals(const Vec4Double& _other) const;			//Check Less Than or Equal To
+	inline bool Greater(const Vec4Double& _other) const;					//Check Greater Than
+	inline bool GreaterThanOrEquals(const Vec4Double& _other) const;		//Check Greater Than or Equal To
+	inline bool NotEquals(const Vec4Double& _other) const;					//Check Not Equal
+
+	//Member Modification
+	inline double& X();														//Vector X Component (Modifiable)
+	inline double& Y();														//Vector Y Component (Modifiable)
+	inline double& Z();														//Vector Z Component (Modifiable)
+	inline double& W();														//Vector W Component (Modifiable)
+	inline double X() const;												//Vector X Component (Const)
+	inline double Y() const;												//Vector Y Component (Const)
+	inline double Z() const;												//Vector Z Component (Const)
+	inline double W() const;												//Vector W Component (Const)
+
+	//Swizzle Operations (Vec2Double)
+	inline Vec2Double XX() const;											//Swizzle to XX Vector
+	inline Vec2Double YY() const;											//Swizzle to YY Vector
+	inline Vec2Double ZZ() const;											//Swizzle to ZZ Vector
+	inline Vec2Double WW() const;											//Swizzle to WW Vector
+	inline Vec2Double XY() const;											//Swizzle to XY Vector
+	inline Vec2Double XZ() const;											//Swizzle to XZ Vector
+	inline Vec2Double XW() const;											//Swizzle to XW Vector
+	inline Vec2Double YX() const;											//Swizzle to YX Vector
+	inline Vec2Double YZ() const;											//Swizzle to YZ Vector
+	inline Vec2Double YW() const;											//Swizzle to YW Vector
+	inline Vec2Double ZX() const;											//Swizzle to ZX Vector
+	inline Vec2Double ZY() const;											//Swizzle to ZY Vector
+	inline Vec2Double ZW() const;											//Swizzle to ZW Vector
+	inline Vec2Double WX() const;											//Swizzle to WX Vector
+	inline Vec2Double WY() const;											//Swizzle to WY Vector
+	inline Vec2Double WZ() const;											//Swizzle to WZ Vector
+	inline Vec2Double RR() const;											//Swizzle to RR Vector
+	inline Vec2Double GG() const;											//Swizzle to GG Vector
+	inline Vec2Double BB() const;											//Swizzle to BB Vector
+	inline Vec2Double AA() const;											//Swizzle to AA Vector
+	inline Vec2Double RG() const;											//Swizzle to RG Vector
+	inline Vec2Double RB() const;											//Swizzle to RB Vector
+	inline Vec2Double RA() const;											//Swizzle to RA Vector
+	inline Vec2Double GR() const;											//Swizzle to GR Vector
+	inline Vec2Double GB() const;											//Swizzle to GB Vector
+	inline Vec2Double GA() const;											//Swizzle to GA Vector
+	inline Vec2Double BR() const;											//Swizzle to BR Vector
+	inline Vec2Double BG() const;											//Swizzle to BG Vector
+	inline Vec2Double BA() const;											//Swizzle to BA Vector
+	inline Vec2Double AR() const;											//Swizzle to AR Vector
+	inline Vec2Double AG() const;											//Swizzle to AG Vector
+	inline Vec2Double AB() const;											//Swizzle to AB Vector
+
+	//Swizzle Operations (Vec3Double)
+	inline Vec3Double XXX() const;											//Swizzle to XXX Vector
+	inline Vec3Double XXY() const;											//Swizzle to XXY Vector
+	inline Vec3Double XXZ() const;											//Swizzle to XXZ Vector
+	inline Vec3Double XXW() const;											//Swizzle to XXW Vector
+	inline Vec3Double XYX() const;											//Swizzle to XYX Vector
+	inline Vec3Double XYY() const;											//Swizzle to XYY Vector
+	inline Vec3Double XYZ() const;											//Swizzle to XYZ Vector
+	inline Vec3Double XYW() const;											//Swizzle to XYW Vector
+	inline Vec3Double XZX() const;											//Swizzle to XZX Vector
+	inline Vec3Double XZY() const;											//Swizzle to XZY Vector
+	inline Vec3Double XZZ() const;											//Swizzle to XZZ Vector
+	inline Vec3Double XZW() const;											//Swizzle to XZW Vector
+	inline Vec3Double XWX() const;											//Swizzle to XWX Vector
+	inline Vec3Double XWY() const;											//Swizzle to XWY Vector
+	inline Vec3Double XWZ() const;											//Swizzle to XWZ Vector
+	inline Vec3Double XWW() const;											//Swizzle to XWW Vector
+	inline Vec3Double YXX() const;											//Swizzle to YXX Vector
+	inline Vec3Double YXY() const;											//Swizzle to YXY Vector
+	inline Vec3Double YXZ() const;											//Swizzle to YXZ Vector
+	inline Vec3Double YXW() const;											//Swizzle to YXW Vector
+	inline Vec3Double YYX() const;											//Swizzle to YYX Vector
+	inline Vec3Double YYY() const;											//Swizzle to YYY Vector
+	inline Vec3Double YYZ() const;											//Swizzle to YYZ Vector
+	inline Vec3Double YYW() const;											//Swizzle to YYW Vector
+	inline Vec3Double YZX() const;											//Swizzle to YZX Vector
+	inline Vec3Double YZY() const;											//Swizzle to YZY Vector
+	inline Vec3Double YZZ() const;											//Swizzle to YZZ Vector
+	inline Vec3Double YZW() const;											//Swizzle to YZW Vector
+	inline Vec3Double YWX() const;											//Swizzle to YWX Vector
+	inline Vec3Double YWY() const;											//Swizzle to YWY Vector
+	inline Vec3Double YWZ() const;											//Swizzle to YWZ Vector
+	inline Vec3Double YWW() const;											//Swizzle to YWW Vector
+	inline Vec3Double ZXX() const;											//Swizzle to ZXX Vector
+	inline Vec3Double ZXY() const;											//Swizzle to ZXY Vector
+	inline Vec3Double ZXZ() const;											//Swizzle to ZXZ Vector
+	inline Vec3Double ZXW() const;											//Swizzle to ZXW Vector
+	inline Vec3Double ZYX() const;											//Swizzle to ZYX Vector
+	inline Vec3Double ZYY() const;											//Swizzle to ZYY Vector
+	inline Vec3Double ZYZ() const;											//Swizzle to ZYZ Vector
+	inline Vec3Double ZYW() const;											//Swizzle to ZYW Vector
+	inline Vec3Double ZZX() const;											//Swizzle to ZZX Vector
+	inline Vec3Double ZZY() const;											//Swizzle to ZZY Vector
+	inline Vec3Double ZZZ() const;											//Swizzle to ZZZ Vector
+	inline Vec3Double ZZW() const;											//Swizzle to ZZW Vector
+	inline Vec3Double ZWX() const;											//Swizzle to ZWX Vector
+	inline Vec3Double ZWY() const;											//Swizzle to ZWY Vector
+	inline Vec3Double ZWZ() const;											//Swizzle to ZWZ Vector
+	inline Vec3Double ZWW() const;											//Swizzle to ZWW Vector
+	inline Vec3Double WXX() const;											//Swizzle to WXX Vector
+	inline Vec3Double WXY() const;											//Swizzle to WXY Vector
+	inline Vec3Double WXZ() const;											//Swizzle to WXZ Vector
+	inline Vec3Double WXW() const;											//Swizzle to WXW Vector
+	inline Vec3Double WYX() const;											//Swizzle to WYX Vector
+	inline Vec3Double WYY() const;											//Swizzle to WYY Vector
+	inline Vec3Double WYZ() const;											//Swizzle to WYZ Vector
+	inline Vec3Double WYW() const;											//Swizzle to WYW Vector
+	inline Vec3Double WZX() const;											//Swizzle to WZX Vector
+	inline Vec3Double WZY() const;											//Swizzle to WZY Vector
+	inline Vec3Double WZZ() const;											//Swizzle to WZZ Vector
+	inline Vec3Double WZW() const;											//Swizzle to WZW Vector
+	inline Vec3Double WWX() const;											//Swizzle to WWX Vector
+	inline Vec3Double WWY() const;											//Swizzle to WWY Vector
+	inline Vec3Double WWZ() const;											//Swizzle to WWZ Vector
+	inline Vec3Double WWW() const;											//Swizzle to WWW Vector
+	inline Vec3Double RRR() const;											//Swizzle to RRR Vector
+	inline Vec3Double RRG() const;											//Swizzle to RRG Vector
+	inline Vec3Double RRB() const;											//Swizzle to RRB Vector
+	inline Vec3Double RRA() const;											//Swizzle to RRA Vector
+	inline Vec3Double RGR() const;											//Swizzle to RGR Vector
+	inline Vec3Double RGG() const;											//Swizzle to RGG Vector
+	inline Vec3Double RGA() const;											//Swizzle to RGA Vector
+	inline Vec3Double RGB() const;											//Swizzle to RGB Vector
+	inline Vec3Double RBR() const;											//Swizzle to RBR Vector
+	inline Vec3Double RBG() const;											//Swizzle to RBG Vector
+	inline Vec3Double RBB() const;											//Swizzle to RBB Vector
+	inline Vec3Double RBA() const;											//Swizzle to RBA Vector
+	inline Vec3Double RAR() const;											//Swizzle to RAR Vector
+	inline Vec3Double RAG() const;											//Swizzle to RAG Vector
+	inline Vec3Double RAB() const;											//Swizzle to RAB Vector
+	inline Vec3Double RAA() const;											//Swizzle to RAA Vector
+	inline Vec3Double GRR() const;											//Swizzle to GRR Vector
+	inline Vec3Double GRG() const;											//Swizzle to GRG Vector
+	inline Vec3Double GRB() const;											//Swizzle to GRB Vector
+	inline Vec3Double GRA() const;											//Swizzle to GRA Vector
+	inline Vec3Double GGR() const;											//Swizzle to GGR Vector
+	inline Vec3Double GGG() const;											//Swizzle to GGG Vector
+	inline Vec3Double GGB() const;											//Swizzle to GGB Vector
+	inline Vec3Double GGA() const;											//Swizzle to GGA Vector
+	inline Vec3Double GBR() const;											//Swizzle to GBR Vector
+	inline Vec3Double GBG() const;											//Swizzle to GBG Vector
+	inline Vec3Double GBB() const;											//Swizzle to GBB Vector
+	inline Vec3Double GBA() const;											//Swizzle to GBA Vector
+	inline Vec3Double GAR() const;											//Swizzle to GAR Vector
+	inline Vec3Double GAG() const;											//Swizzle to GAG Vector
+	inline Vec3Double GAB() const;											//Swizzle to GAB Vector
+	inline Vec3Double GAA() const;											//Swizzle to GAA Vector
+	inline Vec3Double BRR() const;											//Swizzle to BRR Vector
+	inline Vec3Double BRG() const;											//Swizzle to BRG Vector
+	inline Vec3Double BRB() const;											//Swizzle to BRB Vector
+	inline Vec3Double BRA() const;											//Swizzle to BRA Vector
+	inline Vec3Double BGR() const;											//Swizzle to BGR Vector
+	inline Vec3Double BGG() const;											//Swizzle to BGG Vector
+	inline Vec3Double BGB() const;											//Swizzle to BGB Vector
+	inline Vec3Double BGA() const;											//Swizzle to BGA Vector
+	inline Vec3Double BBR() const;											//Swizzle to BBR Vector
+	inline Vec3Double BBG() const;											//Swizzle to BBG Vector
+	inline Vec3Double BBB() const;											//Swizzle to BBB Vector
+	inline Vec3Double BBA() const;											//Swizzle to BBA Vector
+	inline Vec3Double BAR() const;											//Swizzle to BAR Vector
+	inline Vec3Double BAG() const;											//Swizzle to BAG Vector
+	inline Vec3Double BAB() const;											//Swizzle to BAB Vector
+	inline Vec3Double BAA() const;											//Swizzle to BAA Vector
+	inline Vec3Double ARR() const;											//Swizzle to ARR Vector
+	inline Vec3Double ARG() const;											//Swizzle to ARG Vector
+	inline Vec3Double ARB() const;											//Swizzle to ARB Vector
+	inline Vec3Double ARA() const;											//Swizzle to ARA Vector
+	inline Vec3Double AGR() const;											//Swizzle to AGR Vector
+	inline Vec3Double AGG() const;											//Swizzle to AGG Vector
+	inline Vec3Double AGB() const;											//Swizzle to AGB Vector
+	inline Vec3Double AGA() const;											//Swizzle to AGA Vector
+	inline Vec3Double ABR() const;											//Swizzle to ABR Vector
+	inline Vec3Double ABG() const;											//Swizzle to ABG Vector
+	inline Vec3Double ABB() const;											//Swizzle to ABB Vector
+	inline Vec3Double ABA() const;											//Swizzle to ABA Vector
+	inline Vec3Double AAR() const;											//Swizzle to AAR Vector
+	inline Vec3Double AAG() const;											//Swizzle to AAG Vector
+	inline Vec3Double AAB() const;											//Swizzle to AAB Vector
+	inline Vec3Double AAA() const;											//Swizzle to AAA Vector
+
+	//Swizzle Operations (Vec4Double)
+	inline Vec4Double XXXX() const;											//Swizzle to XXXX Vector
+	inline Vec4Double XXXY() const;											//Swizzle to XXXY Vector
+	inline Vec4Double XXXZ() const;											//Swizzle to XXXZ Vector
+	inline Vec4Double XXXW() const;											//Swizzle to XXXW Vector
+	inline Vec4Double XXYX() const;											//Swizzle to XXYX Vector
+	inline Vec4Double XXYY() const;											//Swizzle to XXYY Vector
+	inline Vec4Double XXYZ() const;											//Swizzle to XXYZ Vector
+	inline Vec4Double XXYW() const;											//Swizzle to XXYW Vector
+	inline Vec4Double XXZX() const;											//Swizzle to XXZX Vector
+	inline Vec4Double XXZY() const;											//Swizzle to XXZY Vector
+	inline Vec4Double XXZZ() const;											//Swizzle to XXZZ Vector
+	inline Vec4Double XXZW() const;											//Swizzle to XXZW Vector
+	inline Vec4Double XXWX() const;											//Swizzle to XXWX Vector
+	inline Vec4Double XXWY() const;											//Swizzle to XXWY Vector
+	inline Vec4Double XXWZ() const;											//Swizzle to XXWZ Vector
+	inline Vec4Double XXWW() const;											//Swizzle to XXWW Vector
+	inline Vec4Double XYXX() const;											//Swizzle to XYXX Vector
+	inline Vec4Double XYXY() const;											//Swizzle to XYXY Vector
+	inline Vec4Double XYXZ() const;											//Swizzle to XYXZ Vector
+	inline Vec4Double XYXW() const;											//Swizzle to XYXW Vector
+	inline Vec4Double XYYX() const;											//Swizzle to XYYX Vector
+	inline Vec4Double XYYY() const;											//Swizzle to XYYY Vector
+	inline Vec4Double XYYZ() const;											//Swizzle to XYYZ Vector
+	inline Vec4Double XYYW() const;											//Swizzle to XYYW Vector
+	inline Vec4Double XYZX() const;											//Swizzle to XYZX Vector
+	inline Vec4Double XYZY() const;											//Swizzle to XYZY Vector
+	inline Vec4Double XYZZ() const;											//Swizzle to XYZZ Vector
+	inline Vec4Double XYWX() const;											//Swizzle to XYWX Vector
+	inline Vec4Double XYWY() const;											//Swizzle to XYWY Vector
+	inline Vec4Double XYWZ() const;											//Swizzle to XYWZ Vector
+	inline Vec4Double XYWW() const;											//Swizzle to XYWW Vector
+	inline Vec4Double XZXX() const;											//Swizzle to XZXX Vector
+	inline Vec4Double XZXY() const;											//Swizzle to XZXY Vector
+	inline Vec4Double XZXZ() const;											//Swizzle to XZXZ Vector
+	inline Vec4Double XZXW() const;											//Swizzle to XZXW Vector
+	inline Vec4Double XZYX() const;											//Swizzle to XZYX Vector
+	inline Vec4Double XZYY() const;											//Swizzle to XZYY Vector
+	inline Vec4Double XZYZ() const;											//Swizzle to XZYZ Vector
+	inline Vec4Double XZYW() const;											//Swizzle to XZYW Vector
+	inline Vec4Double XZZX() const;											//Swizzle to XZZX Vector
+	inline Vec4Double XZZY() const;											//Swizzle to XZZY Vector
+	inline Vec4Double XZZZ() const;											//Swizzle to XZZZ Vector
+	inline Vec4Double XZZW() const;											//Swizzle to XZZW Vector
+	inline Vec4Double XZWX() const;											//Swizzle to XZWX Vector
+	inline Vec4Double XZWY() const;											//Swizzle to XZWY Vector
+	inline Vec4Double XZWZ() const;											//Swizzle to XZWZ Vector
+	inline Vec4Double XZWW() const;											//Swizzle to XZWW Vector
+	inline Vec4Double XWXX() const;											//Swizzle to XWXX Vector
+	inline Vec4Double XWXY() const;											//Swizzle to XWXY Vector
+	inline Vec4Double XWXZ() const;											//Swizzle to XWXZ Vector
+	inline Vec4Double XWXW() const;											//Swizzle to XWXW Vector
+	inline Vec4Double XWYX() const;											//Swizzle to XWYX Vector
+	inline Vec4Double XWYY() const;											//Swizzle to XWYY Vector
+	inline Vec4Double XWYZ() const;											//Swizzle to XWYZ Vector
+	inline Vec4Double XWYW() const;											//Swizzle to XWYW Vector
+	inline Vec4Double XWZX() const;											//Swizzle to XWZX Vector
+	inline Vec4Double XWZY() const;											//Swizzle to XWZY Vector
+	inline Vec4Double XWZZ() const;											//Swizzle to XWZZ Vector
+	inline Vec4Double XWZW() const;											//Swizzle to XWZW Vector
+	inline Vec4Double XWWX() const;											//Swizzle to XWWX Vector
+	inline Vec4Double XWWY() const;											//Swizzle to XWWY Vector
+	inline Vec4Double XWWZ() const;											//Swizzle to XWWZ Vector
+	inline Vec4Double XWWW() const;											//Swizzle to XWWW Vector
+	inline Vec4Double YXXX() const;											//Swizzle to YXXX Vector
+	inline Vec4Double YXXY() const;											//Swizzle to YXXY Vector
+	inline Vec4Double YXXZ() const;											//Swizzle to YXXZ Vector
+	inline Vec4Double YXXW() const;											//Swizzle to YXXW Vector
+	inline Vec4Double YXYX() const;											//Swizzle to YXYX Vector
+	inline Vec4Double YXYY() const;											//Swizzle to YXYY Vector
+	inline Vec4Double YXYZ() const;											//Swizzle to YXYZ Vector
+	inline Vec4Double YXYW() const;											//Swizzle to YXYW Vector
+	inline Vec4Double YXZX() const;											//Swizzle to YXZX Vector
+	inline Vec4Double YXZY() const;											//Swizzle to YXZY Vector
+	inline Vec4Double YXZZ() const;											//Swizzle to YXZZ Vector
+	inline Vec4Double YXZW() const;											//Swizzle to YXZW Vector
+	inline Vec4Double YXWX() const;											//Swizzle to YXWX Vector
+	inline Vec4Double YXWY() const;											//Swizzle to YXWY Vector
+	inline Vec4Double YXWZ() const;											//Swizzle to YXWZ Vector
+	inline Vec4Double YXWW() const;											//Swizzle to YXWW Vector
+	inline Vec4Double YYXX() const;											//Swizzle to YYXX Vector
+	inline Vec4Double YYXY() const;											//Swizzle to YYXY Vector
+	inline Vec4Double YYXZ() const;											//Swizzle to YYXZ Vector
+	inline Vec4Double YYXW() const;											//Swizzle to YYXW Vector
+	inline Vec4Double YYYX() const;											//Swizzle to YYYX Vector
+	inline Vec4Double YYYY() const;											//Swizzle to YYYY Vector
+	inline Vec4Double YYYZ() const;											//Swizzle to YYYZ Vector
+	inline Vec4Double YYYW() const;											//Swizzle to YYYW Vector
+	inline Vec4Double YYZX() const;											//Swizzle to YYZX Vector
+	inline Vec4Double YYZY() const;											//Swizzle to YYZY Vector
+	inline Vec4Double YYZZ() const;											//Swizzle to YYZZ Vector
+	inline Vec4Double YYZW() const;											//Swizzle to YYZW Vector
+	inline Vec4Double YYWX() const;											//Swizzle to YYWX Vector
+	inline Vec4Double YYWY() const;											//Swizzle to YYWY Vector
+	inline Vec4Double YYWZ() const;											//Swizzle to YYWZ Vector
+	inline Vec4Double YYWW() const;											//Swizzle to YYWW Vector
+	inline Vec4Double YZXX() const;											//Swizzle to YZXX Vector
+	inline Vec4Double YZXY() const;											//Swizzle to YZXY Vector
+	inline Vec4Double YZXZ() const;											//Swizzle to YZXZ Vector
+	inline Vec4Double YZXW() const;											//Swizzle to YZXW Vector
+	inline Vec4Double YZYX() const;											//Swizzle to YZYX Vector
+	inline Vec4Double YZYY() const;											//Swizzle to YZYY Vector
+	inline Vec4Double YZYZ() const;											//Swizzle to YZYZ Vector
+	inline Vec4Double YZYW() const;											//Swizzle to YZYW Vector
+	inline Vec4Double YZZX() const;											//Swizzle to YZZX Vector
+	inline Vec4Double YZZY() const;											//Swizzle to YZZY Vector
+	inline Vec4Double YZZZ() const;											//Swizzle to YZZZ Vector
+	inline Vec4Double YZZW() const;											//Swizzle to YZZW Vector
+	inline Vec4Double YZWX() const;											//Swizzle to YZWX Vector
+	inline Vec4Double YZWY() const;											//Swizzle to YZWY Vector
+	inline Vec4Double YZWZ() const;											//Swizzle to YZWZ Vector
+	inline Vec4Double YZWW() const;											//Swizzle to YZWW Vector
+	inline Vec4Double YWXX() const;											//Swizzle to YWXX Vector
+	inline Vec4Double YWXY() const;											//Swizzle to YWXY Vector
+	inline Vec4Double YWXZ() const;											//Swizzle to YWXZ Vector
+	inline Vec4Double YWXW() const;											//Swizzle to YWXW Vector
+	inline Vec4Double YWYX() const;											//Swizzle to YWYX Vector
+	inline Vec4Double YWYY() const;											//Swizzle to YWYY Vector
+	inline Vec4Double YWYZ() const;											//Swizzle to YWYZ Vector
+	inline Vec4Double YWYW() const;											//Swizzle to YWYW Vector
+	inline Vec4Double YWZX() const;											//Swizzle to YWZX Vector
+	inline Vec4Double YWZY() const;											//Swizzle to YWZY Vector
+	inline Vec4Double YWZZ() const;											//Swizzle to YWZZ Vector
+	inline Vec4Double YWZW() const;											//Swizzle to YWZW Vector
+	inline Vec4Double YWWX() const;											//Swizzle to YWWX Vector
+	inline Vec4Double YWWY() const;											//Swizzle to YWWY Vector
+	inline Vec4Double YWWZ() const;											//Swizzle to YWWZ Vector
+	inline Vec4Double YWWW() const;											//Swizzle to YWWW Vector
+	inline Vec4Double ZXXX() const;											//Swizzle to ZXXX Vector
+	inline Vec4Double ZXXY() const;											//Swizzle to ZXXY Vector
+	inline Vec4Double ZXXZ() const;											//Swizzle to ZXXZ Vector
+	inline Vec4Double ZXXW() const;											//Swizzle to ZXXW Vector
+	inline Vec4Double ZXYX() const;											//Swizzle to ZXYX Vector
+	inline Vec4Double ZXYY() const;											//Swizzle to ZXYY Vector
+	inline Vec4Double ZXYZ() const;											//Swizzle to ZXYZ Vector
+	inline Vec4Double ZXYW() const;											//Swizzle to ZXYW Vector
+	inline Vec4Double ZXZX() const;											//Swizzle to ZXZX Vector
+	inline Vec4Double ZXZY() const;											//Swizzle to ZXZY Vector
+	inline Vec4Double ZXZZ() const;											//Swizzle to ZXZZ Vector
+	inline Vec4Double ZXZW() const;											//Swizzle to ZXZW Vector
+	inline Vec4Double ZXWX() const;											//Swizzle to ZXWX Vector
+	inline Vec4Double ZXWY() const;											//Swizzle to ZXWY Vector
+	inline Vec4Double ZXWZ() const;											//Swizzle to ZXWZ Vector
+	inline Vec4Double ZXWW() const;											//Swizzle to ZXWW Vector
+	inline Vec4Double ZYXX() const;											//Swizzle to ZYXX Vector
+	inline Vec4Double ZYXY() const;											//Swizzle to ZYXY Vector
+	inline Vec4Double ZYXZ() const;											//Swizzle to ZYXZ Vector
+	inline Vec4Double ZYXW() const;											//Swizzle to ZYXW Vector
+	inline Vec4Double ZYYX() const;											//Swizzle to ZYYX Vector
+	inline Vec4Double ZYYY() const;											//Swizzle to ZYYY Vector
+	inline Vec4Double ZYYZ() const;											//Swizzle to ZYYZ Vector
+	inline Vec4Double ZYYW() const;											//Swizzle to ZYYW Vector
+	inline Vec4Double ZYZX() const;											//Swizzle to ZYZX Vector
+	inline Vec4Double ZYZY() const;											//Swizzle to ZYZY Vector
+	inline Vec4Double ZYZZ() const;											//Swizzle to ZYZZ Vector
+	inline Vec4Double ZYZW() const;											//Swizzle to ZYZW Vector
+	inline Vec4Double ZYWX() const;											//Swizzle to ZYWX Vector
+	inline Vec4Double ZYWY() const;											//Swizzle to ZYWY Vector
+	inline Vec4Double ZYWZ() const;											//Swizzle to ZYWZ Vector
+	inline Vec4Double ZYWW() const;											//Swizzle to ZYWW Vector
+	inline Vec4Double ZZXX() const;											//Swizzle to ZZXX Vector
+	inline Vec4Double ZZXY() const;											//Swizzle to ZZXY Vector
+	inline Vec4Double ZZXZ() const;											//Swizzle to ZZXZ Vector
+	inline Vec4Double ZZXW() const;											//Swizzle to ZZXW Vector
+	inline Vec4Double ZZYX() const;											//Swizzle to ZZYX Vector
+	inline Vec4Double ZZYY() const;											//Swizzle to ZZYY Vector
+	inline Vec4Double ZZYZ() const;											//Swizzle to ZZYZ Vector
+	inline Vec4Double ZZYW() const;											//Swizzle to ZZYW Vector
+	inline Vec4Double ZZZX() const;											//Swizzle to ZZZX Vector
+	inline Vec4Double ZZZY() const;											//Swizzle to ZZZY Vector
+	inline Vec4Double ZZZZ() const;											//Swizzle to ZZZZ Vector
+	inline Vec4Double ZZZW() const;											//Swizzle to ZZZW Vector
+	inline Vec4Double ZZWX() const;											//Swizzle to ZZWX Vector
+	inline Vec4Double ZZWY() const;											//Swizzle to ZZWY Vector
+	inline Vec4Double ZZWZ() const;											//Swizzle to ZZWZ Vector
+	inline Vec4Double ZZWW() const;											//Swizzle to ZZWW Vector
+	inline Vec4Double ZWXX() const;											//Swizzle to ZWXX Vector
+	inline Vec4Double ZWXY() const;											//Swizzle to ZWXY Vector
+	inline Vec4Double ZWXZ() const;											//Swizzle to ZWXZ Vector
+	inline Vec4Double ZWXW() const;											//Swizzle to ZWXW Vector
+	inline Vec4Double ZWYX() const;											//Swizzle to ZWYX Vector
+	inline Vec4Double ZWYY() const;											//Swizzle to ZWYY Vector
+	inline Vec4Double ZWYZ() const;											//Swizzle to ZWYZ Vector
+	inline Vec4Double ZWYW() const;											//Swizzle to ZWYW Vector
+	inline Vec4Double ZWZX() const;											//Swizzle to ZWZX Vector
+	inline Vec4Double ZWZY() const;											//Swizzle to ZWZY Vector
+	inline Vec4Double ZWZZ() const;											//Swizzle to ZWZZ Vector
+	inline Vec4Double ZWZW() const;											//Swizzle to ZWZW Vector
+	inline Vec4Double ZWWX() const;											//Swizzle to ZWWX Vector
+	inline Vec4Double ZWWY() const;											//Swizzle to ZWWY Vector
+	inline Vec4Double ZWWZ() const;											//Swizzle to ZWWZ Vector
+	inline Vec4Double ZWWW() const;											//Swizzle to ZWWW Vector
+	inline Vec4Double WXXX() const;											//Swizzle to WXXX Vector
+	inline Vec4Double WXXY() const;											//Swizzle to WXXY Vector
+	inline Vec4Double WXXZ() const;											//Swizzle to WXXZ Vector
+	inline Vec4Double WXXW() const;											//Swizzle to WXXW Vector
+	inline Vec4Double WXYX() const;											//Swizzle to WXYX Vector
+	inline Vec4Double WXYY() const;											//Swizzle to WXYY Vector
+	inline Vec4Double WXYZ() const;											//Swizzle to WXYZ Vector
+	inline Vec4Double WXYW() const;											//Swizzle to WXYW Vector
+	inline Vec4Double WXZX() const;											//Swizzle to WXZX Vector
+	inline Vec4Double WXZY() const;											//Swizzle to WXZY Vector
+	inline Vec4Double WXZZ() const;											//Swizzle to WXZZ Vector
+	inline Vec4Double WXZW() const;											//Swizzle to WXZW Vector
+	inline Vec4Double WXWX() const;											//Swizzle to WXWX Vector
+	inline Vec4Double WXWY() const;											//Swizzle to WXWY Vector
+	inline Vec4Double WXWZ() const;											//Swizzle to WXWZ Vector
+	inline Vec4Double WXWW() const;											//Swizzle to WXWW Vector
+	inline Vec4Double WYXX() const;											//Swizzle to WYXX Vector
+	inline Vec4Double WYXY() const;											//Swizzle to WYXY Vector
+	inline Vec4Double WYXZ() const;											//Swizzle to WYXZ Vector
+	inline Vec4Double WYXW() const;											//Swizzle to WYXW Vector
+	inline Vec4Double WYYX() const;											//Swizzle to WYYX Vector
+	inline Vec4Double WYYY() const;											//Swizzle to WYYY Vector
+	inline Vec4Double WYYZ() const;											//Swizzle to WYYZ Vector
+	inline Vec4Double WYYW() const;											//Swizzle to WYYW Vector
+	inline Vec4Double WYZX() const;											//Swizzle to WYZX Vector
+	inline Vec4Double WYZY() const;											//Swizzle to WYZY Vector
+	inline Vec4Double WYZZ() const;											//Swizzle to WYZZ Vector
+	inline Vec4Double WYZW() const;											//Swizzle to WYZW Vector
+	inline Vec4Double WYWX() const;											//Swizzle to WYWX Vector
+	inline Vec4Double WYWY() const;											//Swizzle to WYWY Vector
+	inline Vec4Double WYWZ() const;											//Swizzle to WYWZ Vector
+	inline Vec4Double WYWW() const;											//Swizzle to WYWW Vector
+	inline Vec4Double WZXX() const;											//Swizzle to WZXX Vector
+	inline Vec4Double WZXY() const;											//Swizzle to WZXY Vector
+	inline Vec4Double WZXZ() const;											//Swizzle to WZXZ Vector
+	inline Vec4Double WZXW() const;											//Swizzle to WZXW Vector
+	inline Vec4Double WZYX() const;											//Swizzle to WZYX Vector
+	inline Vec4Double WZYY() const;											//Swizzle to WZYY Vector
+	inline Vec4Double WZYZ() const;											//Swizzle to WZYZ Vector
+	inline Vec4Double WZYW() const;											//Swizzle to WZYW Vector
+	inline Vec4Double WZZX() const;											//Swizzle to WZZX Vector
+	inline Vec4Double WZZY() const;											//Swizzle to WZZY Vector
+	inline Vec4Double WZZZ() const;											//Swizzle to WZZZ Vector
+	inline Vec4Double WZZW() const;											//Swizzle to WZZW Vector
+	inline Vec4Double WZWX() const;											//Swizzle to WZWX Vector
+	inline Vec4Double WZWY() const;											//Swizzle to WZWY Vector
+	inline Vec4Double WZWZ() const;											//Swizzle to WZWZ Vector
+	inline Vec4Double WZWW() const;											//Swizzle to WZWW Vector
+	inline Vec4Double WWXX() const;											//Swizzle to WWXX Vector
+	inline Vec4Double WWXY() const;											//Swizzle to WWXY Vector
+	inline Vec4Double WWXZ() const;											//Swizzle to WWXZ Vector
+	inline Vec4Double WWXW() const;											//Swizzle to WWXW Vector
+	inline Vec4Double WWYX() const;											//Swizzle to WWYX Vector
+	inline Vec4Double WWYY() const;											//Swizzle to WWYY Vector
+	inline Vec4Double WWYZ() const;											//Swizzle to WWYZ Vector
+	inline Vec4Double WWYW() const;											//Swizzle to WWYW Vector
+	inline Vec4Double WWZX() const;											//Swizzle to WWZX Vector
+	inline Vec4Double WWZY() const;											//Swizzle to WWZY Vector
+	inline Vec4Double WWZZ() const;											//Swizzle to WWZZ Vector
+	inline Vec4Double WWZW() const;											//Swizzle to WWZW Vector
+	inline Vec4Double WWWX() const;											//Swizzle to WWWX Vector
+	inline Vec4Double WWWY() const;											//Swizzle to WWWY Vector
+	inline Vec4Double WWWZ() const;											//Swizzle to WWWZ Vector
+	inline Vec4Double WWWW() const;											//Swizzle to WWWW Vector
+	inline Vec4Double RRRR() const;											//Swizzle to RRRR Vector
+	inline Vec4Double RRRG() const;											//Swizzle to RRRG Vector
+	inline Vec4Double RRRB() const;											//Swizzle to RRRB Vector
+	inline Vec4Double RRRA() const;											//Swizzle to RRRA Vector
+	inline Vec4Double RRGR() const;											//Swizzle to RRGR Vector
+	inline Vec4Double RRGG() const;											//Swizzle to RRGG Vector
+	inline Vec4Double RRGB() const;											//Swizzle to RRGB Vector
+	inline Vec4Double RRGA() const;											//Swizzle to RRGA Vector
+	inline Vec4Double RRBR() const;											//Swizzle to RRBR Vector
+	inline Vec4Double RRBG() const;											//Swizzle to RRBG Vector
+	inline Vec4Double RRBB() const;											//Swizzle to RRBB Vector
+	inline Vec4Double RRBA() const;											//Swizzle to RRBA Vector
+	inline Vec4Double RRAR() const;											//Swizzle to RRAR Vector
+	inline Vec4Double RRAG() const;											//Swizzle to RRAG Vector
+	inline Vec4Double RRAB() const;											//Swizzle to RRAB Vector
+	inline Vec4Double RRAA() const;											//Swizzle to RRAA Vector
+	inline Vec4Double RGRR() const;											//Swizzle to RGRR Vector
+	inline Vec4Double RGRG() const;											//Swizzle to RGRG Vector
+	inline Vec4Double RGRB() const;											//Swizzle to RGRB Vector
+	inline Vec4Double RGRA() const;											//Swizzle to RGRA Vector
+	inline Vec4Double RGGR() const;											//Swizzle to RGGR Vector
+	inline Vec4Double RGGG() const;											//Swizzle to RGGG Vector
+	inline Vec4Double RGGB() const;											//Swizzle to RGGB Vector
+	inline Vec4Double RGGA() const;											//Swizzle to RGGA Vector
+	inline Vec4Double RGBR() const;											//Swizzle to RGBR Vector
+	inline Vec4Double RGBG() const;											//Swizzle to RGBG Vector
+	inline Vec4Double RGBB() const;											//Swizzle to RGBB Vector
+	inline Vec4Double RGAR() const;											//Swizzle to RGAR Vector
+	inline Vec4Double RGAG() const;											//Swizzle to RGAG Vector
+	inline Vec4Double RGAB() const;											//Swizzle to RGAB Vector
+	inline Vec4Double RGAA() const;											//Swizzle to RGAA Vector
+	inline Vec4Double RBRR() const;											//Swizzle to RBRR Vector
+	inline Vec4Double RBRG() const;											//Swizzle to RBRG Vector
+	inline Vec4Double RBRB() const;											//Swizzle to RBRB Vector
+	inline Vec4Double RBRA() const;											//Swizzle to RBRA Vector
+	inline Vec4Double RBGR() const;											//Swizzle to RBGR Vector
+	inline Vec4Double RBGG() const;											//Swizzle to RBGG Vector
+	inline Vec4Double RBGB() const;											//Swizzle to RBGB Vector
+	inline Vec4Double RBGA() const;											//Swizzle to RBGA Vector
+	inline Vec4Double RBBR() const;											//Swizzle to RBBR Vector
+	inline Vec4Double RBBG() const;											//Swizzle to RBBG Vector
+	inline Vec4Double RBBB() const;											//Swizzle to RBBB Vector
+	inline Vec4Double RBBA() const;											//Swizzle to RBBA Vector
+	inline Vec4Double RBAR() const;											//Swizzle to RBAR Vector
+	inline Vec4Double RBAG() const;											//Swizzle to RBAG Vector
+	inline Vec4Double RBAB() const;											//Swizzle to RBAB Vector
+	inline Vec4Double RBAA() const;											//Swizzle to RBAA Vector
+	inline Vec4Double RARR() const;											//Swizzle to RARR Vector
+	inline Vec4Double RARG() const;											//Swizzle to RARG Vector
+	inline Vec4Double RARB() const;											//Swizzle to RARB Vector
+	inline Vec4Double RARA() const;											//Swizzle to RARA Vector
+	inline Vec4Double RAGR() const;											//Swizzle to RAGR Vector
+	inline Vec4Double RAGG() const;											//Swizzle to RAGG Vector
+	inline Vec4Double RAGB() const;											//Swizzle to RAGB Vector
+	inline Vec4Double RAGA() const;											//Swizzle to RAGA Vector
+	inline Vec4Double RABR() const;											//Swizzle to RABR Vector
+	inline Vec4Double RABG() const;											//Swizzle to RABG Vector
+	inline Vec4Double RABB() const;											//Swizzle to RABB Vector
+	inline Vec4Double RABA() const;											//Swizzle to RABA Vector
+	inline Vec4Double RAAR() const;											//Swizzle to RAAR Vector
+	inline Vec4Double RAAG() const;											//Swizzle to RAAG Vector
+	inline Vec4Double RAAB() const;											//Swizzle to RAAB Vector
+	inline Vec4Double RAAA() const;											//Swizzle to RAAA Vector
+	inline Vec4Double GRRR() const;											//Swizzle to GRRR Vector
+	inline Vec4Double GRRG() const;											//Swizzle to GRRG Vector
+	inline Vec4Double GRRB() const;											//Swizzle to GRRB Vector
+	inline Vec4Double GRRA() const;											//Swizzle to GRRA Vector
+	inline Vec4Double GRGR() const;											//Swizzle to GRGR Vector
+	inline Vec4Double GRGG() const;											//Swizzle to GRGG Vector
+	inline Vec4Double GRGB() const;											//Swizzle to GRGB Vector
+	inline Vec4Double GRGA() const;											//Swizzle to GRGA Vector
+	inline Vec4Double GRBR() const;											//Swizzle to GRBR Vector
+	inline Vec4Double GRBG() const;											//Swizzle to GRBG Vector
+	inline Vec4Double GRBB() const;											//Swizzle to GRBB Vector
+	inline Vec4Double GRBA() const;											//Swizzle to GRBA Vector
+	inline Vec4Double GRAR() const;											//Swizzle to GRAR Vector
+	inline Vec4Double GRAG() const;											//Swizzle to GRAG Vector
+	inline Vec4Double GRAB() const;											//Swizzle to GRAB Vector
+	inline Vec4Double GRAA() const;											//Swizzle to GRAA Vector
+	inline Vec4Double GGRR() const;											//Swizzle to GGRR Vector
+	inline Vec4Double GGRG() const;											//Swizzle to GGRG Vector
+	inline Vec4Double GGRB() const;											//Swizzle to GGRB Vector
+	inline Vec4Double GGRA() const;											//Swizzle to GGRA Vector
+	inline Vec4Double GGGR() const;											//Swizzle to GGGR Vector
+	inline Vec4Double GGGG() const;											//Swizzle to GGGG Vector
+	inline Vec4Double GGGB() const;											//Swizzle to GGGB Vector
+	inline Vec4Double GGGA() const;											//Swizzle to GGGA Vector
+	inline Vec4Double GGBR() const;											//Swizzle to GGBR Vector
+	inline Vec4Double GGBG() const;											//Swizzle to GGBG Vector
+	inline Vec4Double GGBB() const;											//Swizzle to GGBB Vector
+	inline Vec4Double GGBA() const;											//Swizzle to GGBA Vector
+	inline Vec4Double GGAR() const;											//Swizzle to GGAR Vector
+	inline Vec4Double GGAG() const;											//Swizzle to GGAG Vector
+	inline Vec4Double GGAB() const;											//Swizzle to GGAB Vector
+	inline Vec4Double GGAA() const;											//Swizzle to GGAA Vector
+	inline Vec4Double GBRR() const;											//Swizzle to GBRR Vector
+	inline Vec4Double GBRG() const;											//Swizzle to GBRG Vector
+	inline Vec4Double GBRB() const;											//Swizzle to GBRB Vector
+	inline Vec4Double GBRA() const;											//Swizzle to GBRA Vector
+	inline Vec4Double GBGR() const;											//Swizzle to GBGR Vector
+	inline Vec4Double GBGG() const;											//Swizzle to GBGG Vector
+	inline Vec4Double GBGB() const;											//Swizzle to GBGB Vector
+	inline Vec4Double GBGA() const;											//Swizzle to GBGA Vector
+	inline Vec4Double GBBR() const;											//Swizzle to GBBR Vector
+	inline Vec4Double GBBG() const;											//Swizzle to GBBG Vector
+	inline Vec4Double GBBB() const;											//Swizzle to GBBB Vector
+	inline Vec4Double GBBA() const;											//Swizzle to GBBA Vector
+	inline Vec4Double GBAR() const;											//Swizzle to GBAR Vector
+	inline Vec4Double GBAG() const;											//Swizzle to GBAG Vector
+	inline Vec4Double GBAB() const;											//Swizzle to GBAB Vector
+	inline Vec4Double GBAA() const;											//Swizzle to GBAA Vector
+	inline Vec4Double GARR() const;											//Swizzle to GARR Vector
+	inline Vec4Double GARG() const;											//Swizzle to GARG Vector
+	inline Vec4Double GARB() const;											//Swizzle to GARB Vector
+	inline Vec4Double GARA() const;											//Swizzle to GARA Vector
+	inline Vec4Double GAGR() const;											//Swizzle to GAGR Vector
+	inline Vec4Double GAGG() const;											//Swizzle to GAGG Vector
+	inline Vec4Double GAGB() const;											//Swizzle to GAGB Vector
+	inline Vec4Double GAGA() const;											//Swizzle to GAGA Vector
+	inline Vec4Double GABR() const;											//Swizzle to GABR Vector
+	inline Vec4Double GABG() const;											//Swizzle to GABG Vector
+	inline Vec4Double GABB() const;											//Swizzle to GABB Vector
+	inline Vec4Double GABA() const;											//Swizzle to GABA Vector
+	inline Vec4Double GAAR() const;											//Swizzle to GAAR Vector
+	inline Vec4Double GAAG() const;											//Swizzle to GAAG Vector
+	inline Vec4Double GAAB() const;											//Swizzle to GAAB Vector
+	inline Vec4Double GAAA() const;											//Swizzle to GAAA Vector
+	inline Vec4Double BRRR() const;											//Swizzle to BRRR Vector
+	inline Vec4Double BRRG() const;											//Swizzle to BRRG Vector
+	inline Vec4Double BRRB() const;											//Swizzle to BRRB Vector
+	inline Vec4Double BRRA() const;											//Swizzle to BRRA Vector
+	inline Vec4Double BRGR() const;											//Swizzle to BRGR Vector
+	inline Vec4Double BRGG() const;											//Swizzle to BRGG Vector
+	inline Vec4Double BRGB() const;											//Swizzle to BRGB Vector
+	inline Vec4Double BRGA() const;											//Swizzle to BRGA Vector
+	inline Vec4Double BRBR() const;											//Swizzle to BRBR Vector
+	inline Vec4Double BRBG() const;											//Swizzle to BRBG Vector
+	inline Vec4Double BRBB() const;											//Swizzle to BRBB Vector
+	inline Vec4Double BRBA() const;											//Swizzle to BRBA Vector
+	inline Vec4Double BRAR() const;											//Swizzle to BRAR Vector
+	inline Vec4Double BRAG() const;											//Swizzle to BRAG Vector
+	inline Vec4Double BRAB() const;											//Swizzle to BRAB Vector
+	inline Vec4Double BRAA() const;											//Swizzle to BRAA Vector
+	inline Vec4Double BGRR() const;											//Swizzle to BGRR Vector
+	inline Vec4Double BGRG() const;											//Swizzle to BGRG Vector
+	inline Vec4Double BGRB() const;											//Swizzle to BGRB Vector
+	inline Vec4Double BGRA() const;											//Swizzle to BGRA Vector
+	inline Vec4Double BGGR() const;											//Swizzle to BGGR Vector
+	inline Vec4Double BGGG() const;											//Swizzle to BGGG Vector
+	inline Vec4Double BGGB() const;											//Swizzle to BGGB Vector
+	inline Vec4Double BGGA() const;											//Swizzle to BGGA Vector
+	inline Vec4Double BGBR() const;											//Swizzle to BGBR Vector
+	inline Vec4Double BGBG() const;											//Swizzle to BGBG Vector
+	inline Vec4Double BGBB() const;											//Swizzle to BGBB Vector
+	inline Vec4Double BGBA() const;											//Swizzle to BGBA Vector
+	inline Vec4Double BGAR() const;											//Swizzle to BGAR Vector
+	inline Vec4Double BGAG() const;											//Swizzle to BGAG Vector
+	inline Vec4Double BGAB() const;											//Swizzle to BGAB Vector
+	inline Vec4Double BGAA() const;											//Swizzle to BGAA Vector
+	inline Vec4Double BBRR() const;											//Swizzle to BBRR Vector
+	inline Vec4Double BBRG() const;											//Swizzle to BBRG Vector
+	inline Vec4Double BBRB() const;											//Swizzle to BBRB Vector
+	inline Vec4Double BBRA() const;											//Swizzle to BBRA Vector
+	inline Vec4Double BBGR() const;											//Swizzle to BBGR Vector
+	inline Vec4Double BBGG() const;											//Swizzle to BBGG Vector
+	inline Vec4Double BBGB() const;											//Swizzle to BBGB Vector
+	inline Vec4Double BBGA() const;											//Swizzle to BBGA Vector
+	inline Vec4Double BBBR() const;											//Swizzle to BBBR Vector
+	inline Vec4Double BBBG() const;											//Swizzle to BBBG Vector
+	inline Vec4Double BBBB() const;											//Swizzle to BBBB Vector
+	inline Vec4Double BBBA() const;											//Swizzle to BBBA Vector
+	inline Vec4Double BBAR() const;											//Swizzle to BBAR Vector
+	inline Vec4Double BBAG() const;											//Swizzle to BBAG Vector
+	inline Vec4Double BBAB() const;											//Swizzle to BBAB Vector
+	inline Vec4Double BBAA() const;											//Swizzle to BBAA Vector
+	inline Vec4Double BARR() const;											//Swizzle to BARR Vector
+	inline Vec4Double BARG() const;											//Swizzle to BARG Vector
+	inline Vec4Double BARB() const;											//Swizzle to BARB Vector
+	inline Vec4Double BARA() const;											//Swizzle to BARA Vector
+	inline Vec4Double BAGR() const;											//Swizzle to BAGR Vector
+	inline Vec4Double BAGG() const;											//Swizzle to BAGG Vector
+	inline Vec4Double BAGB() const;											//Swizzle to BAGB Vector
+	inline Vec4Double BAGA() const;											//Swizzle to BAGA Vector
+	inline Vec4Double BABR() const;											//Swizzle to BABR Vector
+	inline Vec4Double BABG() const;											//Swizzle to BABG Vector
+	inline Vec4Double BABB() const;											//Swizzle to BABB Vector
+	inline Vec4Double BABA() const;											//Swizzle to BABA Vector
+	inline Vec4Double BAAR() const;											//Swizzle to BAAR Vector
+	inline Vec4Double BAAG() const;											//Swizzle to BAAG Vector
+	inline Vec4Double BAAB() const;											//Swizzle to BAAB Vector
+	inline Vec4Double BAAA() const;											//Swizzle to BAAA Vector
+	inline Vec4Double ARRR() const;											//Swizzle to ARRR Vector
+	inline Vec4Double ARRG() const;											//Swizzle to ARRG Vector
+	inline Vec4Double ARRB() const;											//Swizzle to ARRB Vector
+	inline Vec4Double ARRA() const;											//Swizzle to ARRA Vector
+	inline Vec4Double ARGR() const;											//Swizzle to ARGR Vector
+	inline Vec4Double ARGG() const;											//Swizzle to ARGG Vector
+	inline Vec4Double ARGB() const;											//Swizzle to ARGB Vector
+	inline Vec4Double ARGA() const;											//Swizzle to ARGA Vector
+	inline Vec4Double ARBR() const;											//Swizzle to ARBR Vector
+	inline Vec4Double ARBG() const;											//Swizzle to ARBG Vector
+	inline Vec4Double ARBB() const;											//Swizzle to ARBB Vector
+	inline Vec4Double ARBA() const;											//Swizzle to ARBA Vector
+	inline Vec4Double ARAR() const;											//Swizzle to ARAR Vector
+	inline Vec4Double ARAG() const;											//Swizzle to ARAG Vector
+	inline Vec4Double ARAB() const;											//Swizzle to ARAB Vector
+	inline Vec4Double ARAA() const;											//Swizzle to ARAA Vector
+	inline Vec4Double AGRR() const;											//Swizzle to AGRR Vector
+	inline Vec4Double AGRG() const;											//Swizzle to AGRG Vector
+	inline Vec4Double AGRB() const;											//Swizzle to AGRB Vector
+	inline Vec4Double AGRA() const;											//Swizzle to AGRA Vector
+	inline Vec4Double AGGR() const;											//Swizzle to AGGR Vector
+	inline Vec4Double AGGG() const;											//Swizzle to AGGG Vector
+	inline Vec4Double AGGB() const;											//Swizzle to AGGB Vector
+	inline Vec4Double AGGA() const;											//Swizzle to AGGA Vector
+	inline Vec4Double AGBR() const;											//Swizzle to AGBR Vector
+	inline Vec4Double AGBG() const;											//Swizzle to AGBG Vector
+	inline Vec4Double AGBB() const;											//Swizzle to AGBB Vector
+	inline Vec4Double AGBA() const;											//Swizzle to AGBA Vector
+	inline Vec4Double AGAR() const;											//Swizzle to AGAR Vector
+	inline Vec4Double AGAG() const;											//Swizzle to AGAG Vector
+	inline Vec4Double AGAB() const;											//Swizzle to AGAB Vector
+	inline Vec4Double AGAA() const;											//Swizzle to AGAA Vector
+	inline Vec4Double ABRR() const;											//Swizzle to ABRR Vector
+	inline Vec4Double ABRG() const;											//Swizzle to ABRG Vector
+	inline Vec4Double ABRB() const;											//Swizzle to ABRB Vector
+	inline Vec4Double ABRA() const;											//Swizzle to ABRA Vector
+	inline Vec4Double ABGR() const;											//Swizzle to ABGR Vector
+	inline Vec4Double ABGG() const;											//Swizzle to ABGG Vector
+	inline Vec4Double ABGB() const;											//Swizzle to ABGB Vector
+	inline Vec4Double ABGA() const;											//Swizzle to ABGA Vector
+	inline Vec4Double ABBR() const;											//Swizzle to ABBR Vector
+	inline Vec4Double ABBG() const;											//Swizzle to ABBG Vector
+	inline Vec4Double ABBB() const;											//Swizzle to ABBB Vector
+	inline Vec4Double ABBA() const;											//Swizzle to ABBA Vector
+	inline Vec4Double ABAR() const;											//Swizzle to ABAR Vector
+	inline Vec4Double ABAG() const;											//Swizzle to ABAG Vector
+	inline Vec4Double ABAB() const;											//Swizzle to ABAB Vector
+	inline Vec4Double ABAA() const;											//Swizzle to ABAA Vector
+	inline Vec4Double AARR() const;											//Swizzle to AARR Vector
+	inline Vec4Double AARG() const;											//Swizzle to AARG Vector
+	inline Vec4Double AARB() const;											//Swizzle to AARB Vector
+	inline Vec4Double AARA() const;											//Swizzle to AARA Vector
+	inline Vec4Double AAGR() const;											//Swizzle to AAGR Vector
+	inline Vec4Double AAGG() const;											//Swizzle to AAGG Vector
+	inline Vec4Double AAGB() const;											//Swizzle to AAGB Vector
+	inline Vec4Double AAGA() const;											//Swizzle to AAGA Vector
+	inline Vec4Double AABR() const;											//Swizzle to AABR Vector
+	inline Vec4Double AABG() const;											//Swizzle to AABG Vector
+	inline Vec4Double AABB() const;											//Swizzle to AABB Vector
+	inline Vec4Double AABA() const;											//Swizzle to AABA Vector
+	inline Vec4Double AAAR() const;											//Swizzle to AAAR Vector
+	inline Vec4Double AAAG() const;											//Swizzle to AAAG Vector
+	inline Vec4Double AAAB() const;											//Swizzle to AAAB Vector
+	inline Vec4Double AAAA() const;											//Swizzle to AAAA Vector
 };
 
 #pragma endregion
@@ -1077,55 +2019,8 @@ private:
 		};
 	};
 public:
-
+	
 };
 
 #pragma endregion
-
-#pragma region LongVectors
-
-class alignas(8) Vec2Long {
-private:
-	union {
-		long xy[2];
-		struct {
-			long x;
-			long y;
-		};
-	};
-public:
-
-};
-
-class alignas(16) Vec3Long {
-private:
-	union {
-		long xyz[3];
-		struct {
-			long x;
-			long y;
-			long z;
-		};
-	};
-public:
-
-};
-
-class alignas(16) Vec4Long {
-private:
-	union {
-		long xyzw[4];
-		struct {
-			long x;
-			long y;
-			long z;
-			long w;
-		};
-	};
-public:
-
-};
-
-#pragma endregion
-
 #endif

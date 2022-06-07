@@ -1879,7 +1879,7 @@ inline bool Vec4Double::operator!=(const Vec4Double& _other) const {
 }
 
 inline double Vec4Double::Length() const {
-	return sqrtf((*this) * (*this));
+	return sqrt((*this) * (*this));
 }
 
 inline double Vec4Double::LengthSquared() const {
@@ -1904,7 +1904,7 @@ inline Vec4Double Vec4Double::Normalized() const {
 }
 
 inline double Vec4Double::AngleBetween(const Vec4Double& _other) const {
-	return acosf(*this * _other);
+	return acos(*this * _other);
 }
 
 inline double Vec4Double::Dot(const Vec4Double& _other) const {
@@ -2652,19 +2652,1320 @@ inline Vec4Double Vec4Double::AAAA() const { return Vec4Double(this->w, this->w,
 
 #pragma region Vec2
 
+inline Vec2Int::Vec2Int() : x(0), y(0) {}
+inline Vec2Int::Vec2Int(int _x, int _y) : x(_x), y(_y) {}
+inline Vec2Int::Vec2Int(const Vec2Int& _other) { (*this) = _other; }
 
+inline Vec2Int& Vec2Int::operator=(const Vec2Int& _other) {
+	if (this != &_other) {
+		this->x = _other.x;
+		this->y = _other.y;
+	}
+	return *this;
+}
+
+inline Vec2Int& Vec2Int::operator+=(const Vec2Int& _other) {
+	*this = *this + _other;
+	return *this;
+}
+
+inline Vec2Int& Vec2Int::operator-=(const Vec2Int& _other) {
+	*this = *this - _other;
+	return *this;
+}
+
+inline Vec2Int& Vec2Int::operator*=(const int _scale) {
+	*this = *this * _scale;
+	return *this;
+}
+
+inline int& Vec2Int::operator[](int _ndx) {
+	assert(_ndx < 2);
+	return xy[_ndx];
+}
+
+inline int Vec2Int::operator[](int _ndx) const {
+	assert(_ndx < 2);
+	return xy[_ndx];
+}
+
+inline Vec2Int Vec2Int::operator+(const Vec2Int& _other) const {
+	return Vec2Int(this->x + _other.x, this->y + _other.y);
+}
+
+inline Vec2Int Vec2Int::operator-(const Vec2Int& _other) const {
+	return Vec2Int(this->x - _other.x, this->y - _other.y);
+}
+
+inline Vec2Int Vec2Int::operator*(const int _scale) const {
+	return Vec2Int(this->x * _scale, this->y * _scale);
+}
+
+inline int Vec2Int::operator*(const Vec2Int& _other) const {
+	return (this->x * _other.x) + (this->y * _other.y);
+}
+
+inline int Vec2Int::operator&(const Vec2Int& _other) const {
+	return (this->x * _other.y) - (this->y * _other.x);
+}
+
+inline Vec2Int Vec2Int::operator~() const {
+	return Vec2Int();
+}
+
+inline Vec2Int Vec2Int::operator-() const {
+	return Vec2Int(-this->x, -this->y);
+}
+
+inline bool Vec2Int::operator==(const Vec2Int& _other) const {
+	return this->x == _other.x && this->y == _other.y;
+}
+
+inline bool Vec2Int::operator<(const Vec2Int& _other) const {
+	return this->LengthSquared() < _other.LengthSquared();
+}
+
+inline bool Vec2Int::operator>(const Vec2Int& _other) const {
+	return this->LengthSquared() > _other.LengthSquared();
+}
+
+inline bool Vec2Int::operator<=(const Vec2Int& _other) const {
+	return this->LengthSquared() <= _other.LengthSquared();
+}
+
+inline bool Vec2Int::operator>=(const Vec2Int& _other) const {
+	return this->LengthSquared() >= _other.LengthSquared();
+}
+
+inline bool Vec2Int::operator!=(const Vec2Int& _other) const {
+	return this->x != _other.x || this->y != _other.y;
+}
+
+inline float Vec2Int::Length() const {
+	return sqrtf(static_cast<float>((*this) * (*this)));
+}
+
+inline float Vec2Int::LengthSquared() const {
+	return static_cast<float>((*this) * (*this));
+}
+
+inline void Vec2Int::Normalize() {
+	float len = Length();
+	if (!len) return;
+
+	this->x = static_cast<int>(this->x / len);
+	this->y = static_cast<int>(this->x / len);
+}
+
+inline Vec2Int Vec2Int::Normalized() const {
+	float len = Length();
+	if (!len) return Vec2Int();
+
+	return Vec2Int(static_cast<int>(this->x / len), static_cast<int>(this->x / len));
+}
+
+inline float Vec2Int::AngleBetween(const Vec2Int& _other) const {
+	return acosf(static_cast<float>(this->Normalized() * _other.Normalized()));
+}
+
+inline int Vec2Int::Dot(const Vec2Int& _other) const {
+	return *this * _other;
+}
+
+inline int Vec2Int::Cross(const Vec2Int& _other) const {
+	return *this & _other;
+}
+
+inline void Vec2Int::Add(const Vec2Int& _other) {
+	*this += _other;
+}
+
+inline void Vec2Int::Subtract(const Vec2Int& _other) {
+	*this -= _other;
+}
+
+inline void Vec2Int::Scale(const int _scale) {
+	*this *= _scale;
+}
+
+inline void Vec2Int::Zero() {
+	*this = ~(*this);
+}
+
+inline void Vec2Int::Negate() {
+	*this = -(*this);
+}
+
+inline bool Vec2Int::Equals(const Vec2Int& _other) const {
+	return *this == _other;
+}
+
+inline bool Vec2Int::Less(const Vec2Int& _other) const {
+	return *this < _other;
+}
+
+inline bool Vec2Int::LessThanOrEquals(const Vec2Int& _other) const {
+	return *this <= _other;
+}
+
+inline bool Vec2Int::Greater(const Vec2Int& _other) const {
+	return *this > _other;
+}
+
+inline bool Vec2Int::GreaterThanOrEquals(const Vec2Int& _other) const {
+	return *this >= _other;
+}
+
+inline bool Vec2Int::NotEquals(const Vec2Int& _other) const {
+	return *this != _other;
+}
+
+inline int& Vec2Int::X() { return this->x; }
+inline int& Vec2Int::Y() { return this->y; }
+inline int Vec2Int::X() const { return this->x; }
+inline int Vec2Int::Y() const { return this->y; }
+
+inline Vec2Int Vec2Int::XX() const { return Vec2Int(this->x, this->x); }
+inline Vec2Int Vec2Int::YY() const { return Vec2Int(this->y, this->y); }
+inline Vec2Int Vec2Int::YX() const { return Vec2Int(this->y, this->x); }
+inline Vec2Int Vec2Int::RR() const { return Vec2Int(this->x, this->x); }
+inline Vec2Int Vec2Int::GG() const { return Vec2Int(this->y, this->y); }
+inline Vec2Int Vec2Int::GR() const { return Vec2Int(this->y, this->x); }
 
 #pragma endregion
 
 #pragma region Vec3
 
+inline Vec3Int::Vec3Int() : x(0), y(0), z(0) {}
+inline Vec3Int::Vec3Int(int _x, int _y, int _z) : x(_x), y(_y), z(_z) {}
+inline Vec3Int::Vec3Int(const Vec2Int& _xy, int _z) : x(_xy.X()), y(_xy.Y()), z(_z) {}
+inline Vec3Int::Vec3Int(int _x, const Vec2Int& _yz) : x(_x), y(_yz.X()), z(_yz.Y()) {}
+inline Vec3Int::Vec3Int(const Vec3Int& _other) { *this = _other; }
 
+inline Vec3Int& Vec3Int::operator=(const Vec3Int& _other) {
+	if (this != &_other) {
+		this->x = _other.x;
+		this->y = _other.y;
+		this->z = _other.z;
+	}
+	return *this;
+}
+
+inline Vec3Int& Vec3Int::operator+=(const Vec3Int& _other) {
+	*this = *this + _other;
+	return *this;
+}
+
+inline Vec3Int& Vec3Int::operator-=(const Vec3Int& _other) {
+	*this = *this - _other;
+	return *this;
+}
+
+inline Vec3Int& Vec3Int::operator*=(const int _scale) {
+	*this = *this * _scale;
+	return *this;
+}
+
+inline Vec3Int& Vec3Int::operator&=(const Vec3Int& _other) {
+	*this = *this & _other;
+	return *this;
+}
+
+inline int& Vec3Int::operator[](int _ndx) {
+	assert(_ndx < 3);
+	return xyz[_ndx];
+}
+
+inline int Vec3Int::operator[](int _ndx) const {
+	assert(_ndx < 3);
+	return xyz[_ndx];
+}
+
+inline Vec3Int Vec3Int::operator+(const Vec3Int& _other) const {
+	return Vec3Int(this->x + _other.x, this->y + _other.y, this->z + _other.z);
+}
+
+inline Vec3Int Vec3Int::operator-(const Vec3Int& _other) const {
+	return Vec3Int(this->x - _other.x, this->y - _other.y, this->z - _other.z);
+}
+
+inline Vec3Int Vec3Int::operator*(const int _scale) const {
+	return Vec3Int(this->x * _scale, this->y * _scale, this->z * _scale);
+}
+
+inline int Vec3Int::operator*(const Vec3Int& _other) const {
+	return (this->x * _other.x) + (this->y * _other.y) + (this->z * _other.z);
+}
+
+inline Vec3Int Vec3Int::operator&(const Vec3Int& _other) const {
+	return Vec3Int((this->y * _other.z) - (this->z * _other.y), (this->x * _other.z) - (this->z * _other.x), (this->x * _other.y) - (this->y * _other.x));
+}
+
+inline Vec3Int Vec3Int::operator~() const {
+	return Vec3Int();
+}
+
+inline Vec3Int Vec3Int::operator-() const {
+	return Vec3Int(-this->x, -this->y, -this->z);
+}
+
+inline bool Vec3Int::operator==(const Vec3Int& _other) const {
+	return this->x == _other.x && this->y == _other.y && this->z == _other.z;
+}
+
+inline bool Vec3Int::operator<(const Vec3Int& _other) const {
+	return this->LengthSquared() < _other.LengthSquared();
+}
+
+inline bool Vec3Int::operator>(const Vec3Int& _other) const {
+	return this->LengthSquared() > _other.LengthSquared();
+}
+
+inline bool Vec3Int::operator<=(const Vec3Int& _other) const {
+	return this->LengthSquared() <= _other.LengthSquared();
+}
+
+inline bool Vec3Int::operator>=(const Vec3Int& _other) const {
+	return this->LengthSquared() >= _other.LengthSquared();
+}
+
+inline bool Vec3Int::operator!=(const Vec3Int& _other) const {
+	return this->x != _other.x || this->y != _other.y || this->z != _other.z;
+}
+
+inline float Vec3Int::Length() const {
+	return sqrtf(static_cast<float>((*this) * (*this)));
+}
+
+inline float Vec3Int::LengthSquared() const {
+	return static_cast<float>((*this) * (*this));
+}
+
+inline void Vec3Int::Normalize() {
+	float len = Length();
+	if (!len) return;
+
+	this->x = static_cast<int>(this->x / len);
+	this->y = static_cast<int>(this->y / len);
+	this->z = static_cast<int>(this->z / len);
+}
+
+inline Vec3Int Vec3Int::Normalized() const {
+	float len = Length();
+	if (!len) return Vec3Int();
+
+	return Vec3Int(static_cast<int>(this->x / len), static_cast<int>(this->y / len), static_cast<int>(this->z / len));
+}
+
+inline float Vec3Int::AngleBetween(const Vec3Int& _other) const {
+	return acosf(static_cast<float>(this->Normalized() * _other.Normalized()));
+}
+
+inline int Vec3Int::Dot(const Vec3Int& _other) const {
+	return *this * _other;
+}
+
+inline void Vec3Int::Cross(const Vec3Int& _other) {
+	*this &= _other;
+}
+
+inline void Vec3Int::Add(const Vec3Int& _other) {
+	*this += _other;
+}
+
+inline void Vec3Int::Subtract(const Vec3Int& _other) {
+	*this -= _other;
+}
+
+inline void Vec3Int::Scale(const int _scale) {
+	*this *= _scale;
+}
+
+inline void Vec3Int::Negate() {
+	*this = -(*this);
+}
+
+inline void Vec3Int::Zero() {
+	*this = ~(*this);
+}
+
+inline bool Vec3Int::Equals(const Vec3Int& _other) const {
+	return *this == _other;
+}
+
+inline bool Vec3Int::Less(const Vec3Int& _other) const {
+	return *this < _other;
+}
+
+inline bool Vec3Int::LessThanOrEquals(const Vec3Int& _other) const {
+	return *this <= _other;
+}
+
+inline bool Vec3Int::Greater(const Vec3Int& _other) const {
+	return *this > _other;
+}
+
+inline bool Vec3Int::GreaterThanOrEquals(const Vec3Int& _other) const {
+	return *this >= _other;
+}
+
+inline bool Vec3Int::NotEquals(const Vec3Int& _other) const {
+	return *this != _other;
+}
+
+inline int& Vec3Int::X() { return this->x; }
+inline int& Vec3Int::Y() { return this->y; }
+inline int& Vec3Int::Z() { return this->z; }
+inline int Vec3Int::X() const { return this->x; }
+inline int Vec3Int::Y() const { return this->y; }
+inline int Vec3Int::Z() const { return this->z; }
+
+//Vec2Int Swizzle
+inline Vec2Int Vec3Int::XX() const { return Vec2Int(this->x, this->x); }
+inline Vec2Int Vec3Int::YY() const { return Vec2Int(this->y, this->y); }
+inline Vec2Int Vec3Int::ZZ() const { return Vec2Int(this->z, this->z); }
+inline Vec2Int Vec3Int::XY() const { return Vec2Int(this->x, this->y); }
+inline Vec2Int Vec3Int::XZ() const { return Vec2Int(this->x, this->z); }
+inline Vec2Int Vec3Int::YX() const { return Vec2Int(this->y, this->x); }
+inline Vec2Int Vec3Int::YZ() const { return Vec2Int(this->y, this->z); }
+inline Vec2Int Vec3Int::ZX() const { return Vec2Int(this->z, this->x); }
+inline Vec2Int Vec3Int::ZY() const { return Vec2Int(this->z, this->y); }
+inline Vec2Int Vec3Int::RR() const { return Vec2Int(this->x, this->x); }
+inline Vec2Int Vec3Int::GG() const { return Vec2Int(this->y, this->y); }
+inline Vec2Int Vec3Int::BB() const { return Vec2Int(this->z, this->z); }
+inline Vec2Int Vec3Int::RG() const { return Vec2Int(this->x, this->y); }
+inline Vec2Int Vec3Int::RB() const { return Vec2Int(this->x, this->z); }
+inline Vec2Int Vec3Int::GR() const { return Vec2Int(this->y, this->x); }
+inline Vec2Int Vec3Int::GB() const { return Vec2Int(this->y, this->z); }
+inline Vec2Int Vec3Int::BR() const { return Vec2Int(this->z, this->x); }
+inline Vec2Int Vec3Int::BG() const { return Vec2Int(this->z, this->y); }
+
+//Vec3Int Swizzle
+inline Vec3Int Vec3Int::XXX() const { return Vec3Int(this->x, this->x, this->x); }
+inline Vec3Int Vec3Int::XXY() const { return Vec3Int(this->x, this->x, this->y); }
+inline Vec3Int Vec3Int::XXZ() const { return Vec3Int(this->x, this->x, this->z); }
+inline Vec3Int Vec3Int::XYX() const { return Vec3Int(this->x, this->y, this->x); }
+inline Vec3Int Vec3Int::XYY() const { return Vec3Int(this->x, this->y, this->y); }
+inline Vec3Int Vec3Int::XZX() const { return Vec3Int(this->x, this->z, this->x); }
+inline Vec3Int Vec3Int::XZY() const { return Vec3Int(this->x, this->z, this->y); }
+inline Vec3Int Vec3Int::XZZ() const { return Vec3Int(this->x, this->z, this->z); }
+inline Vec3Int Vec3Int::YXX() const { return Vec3Int(this->y, this->x, this->x); }
+inline Vec3Int Vec3Int::YXY() const { return Vec3Int(this->y, this->x, this->y); }
+inline Vec3Int Vec3Int::YXZ() const { return Vec3Int(this->y, this->x, this->z); }
+inline Vec3Int Vec3Int::YYX() const { return Vec3Int(this->y, this->y, this->x); }
+inline Vec3Int Vec3Int::YYY() const { return Vec3Int(this->y, this->y, this->y); }
+inline Vec3Int Vec3Int::YYZ() const { return Vec3Int(this->y, this->y, this->z); }
+inline Vec3Int Vec3Int::YZX() const { return Vec3Int(this->y, this->z, this->x); }
+inline Vec3Int Vec3Int::YZY() const { return Vec3Int(this->y, this->z, this->y); }
+inline Vec3Int Vec3Int::YZZ() const { return Vec3Int(this->y, this->z, this->z); }
+inline Vec3Int Vec3Int::ZXX() const { return Vec3Int(this->z, this->x, this->x); }
+inline Vec3Int Vec3Int::ZXY() const { return Vec3Int(this->z, this->x, this->y); }
+inline Vec3Int Vec3Int::ZXZ() const { return Vec3Int(this->z, this->x, this->z); }
+inline Vec3Int Vec3Int::ZYX() const { return Vec3Int(this->z, this->y, this->x); }
+inline Vec3Int Vec3Int::ZYY() const { return Vec3Int(this->z, this->y, this->y); }
+inline Vec3Int Vec3Int::ZYZ() const { return Vec3Int(this->z, this->y, this->z); }
+inline Vec3Int Vec3Int::ZZX() const { return Vec3Int(this->z, this->z, this->x); }
+inline Vec3Int Vec3Int::ZZY() const { return Vec3Int(this->z, this->z, this->y); }
+inline Vec3Int Vec3Int::ZZZ() const { return Vec3Int(this->z, this->z, this->z); }
+inline Vec3Int Vec3Int::RRR() const { return Vec3Int(this->x, this->x, this->x); }
+inline Vec3Int Vec3Int::RRG() const { return Vec3Int(this->x, this->x, this->y); }
+inline Vec3Int Vec3Int::RRB() const { return Vec3Int(this->x, this->x, this->z); }
+inline Vec3Int Vec3Int::RGR() const { return Vec3Int(this->x, this->y, this->x); }
+inline Vec3Int Vec3Int::RGG() const { return Vec3Int(this->x, this->y, this->y); }
+inline Vec3Int Vec3Int::RBR() const { return Vec3Int(this->x, this->z, this->x); }
+inline Vec3Int Vec3Int::RBG() const { return Vec3Int(this->x, this->z, this->y); }
+inline Vec3Int Vec3Int::RBB() const { return Vec3Int(this->x, this->z, this->z); }
+inline Vec3Int Vec3Int::GRR() const { return Vec3Int(this->y, this->x, this->x); }
+inline Vec3Int Vec3Int::GRG() const { return Vec3Int(this->y, this->x, this->y); }
+inline Vec3Int Vec3Int::GRB() const { return Vec3Int(this->y, this->x, this->z); }
+inline Vec3Int Vec3Int::GGR() const { return Vec3Int(this->y, this->y, this->x); }
+inline Vec3Int Vec3Int::GGG() const { return Vec3Int(this->y, this->y, this->y); }
+inline Vec3Int Vec3Int::GGB() const { return Vec3Int(this->y, this->y, this->z); }
+inline Vec3Int Vec3Int::GBR() const { return Vec3Int(this->y, this->z, this->x); }
+inline Vec3Int Vec3Int::GBG() const { return Vec3Int(this->y, this->z, this->y); }
+inline Vec3Int Vec3Int::GBB() const { return Vec3Int(this->y, this->z, this->z); }
+inline Vec3Int Vec3Int::BRR() const { return Vec3Int(this->z, this->x, this->x); }
+inline Vec3Int Vec3Int::BRG() const { return Vec3Int(this->z, this->x, this->y); }
+inline Vec3Int Vec3Int::BRB() const { return Vec3Int(this->z, this->x, this->z); }
+inline Vec3Int Vec3Int::BGR() const { return Vec3Int(this->z, this->y, this->x); }
+inline Vec3Int Vec3Int::BGG() const { return Vec3Int(this->z, this->y, this->y); }
+inline Vec3Int Vec3Int::BGB() const { return Vec3Int(this->z, this->y, this->z); }
+inline Vec3Int Vec3Int::BBR() const { return Vec3Int(this->z, this->z, this->x); }
+inline Vec3Int Vec3Int::BBG() const { return Vec3Int(this->z, this->z, this->y); }
+inline Vec3Int Vec3Int::BBB() const { return Vec3Int(this->z, this->z, this->z); }
 
 #pragma endregion
 
 #pragma region Vec4
 
+inline Vec4Int::Vec4Int() : x(0), y(0), z(0), w(0) {}
+inline Vec4Int::Vec4Int(int _x, int _y, int _z, int _w) : x(_x), y(_y), z(_z), w(_w) {}
+inline Vec4Int::Vec4Int(const Vec2Int& _xy, int _z, int _w) : x(_xy.X()), y(_xy.Y()), z(_z), w(_w) {}
+inline Vec4Int::Vec4Int(int _x, const Vec2Int& _yz, int _w) : x(_x), y(_yz.X()), z(_yz.Y()), w(_w) {}
+inline Vec4Int::Vec4Int(int _x, int _y, const Vec2Int& _zw) : x(_x), y(_y), z(_zw.X()), w(_zw.Y()) {}
+inline Vec4Int::Vec4Int(const Vec2Int& _xy, const Vec2Int& _zw) : x(_xy.X()), y(_xy.Y()), z(_zw.X()), w(_zw.Y()) {}
+inline Vec4Int::Vec4Int(const Vec3Int& _xyz, int _w) : x(_xyz.X()), y(_xyz.Y()), z(_xyz.Z()), w(_w) {}
+inline Vec4Int::Vec4Int(int _x, const Vec3Int& _yzw) : x(_x), y(_yzw.X()), z(_yzw.Y()), w(_yzw.Z()) {}
+inline Vec4Int::Vec4Int(const Vec4Int& _other) { (*this) = _other; }
 
+inline Vec4Int& Vec4Int::operator=(const Vec4Int& _other) {
+	if (this != &_other) {
+		this->x = _other.x;
+		this->y = _other.y;
+		this->z = _other.z;
+		this->w = _other.w;
+	}
+	return *this;
+}
+
+inline Vec4Int& Vec4Int::operator+=(const Vec4Int& _other) {
+	*this = *this + _other;
+	return *this;
+}
+
+inline Vec4Int& Vec4Int::operator-=(const Vec4Int& _other) {
+	*this = *this - _other;
+	return *this;
+}
+
+inline Vec4Int& Vec4Int::operator*=(const int _scale) {
+	*this = *this * _scale;
+	return *this;
+}
+
+inline Vec4Int& Vec4Int::operator&=(const Vec4Int& _other) {
+	*this = *this & _other;
+	return *this;
+}
+
+inline int& Vec4Int::operator[](int _ndx) {
+	assert(_ndx < 4);
+	return xyzw[_ndx];
+}
+
+inline int Vec4Int::operator[](int _ndx) const {
+	assert(_ndx < 4);
+	return xyzw[_ndx];
+}
+
+inline Vec4Int Vec4Int::operator+(const Vec4Int& _other) const {
+	return Vec4Int(this->x + _other.x, this->y + _other.y, this->z + _other.z, this->w + _other.w);
+}
+
+inline Vec4Int Vec4Int::operator-(const Vec4Int& _other) const {
+	return Vec4Int(this->x - _other.x, this->y - _other.y, this->z - _other.z, this->w - _other.w);
+}
+
+inline Vec4Int Vec4Int::operator*(const int _scale) const {
+	return Vec4Int(this->x * _scale, this->y * _scale, this->z * _scale, this->w * _scale);
+}
+
+inline int Vec4Int::operator*(const Vec4Int& _other) const {
+	return (this->x * _other.x) + (this->y * _other.y) + (this->z * _other.z);
+}
+
+inline Vec4Int Vec4Int::operator&(const Vec4Int& _other) const {
+	return Vec4Int(static_cast<int>((this->y * _other.z) - (this->z * _other.y)), static_cast<int>((this->x * _other.z) - (this->z * _other.x)),
+				   static_cast<int>((this->x * _other.y) - (this->y * _other.x)), 0);
+}
+
+inline Vec4Int Vec4Int::operator~() const {
+	return Vec4Int();
+}
+
+inline Vec4Int Vec4Int::operator-() const {
+	return Vec4Int(-this->x, -this->y, -this->z, -this->w);
+}
+
+inline bool Vec4Int::operator==(const Vec4Int& _other) const {
+	return this->x == _other.x && this->y == _other.y && this->z == _other.z && this->w == _other.w;
+}
+
+inline bool Vec4Int::operator<(const Vec4Int& _other) const {
+	return this->LengthSquared() < _other.LengthSquared();
+}
+
+inline bool Vec4Int::operator>(const Vec4Int& _other) const {
+	return this->LengthSquared() > _other.LengthSquared();
+}
+
+inline bool Vec4Int::operator<=(const Vec4Int& _other) const {
+	return this->LengthSquared() <= _other.LengthSquared();
+}
+
+inline bool Vec4Int::operator>=(const Vec4Int& _other) const {
+	return this->LengthSquared() >= _other.LengthSquared();
+}
+
+inline bool Vec4Int::operator!=(const Vec4Int& _other) const {
+	return this->x != _other.x || this->y != _other.y || this->z != _other.z || this->w != _other.w;
+}
+
+inline float Vec4Int::Length() const {
+	return sqrtf(static_cast<float>((*this) * (*this)));
+}
+
+inline float Vec4Int::LengthSquared() const {
+	return static_cast<float>((*this) * (*this));
+}
+
+inline void Vec4Int::Normalize() {
+	float len = this->Length();
+	if (len == 0.0f) return;
+
+	this->x = static_cast<int>(this->x / len);
+	this->y = static_cast<int>(this->y / len);
+	this->z = static_cast<int>(this->z / len);
+	this->w = static_cast<int>(this->w / len);
+}
+
+inline Vec4Int Vec4Int::Normalized() const {
+	float len = this->Length();
+	if (len == 0.0f) return Vec4Int();
+
+	return Vec4Int(static_cast<int>(this->x / len), static_cast<int>(this->y / len), static_cast<int>(this->z / len), static_cast<int>(this->w / len));
+}
+
+inline float Vec4Int::AngleBetween(const Vec4Int& _other) const {
+	return acosf(static_cast<float>(this->Normalized() * _other.Normalized()));
+}
+
+inline int Vec4Int::Dot(const Vec4Int& _other) const {
+	return *this * _other;
+}
+
+inline void Vec4Int::Cross(const Vec4Int& _other) {
+	*this &= _other;
+}
+
+inline void Vec4Int::Add(const Vec4Int& _other) {
+	*this += _other;
+}
+
+inline void Vec4Int::Subtract(const Vec4Int& _other) {
+	*this -= _other;
+}
+
+inline void Vec4Int::Scale(const int _scale) {
+	*this *= _scale;
+}
+
+inline void Vec4Int::Negate() {
+	*this = -(*this);
+}
+
+inline void Vec4Int::Zero() {
+	*this = ~(*this);
+}
+
+inline bool Vec4Int::Equals(const Vec4Int& _other) const {
+	return *this == _other;
+}
+
+inline bool Vec4Int::Less(const Vec4Int& _other) const {
+	return *this < _other;
+}
+
+inline bool Vec4Int::LessThanOrEquals(const Vec4Int& _other) const {
+	return *this <= _other;
+}
+
+inline bool Vec4Int::Greater(const Vec4Int& _other) const {
+	return *this > _other;
+}
+
+inline bool Vec4Int::GreaterThanOrEquals(const Vec4Int& _other) const {
+	return *this >= _other;
+}
+
+inline bool Vec4Int::NotEquals(const Vec4Int& _other) const {
+	return *this != _other;
+}
+
+inline int& Vec4Int::X() { return this->x; }
+inline int& Vec4Int::Y() { return this->y; }
+inline int& Vec4Int::Z() { return this->z; }
+inline int& Vec4Int::W() { return this->w; }
+inline int Vec4Int::X() const { return this->x; }
+inline int Vec4Int::Y() const { return this->y; }
+inline int Vec4Int::Z() const { return this->z; }
+inline int Vec4Int::W() const { return this->w; }
+
+//Vec2Int Swizzle
+inline Vec2Int Vec4Int::XX() const { return Vec2Int(this->x, this->x); }
+inline Vec2Int Vec4Int::YY() const { return Vec2Int(this->y, this->y); }
+inline Vec2Int Vec4Int::ZZ() const { return Vec2Int(this->z, this->z); }
+inline Vec2Int Vec4Int::WW() const { return Vec2Int(this->w, this->w); }
+inline Vec2Int Vec4Int::XY() const { return Vec2Int(this->x, this->y); }
+inline Vec2Int Vec4Int::XZ() const { return Vec2Int(this->x, this->z); }
+inline Vec2Int Vec4Int::XW() const { return Vec2Int(this->x, this->w); }
+inline Vec2Int Vec4Int::YX() const { return Vec2Int(this->y, this->x); }
+inline Vec2Int Vec4Int::YZ() const { return Vec2Int(this->y, this->z); }
+inline Vec2Int Vec4Int::YW() const { return Vec2Int(this->y, this->w); }
+inline Vec2Int Vec4Int::ZX() const { return Vec2Int(this->z, this->x); }
+inline Vec2Int Vec4Int::ZY() const { return Vec2Int(this->z, this->y); }
+inline Vec2Int Vec4Int::ZW() const { return Vec2Int(this->z, this->w); }
+inline Vec2Int Vec4Int::WX() const { return Vec2Int(this->w, this->x); }
+inline Vec2Int Vec4Int::WY() const { return Vec2Int(this->w, this->y); }
+inline Vec2Int Vec4Int::WZ() const { return Vec2Int(this->w, this->z); }
+inline Vec2Int Vec4Int::RR() const { return Vec2Int(this->x, this->x); }
+inline Vec2Int Vec4Int::GG() const { return Vec2Int(this->y, this->y); }
+inline Vec2Int Vec4Int::BB() const { return Vec2Int(this->z, this->z); }
+inline Vec2Int Vec4Int::AA() const { return Vec2Int(this->w, this->w); }
+inline Vec2Int Vec4Int::RG() const { return Vec2Int(this->x, this->y); }
+inline Vec2Int Vec4Int::RB() const { return Vec2Int(this->x, this->z); }
+inline Vec2Int Vec4Int::RA() const { return Vec2Int(this->x, this->w); }
+inline Vec2Int Vec4Int::GR() const { return Vec2Int(this->y, this->x); }
+inline Vec2Int Vec4Int::GB() const { return Vec2Int(this->y, this->z); }
+inline Vec2Int Vec4Int::GA() const { return Vec2Int(this->y, this->w); }
+inline Vec2Int Vec4Int::BR() const { return Vec2Int(this->z, this->x); }
+inline Vec2Int Vec4Int::BG() const { return Vec2Int(this->z, this->y); }
+inline Vec2Int Vec4Int::BA() const { return Vec2Int(this->z, this->w); }
+inline Vec2Int Vec4Int::AR() const { return Vec2Int(this->w, this->x); }
+inline Vec2Int Vec4Int::AG() const { return Vec2Int(this->w, this->y); }
+inline Vec2Int Vec4Int::AB() const { return Vec2Int(this->w, this->z); }
+
+//Vec3Int Swizzle
+inline Vec3Int Vec4Int::XXX() const { return Vec3Int(this->x, this->x, this->x); }
+inline Vec3Int Vec4Int::XXY() const { return Vec3Int(this->x, this->x, this->y); }
+inline Vec3Int Vec4Int::XXZ() const { return Vec3Int(this->x, this->x, this->z); }
+inline Vec3Int Vec4Int::XXW() const { return Vec3Int(this->x, this->x, this->w); }
+inline Vec3Int Vec4Int::XYX() const { return Vec3Int(this->x, this->y, this->x); }
+inline Vec3Int Vec4Int::XYY() const { return Vec3Int(this->x, this->y, this->y); }
+inline Vec3Int Vec4Int::XYZ() const { return Vec3Int(this->x, this->y, this->z); }
+inline Vec3Int Vec4Int::XYW() const { return Vec3Int(this->x, this->y, this->w); }
+inline Vec3Int Vec4Int::XZX() const { return Vec3Int(this->x, this->z, this->x); }
+inline Vec3Int Vec4Int::XZY() const { return Vec3Int(this->x, this->z, this->y); }
+inline Vec3Int Vec4Int::XZZ() const { return Vec3Int(this->x, this->z, this->z); }
+inline Vec3Int Vec4Int::XZW() const { return Vec3Int(this->x, this->z, this->w); }
+inline Vec3Int Vec4Int::XWX() const { return Vec3Int(this->x, this->w, this->x); }
+inline Vec3Int Vec4Int::XWY() const { return Vec3Int(this->x, this->w, this->y); }
+inline Vec3Int Vec4Int::XWZ() const { return Vec3Int(this->x, this->w, this->z); }
+inline Vec3Int Vec4Int::XWW() const { return Vec3Int(this->x, this->w, this->w); }
+inline Vec3Int Vec4Int::YXX() const { return Vec3Int(this->y, this->x, this->x); }
+inline Vec3Int Vec4Int::YXY() const { return Vec3Int(this->y, this->x, this->y); }
+inline Vec3Int Vec4Int::YXZ() const { return Vec3Int(this->y, this->x, this->z); }
+inline Vec3Int Vec4Int::YXW() const { return Vec3Int(this->y, this->x, this->w); }
+inline Vec3Int Vec4Int::YYX() const { return Vec3Int(this->y, this->y, this->x); }
+inline Vec3Int Vec4Int::YYY() const { return Vec3Int(this->y, this->y, this->y); }
+inline Vec3Int Vec4Int::YYZ() const { return Vec3Int(this->y, this->y, this->z); }
+inline Vec3Int Vec4Int::YYW() const { return Vec3Int(this->y, this->y, this->w); }
+inline Vec3Int Vec4Int::YZX() const { return Vec3Int(this->y, this->z, this->x); }
+inline Vec3Int Vec4Int::YZY() const { return Vec3Int(this->y, this->z, this->y); }
+inline Vec3Int Vec4Int::YZZ() const { return Vec3Int(this->y, this->z, this->z); }
+inline Vec3Int Vec4Int::YZW() const { return Vec3Int(this->y, this->z, this->w); }
+inline Vec3Int Vec4Int::YWX() const { return Vec3Int(this->y, this->w, this->x); }
+inline Vec3Int Vec4Int::YWY() const { return Vec3Int(this->y, this->w, this->y); }
+inline Vec3Int Vec4Int::YWZ() const { return Vec3Int(this->y, this->w, this->z); }
+inline Vec3Int Vec4Int::YWW() const { return Vec3Int(this->y, this->w, this->w); }
+inline Vec3Int Vec4Int::ZXX() const { return Vec3Int(this->z, this->x, this->x); }
+inline Vec3Int Vec4Int::ZXY() const { return Vec3Int(this->z, this->x, this->y); }
+inline Vec3Int Vec4Int::ZXZ() const { return Vec3Int(this->z, this->x, this->z); }
+inline Vec3Int Vec4Int::ZXW() const { return Vec3Int(this->z, this->x, this->w); }
+inline Vec3Int Vec4Int::ZYX() const { return Vec3Int(this->z, this->y, this->x); }
+inline Vec3Int Vec4Int::ZYY() const { return Vec3Int(this->z, this->y, this->y); }
+inline Vec3Int Vec4Int::ZYZ() const { return Vec3Int(this->z, this->y, this->z); }
+inline Vec3Int Vec4Int::ZYW() const { return Vec3Int(this->z, this->y, this->w); }
+inline Vec3Int Vec4Int::ZZX() const { return Vec3Int(this->z, this->z, this->x); }
+inline Vec3Int Vec4Int::ZZY() const { return Vec3Int(this->z, this->z, this->y); }
+inline Vec3Int Vec4Int::ZZZ() const { return Vec3Int(this->z, this->z, this->z); }
+inline Vec3Int Vec4Int::ZZW() const { return Vec3Int(this->z, this->z, this->w); }
+inline Vec3Int Vec4Int::ZWX() const { return Vec3Int(this->z, this->w, this->x); }
+inline Vec3Int Vec4Int::ZWY() const { return Vec3Int(this->z, this->w, this->y); }
+inline Vec3Int Vec4Int::ZWZ() const { return Vec3Int(this->z, this->w, this->z); }
+inline Vec3Int Vec4Int::ZWW() const { return Vec3Int(this->z, this->w, this->w); }
+inline Vec3Int Vec4Int::WXX() const { return Vec3Int(this->w, this->x, this->x); }
+inline Vec3Int Vec4Int::WXY() const { return Vec3Int(this->w, this->x, this->y); }
+inline Vec3Int Vec4Int::WXZ() const { return Vec3Int(this->w, this->x, this->z); }
+inline Vec3Int Vec4Int::WXW() const { return Vec3Int(this->w, this->x, this->w); }
+inline Vec3Int Vec4Int::WYX() const { return Vec3Int(this->w, this->y, this->x); }
+inline Vec3Int Vec4Int::WYY() const { return Vec3Int(this->w, this->y, this->y); }
+inline Vec3Int Vec4Int::WYZ() const { return Vec3Int(this->w, this->y, this->z); }
+inline Vec3Int Vec4Int::WYW() const { return Vec3Int(this->w, this->y, this->w); }
+inline Vec3Int Vec4Int::WZX() const { return Vec3Int(this->w, this->z, this->x); }
+inline Vec3Int Vec4Int::WZY() const { return Vec3Int(this->w, this->z, this->y); }
+inline Vec3Int Vec4Int::WZZ() const { return Vec3Int(this->w, this->z, this->z); }
+inline Vec3Int Vec4Int::WZW() const { return Vec3Int(this->w, this->z, this->w); }
+inline Vec3Int Vec4Int::WWX() const { return Vec3Int(this->w, this->w, this->x); }
+inline Vec3Int Vec4Int::WWY() const { return Vec3Int(this->w, this->w, this->y); }
+inline Vec3Int Vec4Int::WWZ() const { return Vec3Int(this->w, this->w, this->z); }
+inline Vec3Int Vec4Int::WWW() const { return Vec3Int(this->w, this->w, this->w); }
+inline Vec3Int Vec4Int::RRR() const { return Vec3Int(this->x, this->x, this->x); }
+inline Vec3Int Vec4Int::RRG() const { return Vec3Int(this->x, this->x, this->y); }
+inline Vec3Int Vec4Int::RRB() const { return Vec3Int(this->x, this->x, this->z); }
+inline Vec3Int Vec4Int::RRA() const { return Vec3Int(this->x, this->x, this->w); }
+inline Vec3Int Vec4Int::RGR() const { return Vec3Int(this->x, this->y, this->x); }
+inline Vec3Int Vec4Int::RGG() const { return Vec3Int(this->x, this->y, this->y); }
+inline Vec3Int Vec4Int::RGA() const { return Vec3Int(this->x, this->y, this->w); }
+inline Vec3Int Vec4Int::RGB() const { return Vec3Int(this->x, this->y, this->z); }
+inline Vec3Int Vec4Int::RBR() const { return Vec3Int(this->x, this->z, this->x); }
+inline Vec3Int Vec4Int::RBG() const { return Vec3Int(this->x, this->z, this->y); }
+inline Vec3Int Vec4Int::RBB() const { return Vec3Int(this->x, this->z, this->z); }
+inline Vec3Int Vec4Int::RBA() const { return Vec3Int(this->x, this->z, this->w); }
+inline Vec3Int Vec4Int::RAR() const { return Vec3Int(this->x, this->w, this->x); }
+inline Vec3Int Vec4Int::RAG() const { return Vec3Int(this->x, this->w, this->y); }
+inline Vec3Int Vec4Int::RAB() const { return Vec3Int(this->x, this->w, this->z); }
+inline Vec3Int Vec4Int::RAA() const { return Vec3Int(this->x, this->w, this->w); }
+inline Vec3Int Vec4Int::GRR() const { return Vec3Int(this->y, this->x, this->x); }
+inline Vec3Int Vec4Int::GRG() const { return Vec3Int(this->y, this->x, this->y); }
+inline Vec3Int Vec4Int::GRB() const { return Vec3Int(this->y, this->x, this->z); }
+inline Vec3Int Vec4Int::GRA() const { return Vec3Int(this->y, this->x, this->w); }
+inline Vec3Int Vec4Int::GGR() const { return Vec3Int(this->y, this->y, this->x); }
+inline Vec3Int Vec4Int::GGG() const { return Vec3Int(this->y, this->y, this->y); }
+inline Vec3Int Vec4Int::GGB() const { return Vec3Int(this->y, this->y, this->z); }
+inline Vec3Int Vec4Int::GGA() const { return Vec3Int(this->y, this->y, this->w); }
+inline Vec3Int Vec4Int::GBR() const { return Vec3Int(this->y, this->z, this->x); }
+inline Vec3Int Vec4Int::GBG() const { return Vec3Int(this->y, this->z, this->y); }
+inline Vec3Int Vec4Int::GBB() const { return Vec3Int(this->y, this->z, this->z); }
+inline Vec3Int Vec4Int::GBA() const { return Vec3Int(this->y, this->z, this->w); }
+inline Vec3Int Vec4Int::GAR() const { return Vec3Int(this->y, this->w, this->x); }
+inline Vec3Int Vec4Int::GAG() const { return Vec3Int(this->y, this->w, this->y); }
+inline Vec3Int Vec4Int::GAB() const { return Vec3Int(this->y, this->w, this->z); }
+inline Vec3Int Vec4Int::GAA() const { return Vec3Int(this->y, this->w, this->w); }
+inline Vec3Int Vec4Int::BRR() const { return Vec3Int(this->z, this->x, this->x); }
+inline Vec3Int Vec4Int::BRG() const { return Vec3Int(this->z, this->x, this->y); }
+inline Vec3Int Vec4Int::BRB() const { return Vec3Int(this->z, this->x, this->z); }
+inline Vec3Int Vec4Int::BRA() const { return Vec3Int(this->z, this->x, this->w); }
+inline Vec3Int Vec4Int::BGR() const { return Vec3Int(this->z, this->y, this->x); }
+inline Vec3Int Vec4Int::BGG() const { return Vec3Int(this->z, this->y, this->y); }
+inline Vec3Int Vec4Int::BGB() const { return Vec3Int(this->z, this->y, this->z); }
+inline Vec3Int Vec4Int::BGA() const { return Vec3Int(this->z, this->y, this->w); }
+inline Vec3Int Vec4Int::BBR() const { return Vec3Int(this->z, this->z, this->x); }
+inline Vec3Int Vec4Int::BBG() const { return Vec3Int(this->z, this->z, this->y); }
+inline Vec3Int Vec4Int::BBB() const { return Vec3Int(this->z, this->z, this->z); }
+inline Vec3Int Vec4Int::BBA() const { return Vec3Int(this->z, this->z, this->w); }
+inline Vec3Int Vec4Int::BAR() const { return Vec3Int(this->z, this->w, this->x); }
+inline Vec3Int Vec4Int::BAG() const { return Vec3Int(this->z, this->w, this->y); }
+inline Vec3Int Vec4Int::BAB() const { return Vec3Int(this->z, this->w, this->z); }
+inline Vec3Int Vec4Int::BAA() const { return Vec3Int(this->z, this->w, this->w); }
+inline Vec3Int Vec4Int::ARR() const { return Vec3Int(this->w, this->x, this->x); }
+inline Vec3Int Vec4Int::ARG() const { return Vec3Int(this->w, this->x, this->y); }
+inline Vec3Int Vec4Int::ARB() const { return Vec3Int(this->w, this->x, this->z); }
+inline Vec3Int Vec4Int::ARA() const { return Vec3Int(this->w, this->x, this->w); }
+inline Vec3Int Vec4Int::AGR() const { return Vec3Int(this->w, this->y, this->x); }
+inline Vec3Int Vec4Int::AGG() const { return Vec3Int(this->w, this->y, this->y); }
+inline Vec3Int Vec4Int::AGB() const { return Vec3Int(this->w, this->y, this->z); }
+inline Vec3Int Vec4Int::AGA() const { return Vec3Int(this->w, this->y, this->w); }
+inline Vec3Int Vec4Int::ABR() const { return Vec3Int(this->w, this->z, this->x); }
+inline Vec3Int Vec4Int::ABG() const { return Vec3Int(this->w, this->z, this->y); }
+inline Vec3Int Vec4Int::ABB() const { return Vec3Int(this->w, this->z, this->z); }
+inline Vec3Int Vec4Int::ABA() const { return Vec3Int(this->w, this->z, this->w); }
+inline Vec3Int Vec4Int::AAR() const { return Vec3Int(this->w, this->w, this->x); }
+inline Vec3Int Vec4Int::AAG() const { return Vec3Int(this->w, this->w, this->y); }
+inline Vec3Int Vec4Int::AAB() const { return Vec3Int(this->w, this->w, this->z); }
+inline Vec3Int Vec4Int::AAA() const { return Vec3Int(this->w, this->w, this->w); }
+
+//Vec4Int Swizzle
+inline Vec4Int Vec4Int::XXXX() const { return Vec4Int(this->x, this->x, this->x, this->x); }
+inline Vec4Int Vec4Int::XXXY() const { return Vec4Int(this->x, this->x, this->x, this->y); }
+inline Vec4Int Vec4Int::XXXZ() const { return Vec4Int(this->x, this->x, this->x, this->z); }
+inline Vec4Int Vec4Int::XXXW() const { return Vec4Int(this->x, this->x, this->x, this->w); }
+inline Vec4Int Vec4Int::XXYX() const { return Vec4Int(this->x, this->x, this->y, this->x); }
+inline Vec4Int Vec4Int::XXYY() const { return Vec4Int(this->x, this->x, this->y, this->y); }
+inline Vec4Int Vec4Int::XXYZ() const { return Vec4Int(this->x, this->x, this->y, this->z); }
+inline Vec4Int Vec4Int::XXYW() const { return Vec4Int(this->x, this->x, this->y, this->w); }
+inline Vec4Int Vec4Int::XXZX() const { return Vec4Int(this->x, this->x, this->z, this->x); }
+inline Vec4Int Vec4Int::XXZY() const { return Vec4Int(this->x, this->x, this->z, this->y); }
+inline Vec4Int Vec4Int::XXZZ() const { return Vec4Int(this->x, this->x, this->z, this->z); }
+inline Vec4Int Vec4Int::XXZW() const { return Vec4Int(this->x, this->x, this->z, this->w); }
+inline Vec4Int Vec4Int::XXWX() const { return Vec4Int(this->x, this->x, this->w, this->x); }
+inline Vec4Int Vec4Int::XXWY() const { return Vec4Int(this->x, this->x, this->w, this->y); }
+inline Vec4Int Vec4Int::XXWZ() const { return Vec4Int(this->x, this->x, this->w, this->z); }
+inline Vec4Int Vec4Int::XXWW() const { return Vec4Int(this->x, this->x, this->w, this->w); }
+inline Vec4Int Vec4Int::XYXX() const { return Vec4Int(this->x, this->y, this->x, this->x); }
+inline Vec4Int Vec4Int::XYXY() const { return Vec4Int(this->x, this->y, this->x, this->y); }
+inline Vec4Int Vec4Int::XYXZ() const { return Vec4Int(this->x, this->y, this->x, this->z); }
+inline Vec4Int Vec4Int::XYXW() const { return Vec4Int(this->x, this->y, this->x, this->w); }
+inline Vec4Int Vec4Int::XYYX() const { return Vec4Int(this->x, this->y, this->y, this->x); }
+inline Vec4Int Vec4Int::XYYY() const { return Vec4Int(this->x, this->y, this->y, this->y); }
+inline Vec4Int Vec4Int::XYYZ() const { return Vec4Int(this->x, this->y, this->y, this->z); }
+inline Vec4Int Vec4Int::XYYW() const { return Vec4Int(this->x, this->y, this->y, this->w); }
+inline Vec4Int Vec4Int::XYZX() const { return Vec4Int(this->x, this->y, this->z, this->x); }
+inline Vec4Int Vec4Int::XYZY() const { return Vec4Int(this->x, this->y, this->z, this->y); }
+inline Vec4Int Vec4Int::XYZZ() const { return Vec4Int(this->x, this->y, this->z, this->z); }
+inline Vec4Int Vec4Int::XYWX() const { return Vec4Int(this->x, this->y, this->w, this->x); }
+inline Vec4Int Vec4Int::XYWY() const { return Vec4Int(this->x, this->y, this->w, this->y); }
+inline Vec4Int Vec4Int::XYWZ() const { return Vec4Int(this->x, this->y, this->w, this->z); }
+inline Vec4Int Vec4Int::XYWW() const { return Vec4Int(this->x, this->y, this->w, this->w); }
+inline Vec4Int Vec4Int::XZXX() const { return Vec4Int(this->x, this->z, this->x, this->x); }
+inline Vec4Int Vec4Int::XZXY() const { return Vec4Int(this->x, this->z, this->x, this->y); }
+inline Vec4Int Vec4Int::XZXZ() const { return Vec4Int(this->x, this->z, this->x, this->z); }
+inline Vec4Int Vec4Int::XZXW() const { return Vec4Int(this->x, this->z, this->x, this->w); }
+inline Vec4Int Vec4Int::XZYX() const { return Vec4Int(this->x, this->z, this->y, this->x); }
+inline Vec4Int Vec4Int::XZYY() const { return Vec4Int(this->x, this->z, this->y, this->y); }
+inline Vec4Int Vec4Int::XZYZ() const { return Vec4Int(this->x, this->z, this->y, this->z); }
+inline Vec4Int Vec4Int::XZYW() const { return Vec4Int(this->x, this->z, this->y, this->w); }
+inline Vec4Int Vec4Int::XZZX() const { return Vec4Int(this->x, this->z, this->z, this->x); }
+inline Vec4Int Vec4Int::XZZY() const { return Vec4Int(this->x, this->z, this->z, this->y); }
+inline Vec4Int Vec4Int::XZZZ() const { return Vec4Int(this->x, this->z, this->z, this->z); }
+inline Vec4Int Vec4Int::XZZW() const { return Vec4Int(this->x, this->z, this->z, this->w); }
+inline Vec4Int Vec4Int::XZWX() const { return Vec4Int(this->x, this->z, this->w, this->x); }
+inline Vec4Int Vec4Int::XZWY() const { return Vec4Int(this->x, this->z, this->w, this->y); }
+inline Vec4Int Vec4Int::XZWZ() const { return Vec4Int(this->x, this->z, this->w, this->z); }
+inline Vec4Int Vec4Int::XZWW() const { return Vec4Int(this->x, this->z, this->w, this->w); }
+inline Vec4Int Vec4Int::XWXX() const { return Vec4Int(this->x, this->w, this->x, this->x); }
+inline Vec4Int Vec4Int::XWXY() const { return Vec4Int(this->x, this->w, this->x, this->y); }
+inline Vec4Int Vec4Int::XWXZ() const { return Vec4Int(this->x, this->w, this->x, this->z); }
+inline Vec4Int Vec4Int::XWXW() const { return Vec4Int(this->x, this->w, this->x, this->w); }
+inline Vec4Int Vec4Int::XWYX() const { return Vec4Int(this->x, this->w, this->y, this->x); }
+inline Vec4Int Vec4Int::XWYY() const { return Vec4Int(this->x, this->w, this->y, this->y); }
+inline Vec4Int Vec4Int::XWYZ() const { return Vec4Int(this->x, this->w, this->y, this->z); }
+inline Vec4Int Vec4Int::XWYW() const { return Vec4Int(this->x, this->w, this->y, this->w); }
+inline Vec4Int Vec4Int::XWZX() const { return Vec4Int(this->x, this->w, this->z, this->x); }
+inline Vec4Int Vec4Int::XWZY() const { return Vec4Int(this->x, this->w, this->z, this->y); }
+inline Vec4Int Vec4Int::XWZZ() const { return Vec4Int(this->x, this->w, this->z, this->z); }
+inline Vec4Int Vec4Int::XWZW() const { return Vec4Int(this->x, this->w, this->z, this->w); }
+inline Vec4Int Vec4Int::XWWX() const { return Vec4Int(this->x, this->w, this->w, this->x); }
+inline Vec4Int Vec4Int::XWWY() const { return Vec4Int(this->x, this->w, this->w, this->y); }
+inline Vec4Int Vec4Int::XWWZ() const { return Vec4Int(this->x, this->w, this->w, this->z); }
+inline Vec4Int Vec4Int::XWWW() const { return Vec4Int(this->x, this->w, this->w, this->w); }
+inline Vec4Int Vec4Int::YXXX() const { return Vec4Int(this->y, this->x, this->x, this->x); }
+inline Vec4Int Vec4Int::YXXY() const { return Vec4Int(this->y, this->x, this->x, this->y); }
+inline Vec4Int Vec4Int::YXXZ() const { return Vec4Int(this->y, this->x, this->x, this->z); }
+inline Vec4Int Vec4Int::YXXW() const { return Vec4Int(this->y, this->x, this->x, this->w); }
+inline Vec4Int Vec4Int::YXYX() const { return Vec4Int(this->y, this->x, this->y, this->x); }
+inline Vec4Int Vec4Int::YXYY() const { return Vec4Int(this->y, this->x, this->y, this->y); }
+inline Vec4Int Vec4Int::YXYZ() const { return Vec4Int(this->y, this->x, this->y, this->z); }
+inline Vec4Int Vec4Int::YXYW() const { return Vec4Int(this->y, this->x, this->y, this->w); }
+inline Vec4Int Vec4Int::YXZX() const { return Vec4Int(this->y, this->x, this->z, this->x); }
+inline Vec4Int Vec4Int::YXZY() const { return Vec4Int(this->y, this->x, this->z, this->y); }
+inline Vec4Int Vec4Int::YXZZ() const { return Vec4Int(this->y, this->x, this->z, this->z); }
+inline Vec4Int Vec4Int::YXZW() const { return Vec4Int(this->y, this->x, this->z, this->w); }
+inline Vec4Int Vec4Int::YXWX() const { return Vec4Int(this->y, this->x, this->w, this->x); }
+inline Vec4Int Vec4Int::YXWY() const { return Vec4Int(this->y, this->x, this->w, this->y); }
+inline Vec4Int Vec4Int::YXWZ() const { return Vec4Int(this->y, this->x, this->w, this->z); }
+inline Vec4Int Vec4Int::YXWW() const { return Vec4Int(this->y, this->x, this->w, this->w); }
+inline Vec4Int Vec4Int::YYXX() const { return Vec4Int(this->y, this->y, this->x, this->x); }
+inline Vec4Int Vec4Int::YYXY() const { return Vec4Int(this->y, this->y, this->x, this->y); }
+inline Vec4Int Vec4Int::YYXZ() const { return Vec4Int(this->y, this->y, this->x, this->z); }
+inline Vec4Int Vec4Int::YYXW() const { return Vec4Int(this->y, this->y, this->x, this->w); }
+inline Vec4Int Vec4Int::YYYX() const { return Vec4Int(this->y, this->y, this->y, this->x); }
+inline Vec4Int Vec4Int::YYYY() const { return Vec4Int(this->y, this->y, this->y, this->y); }
+inline Vec4Int Vec4Int::YYYZ() const { return Vec4Int(this->y, this->y, this->y, this->z); }
+inline Vec4Int Vec4Int::YYYW() const { return Vec4Int(this->y, this->y, this->y, this->w); }
+inline Vec4Int Vec4Int::YYZX() const { return Vec4Int(this->y, this->y, this->z, this->x); }
+inline Vec4Int Vec4Int::YYZY() const { return Vec4Int(this->y, this->y, this->z, this->y); }
+inline Vec4Int Vec4Int::YYZZ() const { return Vec4Int(this->y, this->y, this->z, this->z); }
+inline Vec4Int Vec4Int::YYZW() const { return Vec4Int(this->y, this->y, this->z, this->w); }
+inline Vec4Int Vec4Int::YYWX() const { return Vec4Int(this->y, this->y, this->w, this->x); }
+inline Vec4Int Vec4Int::YYWY() const { return Vec4Int(this->y, this->y, this->w, this->y); }
+inline Vec4Int Vec4Int::YYWZ() const { return Vec4Int(this->y, this->y, this->w, this->z); }
+inline Vec4Int Vec4Int::YYWW() const { return Vec4Int(this->y, this->y, this->w, this->w); }
+inline Vec4Int Vec4Int::YZXX() const { return Vec4Int(this->y, this->z, this->x, this->x); }
+inline Vec4Int Vec4Int::YZXY() const { return Vec4Int(this->y, this->z, this->x, this->y); }
+inline Vec4Int Vec4Int::YZXZ() const { return Vec4Int(this->y, this->z, this->x, this->z); }
+inline Vec4Int Vec4Int::YZXW() const { return Vec4Int(this->y, this->z, this->x, this->w); }
+inline Vec4Int Vec4Int::YZYX() const { return Vec4Int(this->y, this->z, this->y, this->x); }
+inline Vec4Int Vec4Int::YZYY() const { return Vec4Int(this->y, this->z, this->y, this->y); }
+inline Vec4Int Vec4Int::YZYZ() const { return Vec4Int(this->y, this->z, this->y, this->z); }
+inline Vec4Int Vec4Int::YZYW() const { return Vec4Int(this->y, this->z, this->y, this->w); }
+inline Vec4Int Vec4Int::YZZX() const { return Vec4Int(this->y, this->z, this->z, this->x); }
+inline Vec4Int Vec4Int::YZZY() const { return Vec4Int(this->y, this->z, this->z, this->y); }
+inline Vec4Int Vec4Int::YZZZ() const { return Vec4Int(this->y, this->z, this->z, this->z); }
+inline Vec4Int Vec4Int::YZZW() const { return Vec4Int(this->y, this->z, this->z, this->w); }
+inline Vec4Int Vec4Int::YZWX() const { return Vec4Int(this->y, this->z, this->w, this->x); }
+inline Vec4Int Vec4Int::YZWY() const { return Vec4Int(this->y, this->z, this->w, this->y); }
+inline Vec4Int Vec4Int::YZWZ() const { return Vec4Int(this->y, this->z, this->w, this->z); }
+inline Vec4Int Vec4Int::YZWW() const { return Vec4Int(this->y, this->z, this->w, this->w); }
+inline Vec4Int Vec4Int::YWXX() const { return Vec4Int(this->y, this->w, this->x, this->x); }
+inline Vec4Int Vec4Int::YWXY() const { return Vec4Int(this->y, this->w, this->x, this->y); }
+inline Vec4Int Vec4Int::YWXZ() const { return Vec4Int(this->y, this->w, this->x, this->z); }
+inline Vec4Int Vec4Int::YWXW() const { return Vec4Int(this->y, this->w, this->x, this->w); }
+inline Vec4Int Vec4Int::YWYX() const { return Vec4Int(this->y, this->w, this->y, this->x); }
+inline Vec4Int Vec4Int::YWYY() const { return Vec4Int(this->y, this->w, this->y, this->y); }
+inline Vec4Int Vec4Int::YWYZ() const { return Vec4Int(this->y, this->w, this->y, this->z); }
+inline Vec4Int Vec4Int::YWYW() const { return Vec4Int(this->y, this->w, this->y, this->w); }
+inline Vec4Int Vec4Int::YWZX() const { return Vec4Int(this->y, this->w, this->z, this->x); }
+inline Vec4Int Vec4Int::YWZY() const { return Vec4Int(this->y, this->w, this->z, this->y); }
+inline Vec4Int Vec4Int::YWZZ() const { return Vec4Int(this->y, this->w, this->z, this->z); }
+inline Vec4Int Vec4Int::YWZW() const { return Vec4Int(this->y, this->w, this->z, this->w); }
+inline Vec4Int Vec4Int::YWWX() const { return Vec4Int(this->y, this->w, this->w, this->x); }
+inline Vec4Int Vec4Int::YWWY() const { return Vec4Int(this->y, this->w, this->w, this->y); }
+inline Vec4Int Vec4Int::YWWZ() const { return Vec4Int(this->y, this->w, this->w, this->z); }
+inline Vec4Int Vec4Int::YWWW() const { return Vec4Int(this->y, this->w, this->w, this->w); }
+inline Vec4Int Vec4Int::ZXXX() const { return Vec4Int(this->z, this->x, this->x, this->x); }
+inline Vec4Int Vec4Int::ZXXY() const { return Vec4Int(this->z, this->x, this->x, this->y); }
+inline Vec4Int Vec4Int::ZXXZ() const { return Vec4Int(this->z, this->x, this->x, this->z); }
+inline Vec4Int Vec4Int::ZXXW() const { return Vec4Int(this->z, this->x, this->x, this->w); }
+inline Vec4Int Vec4Int::ZXYX() const { return Vec4Int(this->z, this->x, this->y, this->x); }
+inline Vec4Int Vec4Int::ZXYY() const { return Vec4Int(this->z, this->x, this->y, this->y); }
+inline Vec4Int Vec4Int::ZXYZ() const { return Vec4Int(this->z, this->x, this->y, this->z); }
+inline Vec4Int Vec4Int::ZXYW() const { return Vec4Int(this->z, this->x, this->y, this->w); }
+inline Vec4Int Vec4Int::ZXZX() const { return Vec4Int(this->z, this->x, this->z, this->x); }
+inline Vec4Int Vec4Int::ZXZY() const { return Vec4Int(this->z, this->x, this->z, this->y); }
+inline Vec4Int Vec4Int::ZXZZ() const { return Vec4Int(this->z, this->x, this->z, this->z); }
+inline Vec4Int Vec4Int::ZXZW() const { return Vec4Int(this->z, this->x, this->z, this->w); }
+inline Vec4Int Vec4Int::ZXWX() const { return Vec4Int(this->z, this->x, this->w, this->x); }
+inline Vec4Int Vec4Int::ZXWY() const { return Vec4Int(this->z, this->x, this->w, this->y); }
+inline Vec4Int Vec4Int::ZXWZ() const { return Vec4Int(this->z, this->x, this->w, this->z); }
+inline Vec4Int Vec4Int::ZXWW() const { return Vec4Int(this->z, this->x, this->w, this->w); }
+inline Vec4Int Vec4Int::ZYXX() const { return Vec4Int(this->z, this->y, this->x, this->x); }
+inline Vec4Int Vec4Int::ZYXY() const { return Vec4Int(this->z, this->y, this->x, this->y); }
+inline Vec4Int Vec4Int::ZYXZ() const { return Vec4Int(this->z, this->y, this->x, this->z); }
+inline Vec4Int Vec4Int::ZYXW() const { return Vec4Int(this->z, this->y, this->x, this->w); }
+inline Vec4Int Vec4Int::ZYYX() const { return Vec4Int(this->z, this->y, this->y, this->x); }
+inline Vec4Int Vec4Int::ZYYY() const { return Vec4Int(this->z, this->y, this->y, this->y); }
+inline Vec4Int Vec4Int::ZYYZ() const { return Vec4Int(this->z, this->y, this->y, this->z); }
+inline Vec4Int Vec4Int::ZYYW() const { return Vec4Int(this->z, this->y, this->y, this->w); }
+inline Vec4Int Vec4Int::ZYZX() const { return Vec4Int(this->z, this->y, this->z, this->x); }
+inline Vec4Int Vec4Int::ZYZY() const { return Vec4Int(this->z, this->y, this->z, this->y); }
+inline Vec4Int Vec4Int::ZYZZ() const { return Vec4Int(this->z, this->y, this->z, this->z); }
+inline Vec4Int Vec4Int::ZYZW() const { return Vec4Int(this->z, this->y, this->z, this->w); }
+inline Vec4Int Vec4Int::ZYWX() const { return Vec4Int(this->z, this->y, this->w, this->x); }
+inline Vec4Int Vec4Int::ZYWY() const { return Vec4Int(this->z, this->y, this->w, this->y); }
+inline Vec4Int Vec4Int::ZYWZ() const { return Vec4Int(this->z, this->y, this->w, this->z); }
+inline Vec4Int Vec4Int::ZYWW() const { return Vec4Int(this->z, this->y, this->w, this->w); }
+inline Vec4Int Vec4Int::ZZXX() const { return Vec4Int(this->z, this->z, this->x, this->x); }
+inline Vec4Int Vec4Int::ZZXY() const { return Vec4Int(this->z, this->z, this->x, this->y); }
+inline Vec4Int Vec4Int::ZZXZ() const { return Vec4Int(this->z, this->z, this->x, this->z); }
+inline Vec4Int Vec4Int::ZZXW() const { return Vec4Int(this->z, this->z, this->x, this->w); }
+inline Vec4Int Vec4Int::ZZYX() const { return Vec4Int(this->z, this->z, this->y, this->x); }
+inline Vec4Int Vec4Int::ZZYY() const { return Vec4Int(this->z, this->z, this->y, this->y); }
+inline Vec4Int Vec4Int::ZZYZ() const { return Vec4Int(this->z, this->z, this->y, this->z); }
+inline Vec4Int Vec4Int::ZZYW() const { return Vec4Int(this->z, this->z, this->y, this->w); }
+inline Vec4Int Vec4Int::ZZZX() const { return Vec4Int(this->z, this->z, this->z, this->x); }
+inline Vec4Int Vec4Int::ZZZY() const { return Vec4Int(this->z, this->z, this->z, this->y); }
+inline Vec4Int Vec4Int::ZZZZ() const { return Vec4Int(this->z, this->z, this->z, this->z); }
+inline Vec4Int Vec4Int::ZZZW() const { return Vec4Int(this->z, this->z, this->z, this->w); }
+inline Vec4Int Vec4Int::ZZWX() const { return Vec4Int(this->z, this->z, this->w, this->x); }
+inline Vec4Int Vec4Int::ZZWY() const { return Vec4Int(this->z, this->z, this->w, this->y); }
+inline Vec4Int Vec4Int::ZZWZ() const { return Vec4Int(this->z, this->z, this->w, this->z); }
+inline Vec4Int Vec4Int::ZZWW() const { return Vec4Int(this->z, this->z, this->w, this->w); }
+inline Vec4Int Vec4Int::ZWXX() const { return Vec4Int(this->z, this->w, this->x, this->x); }
+inline Vec4Int Vec4Int::ZWXY() const { return Vec4Int(this->z, this->w, this->x, this->y); }
+inline Vec4Int Vec4Int::ZWXZ() const { return Vec4Int(this->z, this->w, this->x, this->z); }
+inline Vec4Int Vec4Int::ZWXW() const { return Vec4Int(this->z, this->w, this->x, this->w); }
+inline Vec4Int Vec4Int::ZWYX() const { return Vec4Int(this->z, this->w, this->y, this->x); }
+inline Vec4Int Vec4Int::ZWYY() const { return Vec4Int(this->z, this->w, this->y, this->y); }
+inline Vec4Int Vec4Int::ZWYZ() const { return Vec4Int(this->z, this->w, this->y, this->z); }
+inline Vec4Int Vec4Int::ZWYW() const { return Vec4Int(this->z, this->w, this->y, this->w); }
+inline Vec4Int Vec4Int::ZWZX() const { return Vec4Int(this->z, this->w, this->z, this->x); }
+inline Vec4Int Vec4Int::ZWZY() const { return Vec4Int(this->z, this->w, this->z, this->y); }
+inline Vec4Int Vec4Int::ZWZZ() const { return Vec4Int(this->z, this->w, this->z, this->z); }
+inline Vec4Int Vec4Int::ZWZW() const { return Vec4Int(this->z, this->w, this->z, this->w); }
+inline Vec4Int Vec4Int::ZWWX() const { return Vec4Int(this->z, this->w, this->w, this->x); }
+inline Vec4Int Vec4Int::ZWWY() const { return Vec4Int(this->z, this->w, this->w, this->y); }
+inline Vec4Int Vec4Int::ZWWZ() const { return Vec4Int(this->z, this->w, this->w, this->z); }
+inline Vec4Int Vec4Int::ZWWW() const { return Vec4Int(this->z, this->w, this->w, this->w); }
+inline Vec4Int Vec4Int::WXXX() const { return Vec4Int(this->w, this->x, this->x, this->x); }
+inline Vec4Int Vec4Int::WXXY() const { return Vec4Int(this->w, this->x, this->x, this->y); }
+inline Vec4Int Vec4Int::WXXZ() const { return Vec4Int(this->w, this->x, this->x, this->z); }
+inline Vec4Int Vec4Int::WXXW() const { return Vec4Int(this->w, this->x, this->x, this->w); }
+inline Vec4Int Vec4Int::WXYX() const { return Vec4Int(this->w, this->x, this->y, this->x); }
+inline Vec4Int Vec4Int::WXYY() const { return Vec4Int(this->w, this->x, this->y, this->y); }
+inline Vec4Int Vec4Int::WXYZ() const { return Vec4Int(this->w, this->x, this->y, this->z); }
+inline Vec4Int Vec4Int::WXYW() const { return Vec4Int(this->w, this->x, this->y, this->w); }
+inline Vec4Int Vec4Int::WXZX() const { return Vec4Int(this->w, this->x, this->z, this->x); }
+inline Vec4Int Vec4Int::WXZY() const { return Vec4Int(this->w, this->x, this->z, this->y); }
+inline Vec4Int Vec4Int::WXZZ() const { return Vec4Int(this->w, this->x, this->z, this->z); }
+inline Vec4Int Vec4Int::WXZW() const { return Vec4Int(this->w, this->x, this->z, this->w); }
+inline Vec4Int Vec4Int::WXWX() const { return Vec4Int(this->w, this->x, this->w, this->x); }
+inline Vec4Int Vec4Int::WXWY() const { return Vec4Int(this->w, this->x, this->w, this->y); }
+inline Vec4Int Vec4Int::WXWZ() const { return Vec4Int(this->w, this->x, this->w, this->z); }
+inline Vec4Int Vec4Int::WXWW() const { return Vec4Int(this->w, this->x, this->w, this->w); }
+inline Vec4Int Vec4Int::WYXX() const { return Vec4Int(this->w, this->y, this->x, this->x); }
+inline Vec4Int Vec4Int::WYXY() const { return Vec4Int(this->w, this->y, this->x, this->y); }
+inline Vec4Int Vec4Int::WYXZ() const { return Vec4Int(this->w, this->y, this->x, this->z); }
+inline Vec4Int Vec4Int::WYXW() const { return Vec4Int(this->w, this->y, this->x, this->w); }
+inline Vec4Int Vec4Int::WYYX() const { return Vec4Int(this->w, this->y, this->y, this->x); }
+inline Vec4Int Vec4Int::WYYY() const { return Vec4Int(this->w, this->y, this->y, this->y); }
+inline Vec4Int Vec4Int::WYYZ() const { return Vec4Int(this->w, this->y, this->y, this->z); }
+inline Vec4Int Vec4Int::WYYW() const { return Vec4Int(this->w, this->y, this->y, this->w); }
+inline Vec4Int Vec4Int::WYZX() const { return Vec4Int(this->w, this->y, this->z, this->x); }
+inline Vec4Int Vec4Int::WYZY() const { return Vec4Int(this->w, this->y, this->z, this->y); }
+inline Vec4Int Vec4Int::WYZZ() const { return Vec4Int(this->w, this->y, this->z, this->z); }
+inline Vec4Int Vec4Int::WYZW() const { return Vec4Int(this->w, this->y, this->z, this->w); }
+inline Vec4Int Vec4Int::WYWX() const { return Vec4Int(this->w, this->y, this->w, this->x); }
+inline Vec4Int Vec4Int::WYWY() const { return Vec4Int(this->w, this->y, this->w, this->y); }
+inline Vec4Int Vec4Int::WYWZ() const { return Vec4Int(this->w, this->y, this->w, this->z); }
+inline Vec4Int Vec4Int::WYWW() const { return Vec4Int(this->w, this->y, this->w, this->w); }
+inline Vec4Int Vec4Int::WZXX() const { return Vec4Int(this->w, this->z, this->x, this->x); }
+inline Vec4Int Vec4Int::WZXY() const { return Vec4Int(this->w, this->z, this->x, this->y); }
+inline Vec4Int Vec4Int::WZXZ() const { return Vec4Int(this->w, this->z, this->x, this->z); }
+inline Vec4Int Vec4Int::WZXW() const { return Vec4Int(this->w, this->z, this->x, this->w); }
+inline Vec4Int Vec4Int::WZYX() const { return Vec4Int(this->w, this->z, this->y, this->x); }
+inline Vec4Int Vec4Int::WZYY() const { return Vec4Int(this->w, this->z, this->y, this->y); }
+inline Vec4Int Vec4Int::WZYZ() const { return Vec4Int(this->w, this->z, this->y, this->z); }
+inline Vec4Int Vec4Int::WZYW() const { return Vec4Int(this->w, this->z, this->y, this->w); }
+inline Vec4Int Vec4Int::WZZX() const { return Vec4Int(this->w, this->z, this->z, this->x); }
+inline Vec4Int Vec4Int::WZZY() const { return Vec4Int(this->w, this->z, this->z, this->y); }
+inline Vec4Int Vec4Int::WZZZ() const { return Vec4Int(this->w, this->z, this->z, this->z); }
+inline Vec4Int Vec4Int::WZZW() const { return Vec4Int(this->w, this->z, this->z, this->w); }
+inline Vec4Int Vec4Int::WZWX() const { return Vec4Int(this->w, this->z, this->w, this->x); }
+inline Vec4Int Vec4Int::WZWY() const { return Vec4Int(this->w, this->z, this->w, this->y); }
+inline Vec4Int Vec4Int::WZWZ() const { return Vec4Int(this->w, this->z, this->w, this->z); }
+inline Vec4Int Vec4Int::WZWW() const { return Vec4Int(this->w, this->z, this->w, this->w); }
+inline Vec4Int Vec4Int::WWXX() const { return Vec4Int(this->w, this->w, this->x, this->x); }
+inline Vec4Int Vec4Int::WWXY() const { return Vec4Int(this->w, this->w, this->x, this->y); }
+inline Vec4Int Vec4Int::WWXZ() const { return Vec4Int(this->w, this->w, this->x, this->z); }
+inline Vec4Int Vec4Int::WWXW() const { return Vec4Int(this->w, this->w, this->x, this->w); }
+inline Vec4Int Vec4Int::WWYX() const { return Vec4Int(this->w, this->w, this->y, this->x); }
+inline Vec4Int Vec4Int::WWYY() const { return Vec4Int(this->w, this->w, this->y, this->y); }
+inline Vec4Int Vec4Int::WWYZ() const { return Vec4Int(this->w, this->w, this->y, this->z); }
+inline Vec4Int Vec4Int::WWYW() const { return Vec4Int(this->w, this->w, this->y, this->w); }
+inline Vec4Int Vec4Int::WWZX() const { return Vec4Int(this->w, this->w, this->z, this->x); }
+inline Vec4Int Vec4Int::WWZY() const { return Vec4Int(this->w, this->w, this->z, this->y); }
+inline Vec4Int Vec4Int::WWZZ() const { return Vec4Int(this->w, this->w, this->z, this->z); }
+inline Vec4Int Vec4Int::WWZW() const { return Vec4Int(this->w, this->w, this->z, this->w); }
+inline Vec4Int Vec4Int::WWWX() const { return Vec4Int(this->w, this->w, this->w, this->x); }
+inline Vec4Int Vec4Int::WWWY() const { return Vec4Int(this->w, this->w, this->w, this->y); }
+inline Vec4Int Vec4Int::WWWZ() const { return Vec4Int(this->w, this->w, this->w, this->z); }
+inline Vec4Int Vec4Int::WWWW() const { return Vec4Int(this->w, this->w, this->w, this->w); }
+inline Vec4Int Vec4Int::RRRR() const { return Vec4Int(this->x, this->x, this->x, this->x); }
+inline Vec4Int Vec4Int::RRRG() const { return Vec4Int(this->x, this->x, this->x, this->y); }
+inline Vec4Int Vec4Int::RRRB() const { return Vec4Int(this->x, this->x, this->x, this->z); }
+inline Vec4Int Vec4Int::RRRA() const { return Vec4Int(this->x, this->x, this->x, this->w); }
+inline Vec4Int Vec4Int::RRGR() const { return Vec4Int(this->x, this->x, this->y, this->x); }
+inline Vec4Int Vec4Int::RRGG() const { return Vec4Int(this->x, this->x, this->y, this->y); }
+inline Vec4Int Vec4Int::RRGB() const { return Vec4Int(this->x, this->x, this->y, this->z); }
+inline Vec4Int Vec4Int::RRGA() const { return Vec4Int(this->x, this->x, this->y, this->w); }
+inline Vec4Int Vec4Int::RRBR() const { return Vec4Int(this->x, this->x, this->z, this->x); }
+inline Vec4Int Vec4Int::RRBG() const { return Vec4Int(this->x, this->x, this->z, this->y); }
+inline Vec4Int Vec4Int::RRBB() const { return Vec4Int(this->x, this->x, this->z, this->z); }
+inline Vec4Int Vec4Int::RRBA() const { return Vec4Int(this->x, this->x, this->z, this->w); }
+inline Vec4Int Vec4Int::RRAR() const { return Vec4Int(this->x, this->x, this->w, this->x); }
+inline Vec4Int Vec4Int::RRAG() const { return Vec4Int(this->x, this->x, this->w, this->y); }
+inline Vec4Int Vec4Int::RRAB() const { return Vec4Int(this->x, this->x, this->w, this->z); }
+inline Vec4Int Vec4Int::RRAA() const { return Vec4Int(this->x, this->x, this->w, this->w); }
+inline Vec4Int Vec4Int::RGRR() const { return Vec4Int(this->x, this->y, this->x, this->x); }
+inline Vec4Int Vec4Int::RGRG() const { return Vec4Int(this->x, this->y, this->x, this->y); }
+inline Vec4Int Vec4Int::RGRB() const { return Vec4Int(this->x, this->y, this->x, this->z); }
+inline Vec4Int Vec4Int::RGRA() const { return Vec4Int(this->x, this->y, this->x, this->w); }
+inline Vec4Int Vec4Int::RGGR() const { return Vec4Int(this->x, this->y, this->y, this->x); }
+inline Vec4Int Vec4Int::RGGG() const { return Vec4Int(this->x, this->y, this->y, this->y); }
+inline Vec4Int Vec4Int::RGGB() const { return Vec4Int(this->x, this->y, this->y, this->z); }
+inline Vec4Int Vec4Int::RGGA() const { return Vec4Int(this->x, this->y, this->y, this->w); }
+inline Vec4Int Vec4Int::RGBR() const { return Vec4Int(this->x, this->y, this->z, this->x); }
+inline Vec4Int Vec4Int::RGBG() const { return Vec4Int(this->x, this->y, this->z, this->y); }
+inline Vec4Int Vec4Int::RGBB() const { return Vec4Int(this->x, this->y, this->z, this->z); }
+inline Vec4Int Vec4Int::RGAR() const { return Vec4Int(this->x, this->y, this->w, this->x); }
+inline Vec4Int Vec4Int::RGAG() const { return Vec4Int(this->x, this->y, this->w, this->y); }
+inline Vec4Int Vec4Int::RGAB() const { return Vec4Int(this->x, this->y, this->w, this->z); }
+inline Vec4Int Vec4Int::RGAA() const { return Vec4Int(this->x, this->y, this->w, this->w); }
+inline Vec4Int Vec4Int::RBRR() const { return Vec4Int(this->x, this->z, this->x, this->x); }
+inline Vec4Int Vec4Int::RBRG() const { return Vec4Int(this->x, this->z, this->x, this->y); }
+inline Vec4Int Vec4Int::RBRB() const { return Vec4Int(this->x, this->z, this->x, this->z); }
+inline Vec4Int Vec4Int::RBRA() const { return Vec4Int(this->x, this->z, this->x, this->w); }
+inline Vec4Int Vec4Int::RBGR() const { return Vec4Int(this->x, this->z, this->y, this->x); }
+inline Vec4Int Vec4Int::RBGG() const { return Vec4Int(this->x, this->z, this->y, this->y); }
+inline Vec4Int Vec4Int::RBGB() const { return Vec4Int(this->x, this->z, this->y, this->z); }
+inline Vec4Int Vec4Int::RBGA() const { return Vec4Int(this->x, this->z, this->y, this->w); }
+inline Vec4Int Vec4Int::RBBR() const { return Vec4Int(this->x, this->z, this->z, this->x); }
+inline Vec4Int Vec4Int::RBBG() const { return Vec4Int(this->x, this->z, this->z, this->y); }
+inline Vec4Int Vec4Int::RBBB() const { return Vec4Int(this->x, this->z, this->z, this->z); }
+inline Vec4Int Vec4Int::RBBA() const { return Vec4Int(this->x, this->z, this->z, this->w); }
+inline Vec4Int Vec4Int::RBAR() const { return Vec4Int(this->x, this->z, this->w, this->x); }
+inline Vec4Int Vec4Int::RBAG() const { return Vec4Int(this->x, this->z, this->w, this->y); }
+inline Vec4Int Vec4Int::RBAB() const { return Vec4Int(this->x, this->z, this->w, this->z); }
+inline Vec4Int Vec4Int::RBAA() const { return Vec4Int(this->x, this->z, this->w, this->w); }
+inline Vec4Int Vec4Int::RARR() const { return Vec4Int(this->x, this->w, this->x, this->x); }
+inline Vec4Int Vec4Int::RARG() const { return Vec4Int(this->x, this->w, this->x, this->y); }
+inline Vec4Int Vec4Int::RARB() const { return Vec4Int(this->x, this->w, this->x, this->z); }
+inline Vec4Int Vec4Int::RARA() const { return Vec4Int(this->x, this->w, this->x, this->w); }
+inline Vec4Int Vec4Int::RAGR() const { return Vec4Int(this->x, this->w, this->y, this->x); }
+inline Vec4Int Vec4Int::RAGG() const { return Vec4Int(this->x, this->w, this->y, this->y); }
+inline Vec4Int Vec4Int::RAGB() const { return Vec4Int(this->x, this->w, this->y, this->z); }
+inline Vec4Int Vec4Int::RAGA() const { return Vec4Int(this->x, this->w, this->y, this->w); }
+inline Vec4Int Vec4Int::RABR() const { return Vec4Int(this->x, this->w, this->z, this->x); }
+inline Vec4Int Vec4Int::RABG() const { return Vec4Int(this->x, this->w, this->z, this->y); }
+inline Vec4Int Vec4Int::RABB() const { return Vec4Int(this->x, this->w, this->z, this->z); }
+inline Vec4Int Vec4Int::RABA() const { return Vec4Int(this->x, this->w, this->z, this->w); }
+inline Vec4Int Vec4Int::RAAR() const { return Vec4Int(this->x, this->w, this->w, this->x); }
+inline Vec4Int Vec4Int::RAAG() const { return Vec4Int(this->x, this->w, this->w, this->y); }
+inline Vec4Int Vec4Int::RAAB() const { return Vec4Int(this->x, this->w, this->w, this->z); }
+inline Vec4Int Vec4Int::RAAA() const { return Vec4Int(this->x, this->w, this->w, this->w); }
+inline Vec4Int Vec4Int::GRRR() const { return Vec4Int(this->y, this->x, this->x, this->x); }
+inline Vec4Int Vec4Int::GRRG() const { return Vec4Int(this->y, this->x, this->x, this->y); }
+inline Vec4Int Vec4Int::GRRB() const { return Vec4Int(this->y, this->x, this->x, this->z); }
+inline Vec4Int Vec4Int::GRRA() const { return Vec4Int(this->y, this->x, this->x, this->w); }
+inline Vec4Int Vec4Int::GRGR() const { return Vec4Int(this->y, this->x, this->y, this->x); }
+inline Vec4Int Vec4Int::GRGG() const { return Vec4Int(this->y, this->x, this->y, this->y); }
+inline Vec4Int Vec4Int::GRGB() const { return Vec4Int(this->y, this->x, this->y, this->z); }
+inline Vec4Int Vec4Int::GRGA() const { return Vec4Int(this->y, this->x, this->y, this->w); }
+inline Vec4Int Vec4Int::GRBR() const { return Vec4Int(this->y, this->x, this->z, this->x); }
+inline Vec4Int Vec4Int::GRBG() const { return Vec4Int(this->y, this->x, this->z, this->y); }
+inline Vec4Int Vec4Int::GRBB() const { return Vec4Int(this->y, this->x, this->z, this->z); }
+inline Vec4Int Vec4Int::GRBA() const { return Vec4Int(this->y, this->x, this->z, this->w); }
+inline Vec4Int Vec4Int::GRAR() const { return Vec4Int(this->y, this->x, this->w, this->x); }
+inline Vec4Int Vec4Int::GRAG() const { return Vec4Int(this->y, this->x, this->w, this->y); }
+inline Vec4Int Vec4Int::GRAB() const { return Vec4Int(this->y, this->x, this->w, this->z); }
+inline Vec4Int Vec4Int::GRAA() const { return Vec4Int(this->y, this->x, this->w, this->w); }
+inline Vec4Int Vec4Int::GGRR() const { return Vec4Int(this->y, this->y, this->x, this->x); }
+inline Vec4Int Vec4Int::GGRG() const { return Vec4Int(this->y, this->y, this->x, this->y); }
+inline Vec4Int Vec4Int::GGRB() const { return Vec4Int(this->y, this->y, this->x, this->z); }
+inline Vec4Int Vec4Int::GGRA() const { return Vec4Int(this->y, this->y, this->x, this->w); }
+inline Vec4Int Vec4Int::GGGR() const { return Vec4Int(this->y, this->y, this->y, this->x); }
+inline Vec4Int Vec4Int::GGGG() const { return Vec4Int(this->y, this->y, this->y, this->y); }
+inline Vec4Int Vec4Int::GGGB() const { return Vec4Int(this->y, this->y, this->y, this->z); }
+inline Vec4Int Vec4Int::GGGA() const { return Vec4Int(this->y, this->y, this->y, this->w); }
+inline Vec4Int Vec4Int::GGBR() const { return Vec4Int(this->y, this->y, this->z, this->x); }
+inline Vec4Int Vec4Int::GGBG() const { return Vec4Int(this->y, this->y, this->z, this->y); }
+inline Vec4Int Vec4Int::GGBB() const { return Vec4Int(this->y, this->y, this->z, this->z); }
+inline Vec4Int Vec4Int::GGBA() const { return Vec4Int(this->y, this->y, this->z, this->w); }
+inline Vec4Int Vec4Int::GGAR() const { return Vec4Int(this->y, this->y, this->w, this->x); }
+inline Vec4Int Vec4Int::GGAG() const { return Vec4Int(this->y, this->y, this->w, this->y); }
+inline Vec4Int Vec4Int::GGAB() const { return Vec4Int(this->y, this->y, this->w, this->z); }
+inline Vec4Int Vec4Int::GGAA() const { return Vec4Int(this->y, this->y, this->w, this->w); }
+inline Vec4Int Vec4Int::GBRR() const { return Vec4Int(this->y, this->z, this->x, this->x); }
+inline Vec4Int Vec4Int::GBRG() const { return Vec4Int(this->y, this->z, this->x, this->y); }
+inline Vec4Int Vec4Int::GBRB() const { return Vec4Int(this->y, this->z, this->x, this->z); }
+inline Vec4Int Vec4Int::GBRA() const { return Vec4Int(this->y, this->z, this->x, this->w); }
+inline Vec4Int Vec4Int::GBGR() const { return Vec4Int(this->y, this->z, this->y, this->x); }
+inline Vec4Int Vec4Int::GBGG() const { return Vec4Int(this->y, this->z, this->y, this->y); }
+inline Vec4Int Vec4Int::GBGB() const { return Vec4Int(this->y, this->z, this->y, this->z); }
+inline Vec4Int Vec4Int::GBGA() const { return Vec4Int(this->y, this->z, this->y, this->w); }
+inline Vec4Int Vec4Int::GBBR() const { return Vec4Int(this->y, this->z, this->z, this->x); }
+inline Vec4Int Vec4Int::GBBG() const { return Vec4Int(this->y, this->z, this->z, this->y); }
+inline Vec4Int Vec4Int::GBBB() const { return Vec4Int(this->y, this->z, this->z, this->z); }
+inline Vec4Int Vec4Int::GBBA() const { return Vec4Int(this->y, this->z, this->z, this->w); }
+inline Vec4Int Vec4Int::GBAR() const { return Vec4Int(this->y, this->z, this->w, this->x); }
+inline Vec4Int Vec4Int::GBAG() const { return Vec4Int(this->y, this->z, this->w, this->y); }
+inline Vec4Int Vec4Int::GBAB() const { return Vec4Int(this->y, this->z, this->w, this->z); }
+inline Vec4Int Vec4Int::GBAA() const { return Vec4Int(this->y, this->z, this->w, this->w); }
+inline Vec4Int Vec4Int::GARR() const { return Vec4Int(this->y, this->w, this->x, this->x); }
+inline Vec4Int Vec4Int::GARG() const { return Vec4Int(this->y, this->w, this->x, this->y); }
+inline Vec4Int Vec4Int::GARB() const { return Vec4Int(this->y, this->w, this->x, this->z); }
+inline Vec4Int Vec4Int::GARA() const { return Vec4Int(this->y, this->w, this->x, this->w); }
+inline Vec4Int Vec4Int::GAGR() const { return Vec4Int(this->y, this->w, this->y, this->x); }
+inline Vec4Int Vec4Int::GAGG() const { return Vec4Int(this->y, this->w, this->y, this->y); }
+inline Vec4Int Vec4Int::GAGB() const { return Vec4Int(this->y, this->w, this->y, this->z); }
+inline Vec4Int Vec4Int::GAGA() const { return Vec4Int(this->y, this->w, this->y, this->w); }
+inline Vec4Int Vec4Int::GABR() const { return Vec4Int(this->y, this->w, this->z, this->x); }
+inline Vec4Int Vec4Int::GABG() const { return Vec4Int(this->y, this->w, this->z, this->y); }
+inline Vec4Int Vec4Int::GABB() const { return Vec4Int(this->y, this->w, this->z, this->z); }
+inline Vec4Int Vec4Int::GABA() const { return Vec4Int(this->y, this->w, this->z, this->w); }
+inline Vec4Int Vec4Int::GAAR() const { return Vec4Int(this->y, this->w, this->w, this->x); }
+inline Vec4Int Vec4Int::GAAG() const { return Vec4Int(this->y, this->w, this->w, this->y); }
+inline Vec4Int Vec4Int::GAAB() const { return Vec4Int(this->y, this->w, this->w, this->z); }
+inline Vec4Int Vec4Int::GAAA() const { return Vec4Int(this->y, this->w, this->w, this->w); }
+inline Vec4Int Vec4Int::BRRR() const { return Vec4Int(this->z, this->x, this->x, this->x); }
+inline Vec4Int Vec4Int::BRRG() const { return Vec4Int(this->z, this->x, this->x, this->y); }
+inline Vec4Int Vec4Int::BRRB() const { return Vec4Int(this->z, this->x, this->x, this->z); }
+inline Vec4Int Vec4Int::BRRA() const { return Vec4Int(this->z, this->x, this->x, this->w); }
+inline Vec4Int Vec4Int::BRGR() const { return Vec4Int(this->z, this->x, this->y, this->x); }
+inline Vec4Int Vec4Int::BRGG() const { return Vec4Int(this->z, this->x, this->y, this->y); }
+inline Vec4Int Vec4Int::BRGB() const { return Vec4Int(this->z, this->x, this->y, this->z); }
+inline Vec4Int Vec4Int::BRGA() const { return Vec4Int(this->z, this->x, this->y, this->w); }
+inline Vec4Int Vec4Int::BRBR() const { return Vec4Int(this->z, this->x, this->z, this->x); }
+inline Vec4Int Vec4Int::BRBG() const { return Vec4Int(this->z, this->x, this->z, this->y); }
+inline Vec4Int Vec4Int::BRBB() const { return Vec4Int(this->z, this->x, this->z, this->z); }
+inline Vec4Int Vec4Int::BRBA() const { return Vec4Int(this->z, this->x, this->z, this->w); }
+inline Vec4Int Vec4Int::BRAR() const { return Vec4Int(this->z, this->x, this->w, this->x); }
+inline Vec4Int Vec4Int::BRAG() const { return Vec4Int(this->z, this->x, this->w, this->y); }
+inline Vec4Int Vec4Int::BRAB() const { return Vec4Int(this->z, this->x, this->w, this->z); }
+inline Vec4Int Vec4Int::BRAA() const { return Vec4Int(this->z, this->x, this->w, this->w); }
+inline Vec4Int Vec4Int::BGRR() const { return Vec4Int(this->z, this->y, this->x, this->x); }
+inline Vec4Int Vec4Int::BGRG() const { return Vec4Int(this->z, this->y, this->x, this->y); }
+inline Vec4Int Vec4Int::BGRB() const { return Vec4Int(this->z, this->y, this->x, this->z); }
+inline Vec4Int Vec4Int::BGRA() const { return Vec4Int(this->z, this->y, this->x, this->w); }
+inline Vec4Int Vec4Int::BGGR() const { return Vec4Int(this->z, this->y, this->y, this->x); }
+inline Vec4Int Vec4Int::BGGG() const { return Vec4Int(this->z, this->y, this->y, this->y); }
+inline Vec4Int Vec4Int::BGGB() const { return Vec4Int(this->z, this->y, this->y, this->z); }
+inline Vec4Int Vec4Int::BGGA() const { return Vec4Int(this->z, this->y, this->y, this->w); }
+inline Vec4Int Vec4Int::BGBR() const { return Vec4Int(this->z, this->y, this->z, this->x); }
+inline Vec4Int Vec4Int::BGBG() const { return Vec4Int(this->z, this->y, this->z, this->y); }
+inline Vec4Int Vec4Int::BGBB() const { return Vec4Int(this->z, this->y, this->z, this->z); }
+inline Vec4Int Vec4Int::BGBA() const { return Vec4Int(this->z, this->y, this->z, this->w); }
+inline Vec4Int Vec4Int::BGAR() const { return Vec4Int(this->z, this->y, this->w, this->x); }
+inline Vec4Int Vec4Int::BGAG() const { return Vec4Int(this->z, this->y, this->w, this->y); }
+inline Vec4Int Vec4Int::BGAB() const { return Vec4Int(this->z, this->y, this->w, this->z); }
+inline Vec4Int Vec4Int::BGAA() const { return Vec4Int(this->z, this->y, this->w, this->w); }
+inline Vec4Int Vec4Int::BBRR() const { return Vec4Int(this->z, this->z, this->x, this->x); }
+inline Vec4Int Vec4Int::BBRG() const { return Vec4Int(this->z, this->z, this->x, this->y); }
+inline Vec4Int Vec4Int::BBRB() const { return Vec4Int(this->z, this->z, this->x, this->z); }
+inline Vec4Int Vec4Int::BBRA() const { return Vec4Int(this->z, this->z, this->x, this->w); }
+inline Vec4Int Vec4Int::BBGR() const { return Vec4Int(this->z, this->z, this->y, this->x); }
+inline Vec4Int Vec4Int::BBGG() const { return Vec4Int(this->z, this->z, this->y, this->y); }
+inline Vec4Int Vec4Int::BBGB() const { return Vec4Int(this->z, this->z, this->y, this->z); }
+inline Vec4Int Vec4Int::BBGA() const { return Vec4Int(this->z, this->z, this->y, this->w); }
+inline Vec4Int Vec4Int::BBBR() const { return Vec4Int(this->z, this->z, this->z, this->x); }
+inline Vec4Int Vec4Int::BBBG() const { return Vec4Int(this->z, this->z, this->z, this->y); }
+inline Vec4Int Vec4Int::BBBB() const { return Vec4Int(this->z, this->z, this->z, this->z); }
+inline Vec4Int Vec4Int::BBBA() const { return Vec4Int(this->z, this->z, this->z, this->w); }
+inline Vec4Int Vec4Int::BBAR() const { return Vec4Int(this->z, this->z, this->w, this->x); }
+inline Vec4Int Vec4Int::BBAG() const { return Vec4Int(this->z, this->z, this->w, this->y); }
+inline Vec4Int Vec4Int::BBAB() const { return Vec4Int(this->z, this->z, this->w, this->z); }
+inline Vec4Int Vec4Int::BBAA() const { return Vec4Int(this->z, this->z, this->w, this->w); }
+inline Vec4Int Vec4Int::BARR() const { return Vec4Int(this->z, this->w, this->x, this->x); }
+inline Vec4Int Vec4Int::BARG() const { return Vec4Int(this->z, this->w, this->x, this->y); }
+inline Vec4Int Vec4Int::BARB() const { return Vec4Int(this->z, this->w, this->x, this->z); }
+inline Vec4Int Vec4Int::BARA() const { return Vec4Int(this->z, this->w, this->x, this->w); }
+inline Vec4Int Vec4Int::BAGR() const { return Vec4Int(this->z, this->w, this->y, this->x); }
+inline Vec4Int Vec4Int::BAGG() const { return Vec4Int(this->z, this->w, this->y, this->y); }
+inline Vec4Int Vec4Int::BAGB() const { return Vec4Int(this->z, this->w, this->y, this->z); }
+inline Vec4Int Vec4Int::BAGA() const { return Vec4Int(this->z, this->w, this->y, this->w); }
+inline Vec4Int Vec4Int::BABR() const { return Vec4Int(this->z, this->w, this->z, this->x); }
+inline Vec4Int Vec4Int::BABG() const { return Vec4Int(this->z, this->w, this->z, this->y); }
+inline Vec4Int Vec4Int::BABB() const { return Vec4Int(this->z, this->w, this->z, this->z); }
+inline Vec4Int Vec4Int::BABA() const { return Vec4Int(this->z, this->w, this->z, this->w); }
+inline Vec4Int Vec4Int::BAAR() const { return Vec4Int(this->z, this->w, this->w, this->x); }
+inline Vec4Int Vec4Int::BAAG() const { return Vec4Int(this->z, this->w, this->w, this->y); }
+inline Vec4Int Vec4Int::BAAB() const { return Vec4Int(this->z, this->w, this->w, this->z); }
+inline Vec4Int Vec4Int::BAAA() const { return Vec4Int(this->z, this->w, this->w, this->w); }
+inline Vec4Int Vec4Int::ARRR() const { return Vec4Int(this->w, this->x, this->x, this->x); }
+inline Vec4Int Vec4Int::ARRG() const { return Vec4Int(this->w, this->x, this->x, this->y); }
+inline Vec4Int Vec4Int::ARRB() const { return Vec4Int(this->w, this->x, this->x, this->z); }
+inline Vec4Int Vec4Int::ARRA() const { return Vec4Int(this->w, this->x, this->x, this->w); }
+inline Vec4Int Vec4Int::ARGR() const { return Vec4Int(this->w, this->x, this->y, this->x); }
+inline Vec4Int Vec4Int::ARGG() const { return Vec4Int(this->w, this->x, this->y, this->y); }
+inline Vec4Int Vec4Int::ARGB() const { return Vec4Int(this->w, this->x, this->y, this->z); }
+inline Vec4Int Vec4Int::ARGA() const { return Vec4Int(this->w, this->x, this->y, this->w); }
+inline Vec4Int Vec4Int::ARBR() const { return Vec4Int(this->w, this->x, this->z, this->x); }
+inline Vec4Int Vec4Int::ARBG() const { return Vec4Int(this->w, this->x, this->z, this->y); }
+inline Vec4Int Vec4Int::ARBB() const { return Vec4Int(this->w, this->x, this->z, this->z); }
+inline Vec4Int Vec4Int::ARBA() const { return Vec4Int(this->w, this->x, this->z, this->w); }
+inline Vec4Int Vec4Int::ARAR() const { return Vec4Int(this->w, this->x, this->w, this->x); }
+inline Vec4Int Vec4Int::ARAG() const { return Vec4Int(this->w, this->x, this->w, this->y); }
+inline Vec4Int Vec4Int::ARAB() const { return Vec4Int(this->w, this->x, this->w, this->z); }
+inline Vec4Int Vec4Int::ARAA() const { return Vec4Int(this->w, this->x, this->w, this->w); }
+inline Vec4Int Vec4Int::AGRR() const { return Vec4Int(this->w, this->y, this->x, this->x); }
+inline Vec4Int Vec4Int::AGRG() const { return Vec4Int(this->w, this->y, this->x, this->y); }
+inline Vec4Int Vec4Int::AGRB() const { return Vec4Int(this->w, this->y, this->x, this->z); }
+inline Vec4Int Vec4Int::AGRA() const { return Vec4Int(this->w, this->y, this->x, this->w); }
+inline Vec4Int Vec4Int::AGGR() const { return Vec4Int(this->w, this->y, this->y, this->x); }
+inline Vec4Int Vec4Int::AGGG() const { return Vec4Int(this->w, this->y, this->y, this->y); }
+inline Vec4Int Vec4Int::AGGB() const { return Vec4Int(this->w, this->y, this->y, this->z); }
+inline Vec4Int Vec4Int::AGGA() const { return Vec4Int(this->w, this->y, this->y, this->w); }
+inline Vec4Int Vec4Int::AGBR() const { return Vec4Int(this->w, this->y, this->z, this->x); }
+inline Vec4Int Vec4Int::AGBG() const { return Vec4Int(this->w, this->y, this->z, this->y); }
+inline Vec4Int Vec4Int::AGBB() const { return Vec4Int(this->w, this->y, this->z, this->z); }
+inline Vec4Int Vec4Int::AGBA() const { return Vec4Int(this->w, this->y, this->z, this->w); }
+inline Vec4Int Vec4Int::AGAR() const { return Vec4Int(this->w, this->y, this->w, this->x); }
+inline Vec4Int Vec4Int::AGAG() const { return Vec4Int(this->w, this->y, this->w, this->y); }
+inline Vec4Int Vec4Int::AGAB() const { return Vec4Int(this->w, this->y, this->w, this->z); }
+inline Vec4Int Vec4Int::AGAA() const { return Vec4Int(this->w, this->y, this->w, this->w); }
+inline Vec4Int Vec4Int::ABRR() const { return Vec4Int(this->w, this->z, this->x, this->x); }
+inline Vec4Int Vec4Int::ABRG() const { return Vec4Int(this->w, this->z, this->x, this->y); }
+inline Vec4Int Vec4Int::ABRB() const { return Vec4Int(this->w, this->z, this->x, this->z); }
+inline Vec4Int Vec4Int::ABRA() const { return Vec4Int(this->w, this->z, this->x, this->w); }
+inline Vec4Int Vec4Int::ABGR() const { return Vec4Int(this->w, this->z, this->y, this->x); }
+inline Vec4Int Vec4Int::ABGG() const { return Vec4Int(this->w, this->z, this->y, this->y); }
+inline Vec4Int Vec4Int::ABGB() const { return Vec4Int(this->w, this->z, this->y, this->z); }
+inline Vec4Int Vec4Int::ABGA() const { return Vec4Int(this->w, this->z, this->y, this->w); }
+inline Vec4Int Vec4Int::ABBR() const { return Vec4Int(this->w, this->z, this->z, this->x); }
+inline Vec4Int Vec4Int::ABBG() const { return Vec4Int(this->w, this->z, this->z, this->y); }
+inline Vec4Int Vec4Int::ABBB() const { return Vec4Int(this->w, this->z, this->z, this->z); }
+inline Vec4Int Vec4Int::ABBA() const { return Vec4Int(this->w, this->z, this->z, this->w); }
+inline Vec4Int Vec4Int::ABAR() const { return Vec4Int(this->w, this->z, this->w, this->x); }
+inline Vec4Int Vec4Int::ABAG() const { return Vec4Int(this->w, this->z, this->w, this->y); }
+inline Vec4Int Vec4Int::ABAB() const { return Vec4Int(this->w, this->z, this->w, this->z); }
+inline Vec4Int Vec4Int::ABAA() const { return Vec4Int(this->w, this->z, this->w, this->w); }
+inline Vec4Int Vec4Int::AARR() const { return Vec4Int(this->w, this->w, this->x, this->x); }
+inline Vec4Int Vec4Int::AARG() const { return Vec4Int(this->w, this->w, this->x, this->y); }
+inline Vec4Int Vec4Int::AARB() const { return Vec4Int(this->w, this->w, this->x, this->z); }
+inline Vec4Int Vec4Int::AARA() const { return Vec4Int(this->w, this->w, this->x, this->w); }
+inline Vec4Int Vec4Int::AAGR() const { return Vec4Int(this->w, this->w, this->y, this->x); }
+inline Vec4Int Vec4Int::AAGG() const { return Vec4Int(this->w, this->w, this->y, this->y); }
+inline Vec4Int Vec4Int::AAGB() const { return Vec4Int(this->w, this->w, this->y, this->z); }
+inline Vec4Int Vec4Int::AAGA() const { return Vec4Int(this->w, this->w, this->y, this->w); }
+inline Vec4Int Vec4Int::AABR() const { return Vec4Int(this->w, this->w, this->z, this->x); }
+inline Vec4Int Vec4Int::AABG() const { return Vec4Int(this->w, this->w, this->z, this->y); }
+inline Vec4Int Vec4Int::AABB() const { return Vec4Int(this->w, this->w, this->z, this->z); }
+inline Vec4Int Vec4Int::AABA() const { return Vec4Int(this->w, this->w, this->z, this->w); }
+inline Vec4Int Vec4Int::AAAR() const { return Vec4Int(this->w, this->w, this->w, this->x); }
+inline Vec4Int Vec4Int::AAAG() const { return Vec4Int(this->w, this->w, this->w, this->y); }
+inline Vec4Int Vec4Int::AAAB() const { return Vec4Int(this->w, this->w, this->w, this->z); }
+inline Vec4Int Vec4Int::AAAA() const { return Vec4Int(this->w, this->w, this->w, this->w); }
 
 #pragma endregion
 

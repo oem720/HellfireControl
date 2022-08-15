@@ -1,454 +1,444 @@
 
 #include <math.h>
-#include <cassert>
 
 #include "HCVector.h"
+
+#define HC_SHUFFLE2F(_vec, _x, _y) Vec2(_mm_shuffle_ps((_vec).m_fVec, (_vec).m_fVec, _MM_SHUFFLE(_y, _y, _y, _x)))
+#define HC_SHUFFLE3F(_vec, _x, _y, _z) Vec3(_mm_shuffle_ps((_vec).m_fVec, (_vec).m_fVec, _MM_SHUFFLE(_z, _z, _y, _x)))
+#define HC_SHUFFLE4F(_vec, _x, _y, _z, _w) Vec4(_mm_shuffle_ps((_vec).m_fVec, (_vec).m_fVec, _MM_SHUFFLE(_w, _z, _y, _x)))
+
+#define HC_SHUFFLE2D(_vec, _x, _y)
+#define HC_SHUFFLE3D(_vec, _x, _y, _z) 
+#define HC_SHUFFLE4D(_vec, _x, _y, _z, _w)
+
+#define HC_SHUFFLE2I(_vec, _x, _y)
+#define HC_SHUFFLE3I(_vec, _x, _y, _z)
+#define HC_SHUFFLE4I(_vec, _x, _y, _z, _w)
+
+#pragma region VectorHelperTypedefs
+
+typedef struct {
+	union {
+		uint32_t m_iInts[4];
+		__m128 m_fVec;
+	};
+} GlobalMask;
+
+HC_INLINE GlobalMask SignBitMask() {
+	static GlobalMask g_gmMask = { 0x80000000, 0x80000000, 0x80000000, 0x80000000 };
+	return g_gmMask;
+}
+
+#pragma endregion
 
 #pragma region FloatingPointVectors
 
 #pragma region Vec2
 
-inline Vec2::Vec2() : x(0.0f), y(0.0f) {}
-inline Vec2::Vec2(float _x, float _y) : x(_x), y(_y) {}
-inline Vec2::Vec2(const Vec2& _other) { (*this) = _other; }
+HC_INLINE explicit Vec2::Vec2() {}
 
-inline Vec2& Vec2::operator=(const Vec2& _other) {
-	if (this != &_other) {
-		this->x = _other.x;
-		this->y = _other.y;
+HC_INLINE explicit Vec2::Vec2(const float* _pValues) { m_fVec = _mm_set_ps(_pValues[1], _pValues[1], _pValues[1], _pValues[0]); }
+
+HC_INLINE explicit Vec2::Vec2(float _fX, float _fY) { m_fVec = _mm_set_ps(_fY, _fY, _fY, _fX); }
+
+HC_INLINE explicit Vec2::Vec2(int _iX, int _iY) { m_fVec = _mm_set_ps(static_cast<float>(_iY), static_cast<float>(_iY), static_cast<float>(_iY), static_cast<float>(_iX)); }
+
+HC_INLINE explicit Vec2::Vec2(__m128 _vData) { m_fVec = _vData; }
+
+HC_INLINE explicit Vec2::Vec2(const Vec2&& _vOther) { (*this) = std::move(_vOther); }
+
+HC_INLINE explicit Vec2::Vec2(const Vec2& _vOther) { (*this) = _vOther; }
+
+HC_MATHFUNCTION(Vec2&) Vec2::operator=(const Vec2& _vOther) {
+	if (this != &_vOther) {
+		this->m_fVec = _vOther.m_fVec;
 	}
 	return *this;
 }
 
-inline Vec2& Vec2::operator+=(const Vec2& _other) {
-	*this = *this + _other;
+HC_MATHFUNCTION(Vec2&) Vec2::operator=(const Vec2&& _vOther) {
+	if (this != &_vOther) {
+		this->m_fVec = std::move(_vOther.m_fVec);
+	}
 	return *this;
 }
 
-inline Vec2& Vec2::operator-=(const Vec2& _other) {
-	*this = *this - _other;
+HC_MATHFUNCTION(Vec2&) Vec2::operator+=(const Vec2& _vOther) {
+	*this = *this + _vOther;
 	return *this;
 }
 
-inline Vec2& Vec2::operator*=(const float _scale) {
-	*this = *this * _scale;
+HC_MATHFUNCTION(Vec2&) Vec2::operator-=(const Vec2& _vOther) {
+	*this = *this - _vOther;
 	return *this;
 }
 
-inline float& Vec2::operator[](int _ndx) {
-	assert(_ndx < 2);
-	return xy[_ndx];
+HC_MATHFUNCTION(Vec2&) Vec2::operator*=(const Vec2& _vOther) {
+	*this = *this * _vOther;
+	return *this;
 }
 
-inline float Vec2::operator[](int _ndx) const {
-	assert(_ndx < 2);
-	return xy[_ndx];
+HC_MATHFUNCTION(Vec2&) Vec2::operator*=(const float _fScale) {
+	*this = *this * _fScale;
+	return *this;
 }
 
-inline Vec2 Vec2::operator+(const Vec2& _other) const {
-	return Vec2(this->x + _other.x, this->y + _other.y);
+HC_MATHFUNCTION(Vec2&) Vec2::operator/=(const float _fScale) {
+	*this = *this / _fScale;
+	return *this;
 }
 
-inline Vec2 Vec2::operator-(const Vec2& _other) const {
-	return Vec2(this->x - _other.x, this->y - _other.y);
+HC_MATHFUNCTION(float&) Vec2::operator[](int _iNdx) {
+	assert(_iNdx < 2);
+	return m_fVec.m128_f32[_iNdx];
 }
 
-inline Vec2 Vec2::operator*(const float _scale) const {
-	return Vec2(this->x * _scale, this->y * _scale);
+HC_MATHFUNCTION(float) Vec2::operator[](int _iNdx) const {
+	assert(_iNdx < 2);
+	return m_fVec.m128_f32[_iNdx];
 }
 
-inline float Vec2::operator*(const Vec2& _other) const {
-	return (this->x * _other.x) + (this->y * _other.y);
+HC_MATHFUNCTION(Vec2) operator+(Vec2 _vLeft, Vec2 _vRight) {
+	_vLeft.m_fVec = _mm_add_ps(_vLeft.m_fVec, _vRight.m_fVec);
+	return _vLeft;
 }
 
-inline float Vec2::operator&(const Vec2& _other) const {
-	return (this->x * _other.y) - (this->y * _other.x);
+HC_MATHFUNCTION(Vec2) operator-(Vec2 _vLeft, Vec2 _vRight) {
+	_vLeft.m_fVec = _mm_sub_ps(_vLeft.m_fVec, _vRight.m_fVec);
+	return _vLeft;
 }
 
-inline Vec2 Vec2::operator~() const {
-	return Vec2();
+HC_MATHFUNCTION(Vec2) operator*(Vec2 _vLeft, float _fRight) {
+	_vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _mm_set1_ps(_fRight));
+	return _vLeft;
 }
 
-inline Vec2 Vec2::operator-() const {
-	return Vec2(-this->x, -this->y);
+HC_MATHFUNCTION(Vec2) operator*(float _fLeft, Vec2 _vRight) {
+	_vRight.m_fVec = _mm_mul_ps(_mm_set1_ps(_fLeft), _vRight.m_fVec);
+	return _vRight;
 }
 
-inline bool Vec2::operator==(const Vec2& _other) const {
-	return this->x == _other.x && this->y == _other.y;
+HC_MATHFUNCTION(Vec2) operator*(Vec2 _vLeft, Vec2 _vRight) {
+	_vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _vRight.m_fVec);
+	return _vLeft;
 }
 
-inline bool Vec2::operator<(const Vec2& _other) const {
-	return this->LengthSquared() < _other.LengthSquared();
+HC_MATHFUNCTION(float) operator&(Vec2 _vLeft, Vec2 _vRight) {
+	return Sum(_vLeft * _vRight);
 }
 
-inline bool Vec2::operator>(const Vec2& _other) const {
-	return this->LengthSquared() > _other.LengthSquared();
+HC_MATHFUNCTION(Vec2) Vec2::operator~() const {
+	return Vec2(_mm_setzero_ps());
 }
 
-inline bool Vec2::operator<=(const Vec2& _other) const {
-	return this->LengthSquared() <= _other.LengthSquared();
+HC_MATHFUNCTION(Vec2) Vec2::operator-() const {
+	return Vec2(_mm_setzero_ps()) - (*this);
 }
 
-inline bool Vec2::operator>=(const Vec2& _other) const {
-	return this->LengthSquared() >= _other.LengthSquared();
+HC_MATHFUNCTION(bool) operator==(Vec2 _vLeft, Vec2 _vRight) {
+	_vLeft.m_fVec = _mm_cmpeq_ps(_vLeft.m_fVec, _vRight.m_fVec);
+	return _mm_movemask_ps(_vLeft.m_fVec) & 3 == 3;
 }
 
-inline bool Vec2::operator!=(const Vec2& _other) const {
-	return this->x != _other.x || this->y != _other.y;
+HC_MATHFUNCTION(bool) operator<(Vec2 _vLeft, Vec2 _vRight) {
+	_vLeft.m_fVec = _mm_cmplt_ps(_vLeft.m_fVec, _vRight.m_fVec);
+	return _mm_movemask_ps(_vLeft.m_fVec) & 3 != 0;
 }
 
-inline float Vec2::Length() const {
-	return sqrtf((*this) * (*this));
+HC_MATHFUNCTION(bool) operator>(Vec2 _vLeft, Vec2 _vRight) {
+	_vLeft.m_fVec = _mm_cmpgt_ps(_vLeft.m_fVec, _vRight.m_fVec);
+	return _mm_movemask_ps(_vLeft.m_fVec) & 3 != 0;
 }
 
-inline float Vec2::LengthSquared() const {
-	return (*this) * (*this);
+HC_MATHFUNCTION(bool) operator<=(Vec2 _vLeft, Vec2 _vRight) {
+	_vLeft.m_fVec = _mm_cmple_ps(_vLeft.m_fVec, _vRight.m_fVec);
+	return _mm_movemask_ps(_vLeft.m_fVec) & 3 != 0;
+}
+
+HC_MATHFUNCTION(bool) operator>=(Vec2 _vLeft, Vec2 _vRight) {
+	_vLeft.m_fVec = _mm_cmpgt_ps(_vLeft.m_fVec, _vRight.m_fVec);
+	return _mm_movemask_ps(_vLeft.m_fVec) & 3 != 0;
+}
+
+HC_MATHFUNCTION(bool) operator!=(Vec2 _vLeft, Vec2 _vRight) {
+	_vLeft.m_fVec = _mm_cmpneq_ps(_vLeft.m_fVec, _vRight.m_fVec);
+	return _mm_movemask_ps(_vLeft.m_fVec) & 3 == 3;
+}
+
+HC_MATHFUNCTION(float) Vec2::Length() const {
+	return sqrtf((*this) & (*this));
+}
+
+HC_MATHFUNCTION(float) Vec2::LengthSquared() const {
+	return (*this) & (*this);
 }
 
 inline void Vec2::Normalize() {
-	float len = Length();
-	if (!len) return;
-
-	this->x /= len;
-	this->y /= len;
+	*this = this->Normalized();
 }
 
 inline Vec2 Vec2::Normalized() const {
-	float len = Length();
-	if (!len) return Vec2();
-
-	return Vec2(this->x / len, this->x / len);
+	return (*this) * (1.0f / Length());
 }
 
-inline float Vec2::AngleBetween(const Vec2& _other) const {
-	return acosf(this->Normalized() * _other.Normalized());
+HC_MATHFUNCTION(float) Vec2::AngleBetween(const Vec2& _vOther) const {
+	return acosf(this->Normalized() & _vOther.Normalized());
 }
 
-inline float Vec2::Dot(const Vec2& _other) const {
-	return *this * _other;
-}
-
-inline float Vec2::Cross(const Vec2& _other) const {
+HC_MATHFUNCTION(float) Vec2::Dot(const Vec2& _other) const {
 	return *this & _other;
 }
 
-inline void Vec2::Add(const Vec2& _other) {
+HC_MATHFUNCTION(float) Vec2::Cross(const Vec2& _other) const {
+	return this->X() * _other.Y() - _other.Y() * this->X();
+}
+
+HC_MATHFUNCTION(void) Vec2::Add(const Vec2& _other) {
 	*this += _other;
 }
 
-inline void Vec2::Subtract(const Vec2& _other) {
+HC_MATHFUNCTION(void) Vec2::Subtract(const Vec2& _other) {
 	*this -= _other;
 }
 
-inline void Vec2::Scale(const float _scale) {
+HC_MATHFUNCTION(void) Vec2::Scale(const float _scale) {
 	*this *= _scale;
 }
 
-inline void Vec2::Zero() {
+HC_MATHFUNCTION(Vec2) Vec2::AbsoluteValue() {
+	return _mm_andnot_ps(m_fVec, SignBitMask().m_fVec);
+}
+
+HC_MATHFUNCTION(void) Vec2::Zero() {
 	*this = ~(*this);
 }
 
-inline void Vec2::Negate() {
+HC_MATHFUNCTION(void) Vec2::Negate() {
 	*this = -(*this);
 }
 
-inline bool Vec2::Equals(const Vec2& _other) const {
+HC_MATHFUNCTION(bool) Vec2::Equals(const Vec2& _other) const {
 	return *this == _other;
 }
 
-inline bool Vec2::Less(const Vec2& _other) const {
+HC_MATHFUNCTION(bool) Vec2::Less(const Vec2& _other) const {
 	return *this < _other;
 }
 
-inline bool Vec2::LessThanOrEquals(const Vec2& _other) const {
+HC_MATHFUNCTION(bool) Vec2::LessThanOrEquals(const Vec2& _other) const {
 	return *this <= _other;
 }
 
-inline bool Vec2::Greater(const Vec2& _other) const {
+HC_MATHFUNCTION(bool) Vec2::Greater(const Vec2& _other) const {
 	return *this > _other;
 }
 
-inline bool Vec2::GreaterThanOrEquals(const Vec2& _other) const {
+HC_MATHFUNCTION(bool) Vec2::GreaterThanOrEquals(const Vec2& _other) const {
 	return *this >= _other;
 }
 
-inline bool Vec2::NotEquals(const Vec2& _other) const {
+HC_MATHFUNCTION(bool) Vec2::NotEquals(const Vec2& _other) const {
 	return *this != _other;
 }
 
-inline float& Vec2::X() { return this->x; }
-inline float& Vec2::Y() { return this->y; }
-inline float Vec2::X() const { return this->x; }
-inline float Vec2::Y() const { return this->y; }
+HC_MATHFUNCTION(float&) Vec2::X() { return m_fVec.m128_f32[0]; }
+HC_MATHFUNCTION(float&) Vec2::Y() { return m_fVec.m128_f32[1]; }
+HC_MATHFUNCTION(float) Vec2::X() const { return _mm_cvtss_f32(m_fVec); }
+HC_MATHFUNCTION(float) Vec2::Y() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(1, 1, 1, 1))); }
 
-inline Vec2 Vec2::XX() const { return Vec2(this->x, this->x); }
-inline Vec2 Vec2::YY() const { return Vec2(this->y, this->y); }
-inline Vec2 Vec2::YX() const { return Vec2(this->y, this->x); }
-inline Vec2 Vec2::RR() const { return Vec2(this->x, this->x); }
-inline Vec2 Vec2::GG() const { return Vec2(this->y, this->y); }
-inline Vec2 Vec2::GR() const { return Vec2(this->y, this->x); }
+HC_MATHFUNCTION(Vec2) Vec2::XX() const { return HC_SHUFFLE2F(*this, 0, 0); }
+HC_MATHFUNCTION(Vec2) Vec2::YY() const { return HC_SHUFFLE2F(*this, 1, 1); }
+HC_MATHFUNCTION(Vec2) Vec2::YX() const { return HC_SHUFFLE2F(*this, 1, 0); }
+HC_MATHFUNCTION(Vec2) Vec2::RR() const { return HC_SHUFFLE2F(*this, 0, 0); }
+HC_MATHFUNCTION(Vec2) Vec2::GG() const { return HC_SHUFFLE2F(*this, 1, 1); }
+HC_MATHFUNCTION(Vec2) Vec2::GR() const { return HC_SHUFFLE2F(*this, 1, 0); }
 
 #pragma endregion
 
 #pragma region Vec3
 
-inline Vec3::Vec3() : x(0.0f), y(0.0f), z(0.0f) {}
-inline Vec3::Vec3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
-inline Vec3::Vec3(const Vec2& _xy, float _z) : x(_xy.X()), y(_xy.Y()), z(_z) {}
-inline Vec3::Vec3(float _x, const Vec2& _yz) : x(_x), y(_yz.X()), z(_yz.Y()) {}
-inline Vec3::Vec3(const Vec3& _other) { *this = _other; }
+HC_INLINE Vec3::Vec3() {}
 
-inline Vec3& Vec3::operator=(const Vec3& _other) {
-	if (this != &_other) {
-		this->x = _other.x;
-		this->y = _other.y;
-		this->z = _other.z;
+HC_INLINE Vec3::Vec3(const float* _pValues) { m_fVec = _mm_set_ps(_pValues[2], _pValues[2], _pValues[1], _pValues[0]); }
+
+HC_INLINE Vec3::Vec3(float _fX, float _fY, float _fZ) { m_fVec = _mm_set_ps(_fZ, _fZ, _fY, _fX); }
+
+HC_INLINE Vec3::Vec3(int _iX, int _iY, int _iZ) { m_fVec = _mm_set_ps(static_cast<float>(_iZ), static_cast<float>(_iZ), static_cast<float>(_iY), static_cast<float>(_iX)); }
+
+HC_INLINE Vec3::Vec3(__m128 _vData) { m_fVec = _vData; }
+
+HC_INLINE Vec3::Vec3(const Vec3&& _vOther) {
+	*this = _vOther;
+}
+
+HC_INLINE Vec3::Vec3(const Vec3& _vOther) {
+	*this = _vOther;
+}
+
+HC_MATHFUNCTION(Vec3&) Vec3::operator=(const Vec3&& _vOther) {
+	if (this != &_vOther) {
+		this->m_fVec = std::move(_vOther.m_fVec);
 	}
 	return *this;
 }
 
-inline Vec3& Vec3::operator+=(const Vec3& _other) {
-	*this = *this + _other;
+HC_MATHFUNCTION(Vec3&) Vec3::operator=(const Vec3& _vOther) {
+	if (this != &_vOther) {
+		this->m_fVec = _vOther.m_fVec;
+	}
 	return *this;
 }
 
-inline Vec3& Vec3::operator-=(const Vec3& _other) {
-	*this = *this - _other;
+HC_MATHFUNCTION(Vec3&) Vec3::operator+=(const Vec3& _vOther) {
+	*this = *this + _vOther;
 	return *this;
 }
 
-inline Vec3& Vec3::operator*=(const float _scale) {
-	*this = *this * _scale;
+HC_MATHFUNCTION(Vec3&) Vec3::operator-=(const Vec3& _vOther) {
+	*this = *this - _vOther;
 	return *this;
 }
 
-inline Vec3& Vec3::operator&=(const Vec3& _other) {
-	*this = *this & _other;
+HC_MATHFUNCTION(Vec3&) Vec3::operator*=(const float _fScale) {
+	*this = *this * _fScale;
 	return *this;
 }
 
-inline float& Vec3::operator[](int _ndx) {
-	assert(_ndx < 3);
-	return xyz[_ndx];
+HC_MATHFUNCTION(Vec3&) Vec3::operator/=(const float _fScale) {
+	*this = *this / _fScale;
+	return *this;
 }
 
-inline float Vec3::operator[](int _ndx) const {
-	assert(_ndx < 3);
-	return xyz[_ndx];
+HC_MATHFUNCTION(float) Vec3::operator[](int _iNdx) const {
+	assert(_iNdx < 3);
+	return m_fVec.m128_f32[_iNdx];
 }
 
-inline Vec3 Vec3::operator+(const Vec3& _other) const {
-	return Vec3(this->x + _other.x, this->y + _other.y, this->z + _other.z);
+HC_MATHFUNCTION(float&) Vec3::operator[](int _iNdx) {
+	assert(_iNdx < 3);
+	return m_fVec.m128_f32[_iNdx];
 }
 
-inline Vec3 Vec3::operator-(const Vec3& _other) const {
-	return Vec3(this->x - _other.x, this->y - _other.y, this->z - _other.z);
+HC_MATHFUNCTION(Vec3) operator+(Vec3 _vLeft, Vec3 _vRight) {
+
 }
 
-inline Vec3 Vec3::operator*(const float _scale) const {
-	return Vec3(this->x * _scale, this->y * _scale, this->z * _scale);
+HC_MATHFUNCTION(Vec3) operator-(Vec3 _vLeft, Vec3 _vRight) {
+
 }
 
-inline float Vec3::operator*(const Vec3& _other) const {
-	return (this->x * _other.x) + (this->y * _other.y) + (this->z * _other.z);
+HC_MATHFUNCTION(Vec3) operator*(Vec3 _vLeft, float _fRight) {
+
 }
 
-inline Vec3 Vec3::operator&(const Vec3& _other) const {
-	return Vec3((this->y * _other.z) - (this->z * _other.y), (this->x * _other.z) - (this->z * _other.x), (this->x * _other.y) - (this->y * _other.x));
+HC_MATHFUNCTION(Vec3) operator*(float _fLeft, Vec3 _vRight) {
+
 }
 
-inline Vec3 Vec3::operator~() const {
-	return Vec3(0.0f, 0.0f, 0.0f);
+HC_MATHFUNCTION(Vec3) operator/(Vec3 _vLeft, float _fRight) {
+
 }
 
-inline Vec3 Vec3::operator-() const {
-	return Vec3(-this->x, -this->y, -this->z);
+HC_MATHFUNCTION(Vec3) operator/(float _fRight, Vec3 _vLeft) {
+
 }
 
-inline bool Vec3::operator==(const Vec3& _other) const {
-	return this->x == _other.x && this->y == _other.y && this->z == _other.z;
+HC_MATHFUNCTION(Vec3) operator*(Vec3 _vLeft, Vec3 _vRight) {
+
 }
 
-inline bool Vec3::operator<(const Vec3& _other) const {
-	return this->LengthSquared() < _other.LengthSquared();
+HC_MATHFUNCTION(float) operator&(Vec3 _vLeft, Vec3 _vRight) {
+
 }
 
-inline bool Vec3::operator>(const Vec3& _other) const {
-	return this->LengthSquared() > _other.LengthSquared();
+HC_MATHFUNCTION(Vec3) operator~() const {
+
 }
 
-inline bool Vec3::operator<=(const Vec3& _other) const {
-	return this->LengthSquared() <= _other.LengthSquared();
+HC_MATHFUNCTION(Vec3) operator-() const {
+
 }
 
-inline bool Vec3::operator>=(const Vec3& _other) const {
-	return this->LengthSquared() >= _other.LengthSquared();
-}
-
-inline bool Vec3::operator!=(const Vec3& _other) const {
-	return this->x != _other.x || this->y != _other.y || this->z != _other.z;
-}
-
-inline float Vec3::Length() const {
-	return sqrtf((*this) * (*this));
-}
-
-inline float Vec3::LengthSquared() const {
-	return (*this) * (*this);
-}
-
-inline void Vec3::Normalize() {
-	float len = Length();
-	if (!len) return;
-
-	this->x /= len;
-	this->y /= len;
-	this->z /= len;
-}
-
-inline Vec3 Vec3::Normalized() const {
-	float len = Length();
-	if (!len) return Vec3();
-
-	return Vec3(this->x / len, this->y / len, this->z / len);
-}
-
-inline float Vec3::AngleBetween(const Vec3& _other) const {
-	return acosf(this->Normalized() * _other.Normalized());
-}
-
-inline float Vec3::Dot(const Vec3& _other) const {
-	return *this * _other;
-}
-
-inline void Vec3::Cross(const Vec3& _other) {
-	*this &= _other;
-}
-
-inline void Vec3::Add(const Vec3& _other) {
-	*this += _other;
-}
-
-inline void Vec3::Subtract(const Vec3& _other) {
-	*this -= _other;
-}
-
-inline void Vec3::Scale(const float _scale) {
-	*this *= _scale;
-}
-
-inline void Vec3::Negate() {
-	*this = -(*this);
-}
-
-inline void Vec3::Zero() {
-	*this = ~(*this);
-}
-
-inline bool Vec3::Equals(const Vec3& _other) const {
-	return *this == _other;
-}
-
-inline bool Vec3::Less(const Vec3& _other) const {
-	return *this < _other;
-}
-
-inline bool Vec3::LessThanOrEquals(const Vec3& _other) const {
-	return *this <= _other;
-}
-
-inline bool Vec3::Greater(const Vec3& _other) const {
-	return *this > _other;
-}
-
-inline bool Vec3::GreaterThanOrEquals(const Vec3& _other) const {
-	return *this >= _other;
-}
-
-inline bool Vec3::NotEquals(const Vec3& _other) const {
-	return *this != _other;
-}
-
-inline float& Vec3::X() { return this->x; }
-inline float& Vec3::Y() { return this->y; }
-inline float& Vec3::Z() { return this->z; }
-inline float Vec3::X() const { return this->x; }
-inline float Vec3::Y() const { return this->y; }
-inline float Vec3::Z() const { return this->z; }
+HC_MATHFUNCTION(float&) Vec3::X() { return this->x; }
+HC_MATHFUNCTION(float&) Vec3::Y() { return this->y; }
+HC_MATHFUNCTION(float&) Vec3::Z() { return this->z; }
+HC_MATHFUNCTION(float) Vec3::X() const { return this->x; }
+HC_MATHFUNCTION(float) Vec3::Y() const { return this->y; }
+HC_MATHFUNCTION(float) Vec3::Z() const { return this->z; }
 
 //Vec2 Swizzle
-inline Vec2 Vec3::XX() const { return Vec2(this->x, this->x); }
-inline Vec2 Vec3::YY() const { return Vec2(this->y, this->y); }
-inline Vec2 Vec3::ZZ() const { return Vec2(this->z, this->z); }
-inline Vec2 Vec3::XY() const { return Vec2(this->x, this->y); }
-inline Vec2 Vec3::XZ() const { return Vec2(this->x, this->z); }
-inline Vec2 Vec3::YX() const { return Vec2(this->y, this->x); }
-inline Vec2 Vec3::YZ() const { return Vec2(this->y, this->z); }
-inline Vec2 Vec3::ZX() const { return Vec2(this->z, this->x); }
-inline Vec2 Vec3::ZY() const { return Vec2(this->z, this->y); }
-inline Vec2 Vec3::RR() const { return Vec2(this->x, this->x); }
-inline Vec2 Vec3::GG() const { return Vec2(this->y, this->y); }
-inline Vec2 Vec3::BB() const { return Vec2(this->z, this->z); }
-inline Vec2 Vec3::RG() const { return Vec2(this->x, this->y); }
-inline Vec2 Vec3::RB() const { return Vec2(this->x, this->z); }
-inline Vec2 Vec3::GR() const { return Vec2(this->y, this->x); }
-inline Vec2 Vec3::GB() const { return Vec2(this->y, this->z); }
-inline Vec2 Vec3::BR() const { return Vec2(this->z, this->x); }
-inline Vec2 Vec3::BG() const { return Vec2(this->z, this->y); }
+HC_MATHFUNCTION(Vec2) Vec3::XX() const { return Vec2(this->x, this->x); }
+HC_MATHFUNCTION(Vec2) Vec3::YY() const { return Vec2(this->y, this->y); }
+HC_MATHFUNCTION(Vec2) Vec3::ZZ() const { return Vec2(this->z, this->z); }
+HC_MATHFUNCTION(Vec2) Vec3::XY() const { return Vec2(this->x, this->y); }
+HC_MATHFUNCTION(Vec2) Vec3::XZ() const { return Vec2(this->x, this->z); }
+HC_MATHFUNCTION(Vec2) Vec3::YX() const { return Vec2(this->y, this->x); }
+HC_MATHFUNCTION(Vec2) Vec3::YZ() const { return Vec2(this->y, this->z); }
+HC_MATHFUNCTION(Vec2) Vec3::ZX() const { return Vec2(this->z, this->x); }
+HC_MATHFUNCTION(Vec2) Vec3::ZY() const { return Vec2(this->z, this->y); }
+HC_MATHFUNCTION(Vec2) Vec3::RR() const { return Vec2(this->x, this->x); }
+HC_MATHFUNCTION(Vec2) Vec3::GG() const { return Vec2(this->y, this->y); }
+HC_MATHFUNCTION(Vec2) Vec3::BB() const { return Vec2(this->z, this->z); }
+HC_MATHFUNCTION(Vec2) Vec3::RG() const { return Vec2(this->x, this->y); }
+HC_MATHFUNCTION(Vec2) Vec3::RB() const { return Vec2(this->x, this->z); }
+HC_MATHFUNCTION(Vec2) Vec3::GR() const { return Vec2(this->y, this->x); }
+HC_MATHFUNCTION(Vec2) Vec3::GB() const { return Vec2(this->y, this->z); }
+HC_MATHFUNCTION(Vec2) Vec3::BR() const { return Vec2(this->z, this->x); }
+HC_MATHFUNCTION(Vec2) Vec3::BG() const { return Vec2(this->z, this->y); }
 
 //Vec3 Swizzle
-inline Vec3 Vec3::XXX() const { return Vec3(this->x, this->x, this->x); }
-inline Vec3 Vec3::XXY() const { return Vec3(this->x, this->x, this->y); }
-inline Vec3 Vec3::XXZ() const { return Vec3(this->x, this->x, this->z); }
-inline Vec3 Vec3::XYX() const { return Vec3(this->x, this->y, this->x); }
-inline Vec3 Vec3::XYY() const { return Vec3(this->x, this->y, this->y); }
-inline Vec3 Vec3::XZX() const { return Vec3(this->x, this->z, this->x); }
-inline Vec3 Vec3::XZY() const { return Vec3(this->x, this->z, this->y); }
-inline Vec3 Vec3::XZZ() const { return Vec3(this->x, this->z, this->z); }
-inline Vec3 Vec3::YXX() const { return Vec3(this->y, this->x, this->x); }
-inline Vec3 Vec3::YXY() const { return Vec3(this->y, this->x, this->y); }
-inline Vec3 Vec3::YXZ() const { return Vec3(this->y, this->x, this->z); }
-inline Vec3 Vec3::YYX() const { return Vec3(this->y, this->y, this->x); }
-inline Vec3 Vec3::YYY() const { return Vec3(this->y, this->y, this->y); }
-inline Vec3 Vec3::YYZ() const { return Vec3(this->y, this->y, this->z); }
-inline Vec3 Vec3::YZX() const { return Vec3(this->y, this->z, this->x); }
-inline Vec3 Vec3::YZY() const { return Vec3(this->y, this->z, this->y); }
-inline Vec3 Vec3::YZZ() const { return Vec3(this->y, this->z, this->z); }
-inline Vec3 Vec3::ZXX() const { return Vec3(this->z, this->x, this->x); }
-inline Vec3 Vec3::ZXY() const { return Vec3(this->z, this->x, this->y); }
-inline Vec3 Vec3::ZXZ() const { return Vec3(this->z, this->x, this->z); }
-inline Vec3 Vec3::ZYX() const { return Vec3(this->z, this->y, this->x); }
-inline Vec3 Vec3::ZYY() const { return Vec3(this->z, this->y, this->y); }
-inline Vec3 Vec3::ZYZ() const { return Vec3(this->z, this->y, this->z); }
-inline Vec3 Vec3::ZZX() const { return Vec3(this->z, this->z, this->x); }
-inline Vec3 Vec3::ZZY() const { return Vec3(this->z, this->z, this->y); }
-inline Vec3 Vec3::ZZZ() const { return Vec3(this->z, this->z, this->z); }
-inline Vec3 Vec3::RRR() const { return Vec3(this->x, this->x, this->x); }
-inline Vec3 Vec3::RRG() const { return Vec3(this->x, this->x, this->y); }
-inline Vec3 Vec3::RRB() const { return Vec3(this->x, this->x, this->z); }
-inline Vec3 Vec3::RGR() const { return Vec3(this->x, this->y, this->x); }
-inline Vec3 Vec3::RGG() const { return Vec3(this->x, this->y, this->y); }
-inline Vec3 Vec3::RBR() const { return Vec3(this->x, this->z, this->x); }
-inline Vec3 Vec3::RBG() const { return Vec3(this->x, this->z, this->y); }
-inline Vec3 Vec3::RBB() const { return Vec3(this->x, this->z, this->z); }
-inline Vec3 Vec3::GRR() const { return Vec3(this->y, this->x, this->x); }
-inline Vec3 Vec3::GRG() const { return Vec3(this->y, this->x, this->y); }
-inline Vec3 Vec3::GRB() const { return Vec3(this->y, this->x, this->z); }
-inline Vec3 Vec3::GGR() const { return Vec3(this->y, this->y, this->x); }
-inline Vec3 Vec3::GGG() const { return Vec3(this->y, this->y, this->y); }
-inline Vec3 Vec3::GGB() const { return Vec3(this->y, this->y, this->z); }
-inline Vec3 Vec3::GBR() const { return Vec3(this->y, this->z, this->x); }
-inline Vec3 Vec3::GBG() const { return Vec3(this->y, this->z, this->y); }
-inline Vec3 Vec3::GBB() const { return Vec3(this->y, this->z, this->z); }
-inline Vec3 Vec3::BRR() const { return Vec3(this->z, this->x, this->x); }
-inline Vec3 Vec3::BRG() const { return Vec3(this->z, this->x, this->y); }
-inline Vec3 Vec3::BRB() const { return Vec3(this->z, this->x, this->z); }
-inline Vec3 Vec3::BGR() const { return Vec3(this->z, this->y, this->x); }
-inline Vec3 Vec3::BGG() const { return Vec3(this->z, this->y, this->y); }
-inline Vec3 Vec3::BGB() const { return Vec3(this->z, this->y, this->z); }
-inline Vec3 Vec3::BBR() const { return Vec3(this->z, this->z, this->x); }
-inline Vec3 Vec3::BBG() const { return Vec3(this->z, this->z, this->y); }
-inline Vec3 Vec3::BBB() const { return Vec3(this->z, this->z, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::XXX() const { return Vec3(this->x, this->x, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::XXY() const { return Vec3(this->x, this->x, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::XXZ() const { return Vec3(this->x, this->x, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::XYX() const { return Vec3(this->x, this->y, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::XYY() const { return Vec3(this->x, this->y, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::XZX() const { return Vec3(this->x, this->z, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::XZY() const { return Vec3(this->x, this->z, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::XZZ() const { return Vec3(this->x, this->z, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::YXX() const { return Vec3(this->y, this->x, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::YXY() const { return Vec3(this->y, this->x, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::YXZ() const { return Vec3(this->y, this->x, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::YYX() const { return Vec3(this->y, this->y, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::YYY() const { return Vec3(this->y, this->y, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::YYZ() const { return Vec3(this->y, this->y, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::YZX() const { return Vec3(this->y, this->z, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::YZY() const { return Vec3(this->y, this->z, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::YZZ() const { return Vec3(this->y, this->z, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::ZXX() const { return Vec3(this->z, this->x, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::ZXY() const { return Vec3(this->z, this->x, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::ZXZ() const { return Vec3(this->z, this->x, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::ZYX() const { return Vec3(this->z, this->y, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::ZYY() const { return Vec3(this->z, this->y, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::ZYZ() const { return Vec3(this->z, this->y, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::ZZX() const { return Vec3(this->z, this->z, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::ZZY() const { return Vec3(this->z, this->z, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::ZZZ() const { return Vec3(this->z, this->z, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::RRR() const { return Vec3(this->x, this->x, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::RRG() const { return Vec3(this->x, this->x, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::RRB() const { return Vec3(this->x, this->x, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::RGR() const { return Vec3(this->x, this->y, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::RGG() const { return Vec3(this->x, this->y, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::RBR() const { return Vec3(this->x, this->z, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::RBG() const { return Vec3(this->x, this->z, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::RBB() const { return Vec3(this->x, this->z, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::GRR() const { return Vec3(this->y, this->x, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::GRG() const { return Vec3(this->y, this->x, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::GRB() const { return Vec3(this->y, this->x, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::GGR() const { return Vec3(this->y, this->y, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::GGG() const { return Vec3(this->y, this->y, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::GGB() const { return Vec3(this->y, this->y, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::GBR() const { return Vec3(this->y, this->z, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::GBG() const { return Vec3(this->y, this->z, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::GBB() const { return Vec3(this->y, this->z, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::BRR() const { return Vec3(this->z, this->x, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::BRG() const { return Vec3(this->z, this->x, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::BRB() const { return Vec3(this->z, this->x, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::BGR() const { return Vec3(this->z, this->y, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::BGG() const { return Vec3(this->z, this->y, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::BGB() const { return Vec3(this->z, this->y, this->z); }
+HC_MATHFUNCTION(Vec3) Vec3::BBR() const { return Vec3(this->z, this->z, this->x); }
+HC_MATHFUNCTION(Vec3) Vec3::BBG() const { return Vec3(this->z, this->z, this->y); }
+HC_MATHFUNCTION(Vec3) Vec3::BBB() const { return Vec3(this->z, this->z, this->z); }
 
 #pragma endregion
 

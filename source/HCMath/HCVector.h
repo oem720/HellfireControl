@@ -23,10 +23,8 @@
 
 class Vec2 {
 private:
-	//Members
 	__m128 m_fVec;															//Underlying vector data
 public:
-	//Constructors
 	HC_INLINE Vec2();														//Init to Zero
 	HC_INLINE Vec2(const float* _pValues);									//Init from array
 	HC_INLINE Vec2(float _fX, float _fY);									//Init from X and Y (Floats)
@@ -34,69 +32,59 @@ public:
 	HC_INLINE Vec2(__m128 _vData);											//Init from SSE type
 	HC_INLINE Vec2(const Vec2&& _vOther);									//Move Constructor
 	HC_INLINE Vec2(const Vec2& _vOther);									//Copy Constructor
-
-	//Assignment
 	HC_MATHFUNCTION(Vec2&) operator=(const Vec2&& _vOther);					//Move Assignment
 	HC_MATHFUNCTION(Vec2&) operator=(const Vec2& _vOther);					//Copy Assignment
-	HC_MATHFUNCTION(Vec2&) operator+=(const Vec2& _vOther);					//Addition Assignment
-	HC_MATHFUNCTION(Vec2&) operator-=(const Vec2& _vOther);					//Subtraction Assignment
-	HC_MATHFUNCTION(Vec2&) operator*=(const Vec2& _vOther);					//Multiplication Assignment
+	HC_MATHFUNCTION(Vec2&) operator+=(const Vec2 _vOther);					//Addition Assignment
+	HC_MATHFUNCTION(Vec2&) operator-=(const Vec2 _vOther);					//Subtraction Assignment
+	HC_MATHFUNCTION(Vec2&) operator*=(const Vec2 _vOther);					//Multiplication Assignment
 	HC_MATHFUNCTION(Vec2&) operator*=(const float _fScale);					//Scaling Assignment
 	HC_MATHFUNCTION(Vec2&) operator/=(const float _fScale);					//Division Assignment
 	HC_MATHFUNCTION(float) operator[](int _iNdx) const;						//Array access (Const)
 	HC_MATHFUNCTION(float&) operator[](int _iNdx);							//Array access (Modifiable)
-
-	//Arithmetic
 	friend HC_MATHFUNCTION(Vec2) operator+(Vec2 _vLeft, Vec2 _vRight);		//Addition
 	friend HC_MATHFUNCTION(Vec2) operator-(Vec2 _vLeft, Vec2 _vRight);		//Subtraction
 	friend HC_MATHFUNCTION(Vec2) operator*(Vec2 _vLeft, float _fRight);		//Scaling (Left)
 	friend HC_MATHFUNCTION(Vec2) operator*(float _fLeft, Vec2 _vRight);		//Scaling (Right)
 	friend HC_MATHFUNCTION(Vec2) operator/(Vec2 _vLeft, float _fRight);		//Division (Left)
-	friend HC_MATHFUNCTION(Vec2) operator/(float _fRight, Vec2 _vLeft);		//Division (Right)
+	friend HC_MATHFUNCTION(Vec2) operator/(float _fLeft, Vec2 _vRight);		//Division (Right)
 	friend HC_MATHFUNCTION(Vec2) operator*(Vec2 _vLeft, Vec2 _vRight);		//Multiplication
-	friend HC_MATHFUNCTION(float) operator&(Vec2 _vLeft, Vec2 _vRight);		//Dot Product
 	HC_MATHFUNCTION(Vec2) operator~() const;								//Zero
 	HC_MATHFUNCTION(Vec2) operator-() const;								//Negate
-
-	//Comparison
 	friend HC_MATHFUNCTION(bool) operator==(Vec2 _vLeft, Vec2 _vRight);		//Check Equality
 	friend HC_MATHFUNCTION(bool) operator<(Vec2 _vLeft, Vec2 _vRight);		//Check Less Than
 	friend HC_MATHFUNCTION(bool) operator>(Vec2 _vLeft, Vec2 _vRight);		//Check Greater Than
 	friend HC_MATHFUNCTION(bool) operator<=(Vec2 _vLeft, Vec2 _vRight);		//Check Less Than or Equal To
 	friend HC_MATHFUNCTION(bool) operator>=(Vec2 _vLeft, Vec2 _vRight);		//Check Greater Than or Equal To
 	friend HC_MATHFUNCTION(bool) operator!=(Vec2 _vLeft, Vec2 _vRight);		//Check Not Equal
-
-	//Measurement
 	HC_MATHFUNCTION(float) Length() const;									//Vector Length
 	HC_MATHFUNCTION(float) LengthSquared() const;							//Vector Length Squared
 	HC_MATHFUNCTION(void) Normalize();										//Vector Normalize
 	HC_MATHFUNCTION(Vec2) Normalized() const;								//Return Normalized Version of this Vector
-	HC_MATHFUNCTION(float) AngleBetween(const Vec2& _vOther) const;			//Measure the angle between 2 Vectors
-
-	//Operator Alternatives/Specialized Functions
-	friend HC_MATHFUNCTION(float) Sum(const Vec2& _vVector);				//Sum of components
-	HC_MATHFUNCTION(float) Dot(const Vec2& _vOther) const;					//Dot Product
-	HC_MATHFUNCTION(float) Cross(const Vec2& _vOther) const;				//Cross Product
-	HC_MATHFUNCTION(void) Add(const Vec2& _vOther);							//Addition
-	HC_MATHFUNCTION(void) Subtract(const Vec2& _vOther);					//Subtraction
-	HC_MATHFUNCTION(void) Scale(const float _fScale);						//Scaling
-	HC_MATHFUNCTION(Vec2) AbsoluteValue();									//Absolute Value
-	HC_MATHFUNCTION(void) Negate();											//Negate
-	HC_MATHFUNCTION(void) Zero();											//Zero
-	HC_MATHFUNCTION(bool) Equals(const Vec2& _vOther) const;				//Check Equality
-	HC_MATHFUNCTION(bool) Less(const Vec2& _vOther) const;					//Check Less Than
-	HC_MATHFUNCTION(bool) LessThanOrEquals(const Vec2& _vOther) const;		//Check Less Than or Equal To
-	HC_MATHFUNCTION(bool) Greater(const Vec2& _vOther) const;				//Check Greater Than
-	HC_MATHFUNCTION(bool) GreaterThanOrEquals(const Vec2& _vOther) const;	//Check Greater Than or Equal To
-	HC_MATHFUNCTION(bool) NotEquals(const Vec2& _vOther) const;				//Check Not Equal
-
-	//Member Modification
+	HC_MATHFUNCTION(float) AngleBetween(Vec2 _vOther) const;				//Measure the angle between 2 Vectors
+	friend HC_MATHFUNCTION(float) Length(Vec3 _vVector);					//Vector Length
+	friend HC_MATHFUNCTION(float) LengthSquared(Vec3 _vVector);				//Vector Length Squared
+	friend HC_MATHFUNCTION(Vec3) Normalize(Vec3 _vVector);					//Vector Normalize
+	friend HC_MATHFUNCTION(float) AngleBetween(Vec3 _vLeft, Vec3 _vRight);	//Measure the angle between 2 Vectors	
+	friend HC_MATHFUNCTION(float) Sum(const Vec2 _vVector);					//Sum of components
+	friend HC_MATHFUNCTION(float) Dot(Vec2 _vLeft, Vec2 _vRight);			//Dot Product
+	friend HC_MATHFUNCTION(float) Cross(Vec2 _vLeft, Vec2 _vRight);			//Cross Product
+	friend HC_MATHFUNCTION(Vec2) Abs(Vec2 _vVector);						//Absolute Value
+	HC_MATHFUNCTION(Vec2) Add(Vec2 _vOther);								//Addition
+	HC_MATHFUNCTION(Vec2) Subtract(Vec2 _vOther);							//Subtraction
+	HC_MATHFUNCTION(Vec2) Scale(const float _fScale);						//Scaling
+	HC_MATHFUNCTION(Vec2) Abs();											//Absolute Value
+	HC_MATHFUNCTION(Vec2) Negate();											//Negate
+	HC_MATHFUNCTION(Vec2) Zero();											//Zero
+	HC_MATHFUNCTION(bool) Equals(Vec2 _vOther) const;						//Check Equality
+	HC_MATHFUNCTION(bool) Less(Vec2 _vOther) const;							//Check Less Than
+	HC_MATHFUNCTION(bool) LessThanOrEquals(Vec2 _vOther) const;				//Check Less Than or Equal To
+	HC_MATHFUNCTION(bool) Greater(Vec2 _vOther) const;						//Check Greater Than
+	HC_MATHFUNCTION(bool) GreaterThanOrEquals(Vec2 _vOther) const;			//Check Greater Than or Equal To
+	HC_MATHFUNCTION(bool) NotEquals(Vec2 _vOther) const;					//Check Not Equal
 	HC_MATHFUNCTION(float&) X();											//Vector X Component (Modifiable)
 	HC_MATHFUNCTION(float&) Y();											//Vector Y Component (Modifiable)
 	HC_MATHFUNCTION(float) X() const;										//Vector X Component (Const)
 	HC_MATHFUNCTION(float) Y() const;										//Vector Y Component (Const)
-
-	//Swizzle Operations (Vec2)
 	HC_MATHFUNCTION(Vec2) XX() const;										//Swizzle to XX Vector
 	HC_MATHFUNCTION(Vec2) YY() const;										//Swizzle to YY Vector
 	HC_MATHFUNCTION(Vec2) YX() const;										//Swizzle to YX Vector
@@ -109,7 +97,6 @@ class Vec3 {
 private:
 	__m128 m_fVec;
 public:
-	//Constructors
 	HC_INLINE Vec3();														//Init to Zero
 	HC_INLINE Vec3(const float* _pValues);									//Init from array
 	HC_INLINE Vec3(float _fX, float _fY, float _fZ);						//Init from X and Y (Floats)
@@ -117,71 +104,60 @@ public:
 	HC_INLINE Vec3(__m128 _vData);											//Init from SSE type
 	HC_INLINE Vec3(const Vec3&& _vOther);									//Move Constructor
 	HC_INLINE Vec3(const Vec3& _vOther);									//Copy Constructor
-
-	//Assignment
 	HC_MATHFUNCTION(Vec3&) operator=(const Vec3&& _vOther);					//Move Assignment
 	HC_MATHFUNCTION(Vec3&) operator=(const Vec3& _vOther);					//Copy Assignment
-	HC_MATHFUNCTION(Vec3&) operator+=(const Vec3& _vOther);					//Addition Assignment
-	HC_MATHFUNCTION(Vec3&) operator-=(const Vec3& _vOther);					//Subtraction Assignment
-	HC_MATHFUNCTION(Vec3&) operator*=(const Vec3& _vOther);					//Multiplication Assignment
+	HC_MATHFUNCTION(Vec3&) operator+=(const Vec3 _vOther);					//Addition Assignment
+	HC_MATHFUNCTION(Vec3&) operator-=(const Vec3 _vOther);					//Subtraction Assignment
+	HC_MATHFUNCTION(Vec3&) operator*=(const Vec3 _vOther);					//Multiplication Assignment
 	HC_MATHFUNCTION(Vec3&) operator*=(const float _fScale);					//Scaling Assignment
 	HC_MATHFUNCTION(Vec3&) operator/=(const float _fScale);					//Division Assignment
 	HC_MATHFUNCTION(float) operator[](int _iNdx) const;						//Array access (Const)
 	HC_MATHFUNCTION(float&) operator[](int _iNdx);							//Array access (Modifiable)
-
-	//Arithmetic
 	friend HC_MATHFUNCTION(Vec3) operator+(Vec3 _vLeft, Vec3 _vRight);		//Addition
 	friend HC_MATHFUNCTION(Vec3) operator-(Vec3 _vLeft, Vec3 _vRight);		//Subtraction
 	friend HC_MATHFUNCTION(Vec3) operator*(Vec3 _vLeft, float _fRight);		//Scaling (Left)
 	friend HC_MATHFUNCTION(Vec3) operator*(float _fLeft, Vec3 _vRight);		//Scaling (Right)
 	friend HC_MATHFUNCTION(Vec3) operator/(Vec3 _vLeft, float _fRight);		//Division (Left)
-	friend HC_MATHFUNCTION(Vec3) operator/(float _fRight, Vec3 _vLeft);		//Division (Right)
+	friend HC_MATHFUNCTION(Vec3) operator/(float _fLeft, Vec3 _vRight);		//Division (Right)
 	friend HC_MATHFUNCTION(Vec3) operator*(Vec3 _vLeft, Vec3 _vRight);		//Multiplication
-	friend HC_MATHFUNCTION(float) operator&(Vec3 _vLeft, Vec3 _vRight);		//Dot Product
 	HC_MATHFUNCTION(Vec3) operator~() const;								//Zero
 	HC_MATHFUNCTION(Vec3) operator-() const;								//Negate
-
-	//Comparison
 	friend HC_MATHFUNCTION(bool) operator==(Vec3 _vLeft, Vec3 _vRight);		//Check Equality
 	friend HC_MATHFUNCTION(bool) operator<(Vec3 _vLeft, Vec3 _vRight);		//Check Less Than
 	friend HC_MATHFUNCTION(bool) operator>(Vec3 _vLeft, Vec3 _vRight);		//Check Greater Than
 	friend HC_MATHFUNCTION(bool) operator<=(Vec3 _vLeft, Vec3 _vRight);		//Check Less Than or Equal To
 	friend HC_MATHFUNCTION(bool) operator>=(Vec3 _vLeft, Vec3 _vRight);		//Check Greater Than or Equal To
 	friend HC_MATHFUNCTION(bool) operator!=(Vec3 _vLeft, Vec3 _vRight);		//Check Not Equal
-
-	//Measurement
 	HC_MATHFUNCTION(float) Length() const;									//Vector Length
 	HC_MATHFUNCTION(float) LengthSquared() const;							//Vector Length Squared
-	HC_MATHFUNCTION(void) Normalize();										//Vector Normalize
-	HC_MATHFUNCTION(Vec3) Normalized() const;								//Return Normalized Version of this Vector
-	HC_MATHFUNCTION(float) AngleBetween(const Vec3& _vOther) const;			//Measure the angle between 2 Vectors
-
-	//Operator Alternatives/Specialized Functions
-	friend HC_MATHFUNCTION(float) Sum(const Vec3& _vVector);				//Sum of components
-	HC_MATHFUNCTION(float) Dot(const Vec3& _vOther) const;					//Dot Product
-	HC_MATHFUNCTION(float) Cross(const Vec3& _vOther) const;				//Cross Product
-	HC_MATHFUNCTION(void) Add(const Vec3& _vOther);							//Addition
-	HC_MATHFUNCTION(void) Subtract(const Vec3& _vOther);					//Subtraction
-	HC_MATHFUNCTION(void) Scale(const float _fScale);						//Scaling
-	HC_MATHFUNCTION(Vec3) AbsoluteValue();									//Absolute Value
-	HC_MATHFUNCTION(void) Negate();											//Negate
-	HC_MATHFUNCTION(void) Zero();											//Zero
-	HC_MATHFUNCTION(bool) Equals(const Vec3& _vOther) const;				//Check Equality
-	HC_MATHFUNCTION(bool) Less(const Vec3& _vOther) const;					//Check Less Than
-	HC_MATHFUNCTION(bool) LessThanOrEquals(const Vec3& _vOther) const;		//Check Less Than or Equal To
-	HC_MATHFUNCTION(bool) Greater(const Vec3& _vOther) const;				//Check Greater Than
-	HC_MATHFUNCTION(bool) GreaterThanOrEquals(const Vec3& _vOther) const;	//Check Greater Than or Equal To
-	HC_MATHFUNCTION(bool) NotEquals(const Vec3& _vOther) const;				//Check Not Equal
-
-	//Member Modification
+	HC_MATHFUNCTION(Vec3) Normalize();										//Vector Normalize
+	HC_MATHFUNCTION(float) AngleBetween(Vec3 _vOther);						//Measure the angle between 2 Vectors
+	friend HC_MATHFUNCTION(float) Length(Vec3 _vVector);					//Vector Length
+	friend HC_MATHFUNCTION(float) LengthSquared(Vec3 _vVector);				//Vector Length Squared
+	friend HC_MATHFUNCTION(Vec3) Normalize(Vec3 _vVector);					//Vector Normalize
+	friend HC_MATHFUNCTION(float) AngleBetween(Vec3 _vLeft, Vec3 _vRight);	//Measure the angle between 2 Vectors
+	friend HC_MATHFUNCTION(float) Sum(const Vec3 _vVector);					//Sum of components
+	friend HC_MATHFUNCTION(float) Dot(Vec3 _vLeft, Vec3 _vRight);			//Dot Product
+	friend HC_MATHFUNCTION(Vec3) Cross(Vec3 _vLeft, Vec3 _vRight);			//Cross Product
+	friend HC_MATHFUNCTION(Vec3) Abs(Vec3 _vVector);						//Absolute Value
+	HC_MATHFUNCTION(Vec3) Add(Vec3 _vOther);								//Addition
+	HC_MATHFUNCTION(Vec3) Subtract(Vec3 _vOther);							//Subtraction
+	HC_MATHFUNCTION(Vec3) Scale(const float _fScale);						//Scaling
+	HC_MATHFUNCTION(Vec3) Abs();											//Absolute Value
+	HC_MATHFUNCTION(Vec3) Negate();											//Negate
+	HC_MATHFUNCTION(Vec3) Zero();											//Zero
+	HC_MATHFUNCTION(bool) Equals(Vec3 _vOther) const;						//Check Equality
+	HC_MATHFUNCTION(bool) Less(Vec3 _vOther) const;							//Check Less Than
+	HC_MATHFUNCTION(bool) LessThanOrEquals(Vec3 _vOther) const;				//Check Less Than or Equal To
+	HC_MATHFUNCTION(bool) Greater(Vec3 _vOther) const;						//Check Greater Than
+	HC_MATHFUNCTION(bool) GreaterThanOrEquals(Vec3 _vOther) const;			//Check Greater Than or Equal To
+	HC_MATHFUNCTION(bool) NotEquals(Vec3 _vOther) const;					//Check Not Equal
 	HC_MATHFUNCTION(float&) X();											//Vector X Component (Modifiable)
 	HC_MATHFUNCTION(float&) Y();											//Vector Y Component (Modifiable)
 	HC_MATHFUNCTION(float&) Z();											//Vector Z Component (Modifiable)
 	HC_MATHFUNCTION(float) X() const;										//Vector X Component (Const)
 	HC_MATHFUNCTION(float) Y() const;										//Vector Y Component (Const)
 	HC_MATHFUNCTION(float) Z() const;										//Vector Z Component (Const)
-
-	//Swizzle Operations (Vec2)
 	HC_MATHFUNCTION(Vec2) XX() const;										//Swizzle to XX Vector
 	HC_MATHFUNCTION(Vec2) YY() const;										//Swizzle to YY Vector
 	HC_MATHFUNCTION(Vec2) ZZ() const;										//Swizzle to ZZ Vector
@@ -200,126 +176,66 @@ public:
 	HC_MATHFUNCTION(Vec2) GB() const;										//Swizzle to GB Vector
 	HC_MATHFUNCTION(Vec2) BR() const;										//Swizzle to BR Vector
 	HC_MATHFUNCTION(Vec2) BG() const;										//Swizzle to BG Vector
-
-	//Swizzle Operations (Vec3)
-	HC_MATHFUNCTION(Vec3) XXX() const;									//Swizzle to XXX Vector
-	HC_MATHFUNCTION(Vec3) XXY() const;									//Swizzle to XXY Vector
-	HC_MATHFUNCTION(Vec3) XXZ() const;									//Swizzle to XXZ Vector
-	HC_MATHFUNCTION(Vec3) XYX() const;									//Swizzle to XYX Vector
-	HC_MATHFUNCTION(Vec3) XYY() const;									//Swizzle to XYY Vector
-	HC_MATHFUNCTION(Vec3) XZX() const;									//Swizzle to XZX Vector
-	HC_MATHFUNCTION(Vec3) XZY() const;									//Swizzle to XZY Vector
-	HC_MATHFUNCTION(Vec3) XZZ() const;									//Swizzle to XZZ Vector
-	HC_MATHFUNCTION(Vec3) YXX() const;									//Swizzle to YXX Vector
-	HC_MATHFUNCTION(Vec3) YXY() const;									//Swizzle to YXY Vector
-	HC_MATHFUNCTION(Vec3) YXZ() const;									//Swizzle to YXZ Vector
-	HC_MATHFUNCTION(Vec3) YYX() const;									//Swizzle to YYX Vector
-	HC_MATHFUNCTION(Vec3) YYY() const;									//Swizzle to YYY Vector
-	HC_MATHFUNCTION(Vec3) YYZ() const;									//Swizzle to YYZ Vector
-	HC_MATHFUNCTION(Vec3) YZX() const;									//Swizzle to YZX Vector
-	HC_MATHFUNCTION(Vec3) YZY() const;									//Swizzle to YZY Vector
-	HC_MATHFUNCTION(Vec3) YZZ() const;									//Swizzle to YZZ Vector
-	HC_MATHFUNCTION(Vec3) ZXX() const;									//Swizzle to ZXX Vector
-	HC_MATHFUNCTION(Vec3) ZXY() const;									//Swizzle to ZXY Vector
-	HC_MATHFUNCTION(Vec3) ZXZ() const;									//Swizzle to ZXZ Vector
-	HC_MATHFUNCTION(Vec3) ZYX() const;									//Swizzle to ZYX Vector
-	HC_MATHFUNCTION(Vec3) ZYY() const;									//Swizzle to ZYY Vector
-	HC_MATHFUNCTION(Vec3) ZYZ() const;									//Swizzle to ZYZ Vector
-	HC_MATHFUNCTION(Vec3) ZZX() const;									//Swizzle to ZZX Vector
-	HC_MATHFUNCTION(Vec3) ZZY() const;									//Swizzle to ZZY Vector
-	HC_MATHFUNCTION(Vec3) ZZZ() const;									//Swizzle to ZZZ Vector
-	HC_MATHFUNCTION(Vec3) RRR() const;									//Swizzle to RRR Vector
-	HC_MATHFUNCTION(Vec3) RRG() const;									//Swizzle to RRG Vector
-	HC_MATHFUNCTION(Vec3) RRB() const;									//Swizzle to RRB Vector
-	HC_MATHFUNCTION(Vec3) RGR() const;									//Swizzle to RGR Vector
-	HC_MATHFUNCTION(Vec3) RGG() const;									//Swizzle to RGG Vector
-	HC_MATHFUNCTION(Vec3) RBR() const;									//Swizzle to RBR Vector
-	HC_MATHFUNCTION(Vec3) RBG() const;									//Swizzle to RBG Vector
-	HC_MATHFUNCTION(Vec3) RBB() const;									//Swizzle to RBB Vector
-	HC_MATHFUNCTION(Vec3) GRR() const;									//Swizzle to GRR Vector
-	HC_MATHFUNCTION(Vec3) GRG() const;									//Swizzle to GRG Vector
-	HC_MATHFUNCTION(Vec3) GRB() const;									//Swizzle to GRB Vector
-	HC_MATHFUNCTION(Vec3) GGR() const;									//Swizzle to GGR Vector
-	HC_MATHFUNCTION(Vec3) GGG() const;									//Swizzle to GGG Vector
-	HC_MATHFUNCTION(Vec3) GGB() const;									//Swizzle to GGB Vector
-	HC_MATHFUNCTION(Vec3) GBR() const;									//Swizzle to GBR Vector
-	HC_MATHFUNCTION(Vec3) GBG() const;									//Swizzle to GBG Vector
-	HC_MATHFUNCTION(Vec3) GBB() const;									//Swizzle to GBB Vector
-	HC_MATHFUNCTION(Vec3) BRR() const;									//Swizzle to BRR Vector
-	HC_MATHFUNCTION(Vec3) BRG() const;									//Swizzle to BRG Vector
-	HC_MATHFUNCTION(Vec3) BRB() const;									//Swizzle to BRB Vector
-	HC_MATHFUNCTION(Vec3) BGR() const;									//Swizzle to BGR Vector
-	HC_MATHFUNCTION(Vec3) BGG() const;									//Swizzle to BGG Vector
-	HC_MATHFUNCTION(Vec3) BGB() const;									//Swizzle to BGB Vector
-	HC_MATHFUNCTION(Vec3) BBR() const;									//Swizzle to BBR Vector
-	HC_MATHFUNCTION(Vec3) BBG() const;									//Swizzle to BBG Vector
-	HC_MATHFUNCTION(Vec3) BBB() const;									//Swizzle to BBB Vector
+	HC_MATHFUNCTION(Vec3) XXX() const;										//Swizzle to XXX Vector
+	HC_MATHFUNCTION(Vec3) XXY() const;										//Swizzle to XXY Vector
+	HC_MATHFUNCTION(Vec3) XXZ() const;										//Swizzle to XXZ Vector
+	HC_MATHFUNCTION(Vec3) XYX() const;										//Swizzle to XYX Vector
+	HC_MATHFUNCTION(Vec3) XYY() const;										//Swizzle to XYY Vector
+	HC_MATHFUNCTION(Vec3) XZX() const;										//Swizzle to XZX Vector
+	HC_MATHFUNCTION(Vec3) XZY() const;										//Swizzle to XZY Vector
+	HC_MATHFUNCTION(Vec3) XZZ() const;										//Swizzle to XZZ Vector
+	HC_MATHFUNCTION(Vec3) YXX() const;										//Swizzle to YXX Vector
+	HC_MATHFUNCTION(Vec3) YXY() const;										//Swizzle to YXY Vector
+	HC_MATHFUNCTION(Vec3) YXZ() const;										//Swizzle to YXZ Vector
+	HC_MATHFUNCTION(Vec3) YYX() const;										//Swizzle to YYX Vector
+	HC_MATHFUNCTION(Vec3) YYY() const;										//Swizzle to YYY Vector
+	HC_MATHFUNCTION(Vec3) YYZ() const;										//Swizzle to YYZ Vector
+	HC_MATHFUNCTION(Vec3) YZX() const;										//Swizzle to YZX Vector
+	HC_MATHFUNCTION(Vec3) YZY() const;										//Swizzle to YZY Vector
+	HC_MATHFUNCTION(Vec3) YZZ() const;										//Swizzle to YZZ Vector
+	HC_MATHFUNCTION(Vec3) ZXX() const;										//Swizzle to ZXX Vector
+	HC_MATHFUNCTION(Vec3) ZXY() const;										//Swizzle to ZXY Vector
+	HC_MATHFUNCTION(Vec3) ZXZ() const;										//Swizzle to ZXZ Vector
+	HC_MATHFUNCTION(Vec3) ZYX() const;										//Swizzle to ZYX Vector
+	HC_MATHFUNCTION(Vec3) ZYY() const;										//Swizzle to ZYY Vector
+	HC_MATHFUNCTION(Vec3) ZYZ() const;										//Swizzle to ZYZ Vector
+	HC_MATHFUNCTION(Vec3) ZZX() const;										//Swizzle to ZZX Vector
+	HC_MATHFUNCTION(Vec3) ZZY() const;										//Swizzle to ZZY Vector
+	HC_MATHFUNCTION(Vec3) ZZZ() const;										//Swizzle to ZZZ Vector
+	HC_MATHFUNCTION(Vec3) RRR() const;										//Swizzle to RRR Vector
+	HC_MATHFUNCTION(Vec3) RRG() const;										//Swizzle to RRG Vector
+	HC_MATHFUNCTION(Vec3) RRB() const;										//Swizzle to RRB Vector
+	HC_MATHFUNCTION(Vec3) RGR() const;										//Swizzle to RGR Vector
+	HC_MATHFUNCTION(Vec3) RGG() const;										//Swizzle to RGG Vector
+	HC_MATHFUNCTION(Vec3) RBR() const;										//Swizzle to RBR Vector
+	HC_MATHFUNCTION(Vec3) RBG() const;										//Swizzle to RBG Vector
+	HC_MATHFUNCTION(Vec3) RBB() const;										//Swizzle to RBB Vector
+	HC_MATHFUNCTION(Vec3) GRR() const;										//Swizzle to GRR Vector
+	HC_MATHFUNCTION(Vec3) GRG() const;										//Swizzle to GRG Vector
+	HC_MATHFUNCTION(Vec3) GRB() const;										//Swizzle to GRB Vector
+	HC_MATHFUNCTION(Vec3) GGR() const;										//Swizzle to GGR Vector
+	HC_MATHFUNCTION(Vec3) GGG() const;										//Swizzle to GGG Vector
+	HC_MATHFUNCTION(Vec3) GGB() const;										//Swizzle to GGB Vector
+	HC_MATHFUNCTION(Vec3) GBR() const;										//Swizzle to GBR Vector
+	HC_MATHFUNCTION(Vec3) GBG() const;										//Swizzle to GBG Vector
+	HC_MATHFUNCTION(Vec3) GBB() const;										//Swizzle to GBB Vector
+	HC_MATHFUNCTION(Vec3) BRR() const;										//Swizzle to BRR Vector
+	HC_MATHFUNCTION(Vec3) BRG() const;										//Swizzle to BRG Vector
+	HC_MATHFUNCTION(Vec3) BRB() const;										//Swizzle to BRB Vector
+	HC_MATHFUNCTION(Vec3) BGR() const;										//Swizzle to BGR Vector
+	HC_MATHFUNCTION(Vec3) BGG() const;										//Swizzle to BGG Vector
+	HC_MATHFUNCTION(Vec3) BGB() const;										//Swizzle to BGB Vector
+	HC_MATHFUNCTION(Vec3) BBR() const;										//Swizzle to BBR Vector
+	HC_MATHFUNCTION(Vec3) BBG() const;										//Swizzle to BBG Vector
+	HC_MATHFUNCTION(Vec3) BBB() const;										//Swizzle to BBB Vector
 };
 
 class Vec4 {
 private:
 	__m128 m_fVec;
 public:
-	//Constructors
-	inline Vec4();												//Init to Zero
-	inline Vec4(float _x, float _y, float _z, float _w);		//Init to X, Y, Z, and W
-	inline Vec4(const Vec2& _xy, float _z, float _w);			//Init from a Vec2 for X and Y, and from a float for Z and W
-	inline Vec4(float _x, const Vec2& _yz, float _w);			//Init from X, from a Vec2 for Y and Z and a float for W
-	inline Vec4(float _x, float _y, const Vec2& _zw);			//Init from X and Y, and from a Vec2 for Z and W
-	inline Vec4(const Vec2& _xy, const Vec2& _zw);				//Init from 2 Vec2's
-	inline Vec4(const Vec3& _xyz, float _w);					//Init from a Vec3 and a float for W
-	inline Vec4(float _x, const Vec3& _yzw);					//Init from a float for X and a Vec3
-	inline Vec4(const Vec4& _other);							//Init from Copy
+	
 
-	//Assignment
-	inline Vec4& operator=(const Vec4& _other);					//Assignment
-	inline Vec4& operator+=(const Vec4& _other);				//Addition
-	inline Vec4& operator-=(const Vec4& _other);				//Subtraction
-	inline Vec4& operator*=(const float _scale);				//Scaling
-	inline Vec4& operator&=(const Vec4& _other);				//Cross Product
-	inline float& operator[](int _ndx);							//Array access (Modifiable)
-	inline float operator[](int _ndx) const;					//Array access (Const)
-
-	//Arithmetic
-	inline Vec4 operator+(const Vec4& _other) const;			//Addition
-	inline Vec4 operator-(const Vec4& _other) const;			//Subtraction
-	inline Vec4 operator*(const float _scale) const;			//Scaling
-	inline float operator*(const Vec4& _other) const;			//Dot Product
-	inline Vec4 operator&(const Vec4& _other) const;			//Cross Product
-	inline Vec4 operator~() const;								//Zero
-	inline Vec4 operator-() const;								//Negate
-
-	//Comparison
-	inline bool operator==(const Vec4& _other) const;			//Check Equality
-	inline bool operator<(const Vec4& _other) const;			//Check Less Than
-	inline bool operator>(const Vec4& _other) const;			//Check Greater Than
-	inline bool operator<=(const Vec4& _other) const;			//Check Less Than or Equal To
-	inline bool operator>=(const Vec4& _other) const;			//Check Greater Than or Equal To
-	inline bool operator!=(const Vec4& _other) const;			//Check Not Equal
-
-	//Measurement
-	inline float Length() const;								//Vector Length
-	inline float LengthSquared() const;							//Vector Length Squared
-	inline void Normalize();									//Vector Normalize
-	inline Vec4 Normalized() const;								//Return Normalized Version of this Vector
-	inline float AngleBetween(const Vec4& _other) const;		//Measure the angle between 2 Vectors
-
-	//Operator Alternatives
-	inline float Dot(const Vec4& _other) const;					//Dot Product
-	inline void Cross(const Vec4& _other);						//Cross Product
-	inline void Add(const Vec4& _other);						//Addition
-	inline void Subtract(const Vec4& _other);					//Subtraction
-	inline void Scale(const float _scale);						//Scaling
-	inline void Negate();										//Negate
-	inline void Zero();											//Zero
-	inline bool Equals(const Vec4& _other) const;				//Check Equality
-	inline bool Less(const Vec4& _other) const;					//Check Less Than
-	inline bool LessThanOrEquals(const Vec4& _other) const;		//Check Less Than or Equal To
-	inline bool Greater(const Vec4& _other) const;				//Check Greater Than
-	inline bool GreaterThanOrEquals(const Vec4& _other) const;	//Check Greater Than or Equal To
-	inline bool NotEquals(const Vec4& _other) const;			//Check Not Equal
-
-	//Member Modification
 	inline float& X();											//Vector X Component (Modifiable)
 	inline float& Y();											//Vector Y Component (Modifiable)
 	inline float& Z();											//Vector Z Component (Modifiable)
@@ -328,8 +244,6 @@ public:
 	inline float Y() const;										//Vector Y Component (Const)
 	inline float Z() const;										//Vector Z Component (Const)
 	inline float W() const;										//Vector W Component (Const)
-
-	//Swizzle Operations (Vec2)
 	inline Vec2 XX() const;										//Swizzle to XX Vector
 	inline Vec2 YY() const;										//Swizzle to YY Vector
 	inline Vec2 ZZ() const;										//Swizzle to ZZ Vector
@@ -362,8 +276,6 @@ public:
 	inline Vec2 AR() const;										//Swizzle to AR Vector
 	inline Vec2 AG() const;										//Swizzle to AG Vector
 	inline Vec2 AB() const;										//Swizzle to AB Vector
-
-	//Swizzle Operations (Vec3)
 	inline Vec3 XXX() const;									//Swizzle to XXX Vector
 	inline Vec3 XXY() const;									//Swizzle to XXY Vector
 	inline Vec3 XXZ() const;									//Swizzle to XXZ Vector
@@ -492,8 +404,6 @@ public:
 	inline Vec3 AAG() const;									//Swizzle to AAG Vector
 	inline Vec3 AAB() const;									//Swizzle to AAB Vector
 	inline Vec3 AAA() const;									//Swizzle to AAA Vector
-	
-	//Swizzle Operations (Vec4)
 	inline Vec4 XXXX() const;									//Swizzle to XXXX Vector
 	inline Vec4 XXXY() const;									//Swizzle to XXXY Vector
 	inline Vec4 XXXZ() const;									//Swizzle to XXXZ Vector

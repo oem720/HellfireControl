@@ -4,6 +4,8 @@ project(HCEngine)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+add_compile_options(/Gv /Ob1)
+
 set(
 	math_source_list
 	"HCMath/HCVector.h"

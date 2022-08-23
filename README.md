@@ -1,7 +1,7 @@
 # Hellfire Control Engine
 A new open-source game engine being developed by Owen Meyers. Updates on currently in-development systems will be published in development diaries whenever they are finished on my YouTube page here: https://www.youtube.com/channel/UCFhODw-0yz9JCvRIl_9NLdg
 ## Design Goal
-The goal of the Hellfire Control Engine is to build an open-source multiplatform general-purpose game engine. This is to be an exercise in my personal coding ability and styles, but will be designed with proper utilization in mind. 2D and 3D will be supported, and there will be custom file types for saving and loading game resources, all of which powered by a custom suite of tools dubbed the Hephaestus Toolchain (will be linked when work is available).
+The goal of the Hellfire Control Engine is to build an open-source multiplatform general-purpose game engine. This is to be an exercise in my personal coding ability and style, but will be designed with proper utilization in mind. 2D and 3D will be supported, and there will be custom file types for saving and loading game resources, all of which powered by a custom suite of tools dubbed the Hephaestus Toolchain (will be linked when work is available).
 ## Future Use
 The HC Engine (or HCE) will be utilized in several games built by myself for use of demoing the tech as well as for the sake of building games as a hobby. The engine will be constantly updated with new features and the goal will be to allow external developers the ability to contribute of their own accord (properly checked before merging, of course).
 ## How to properly install

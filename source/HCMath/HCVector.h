@@ -2749,7 +2749,7 @@ HC_INLINE int Dot(Vec2I _vLeft, Vec2I _vRight) { return Sum(_vLeft * _vRight); }
 HC_INLINE float Length(Vec2I _vVector) { return sqrtf(static_cast<float>(Dot(_vVector, _vVector))); }
 HC_INLINE int LengthSquared(Vec2I _vVector) { return Dot(_vVector, _vVector); }
 HC_INLINE Vec2I Normalize(Vec2I _vVector) { return _vVector * static_cast<int>((1.0f / Length(_vVector))); }
-HC_INLINE float AngleBetween(Vec2I _vLeft, Vec2I _vRight) { return acosf(static_cast<int>(Dot(_vLeft, _vRight))); }
+HC_INLINE float AngleBetween(Vec2I _vLeft, Vec2I _vRight) { return acosf(static_cast<float>(Dot(_vLeft, _vRight))); }
 HC_INLINE int Cross(Vec2I _vLeft, Vec2I _vRight) { return _vLeft.X() * _vRight.Y() - _vLeft.Y() * _vRight.X(); }
 HC_INLINE Vec2I Abs(Vec2I _vVector) { _vVector.m_iVec = _mm_abs_epi32(_vVector.m_iVec); return _vVector; }
 
@@ -2783,7 +2783,7 @@ HC_INLINE int Dot(Vec3I _vLeft, Vec3I _vRight) { return Sum(_vLeft * _vRight); }
 HC_INLINE float Length(Vec3I _vVector) { return sqrtf(static_cast<float>(Dot(_vVector, _vVector))); }
 HC_INLINE int LengthSquared(Vec3I _vVector) { return Dot(_vVector, _vVector); }
 HC_INLINE Vec3I Normalize(Vec3I _vVector) { return _vVector * static_cast<int>((1.0f / Length(_vVector))); }
-HC_INLINE float AngleBetween(Vec3I _vLeft, Vec3I _vRight) { return acosf(static_cast<int>(Dot(_vLeft, _vRight))); }
+HC_INLINE float AngleBetween(Vec3I _vLeft, Vec3I _vRight) { return acosf(static_cast<float>(Dot(_vLeft, _vRight))); }
 HC_INLINE Vec3I Cross(Vec3I _vLeft, Vec3I _vRight) { return (_vLeft.ZXY() * _vRight - _vLeft * _vRight.ZXY()).ZXY(); }
 HC_INLINE Vec3I Abs(Vec3I _vVector) { _vVector.m_iVec = _mm_abs_epi32(_vVector.m_iVec); return _vVector; }
 
@@ -2817,6 +2817,6 @@ HC_INLINE int Dot(Vec4I _vLeft, Vec4I _vRight) { return Sum(_vLeft * _vRight); }
 HC_INLINE float Length(Vec4I _vVector) { return sqrtf(static_cast<float>(Dot(_vVector, _vVector))); }
 HC_INLINE int LengthSquared(Vec4I _vVector) { return Dot(_vVector, _vVector); }
 HC_INLINE Vec4I Normalize(Vec4I _vVector) { return _vVector * static_cast<int>((1.0f / Length(_vVector))); }
-HC_INLINE float AngleBetween(Vec4I _vLeft, Vec4I _vRight) { return acosf(static_cast<int>(Dot(_vLeft, _vRight))); }
+HC_INLINE float AngleBetween(Vec4I _vLeft, Vec4I _vRight) { return acosf(static_cast<float>(Dot(_vLeft, _vRight))); }
 HC_INLINE Vec4I Cross(Vec4I _vLeft, Vec4I _vRight) { _vRight.m_iVec = (_vLeft.ZXY() * _vRight.XYZ() - _vLeft.XYZ() * _vRight.ZXY()).ZXY().m_iVec; _vRight.SetW(_vLeft.W()); return _vRight; }
 HC_INLINE Vec4I Abs(Vec4I _vVector) { _vVector.m_iVec = _mm_abs_epi32(_vVector.m_iVec); return _vVector; }

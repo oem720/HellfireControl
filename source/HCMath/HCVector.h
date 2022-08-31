@@ -1,29 +1,17 @@
-#pragma once
 
 #pragma warning(disable : 4556)
 
-//Includes for SIMD operation
-#include <stdint.h>
-#include <utility>
-#include <math.h>
-#include <immintrin.h>
-#include <cassert>
-
-//Defines for quick rad/deg conversion
-#define HC_PI 3.14159265358979323846f
-#define HC_RAD2DEG(_val) ((_val) * 180.0f / HC_PI)
-#define HC_DEG2RAD(_val) ((_val) * HC_PI / 180.0f)
-
-//Defines for standardized function declaration
-#define HC_INLINE __forceinline
+#include "HCMath.h"
 
 #define HC_SHUFFLE2F(_vec, _x, _y) Vec2F(_mm_shuffle_ps((_vec).m_fVec, (_vec).m_fVec, _MM_SHUFFLE(_y, _y, _y, _x)))
 #define HC_SHUFFLE3F(_vec, _x, _y, _z) Vec3F(_mm_shuffle_ps((_vec).m_fVec, (_vec).m_fVec, _MM_SHUFFLE(_z, _z, _y, _x)))
 #define HC_SHUFFLE4F(_vec, _x, _y, _z, _w) Vec4F(_mm_shuffle_ps((_vec).m_fVec, (_vec).m_fVec, _MM_SHUFFLE(_w, _z, _y, _x)))
+#define HC_SHUFFLE4F_2(_vec1, _vec2, _x, _y, _z, _w) Vec4F(_mm_shuffle_ps((_vec1).m_fVec, (_vec2).m_fVec, _MM_SHUFFLE(_w, _z, _y, _x)))
 
 #define HC_SHUFFLE2D(_vec, _x, _y)  Vec2D(_mm256_shuffle_pd((_vec).m_dVec, (_vec).m_dVec, _MM_SHUFFLE(_y, _y, _y, _x)))
 #define HC_SHUFFLE3D(_vec, _x, _y, _z) Vec3D(_mm256_shuffle_pd((_vec).m_dVec, (_vec).m_dVec, _MM_SHUFFLE(_z, _z, _y, _x)))
 #define HC_SHUFFLE4D(_vec, _x, _y, _z, _w) Vec4D(_mm256_shuffle_pd((_vec).m_dVec, (_vec).m_dVec, _MM_SHUFFLE(_w, _z, _y, _x)))
+#define HC_SHUFFLE4D_2(_vec1, _vec2, _x, _y, _z, _w) Vec4D(_mm256_shuffle_pd((_vec1).m_dVec, (_vec2).m_dVec, _MM_SHUFFLE(_w, _z, _y, _x)))
 
 #define HC_SHUFFLE2I(_vec, _x, _y) Vec2I(_mm_shuffle_epi32((_vec).m_iVec, _MM_SHUFFLE(_y, _y, _y, _x)))
 #define HC_SHUFFLE3I(_vec, _x, _y, _z) Vec3I(_mm_shuffle_epi32((_vec).m_iVec, _MM_SHUFFLE(_z, _z, _y, _x)))

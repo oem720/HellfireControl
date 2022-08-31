@@ -8,6 +8,7 @@ add_compile_options(/Gv /Ob1)
 
 set(
 	math_source_list
+	"HCMath/HCMath.h"
 	"HCMath/HCVector.h"
 	"HCMath/HCMatrix.h"
 )

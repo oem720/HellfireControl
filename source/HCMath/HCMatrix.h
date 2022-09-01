@@ -37,25 +37,6 @@ struct MatrixD {
 	HC_INLINE void SetRow4(Vec4D _vRow) { m_vRows[3] = _vRow; }
 };
 
-struct MatrixI {
-	Vec4I m_vRows[4];
-
-	HC_INLINE MatrixI() {};
-	HC_INLINE explicit MatrixI(Vec4I _vRow1, Vec4I _vRow2, Vec4I _vRow3, Vec4I _vRow4) { m_vRows[0] = _vRow1; m_vRows[1] = _vRow2; m_vRows[2] = _vRow3; m_vRows[3] = _vRow4; }
-	HC_INLINE explicit MatrixI(Vec4I* _vRows) { m_vRows[0] = _vRows[0]; m_vRows[1] = _vRows[1]; m_vRows[2] = _vRows[2]; m_vRows[3] = _vRows[3]; }
-	HC_INLINE Vec4I operator[](int _iNdx) const { assert(_iNdx < 4); return m_vRows[_iNdx]; }
-	HC_INLINE Vec4I& operator[](int _iNdx) { assert(_iNdx < 4); return m_vRows[_iNdx]; }
-	HC_INLINE Vec4I Row1() { return m_vRows[0]; }
-	HC_INLINE Vec4I Row2() { return m_vRows[1]; }
-	HC_INLINE Vec4I Row3() { return m_vRows[2]; }
-	HC_INLINE Vec4I Row4() { return m_vRows[3]; }
-	HC_INLINE void SetRow1(Vec4I _vRow) { m_vRows[0] = _vRow; }
-	HC_INLINE void SetRow2(Vec4I _vRow) { m_vRows[1] = _vRow; }
-	HC_INLINE void SetRow3(Vec4I _vRow) { m_vRows[2] = _vRow; }
-	HC_INLINE void SetRow4(Vec4I _vRow) { m_vRows[3] = _vRow; }
-};
-
-
 HC_INLINE MatrixF Transpose(MatrixF _mMat) {
 	__m128 temp0 = _mm_unpacklo_ps(_mMat[0].m_fVec, _mMat[2].m_fVec);
 	__m128 temp1 = _mm_unpacklo_ps(_mMat[1].m_fVec, _mMat[3].m_fVec);
@@ -99,8 +80,8 @@ HC_INLINE MatrixF Inverse(MatrixF _mMat) {
 	Vec4F D = Vec4F(_mm_movehl_ps(_mMat[3].m_fVec, _mMat[2].m_fVec));
 
 	//Determinants
-	Vec4F dets = Vec4F(_mm_sub_ps(_mm_mul_ps(HC_SHUFFLE4F_2(_mMat[0], _mMat[2], 0, 2, 0, 2).m_fVec, HC_SHUFFLE4F_2(_mMat[1], _mMat[3], 1, 3, 1, 3).m_fVec),
-								  _mm_mul_ps(HC_SHUFFLE4F_2(_mMat[0], _mMat[2], 1, 3, 1, 3).m_fVec, HC_SHUFFLE4F_2(_mMat[1], _mMat[3], 0, 2, 0, 2).m_fVec)));
+	Vec4F dets = (HC_SHUFFLE4F_2(_mMat[0], _mMat[2], 0, 2, 0, 2) * HC_SHUFFLE4F_2(_mMat[1], _mMat[3], 1, 3, 1, 3) -
+				 (HC_SHUFFLE4F_2(_mMat[0], _mMat[2], 1, 3, 1, 3) * HC_SHUFFLE4F_2(_mMat[1], _mMat[3], 0, 2, 0, 2)));
 	float detA = dets.X();
 	float detB = dets.Y();
 	float detC = dets.Z();
@@ -132,6 +113,100 @@ HC_INLINE MatrixF Inverse(MatrixF _mMat) {
 	_mMat[3] = HC_SHUFFLE4F_2(Z, W, 2, 0, 2, 0);
 
 	return _mMat;
+}
+HC_INLINE MatrixF Identity() {
+	static MatrixF mMat(Vec4F(1.0f, 0.0f, 0.0f, 0.0f),
+						Vec4F(0.0f, 1.0f, 0.0f, 0.0f),
+						Vec4F(0.0f, 0.0f, 1.0f, 0.0f),
+						Vec4F(0.0f, 0.0f, 0.0f, 1.0f));
+	return mMat;
+}
+HC_INLINE MatrixF ProjectionF(float _fAspectRatio, float _fFOV, float _fNearPlane, float _fFarPlane) {
+	float fFocal = 1.0f / tanf(_fFOV);
+	MatrixF mMat;
+	mMat[0] = Vec4F(fFocal / _fAspectRatio, 0.0f, 0.0f, 0.0f);
+	mMat[1] = Vec4F(0.0f, -fFocal, 0.0f, 0.0f);
+	mMat[2] = Vec4F(0.0f, 0.0f, _fNearPlane / (_fFarPlane - _fNearPlane), -1.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, (_fNearPlane * _fFarPlane) / (_fFarPlane - _fNearPlane), 0.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF ProjectionFReversedInf(float _fAspectRatio, float _fFOV, float _fNearPlane) {
+	float fFocal = 1.0f / tanf(_fFOV);
+	MatrixF mMat;
+	mMat[0] = Vec4F(fFocal / _fAspectRatio, 0.0f, 0.0f, 0.0f);
+	mMat[1] = Vec4F(0.0f, -fFocal, 0.0f, 0.0f);
+	mMat[2] = Vec4F(0.0f, 0.0f, 0.0f, -1.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, _fNearPlane, 0.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF LookAtLH(Vec4F _vEye, Vec4F _vAt, Vec4F _vUp) {
+	Vec4F vZAxis = Normalize(_vAt - _vEye);
+	Vec4F vXAxis = Normalize(Cross(_vUp, vZAxis));
+	Vec4F vYAxis = Normalize(Cross(vZAxis, vXAxis));
+
+	return MatrixF(vXAxis, vYAxis, vZAxis, _vAt);
+}
+HC_INLINE MatrixF RotationXDeg(float _fDeg) {
+	_fDeg = HC_DEG2RAD(_fDeg);
+
+	MatrixF mMat;
+	mMat[0] = Vec4F(1.0f, 0.0f, 0.0f, 0.0f);
+	mMat[1] = Vec4F(0.0f, cosf(_fDeg), sinf(_fDeg), 0.0f);
+	mMat[2] = Vec4F(0.0f, -sinf(_fDeg), cosf(_fDeg), 0.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, 0.0f, 1.0f);
+	
+	return mMat;
+}
+HC_INLINE MatrixF RotationX(float _fRad) {
+	MatrixF mMat;
+	mMat[0] = Vec4F(1.0f, 0.0f, 0.0f, 0.0f);
+	mMat[1] = Vec4F(0.0f, cosf(_fRad), -sinf(_fRad), 0.0f);
+	mMat[2] = Vec4F(0.0f, sinf(_fRad), cosf(_fRad), 0.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF RotationYDeg(float _fDeg) {
+	_fDeg = HC_DEG2RAD(_fDeg);
+
+	MatrixF mMat;
+	mMat[0] = Vec4F(cosf(_fDeg), 0.0f, sinf(_fDeg), 0.0f);
+	mMat[1] = Vec4F(0.0f, 1.0f, 0.0f, 0.0f);
+	mMat[2] = Vec4F(-sinf(_fDeg), 0.0f, cosf(_fDeg), 0.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF RotationY(float _fRad) {
+	MatrixF mMat;
+	mMat[0] = Vec4F(cosf(_fRad), 0.0f, sinf(_fRad), 0.0f);
+	mMat[1] = Vec4F(0.0f, 1.0f, 0.0f, 0.0f);
+	mMat[2] = Vec4F(-sinf(_fRad), 0.0f, cosf(_fRad), 0.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF RotationZDeg(float _fDeg) {
+	_fDeg = HC_DEG2RAD(_fDeg);
+
+	MatrixF mMat;
+	mMat[0] = Vec4F(cosf(_fDeg), -sinf(_fDeg), 0.0f, 0.0f);
+	mMat[1] = Vec4F(sinf(_fDeg), cosf(_fDeg), 0.0f, 0.0f);
+	mMat[2] = Vec4F(0.0f, 0.0f, 1.0f, 0.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF RotationZRad(float _fRad) {
+	MatrixF mMat;
+	mMat[0] = Vec4F(cosf(_fRad), -sinf(_fRad), 0.0f, 0.0f);
+	mMat[1] = Vec4F(sinf(_fRad), cosf(_fRad), 0.0f, 0.0f);
+	mMat[2] = Vec4F(0.0f, 0.0f, 1.0f, 0.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return mMat;
 }
 HC_INLINE MatrixF operator+(MatrixF _mLeft, MatrixF _mRight) {
 	_mLeft[0] = _mLeft[0] + _mRight[0];

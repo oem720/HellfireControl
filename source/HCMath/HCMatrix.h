@@ -208,6 +208,130 @@ HC_INLINE MatrixF RotationZRad(float _fRad) {
 
 	return mMat;
 }
+HC_INLINE MatrixF RotationYawPitchRollDeg(Vec4F _vRotation) {
+	float fYaw = _vRotation.X();
+	float fPitch = _vRotation.Y();
+	float fRoll = _vRotation.Z();
+
+	MatrixF mMat;
+	mMat[0] = Vec4F(cosf(fYaw) * cosf(fPitch), (cosf(fYaw) * sinf(fPitch) * sinf(fRoll)) - (sinf(fYaw) * cosf(fRoll)), (cosf(fYaw) * sinf(fPitch) * cosf(fRoll)) + (sinf(fYaw) * sinf(fRoll)), 0.0f);
+	mMat[1] = Vec4F(sinf(fYaw) * cosf(fPitch), (sinf(fYaw) * sinf(fPitch) * sinf(fRoll)) + (cosf(fYaw) * cosf(fRoll)), (sinf(fYaw) * sinf(fPitch) * cosf(fRoll)) - (cosf(fYaw) * sinf(fRoll)), 0.0f);
+	mMat[2] = Vec4F(-sinf(fPitch), cosf(fPitch) * sinf(fRoll), cosf(fPitch) * cosf(fRoll), 0.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF RotationYawPitchRollRad(Vec4F _vRotation) {
+	float fYaw = HC_DEG2RAD(_vRotation.X());
+	float fPitch = HC_DEG2RAD(_vRotation.Y());
+	float fRoll = HC_DEG2RAD(_vRotation.Z());
+
+	MatrixF mMat;
+	mMat[0] = Vec4F(cosf(fYaw) * cosf(fPitch), (cosf(fYaw) * sinf(fPitch) * sinf(fRoll)) - (sinf(fYaw) * cosf(fRoll)), (cosf(fYaw) * sinf(fPitch) * cosf(fRoll)) + (sinf(fYaw) * sinf(fRoll)), 0.0f);
+	mMat[1] = Vec4F(sinf(fYaw) * cosf(fPitch), (sinf(fYaw) * sinf(fPitch) * sinf(fRoll)) + (cosf(fYaw) * cosf(fRoll)), (sinf(fYaw) * sinf(fPitch) * cosf(fRoll)) - (cosf(fYaw) * sinf(fRoll)), 0.0f);
+	mMat[2] = Vec4F(-sinf(fPitch), cosf(fPitch) * sinf(fRoll), cosf(fPitch) * cosf(fRoll), 0.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF TranslationX(float _fDist) {
+	MatrixF mMat;
+	mMat[0] = Vec4F(1.0f, 0.0f, 0.0f, 0.0f);
+	mMat[1] = Vec4F(0.0f, 1.0f, 0.0f, 0.0f);
+	mMat[2] = Vec4F(0.0f, 0.0f, 1.0f, 0.0f);
+	mMat[3] = Vec4F(_fDist, 0.0f, 0.0f, 1.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF TranslationY(float _fDist) {
+	MatrixF mMat;
+	mMat[0] = Vec4F(1.0f, 0.0f, 0.0f, 0.0f);
+	mMat[1] = Vec4F(0.0f, 1.0f, 0.0f, 0.0f);
+	mMat[2] = Vec4F(0.0f, 0.0f, 1.0f, 0.0f);
+	mMat[3] = Vec4F(0.0f, _fDist, 0.0f, 1.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF TranslationZ(float _fDist) {
+	MatrixF mMat;
+	mMat[0] = Vec4F(1.0f, 0.0f, 0.0f, 0.0f);
+	mMat[1] = Vec4F(0.0f, 1.0f, 0.0f, 0.0f);
+	mMat[2] = Vec4F(0.0f, 0.0f, 1.0f, 0.0f);
+	mMat[3] = Vec4F(0.0f, _fDist, 0.0f, 1.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF Translation(Vec4F _vTranslation) {
+	MatrixF mMat;
+	mMat[0] = Vec4F(1.0f, 0.0f, 0.0f, 0.0f);
+	mMat[1] = Vec4F(0.0f, 1.0f, 0.0f, 0.0f);
+	mMat[2] = Vec4F(0.0f, 0.0f, 1.0f, 0.0f);
+	mMat[3] = _vTranslation;
+
+	return mMat;
+}
+HC_INLINE MatrixF RotationTranslationDeg(Vec4F _vRotation, Vec4F _vTranslation) {
+	MatrixF mMat = RotationYawPitchRollDeg(_vRotation);
+	mMat[3] = _vTranslation;
+
+	return mMat;
+}
+HC_INLINE MatrixF RotationTranslationRad(Vec4F _vRotation, Vec4F _vTranslation) {
+	MatrixF mMat = RotationYawPitchRollRad(_vRotation);
+	mMat[3] = _vTranslation;
+
+	return mMat;
+}
+HC_INLINE MatrixF ScaleX(float _fScale) {
+	MatrixF mMat;
+	mMat[0] = Vec4F(_fScale, 0.0f, 0.0f, 0.0f);
+	mMat[1] = Vec4F(0.0f, 1.0f, 0.0f, 0.0f);
+	mMat[2] = Vec4F(0.0f, 0.0f, 1.0f, 0.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, 0.0f, 1.0f);
+	
+	return mMat;
+}
+HC_INLINE MatrixF ScaleY(float _fScale) {
+	MatrixF mMat;
+	mMat[0] = Vec4F(1.0f, 0.0f, 0.0f, 0.0f);
+	mMat[1] = Vec4F(0.0f, _fScale, 0.0f, 0.0f);
+	mMat[2] = Vec4F(0.0f, 0.0f, 1.0f, 0.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF ScaleZ(float _fScale) {
+	MatrixF mMat;
+	mMat[0] = Vec4F(1.0f, 0.0f, 0.0f, 0.0f);
+	mMat[1] = Vec4F(0.0f, 1.0f, 0.0f, 0.0f);
+	mMat[2] = Vec4F(0.0f, 0.0f, _fScale, 0.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF ScaleXYZ(Vec4F _vScale) {
+	MatrixF mMat;
+	mMat[0] = Vec4F(_vScale.X(), 0.0f, 0.0f, 0.0f);
+	mMat[1] = Vec4F(0.0f, _vScale.Y(), 0.0f, 0.0f);
+	mMat[2] = Vec4F(0.0f, 0.0f, _vScale.Z(), 0.0f);
+	mMat[3] = Vec4F(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return mMat;
+}
+HC_INLINE MatrixF RotationTranslationScaleDeg(Vec4F _vRotation, Vec4F _vTranslation, Vec4F _vScale) {
+	MatrixF mMat = RotationYawPitchRollDeg(_vRotation);
+	mMat[3] = _vTranslation;
+	mMat *= ScaleXYZ(_vScale);
+
+	return mMat;
+}
+HC_INLINE MatrixF RotationTranslationScaleRad(Vec4F _vRotation, Vec4F _vTranslation, Vec4F _vScale) {
+	MatrixF mMat = RotationYawPitchRollRad(_vRotation);
+	mMat[3] = _vTranslation;
+	mMat *= ScaleXYZ(_vScale);
+
+	return mMat;
+}
 HC_INLINE MatrixF operator+(MatrixF _mLeft, MatrixF _mRight) {
 	_mLeft[0] = _mLeft[0] + _mRight[0];
 	_mLeft[1] = _mLeft[1] + _mRight[1];

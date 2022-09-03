@@ -1,5 +1,3 @@
-#pragma once
-
 //Includes for SIMD operation
 #include <stdint.h>
 #include <utility>

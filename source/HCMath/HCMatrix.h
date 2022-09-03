@@ -159,7 +159,7 @@ HC_INLINE MatrixF RotationXDeg(float _fDeg) {
 	
 	return mMat;
 }
-HC_INLINE MatrixF RotationX(float _fRad) {
+HC_INLINE MatrixF RotationXRad(float _fRad) {
 	MatrixF mMat;
 	mMat[0] = Vec4F(1.0f, 0.0f, 0.0f, 0.0f);
 	mMat[1] = Vec4F(0.0f, cosf(_fRad), -sinf(_fRad), 0.0f);
@@ -179,7 +179,7 @@ HC_INLINE MatrixF RotationYDeg(float _fDeg) {
 
 	return mMat;
 }
-HC_INLINE MatrixF RotationY(float _fRad) {
+HC_INLINE MatrixF RotationYRad(float _fRad) {
 	MatrixF mMat;
 	mMat[0] = Vec4F(cosf(_fRad), 0.0f, sinf(_fRad), 0.0f);
 	mMat[1] = Vec4F(0.0f, 1.0f, 0.0f, 0.0f);
@@ -209,9 +209,9 @@ HC_INLINE MatrixF RotationZRad(float _fRad) {
 	return mMat;
 }
 HC_INLINE MatrixF RotationYawPitchRollDeg(Vec4F _vRotation) {
-	float fYaw = _vRotation.X();
-	float fPitch = _vRotation.Y();
-	float fRoll = _vRotation.Z();
+	float fYaw = HC_DEG2RAD(_vRotation.X());
+	float fPitch = HC_DEG2RAD(_vRotation.Y());
+	float fRoll = HC_DEG2RAD(_vRotation.Z());
 
 	MatrixF mMat;
 	mMat[0] = Vec4F(cosf(fYaw) * cosf(fPitch), (cosf(fYaw) * sinf(fPitch) * sinf(fRoll)) - (sinf(fYaw) * cosf(fRoll)), (cosf(fYaw) * sinf(fPitch) * cosf(fRoll)) + (sinf(fYaw) * sinf(fRoll)), 0.0f);
@@ -222,9 +222,9 @@ HC_INLINE MatrixF RotationYawPitchRollDeg(Vec4F _vRotation) {
 	return mMat;
 }
 HC_INLINE MatrixF RotationYawPitchRollRad(Vec4F _vRotation) {
-	float fYaw = HC_DEG2RAD(_vRotation.X());
-	float fPitch = HC_DEG2RAD(_vRotation.Y());
-	float fRoll = HC_DEG2RAD(_vRotation.Z());
+	float fYaw = _vRotation.X();
+	float fPitch = _vRotation.Y();
+	float fRoll = _vRotation.Z();
 
 	MatrixF mMat;
 	mMat[0] = Vec4F(cosf(fYaw) * cosf(fPitch), (cosf(fYaw) * sinf(fPitch) * sinf(fRoll)) - (sinf(fYaw) * cosf(fRoll)), (cosf(fYaw) * sinf(fPitch) * cosf(fRoll)) + (sinf(fYaw) * sinf(fRoll)), 0.0f);
@@ -416,3 +416,28 @@ HC_INLINE Vec4F& operator*=(Vec4F& _vLeft, MatrixF _mRight) { _vLeft = _vLeft * 
 HC_INLINE MatrixF& operator/=(MatrixF& _mLeft, float _fRight) { _mLeft = _mLeft / _fRight; return _mLeft; }
 HC_INLINE MatrixF operator~(MatrixF _mMat) { return MatrixF(); }
 HC_INLINE MatrixF operator-(MatrixF _mMat) { return MatrixF() - _mMat; }
+HC_INLINE MatrixF TranslateXLocal(float _fDist, MatrixF _mMat) { return _mMat * TranslationX(_fDist); }
+HC_INLINE MatrixF TranslateXGlobal(float _fDist, MatrixF _mMat) { return TranslationX(_fDist) * _mMat; }
+HC_INLINE MatrixF TranslateYLocal(float _fDist, MatrixF _mMat) { return _mMat * TranslationY(_fDist); }
+HC_INLINE MatrixF TranslateYGlobal(float _fDist, MatrixF _mMat) { return TranslationY(_fDist) * _mMat; }
+HC_INLINE MatrixF TranslateZLocal(float _fDist, MatrixF _mMat) { return _mMat * TranslationZ(_fDist); }
+HC_INLINE MatrixF TranslateZGlobal(float _fDist, MatrixF _mMat) { return TranslationZ(_fDist) * _mMat; }
+HC_INLINE MatrixF TranslateLocal(Vec4F _vTranslation, MatrixF _mMat) { return _mMat * Translation(_vTranslation); }
+HC_INLINE MatrixF TranslateGlobal(Vec4F _vTranslation, MatrixF _mMat) { return Translation(_vTranslation) * _mMat; }
+HC_INLINE MatrixF RotateXLocalDeg(float _fDeg, MatrixF _mMat) { return _mMat * RotationXDeg(_fDeg); }
+HC_INLINE MatrixF RotateXLocalRad(float _fRad, MatrixF _mMat) { return _mMat * RotationXRad(_fRad); }
+HC_INLINE MatrixF RotateXGlobalDeg(float _fDeg, MatrixF _mMat) { return RotationXDeg(_fDeg) * _mMat; }
+HC_INLINE MatrixF RotateXGlobalRad(float _fDeg, MatrixF _mMat) { return RotationXRad(_fDeg) * _mMat; }
+HC_INLINE MatrixF RotateYLocalDeg(float _fDeg, MatrixF _mMat) { return _mMat * RotationYDeg(_fDeg); }
+HC_INLINE MatrixF RotateYLocalRad(float _fRad, MatrixF _mMat) { return _mMat * RotationYRad(_fRad); }
+HC_INLINE MatrixF RotateYGlobalDeg(float _fDeg, MatrixF _mMat) { return RotationYDeg(_fDeg) * _mMat; }
+HC_INLINE MatrixF RotateYGlobalRad(float _fDeg, MatrixF _mMat) { return RotationYDeg(_fDeg) * _mMat; }
+HC_INLINE MatrixF RotateZLocalDeg(float _fDeg, MatrixF _mMat) { return _mMat * RotationZDeg(_fDeg); }
+HC_INLINE MatrixF RotateZLocalRad(float _fRad, MatrixF _mMat) { return _mMat * RotationZRad(_fRad); }
+HC_INLINE MatrixF RotateZGlobalDeg(float _fDeg, MatrixF _mMat) { return RotationZDeg(_fDeg) * _mMat; }
+HC_INLINE MatrixF RotateZGlobalRad(float _fRad, MatrixF _mMat) { return RotationZRad(_fRad) * _mMat; }
+HC_INLINE MatrixF RotateYawPitchRollLocalDeg(Vec4F _vRotation, MatrixF _mMat) { return _mMat * RotationYawPitchRollDeg(_vRotation); }
+HC_INLINE MatrixF RotateYawPitchRollLocalRad(Vec4F _vRotation, MatrixF _mMat) { return _mMat * RotationYawPitchRollRad(_vRotation); }
+HC_INLINE MatrixF RotateYawPitchRollGlobalDeg(Vec4F _vRotation, MatrixF _mMat) { return RotationYawPitchRollDeg(_vRotation) * _mMat; }
+HC_INLINE MatrixF RotateYawPitchRollGlobalRad(Vec4F _vRotation, MatrixF _mMat) { return RotationYawPitchRollRad(_vRotation) * _mMat; }
+

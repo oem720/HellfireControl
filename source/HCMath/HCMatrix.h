@@ -454,12 +454,12 @@ HC_INLINE MatrixD Transpose(MatrixD _mMat) {
 	
 	return _mMat;
 }
-HC_INLINE float Determinant(MatrixD _mMat) {
+HC_INLINE double Determinant(MatrixD _mMat) {
 	//Sub matrices
-	Vec4D A = Vec4D(_mm_movelh_ps(_mMat[0].m_dVec, _mMat[1].m_dVec));
-	Vec4D B = Vec4D(_mm_movehl_ps(_mMat[1].m_dVec, _mMat[0].m_dVec));
-	Vec4D C = Vec4D(_mm_movelh_ps(_mMat[2].m_dVec, _mMat[3].m_dVec));
-	Vec4D D = Vec4D(_mm_movehl_ps(_mMat[3].m_dVec, _mMat[2].m_dVec));
+	Vec4D A = Vec4D(_mMat[0][0], _mMat[0][1], _mMat[1][0], _mMat[1][1]);
+	Vec4D B = Vec4D(_mMat[0][2], _mMat[0][3], _mMat[1][2], _mMat[1][3]);
+	Vec4D C = Vec4D(_mMat[2][0], _mMat[2][1], _mMat[3][0], _mMat[3][1]);
+	Vec4D D = Vec4D(_mMat[2][2], _mMat[2][3], _mMat[3][2], _mMat[3][3]);
 
 	//Determinants
 	Vec4D dets = Vec4D((HC_SHUFFLE4D_2(_mMat[0], _mMat[2], 0, 2, 0, 2) * HC_SHUFFLE4D_2(_mMat[1], _mMat[3], 1, 3, 1, 3)) -
@@ -478,10 +478,10 @@ HC_INLINE float Determinant(MatrixD _mMat) {
 HC_INLINE MatrixD Inverse(MatrixD _mMat) {
 
 	//Sub matrices
-	Vec4D A = Vec4D(_mm_movelh_ps(_mMat[0].m_dVec, _mMat[1].m_dVec));
-	Vec4D B = Vec4D(_mm_movehl_ps(_mMat[1].m_dVec, _mMat[0].m_dVec));
-	Vec4D C = Vec4D(_mm_movelh_ps(_mMat[2].m_dVec, _mMat[3].m_dVec));
-	Vec4D D = Vec4D(_mm_movehl_ps(_mMat[3].m_dVec, _mMat[2].m_dVec));
+	Vec4D A = Vec4D(_mMat[0][0], _mMat[0][1], _mMat[1][0], _mMat[1][1]);
+	Vec4D B = Vec4D(_mMat[0][2], _mMat[0][3], _mMat[1][2], _mMat[1][3]);
+	Vec4D C = Vec4D(_mMat[2][0], _mMat[2][1], _mMat[3][0], _mMat[3][1]);
+	Vec4D D = Vec4D(_mMat[2][2], _mMat[2][3], _mMat[3][2], _mMat[3][3]);
 
 	//Determinants
 	Vec4D dets = (HC_SHUFFLE4D_2(_mMat[0], _mMat[2], 0, 2, 0, 2) * HC_SHUFFLE4D_2(_mMat[1], _mMat[3], 1, 3, 1, 3) -
@@ -568,7 +568,7 @@ HC_INLINE MatrixD operator-(MatrixD _mLeft, MatrixD _mRight) {
 
 	return _mLeft;
 }
-HC_INLINE MatrixD operator*(MatrixD _mLeft, float _fRight) {
+HC_INLINE MatrixD operator*(MatrixD _mLeft, double _fRight) {
 	_mLeft[0] *= _fRight;
 	_mLeft[1] *= _fRight;
 	_mLeft[2] *= _fRight;
@@ -576,7 +576,7 @@ HC_INLINE MatrixD operator*(MatrixD _mLeft, float _fRight) {
 
 	return _mLeft;
 }
-HC_INLINE MatrixD operator*(float _fLeft, MatrixD _mRight) {
+HC_INLINE MatrixD operator*(double _fLeft, MatrixD _mRight) {
 	_mRight[0] *= _fLeft;
 	_mRight[1] *= _fLeft;
 	_mRight[2] *= _fLeft;

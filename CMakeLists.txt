@@ -17,4 +17,4 @@ set(HC_PROJECT_DIR ${PROJECT_SOURCE_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMake)
 
 add_subdirectory(HellfireControl)
-add_subdirectory(HephaestusToolchain)
+#add_subdirectory(Hephaestus)

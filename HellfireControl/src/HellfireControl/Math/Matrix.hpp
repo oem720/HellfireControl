@@ -1,5 +1,7 @@
+#pragma once
 
-#include "HCVector.h"
+#include <HellfireControl/Core/Common.hpp>
+#include <HellfireControl/Math/Vector.hpp>
 
 struct MatrixF {
 	Vec4F m_vRows[4];

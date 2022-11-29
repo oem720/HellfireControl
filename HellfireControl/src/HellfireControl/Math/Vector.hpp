@@ -1,7 +1,6 @@
+#pragma once
 
-#pragma warning(disable : 4556)
-
-#include "HCMathBase.h"
+#include <HellfireControl/Core/Common.hpp>
 
 #define HC_SHUFFLE2F(_vec, _x, _y) Vec2F(_mm_shuffle_ps((_vec).m_fVec, (_vec).m_fVec, _MM_SHUFFLE(_y, _y, _y, _x)))
 #define HC_SHUFFLE3F(_vec, _x, _y, _z) Vec3F(_mm_shuffle_ps((_vec).m_fVec, (_vec).m_fVec, _MM_SHUFFLE(_z, _z, _y, _x)))

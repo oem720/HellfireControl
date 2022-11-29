@@ -1,5 +1,9 @@
+#pragma once
 
-#include "HCMatrix.h"
+
+#include <HellfireControl/Core/Common.hpp>
+#include <HellfireControl/Math/Vector.hpp>
+#include <HellfireControl/Math/Matrix.hpp>
 
 struct QuaternionF {
 	Vec4F m_vQuat;

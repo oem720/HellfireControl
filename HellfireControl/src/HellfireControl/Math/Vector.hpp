@@ -2,6 +2,8 @@
 
 #include <HellfireControl/Core/Common.hpp>
 
+#if HC_USE_SIMD
+
 #define HC_SHUFFLE2F(_vec, _x, _y) Vec2F(_mm_shuffle_ps((_vec).m_fVec, (_vec).m_fVec, _MM_SHUFFLE(_y, _y, _y, _x)))
 #define HC_SHUFFLE3F(_vec, _x, _y, _z) Vec3F(_mm_shuffle_ps((_vec).m_fVec, (_vec).m_fVec, _MM_SHUFFLE(_z, _z, _y, _x)))
 #define HC_SHUFFLE4F(_vec, _x, _y, _z, _w) Vec4F(_mm_shuffle_ps((_vec).m_fVec, (_vec).m_fVec, _MM_SHUFFLE(_w, _z, _y, _x)))
@@ -47,2763 +49,2905 @@ HC_INLINE maskd_t SignBitMaskD() {
 struct Vec2F {
 	__m128 m_fVec;
 
-	HC_INLINE Vec2F() { m_fVec = _mm_setzero_ps(); }
-	HC_INLINE explicit Vec2F(const float* _pValues) { m_fVec = _mm_set_ps(_pValues[1], _pValues[1], _pValues[1], _pValues[0]); }
-	HC_INLINE explicit Vec2F(float _fX, float _fY) { m_fVec = _mm_set_ps(_fY, _fY, _fY, _fX); }
-	HC_INLINE explicit Vec2F(int _iX, int _iY) { m_fVec = _mm_set_ps(static_cast<float>(_iY), static_cast<float>(_iY), static_cast<float>(_iY), static_cast<float>(_iX)); }
-	HC_INLINE explicit Vec2F(__m128 _vData) { m_fVec = _vData; }
-	HC_INLINE float operator[](int _iNdx) const { assert(_iNdx < 2); return m_fVec.m128_f32[_iNdx]; }
-	HC_INLINE float& operator[](int _iNdx) { assert(_iNdx < 2); return m_fVec.m128_f32[_iNdx]; }
-	HC_INLINE float X() const { return _mm_cvtss_f32(m_fVec); }
-	HC_INLINE float Y() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE float R() const { return _mm_cvtss_f32(m_fVec); }
-	HC_INLINE float G() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE void SetX(float _fX) { m_fVec = _mm_move_ss(m_fVec, _mm_set_ss(_fX)); }
-	HC_INLINE void SetY(float _fY) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fY)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 2, 0, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
-	HC_INLINE void SetR(float _fR) { m_fVec = _mm_move_ss(m_fVec, _mm_set_ss(_fR)); }
-	HC_INLINE void SetG(float _fG) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fG)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 2, 0, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
-	HC_INLINE Vec2F XX() const { return HC_SHUFFLE2F(*this, 0, 0); }
-	HC_INLINE Vec2F YY() const { return HC_SHUFFLE2F(*this, 1, 1); }
-	HC_INLINE Vec2F YX() const { return HC_SHUFFLE2F(*this, 1, 0); }
-	HC_INLINE Vec2F RR() const { return HC_SHUFFLE2F(*this, 0, 0); }
-	HC_INLINE Vec2F GG() const { return HC_SHUFFLE2F(*this, 1, 1); }
-	HC_INLINE Vec2F GR() const { return HC_SHUFFLE2F(*this, 1, 0); }
+	HC_INLINE HC_VECTORCALL Vec2F() { m_fVec = _mm_setzero_ps(); }
+	HC_INLINE explicit HC_VECTORCALL Vec2F(const float* _pValues) { m_fVec = _mm_set_ps(_pValues[1], _pValues[1], _pValues[1], _pValues[0]); }
+	HC_INLINE explicit HC_VECTORCALL Vec2F(float _fX, float _fY) { m_fVec = _mm_set_ps(_fY, _fY, _fY, _fX); }
+	HC_INLINE explicit HC_VECTORCALL Vec2F(int _iX, int _iY) { m_fVec = _mm_set_ps(static_cast<float>(_iY), static_cast<float>(_iY), static_cast<float>(_iY), static_cast<float>(_iX)); }
+	HC_INLINE explicit HC_VECTORCALL Vec2F(__m128 _vData) { m_fVec = _vData; }
+	HC_INLINE float HC_VECTORCALL operator[](int _iNdx) const { assert(_iNdx < 2); return m_fVec.m128_f32[_iNdx]; }
+	HC_INLINE float& HC_VECTORCALL operator[](int _iNdx) { assert(_iNdx < 2); return m_fVec.m128_f32[_iNdx]; }
+	HC_INLINE float HC_VECTORCALL X() const { return _mm_cvtss_f32(m_fVec); }
+	HC_INLINE float HC_VECTORCALL Y() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE float HC_VECTORCALL R() const { return _mm_cvtss_f32(m_fVec); }
+	HC_INLINE float HC_VECTORCALL G() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE void HC_VECTORCALL SetX(float _fX) { m_fVec = _mm_move_ss(m_fVec, _mm_set_ss(_fX)); }
+	HC_INLINE void HC_VECTORCALL SetY(float _fY) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fY)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 2, 0, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
+	HC_INLINE void HC_VECTORCALL SetR(float _fR) { m_fVec = _mm_move_ss(m_fVec, _mm_set_ss(_fR)); }
+	HC_INLINE void HC_VECTORCALL SetG(float _fG) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fG)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 2, 0, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
+	HC_INLINE Vec2F HC_VECTORCALL XX() const { return HC_SHUFFLE2F(*this, 0, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL YY() const { return HC_SHUFFLE2F(*this, 1, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL YX() const { return HC_SHUFFLE2F(*this, 1, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL RR() const { return HC_SHUFFLE2F(*this, 0, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL GG() const { return HC_SHUFFLE2F(*this, 1, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL GR() const { return HC_SHUFFLE2F(*this, 1, 0); }
 };
 
 struct Vec3F {
 	__m128 m_fVec;
 
-	HC_INLINE Vec3F() { m_fVec = _mm_setzero_ps(); }
-	HC_INLINE explicit Vec3F(const float* _pValues) { m_fVec = _mm_set_ps(_pValues[2], _pValues[2], _pValues[1], _pValues[0]); }
-	HC_INLINE explicit Vec3F(float _fX, float _fY, float _fZ) { m_fVec = _mm_set_ps(_fZ, _fZ, _fY, _fX); }
-	HC_INLINE explicit Vec3F(int _iX, int _iY, int _iZ) { m_fVec = _mm_set_ps(static_cast<float>(_iZ), static_cast<float>(_iZ), static_cast<float>(_iY), static_cast<float>(_iX)); }
-	HC_INLINE explicit Vec3F(__m128 _vData) { m_fVec = _vData; }
-	HC_INLINE float operator[](int _iNdx) const { assert(_iNdx < 3); return m_fVec.m128_f32[_iNdx]; }
-	HC_INLINE float& operator[](int _iNdx) { assert(_iNdx < 3); return m_fVec.m128_f32[_iNdx]; }
-	HC_INLINE float X() const { return _mm_cvtss_f32(m_fVec); }
-	HC_INLINE float Y() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE float Z() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(2, 2, 2, 2))); }
-	HC_INLINE float R() const { return _mm_cvtss_f32(m_fVec); }
-	HC_INLINE float G() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE float B() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(2, 2, 2, 2))); }
-	HC_INLINE void SetX(float _fX) { m_fVec = _mm_move_ss(m_fVec, _mm_set_ss(_fX)); }
-	HC_INLINE void SetY(float _fY) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fY)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 2, 0, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
-	HC_INLINE void SetZ(float _fZ) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fZ)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 0, 1, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
-	HC_INLINE void SetR(float _fR) { m_fVec = _mm_move_ss(m_fVec, _mm_set_ss(_fR)); }
-	HC_INLINE void SetG(float _fG) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fG)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 2, 0, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
-	HC_INLINE void SetB(float _fB) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fB)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 0, 1, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
-	HC_INLINE Vec2F XX() const { return HC_SHUFFLE2F(*this, 0, 0); }
-	HC_INLINE Vec2F YY() const { return HC_SHUFFLE2F(*this, 1, 1); }
-	HC_INLINE Vec2F ZZ() const { return HC_SHUFFLE2F(*this, 2, 2); }
-	HC_INLINE Vec2F XY() const { return HC_SHUFFLE2F(*this, 0, 1); }
-	HC_INLINE Vec2F XZ() const { return HC_SHUFFLE2F(*this, 0, 2); }
-	HC_INLINE Vec2F YX() const { return HC_SHUFFLE2F(*this, 1, 0); }
-	HC_INLINE Vec2F YZ() const { return HC_SHUFFLE2F(*this, 1, 2); }
-	HC_INLINE Vec2F ZX() const { return HC_SHUFFLE2F(*this, 2, 0); }
-	HC_INLINE Vec2F ZY() const { return HC_SHUFFLE2F(*this, 2, 1); }
-	HC_INLINE Vec2F RR() const { return HC_SHUFFLE2F(*this, 0, 0); }
-	HC_INLINE Vec2F GG() const { return HC_SHUFFLE2F(*this, 1, 1); }
-	HC_INLINE Vec2F BB() const { return HC_SHUFFLE2F(*this, 2, 2); }
-	HC_INLINE Vec2F RG() const { return HC_SHUFFLE2F(*this, 0, 1); }
-	HC_INLINE Vec2F RB() const { return HC_SHUFFLE2F(*this, 0, 2); }
-	HC_INLINE Vec2F GR() const { return HC_SHUFFLE2F(*this, 1, 0); }
-	HC_INLINE Vec2F GB() const { return HC_SHUFFLE2F(*this, 1, 2); }
-	HC_INLINE Vec2F BR() const { return HC_SHUFFLE2F(*this, 2, 0); }
-	HC_INLINE Vec2F BG() const { return HC_SHUFFLE2F(*this, 2, 1); }
-	HC_INLINE Vec3F XXX() const { return HC_SHUFFLE3F(*this, 0, 0, 0); }
-	HC_INLINE Vec3F XXY() const { return HC_SHUFFLE3F(*this, 0, 0, 1); }
-	HC_INLINE Vec3F XXZ() const { return HC_SHUFFLE3F(*this, 0, 0, 2); }
-	HC_INLINE Vec3F XYX() const { return HC_SHUFFLE3F(*this, 0, 1, 0); }
-	HC_INLINE Vec3F XYY() const { return HC_SHUFFLE3F(*this, 0, 1, 1); }
-	HC_INLINE Vec3F XZX() const { return HC_SHUFFLE3F(*this, 0, 2, 0); }
-	HC_INLINE Vec3F XZY() const { return HC_SHUFFLE3F(*this, 0, 2, 1); }
-	HC_INLINE Vec3F XZZ() const { return HC_SHUFFLE3F(*this, 0, 2, 2); }
-	HC_INLINE Vec3F YXX() const { return HC_SHUFFLE3F(*this, 1, 0, 0); }
-	HC_INLINE Vec3F YXY() const { return HC_SHUFFLE3F(*this, 1, 0, 1); }
-	HC_INLINE Vec3F YXZ() const { return HC_SHUFFLE3F(*this, 1, 0, 2); }
-	HC_INLINE Vec3F YYX() const { return HC_SHUFFLE3F(*this, 1, 1, 0); }
-	HC_INLINE Vec3F YYY() const { return HC_SHUFFLE3F(*this, 1, 1, 1); }
-	HC_INLINE Vec3F YYZ() const { return HC_SHUFFLE3F(*this, 1, 1, 2); }
-	HC_INLINE Vec3F YZX() const { return HC_SHUFFLE3F(*this, 1, 2, 0); }
-	HC_INLINE Vec3F YZY() const { return HC_SHUFFLE3F(*this, 1, 2, 1); }
-	HC_INLINE Vec3F YZZ() const { return HC_SHUFFLE3F(*this, 1, 2, 2); }
-	HC_INLINE Vec3F ZXX() const { return HC_SHUFFLE3F(*this, 2, 0, 0); }
-	HC_INLINE Vec3F ZXY() const { return HC_SHUFFLE3F(*this, 2, 0, 1); }
-	HC_INLINE Vec3F ZXZ() const { return HC_SHUFFLE3F(*this, 2, 0, 2); }
-	HC_INLINE Vec3F ZYX() const { return HC_SHUFFLE3F(*this, 2, 1, 0); }
-	HC_INLINE Vec3F ZYY() const { return HC_SHUFFLE3F(*this, 2, 1, 1); }
-	HC_INLINE Vec3F ZYZ() const { return HC_SHUFFLE3F(*this, 2, 1, 2); }
-	HC_INLINE Vec3F ZZX() const { return HC_SHUFFLE3F(*this, 2, 2, 0); }
-	HC_INLINE Vec3F ZZY() const { return HC_SHUFFLE3F(*this, 2, 2, 1); }
-	HC_INLINE Vec3F ZZZ() const { return HC_SHUFFLE3F(*this, 2, 2, 2); }
-	HC_INLINE Vec3F RRR() const { return HC_SHUFFLE3F(*this, 0, 0, 0); }
-	HC_INLINE Vec3F RRG() const { return HC_SHUFFLE3F(*this, 0, 0, 1); }
-	HC_INLINE Vec3F RRB() const { return HC_SHUFFLE3F(*this, 0, 0, 2); }
-	HC_INLINE Vec3F RGR() const { return HC_SHUFFLE3F(*this, 0, 1, 0); }
-	HC_INLINE Vec3F RGG() const { return HC_SHUFFLE3F(*this, 0, 1, 1); }
-	HC_INLINE Vec3F RBR() const { return HC_SHUFFLE3F(*this, 0, 2, 0); }
-	HC_INLINE Vec3F RBG() const { return HC_SHUFFLE3F(*this, 0, 2, 1); }
-	HC_INLINE Vec3F RBB() const { return HC_SHUFFLE3F(*this, 0, 2, 2); }
-	HC_INLINE Vec3F GRR() const { return HC_SHUFFLE3F(*this, 1, 0, 0); }
-	HC_INLINE Vec3F GRG() const { return HC_SHUFFLE3F(*this, 1, 0, 1); }
-	HC_INLINE Vec3F GRB() const { return HC_SHUFFLE3F(*this, 1, 0, 2); }
-	HC_INLINE Vec3F GGR() const { return HC_SHUFFLE3F(*this, 1, 1, 0); }
-	HC_INLINE Vec3F GGG() const { return HC_SHUFFLE3F(*this, 1, 1, 1); }
-	HC_INLINE Vec3F GGB() const { return HC_SHUFFLE3F(*this, 1, 1, 2); }
-	HC_INLINE Vec3F GBR() const { return HC_SHUFFLE3F(*this, 1, 2, 0); }
-	HC_INLINE Vec3F GBG() const { return HC_SHUFFLE3F(*this, 1, 2, 1); }
-	HC_INLINE Vec3F GBB() const { return HC_SHUFFLE3F(*this, 1, 2, 2); }
-	HC_INLINE Vec3F BRR() const { return HC_SHUFFLE3F(*this, 2, 0, 0); }
-	HC_INLINE Vec3F BRG() const { return HC_SHUFFLE3F(*this, 2, 0, 1); }
-	HC_INLINE Vec3F BRB() const { return HC_SHUFFLE3F(*this, 2, 0, 2); }
-	HC_INLINE Vec3F BGR() const { return HC_SHUFFLE3F(*this, 2, 1, 0); }
-	HC_INLINE Vec3F BGG() const { return HC_SHUFFLE3F(*this, 2, 1, 1); }
-	HC_INLINE Vec3F BGB() const { return HC_SHUFFLE3F(*this, 2, 1, 2); }
-	HC_INLINE Vec3F BBR() const { return HC_SHUFFLE3F(*this, 2, 2, 0); }
-	HC_INLINE Vec3F BBG() const { return HC_SHUFFLE3F(*this, 2, 2, 1); }
-	HC_INLINE Vec3F BBB() const { return HC_SHUFFLE3F(*this, 2, 2, 2); }
+	HC_INLINE HC_VECTORCALL Vec3F() { m_fVec = _mm_setzero_ps(); }
+	HC_INLINE explicit HC_VECTORCALL Vec3F(const float* _pValues) { m_fVec = _mm_set_ps(_pValues[2], _pValues[2], _pValues[1], _pValues[0]); }
+	HC_INLINE explicit HC_VECTORCALL Vec3F(float _fX, float _fY, float _fZ) { m_fVec = _mm_set_ps(_fZ, _fZ, _fY, _fX); }
+	HC_INLINE explicit HC_VECTORCALL Vec3F(int _iX, int _iY, int _iZ) { m_fVec = _mm_set_ps(static_cast<float>(_iZ), static_cast<float>(_iZ), static_cast<float>(_iY), static_cast<float>(_iX)); }
+	HC_INLINE explicit HC_VECTORCALL Vec3F(__m128 _vData) { m_fVec = _vData; }
+	HC_INLINE float HC_VECTORCALL operator[](int _iNdx) const { assert(_iNdx < 3); return m_fVec.m128_f32[_iNdx]; }
+	HC_INLINE float& HC_VECTORCALL operator[](int _iNdx) { assert(_iNdx < 3); return m_fVec.m128_f32[_iNdx]; }
+	HC_INLINE float HC_VECTORCALL X() const { return _mm_cvtss_f32(m_fVec); }
+	HC_INLINE float HC_VECTORCALL Y() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE float HC_VECTORCALL Z() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(2, 2, 2, 2))); }
+	HC_INLINE float HC_VECTORCALL R() const { return _mm_cvtss_f32(m_fVec); }
+	HC_INLINE float HC_VECTORCALL G() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE float HC_VECTORCALL B() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(2, 2, 2, 2))); }
+	HC_INLINE void HC_VECTORCALL SetX(float _fX) { m_fVec = _mm_move_ss(m_fVec, _mm_set_ss(_fX)); }
+	HC_INLINE void HC_VECTORCALL SetY(float _fY) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fY)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 2, 0, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
+	HC_INLINE void HC_VECTORCALL SetZ(float _fZ) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fZ)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 0, 1, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
+	HC_INLINE void HC_VECTORCALL SetR(float _fR) { m_fVec = _mm_move_ss(m_fVec, _mm_set_ss(_fR)); }
+	HC_INLINE void HC_VECTORCALL SetG(float _fG) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fG)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 2, 0, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
+	HC_INLINE void HC_VECTORCALL SetB(float _fB) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fB)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 0, 1, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
+	HC_INLINE Vec2F HC_VECTORCALL XX() const { return HC_SHUFFLE2F(*this, 0, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL YY() const { return HC_SHUFFLE2F(*this, 1, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL ZZ() const { return HC_SHUFFLE2F(*this, 2, 2); }
+	HC_INLINE Vec2F HC_VECTORCALL XY() const { return HC_SHUFFLE2F(*this, 0, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL XZ() const { return HC_SHUFFLE2F(*this, 0, 2); }
+	HC_INLINE Vec2F HC_VECTORCALL YX() const { return HC_SHUFFLE2F(*this, 1, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL YZ() const { return HC_SHUFFLE2F(*this, 1, 2); }
+	HC_INLINE Vec2F HC_VECTORCALL ZX() const { return HC_SHUFFLE2F(*this, 2, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL ZY() const { return HC_SHUFFLE2F(*this, 2, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL RR() const { return HC_SHUFFLE2F(*this, 0, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL GG() const { return HC_SHUFFLE2F(*this, 1, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL BB() const { return HC_SHUFFLE2F(*this, 2, 2); }
+	HC_INLINE Vec2F HC_VECTORCALL RG() const { return HC_SHUFFLE2F(*this, 0, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL RB() const { return HC_SHUFFLE2F(*this, 0, 2); }
+	HC_INLINE Vec2F HC_VECTORCALL GR() const { return HC_SHUFFLE2F(*this, 1, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL GB() const { return HC_SHUFFLE2F(*this, 1, 2); }
+	HC_INLINE Vec2F HC_VECTORCALL BR() const { return HC_SHUFFLE2F(*this, 2, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL BG() const { return HC_SHUFFLE2F(*this, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL XXX() const { return HC_SHUFFLE3F(*this, 0, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL XXY() const { return HC_SHUFFLE3F(*this, 0, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL XXZ() const { return HC_SHUFFLE3F(*this, 0, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL XYX() const { return HC_SHUFFLE3F(*this, 0, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL XYY() const { return HC_SHUFFLE3F(*this, 0, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL XZX() const { return HC_SHUFFLE3F(*this, 0, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL XZY() const { return HC_SHUFFLE3F(*this, 0, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL XZZ() const { return HC_SHUFFLE3F(*this, 0, 2, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL YXX() const { return HC_SHUFFLE3F(*this, 1, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL YXY() const { return HC_SHUFFLE3F(*this, 1, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL YXZ() const { return HC_SHUFFLE3F(*this, 1, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL YYX() const { return HC_SHUFFLE3F(*this, 1, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL YYY() const { return HC_SHUFFLE3F(*this, 1, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL YYZ() const { return HC_SHUFFLE3F(*this, 1, 1, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL YZX() const { return HC_SHUFFLE3F(*this, 1, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL YZY() const { return HC_SHUFFLE3F(*this, 1, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL YZZ() const { return HC_SHUFFLE3F(*this, 1, 2, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL ZXX() const { return HC_SHUFFLE3F(*this, 2, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL ZXY() const { return HC_SHUFFLE3F(*this, 2, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL ZXZ() const { return HC_SHUFFLE3F(*this, 2, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL ZYX() const { return HC_SHUFFLE3F(*this, 2, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL ZYY() const { return HC_SHUFFLE3F(*this, 2, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL ZYZ() const { return HC_SHUFFLE3F(*this, 2, 1, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL ZZX() const { return HC_SHUFFLE3F(*this, 2, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL ZZY() const { return HC_SHUFFLE3F(*this, 2, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL ZZZ() const { return HC_SHUFFLE3F(*this, 2, 2, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL RRR() const { return HC_SHUFFLE3F(*this, 0, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL RRG() const { return HC_SHUFFLE3F(*this, 0, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL RRB() const { return HC_SHUFFLE3F(*this, 0, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL RGR() const { return HC_SHUFFLE3F(*this, 0, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL RGG() const { return HC_SHUFFLE3F(*this, 0, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL RBR() const { return HC_SHUFFLE3F(*this, 0, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL RBG() const { return HC_SHUFFLE3F(*this, 0, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL RBB() const { return HC_SHUFFLE3F(*this, 0, 2, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL GRR() const { return HC_SHUFFLE3F(*this, 1, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL GRG() const { return HC_SHUFFLE3F(*this, 1, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL GRB() const { return HC_SHUFFLE3F(*this, 1, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL GGR() const { return HC_SHUFFLE3F(*this, 1, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL GGG() const { return HC_SHUFFLE3F(*this, 1, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL GGB() const { return HC_SHUFFLE3F(*this, 1, 1, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL GBR() const { return HC_SHUFFLE3F(*this, 1, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL GBG() const { return HC_SHUFFLE3F(*this, 1, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL GBB() const { return HC_SHUFFLE3F(*this, 1, 2, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL BRR() const { return HC_SHUFFLE3F(*this, 2, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL BRG() const { return HC_SHUFFLE3F(*this, 2, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL BRB() const { return HC_SHUFFLE3F(*this, 2, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL BGR() const { return HC_SHUFFLE3F(*this, 2, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL BGG() const { return HC_SHUFFLE3F(*this, 2, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL BGB() const { return HC_SHUFFLE3F(*this, 2, 1, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL BBR() const { return HC_SHUFFLE3F(*this, 2, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL BBG() const { return HC_SHUFFLE3F(*this, 2, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL BBB() const { return HC_SHUFFLE3F(*this, 2, 2, 2); }
 };
 
 struct Vec4F {
 	__m128 m_fVec;
 
-	HC_INLINE Vec4F() { m_fVec = _mm_setzero_ps(); }
-	HC_INLINE explicit Vec4F(const float* _pValues) { m_fVec = _mm_set_ps(_pValues[3], _pValues[2], _pValues[1], _pValues[0]); }
-	HC_INLINE explicit Vec4F(float _fX, float _fY, float _fZ, float _fW) { m_fVec = _mm_set_ps(_fW, _fZ, _fY, _fX); }
-	HC_INLINE explicit Vec4F(int _iX, int _iY, int _iZ, int _iW) { m_fVec = _mm_set_ps(static_cast<float>(_iW), static_cast<float>(_iZ), static_cast<float>(_iY), static_cast<float>(_iZ)); }
-	HC_INLINE explicit Vec4F(__m128 _vData) { m_fVec = _vData; }
-	HC_INLINE float operator[](int _iNdx) const { assert(_iNdx < 4); return m_fVec.m128_f32[_iNdx]; }
-	HC_INLINE float& operator[](int _iNdx) { assert(_iNdx < 4); return m_fVec.m128_f32[_iNdx]; }
-	HC_INLINE float X() const { return _mm_cvtss_f32(m_fVec); }
-	HC_INLINE float Y() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE float Z() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(2, 2, 2, 2))); }
-	HC_INLINE float W() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(3, 3, 3, 3))); }
-	HC_INLINE float R() const { return _mm_cvtss_f32(m_fVec); }
-	HC_INLINE float G() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE float B() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(2, 2, 2, 2))); }
-	HC_INLINE float A() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(3, 3, 3, 3))); }
-	HC_INLINE void SetX(float _fX) { m_fVec = _mm_move_ss(m_fVec, _mm_set_ss(_fX)); }
-	HC_INLINE void SetY(float _fY) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fY)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 2, 0, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
-	HC_INLINE void SetZ(float _fZ) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fZ)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 0, 1, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
-	HC_INLINE void SetW(float _fW) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fW)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(0, 2, 1, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
-	HC_INLINE void SetR(float _fR) { m_fVec = _mm_move_ss(m_fVec, _mm_set_ss(_fR)); }
-	HC_INLINE void SetG(float _fG) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fG)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 2, 0, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
-	HC_INLINE void SetB(float _fB) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fB)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 0, 1, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
-	HC_INLINE void SetA(float _fA) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fA)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(0, 2, 1, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
-	HC_INLINE Vec2F XX() const { return HC_SHUFFLE2F(*this, 0, 0); }
-	HC_INLINE Vec2F YY() const { return HC_SHUFFLE2F(*this, 1, 1); }
-	HC_INLINE Vec2F ZZ() const { return HC_SHUFFLE2F(*this, 2, 2); }
-	HC_INLINE Vec2F WW() const { return HC_SHUFFLE2F(*this, 3, 3); }
-	HC_INLINE Vec2F XY() const { return HC_SHUFFLE2F(*this, 0, 1); }
-	HC_INLINE Vec2F XZ() const { return HC_SHUFFLE2F(*this, 0, 2); }
-	HC_INLINE Vec2F XW() const { return HC_SHUFFLE2F(*this, 0, 3); }
-	HC_INLINE Vec2F YX() const { return HC_SHUFFLE2F(*this, 1, 0); }
-	HC_INLINE Vec2F YZ() const { return HC_SHUFFLE2F(*this, 1, 2); }
-	HC_INLINE Vec2F YW() const { return HC_SHUFFLE2F(*this, 1, 3); }
-	HC_INLINE Vec2F ZX() const { return HC_SHUFFLE2F(*this, 2, 0); }
-	HC_INLINE Vec2F ZY() const { return HC_SHUFFLE2F(*this, 2, 1); }
-	HC_INLINE Vec2F ZW() const { return HC_SHUFFLE2F(*this, 2, 3); }
-	HC_INLINE Vec2F WX() const { return HC_SHUFFLE2F(*this, 3, 0); }
-	HC_INLINE Vec2F WY() const { return HC_SHUFFLE2F(*this, 3, 1); }
-	HC_INLINE Vec2F WZ() const { return HC_SHUFFLE2F(*this, 3, 2); }
-	HC_INLINE Vec2F RR() const { return HC_SHUFFLE2F(*this, 0, 0); }
-	HC_INLINE Vec2F GG() const { return HC_SHUFFLE2F(*this, 1, 1); }
-	HC_INLINE Vec2F BB() const { return HC_SHUFFLE2F(*this, 2, 2); }
-	HC_INLINE Vec2F AA() const { return HC_SHUFFLE2F(*this, 3, 3); }
-	HC_INLINE Vec2F RG() const { return HC_SHUFFLE2F(*this, 0, 1); }
-	HC_INLINE Vec2F RB() const { return HC_SHUFFLE2F(*this, 0, 2); }
-	HC_INLINE Vec2F RA() const { return HC_SHUFFLE2F(*this, 0, 3); }
-	HC_INLINE Vec2F GR() const { return HC_SHUFFLE2F(*this, 1, 0); }
-	HC_INLINE Vec2F GB() const { return HC_SHUFFLE2F(*this, 1, 2); }
-	HC_INLINE Vec2F GA() const { return HC_SHUFFLE2F(*this, 1, 3); }
-	HC_INLINE Vec2F BR() const { return HC_SHUFFLE2F(*this, 2, 0); }
-	HC_INLINE Vec2F BG() const { return HC_SHUFFLE2F(*this, 2, 1); }
-	HC_INLINE Vec2F BA() const { return HC_SHUFFLE2F(*this, 2, 3); }
-	HC_INLINE Vec2F AR() const { return HC_SHUFFLE2F(*this, 3, 0); }
-	HC_INLINE Vec2F AG() const { return HC_SHUFFLE2F(*this, 3, 1); }
-	HC_INLINE Vec2F AB() const { return HC_SHUFFLE2F(*this, 3, 2); }
-	HC_INLINE Vec3F XXX() const { return HC_SHUFFLE3F(*this, 0, 0, 0); }
-	HC_INLINE Vec3F XXY() const { return HC_SHUFFLE3F(*this, 0, 0, 1); }
-	HC_INLINE Vec3F XXZ() const { return HC_SHUFFLE3F(*this, 0, 0, 2); }
-	HC_INLINE Vec3F XXW() const { return HC_SHUFFLE3F(*this, 0, 0, 3); }
-	HC_INLINE Vec3F XYX() const { return HC_SHUFFLE3F(*this, 0, 1, 0); }
-	HC_INLINE Vec3F XYY() const { return HC_SHUFFLE3F(*this, 0, 1, 1); }
-	HC_INLINE Vec3F XYZ() const { return HC_SHUFFLE3F(*this, 0, 1, 2); }
-	HC_INLINE Vec3F XYW() const { return HC_SHUFFLE3F(*this, 0, 1, 3); }
-	HC_INLINE Vec3F XZX() const { return HC_SHUFFLE3F(*this, 0, 2, 0); }
-	HC_INLINE Vec3F XZY() const { return HC_SHUFFLE3F(*this, 0, 2, 1); }
-	HC_INLINE Vec3F XZZ() const { return HC_SHUFFLE3F(*this, 0, 2, 2); }
-	HC_INLINE Vec3F XZW() const { return HC_SHUFFLE3F(*this, 0, 2, 3); }
-	HC_INLINE Vec3F XWX() const { return HC_SHUFFLE3F(*this, 0, 3, 0); }
-	HC_INLINE Vec3F XWY() const { return HC_SHUFFLE3F(*this, 0, 3, 1); }
-	HC_INLINE Vec3F XWZ() const { return HC_SHUFFLE3F(*this, 0, 3, 2); }
-	HC_INLINE Vec3F XWW() const { return HC_SHUFFLE3F(*this, 0, 3, 3); }
-	HC_INLINE Vec3F YXX() const { return HC_SHUFFLE3F(*this, 1, 0, 0); }
-	HC_INLINE Vec3F YXY() const { return HC_SHUFFLE3F(*this, 1, 0, 1); }
-	HC_INLINE Vec3F YXZ() const { return HC_SHUFFLE3F(*this, 1, 0, 2); }
-	HC_INLINE Vec3F YXW() const { return HC_SHUFFLE3F(*this, 1, 0, 3); }
-	HC_INLINE Vec3F YYX() const { return HC_SHUFFLE3F(*this, 1, 1, 0); }
-	HC_INLINE Vec3F YYY() const { return HC_SHUFFLE3F(*this, 1, 1, 1); }
-	HC_INLINE Vec3F YYZ() const { return HC_SHUFFLE3F(*this, 1, 1, 2); }
-	HC_INLINE Vec3F YYW() const { return HC_SHUFFLE3F(*this, 1, 1, 3); }
-	HC_INLINE Vec3F YZX() const { return HC_SHUFFLE3F(*this, 1, 2, 0); }
-	HC_INLINE Vec3F YZY() const { return HC_SHUFFLE3F(*this, 1, 2, 1); }
-	HC_INLINE Vec3F YZZ() const { return HC_SHUFFLE3F(*this, 1, 2, 2); }
-	HC_INLINE Vec3F YZW() const { return HC_SHUFFLE3F(*this, 1, 2, 3); }
-	HC_INLINE Vec3F YWX() const { return HC_SHUFFLE3F(*this, 1, 3, 0); }
-	HC_INLINE Vec3F YWY() const { return HC_SHUFFLE3F(*this, 1, 3, 1); }
-	HC_INLINE Vec3F YWZ() const { return HC_SHUFFLE3F(*this, 1, 3, 2); }
-	HC_INLINE Vec3F YWW() const { return HC_SHUFFLE3F(*this, 1, 3, 3); }
-	HC_INLINE Vec3F ZXX() const { return HC_SHUFFLE3F(*this, 2, 0, 0); }
-	HC_INLINE Vec3F ZXY() const { return HC_SHUFFLE3F(*this, 2, 0, 1); }
-	HC_INLINE Vec3F ZXZ() const { return HC_SHUFFLE3F(*this, 2, 0, 2); }
-	HC_INLINE Vec3F ZXW() const { return HC_SHUFFLE3F(*this, 2, 0, 3); }
-	HC_INLINE Vec3F ZYX() const { return HC_SHUFFLE3F(*this, 2, 1, 0); }
-	HC_INLINE Vec3F ZYY() const { return HC_SHUFFLE3F(*this, 2, 1, 1); }
-	HC_INLINE Vec3F ZYZ() const { return HC_SHUFFLE3F(*this, 2, 1, 2); }
-	HC_INLINE Vec3F ZYW() const { return HC_SHUFFLE3F(*this, 2, 1, 3); }
-	HC_INLINE Vec3F ZZX() const { return HC_SHUFFLE3F(*this, 2, 2, 0); }
-	HC_INLINE Vec3F ZZY() const { return HC_SHUFFLE3F(*this, 2, 2, 1); }
-	HC_INLINE Vec3F ZZZ() const { return HC_SHUFFLE3F(*this, 2, 2, 2); }
-	HC_INLINE Vec3F ZZW() const { return HC_SHUFFLE3F(*this, 2, 2, 3); }
-	HC_INLINE Vec3F ZWX() const { return HC_SHUFFLE3F(*this, 2, 3, 0); }
-	HC_INLINE Vec3F ZWY() const { return HC_SHUFFLE3F(*this, 2, 3, 1); }
-	HC_INLINE Vec3F ZWZ() const { return HC_SHUFFLE3F(*this, 2, 3, 2); }
-	HC_INLINE Vec3F ZWW() const { return HC_SHUFFLE3F(*this, 2, 3, 3); }
-	HC_INLINE Vec3F WXX() const { return HC_SHUFFLE3F(*this, 3, 0, 0); }
-	HC_INLINE Vec3F WXY() const { return HC_SHUFFLE3F(*this, 3, 0, 1); }
-	HC_INLINE Vec3F WXZ() const { return HC_SHUFFLE3F(*this, 3, 0, 2); }
-	HC_INLINE Vec3F WXW() const { return HC_SHUFFLE3F(*this, 3, 0, 3); }
-	HC_INLINE Vec3F WYX() const { return HC_SHUFFLE3F(*this, 3, 1, 0); }
-	HC_INLINE Vec3F WYY() const { return HC_SHUFFLE3F(*this, 3, 1, 1); }
-	HC_INLINE Vec3F WYZ() const { return HC_SHUFFLE3F(*this, 3, 1, 2); }
-	HC_INLINE Vec3F WYW() const { return HC_SHUFFLE3F(*this, 3, 1, 3); }
-	HC_INLINE Vec3F WZX() const { return HC_SHUFFLE3F(*this, 3, 2, 0); }
-	HC_INLINE Vec3F WZY() const { return HC_SHUFFLE3F(*this, 3, 2, 1); }
-	HC_INLINE Vec3F WZZ() const { return HC_SHUFFLE3F(*this, 3, 2, 2); }
-	HC_INLINE Vec3F WZW() const { return HC_SHUFFLE3F(*this, 3, 2, 3); }
-	HC_INLINE Vec3F WWX() const { return HC_SHUFFLE3F(*this, 3, 3, 0); }
-	HC_INLINE Vec3F WWY() const { return HC_SHUFFLE3F(*this, 3, 3, 1); }
-	HC_INLINE Vec3F WWZ() const { return HC_SHUFFLE3F(*this, 3, 3, 2); }
-	HC_INLINE Vec3F WWW() const { return HC_SHUFFLE3F(*this, 3, 3, 3); }
-	HC_INLINE Vec3F RRR() const { return HC_SHUFFLE3F(*this, 0, 0, 0); }
-	HC_INLINE Vec3F RRG() const { return HC_SHUFFLE3F(*this, 0, 0, 1); }
-	HC_INLINE Vec3F RRB() const { return HC_SHUFFLE3F(*this, 0, 0, 2); }
-	HC_INLINE Vec3F RRA() const { return HC_SHUFFLE3F(*this, 0, 0, 3); }
-	HC_INLINE Vec3F RGR() const { return HC_SHUFFLE3F(*this, 0, 1, 0); }
-	HC_INLINE Vec3F RGG() const { return HC_SHUFFLE3F(*this, 0, 1, 1); }
-	HC_INLINE Vec3F RGA() const { return HC_SHUFFLE3F(*this, 0, 1, 2); }
-	HC_INLINE Vec3F RGB() const { return HC_SHUFFLE3F(*this, 0, 1, 3); }
-	HC_INLINE Vec3F RBR() const { return HC_SHUFFLE3F(*this, 0, 2, 0); }
-	HC_INLINE Vec3F RBG() const { return HC_SHUFFLE3F(*this, 0, 2, 1); }
-	HC_INLINE Vec3F RBB() const { return HC_SHUFFLE3F(*this, 0, 2, 2); }
-	HC_INLINE Vec3F RBA() const { return HC_SHUFFLE3F(*this, 0, 2, 3); }
-	HC_INLINE Vec3F RAR() const { return HC_SHUFFLE3F(*this, 0, 3, 0); }
-	HC_INLINE Vec3F RAG() const { return HC_SHUFFLE3F(*this, 0, 3, 1); }
-	HC_INLINE Vec3F RAB() const { return HC_SHUFFLE3F(*this, 0, 3, 2); }
-	HC_INLINE Vec3F RAA() const { return HC_SHUFFLE3F(*this, 0, 3, 3); }
-	HC_INLINE Vec3F GRR() const { return HC_SHUFFLE3F(*this, 1, 0, 0); }
-	HC_INLINE Vec3F GRG() const { return HC_SHUFFLE3F(*this, 1, 0, 1); }
-	HC_INLINE Vec3F GRB() const { return HC_SHUFFLE3F(*this, 1, 0, 2); }
-	HC_INLINE Vec3F GRA() const { return HC_SHUFFLE3F(*this, 1, 0, 3); }
-	HC_INLINE Vec3F GGR() const { return HC_SHUFFLE3F(*this, 1, 1, 0); }
-	HC_INLINE Vec3F GGG() const { return HC_SHUFFLE3F(*this, 1, 1, 1); }
-	HC_INLINE Vec3F GGB() const { return HC_SHUFFLE3F(*this, 1, 1, 2); }
-	HC_INLINE Vec3F GGA() const { return HC_SHUFFLE3F(*this, 1, 1, 3); }
-	HC_INLINE Vec3F GBR() const { return HC_SHUFFLE3F(*this, 1, 2, 0); }
-	HC_INLINE Vec3F GBG() const { return HC_SHUFFLE3F(*this, 1, 2, 1); }
-	HC_INLINE Vec3F GBB() const { return HC_SHUFFLE3F(*this, 1, 2, 2); }
-	HC_INLINE Vec3F GBA() const { return HC_SHUFFLE3F(*this, 1, 2, 3); }
-	HC_INLINE Vec3F GAR() const { return HC_SHUFFLE3F(*this, 1, 3, 0); }
-	HC_INLINE Vec3F GAG() const { return HC_SHUFFLE3F(*this, 1, 3, 1); }
-	HC_INLINE Vec3F GAB() const { return HC_SHUFFLE3F(*this, 1, 3, 2); }
-	HC_INLINE Vec3F GAA() const { return HC_SHUFFLE3F(*this, 1, 3, 3); }
-	HC_INLINE Vec3F BRR() const { return HC_SHUFFLE3F(*this, 2, 0, 0); }
-	HC_INLINE Vec3F BRG() const { return HC_SHUFFLE3F(*this, 2, 0, 1); }
-	HC_INLINE Vec3F BRB() const { return HC_SHUFFLE3F(*this, 2, 0, 2); }
-	HC_INLINE Vec3F BRA() const { return HC_SHUFFLE3F(*this, 2, 0, 3); }
-	HC_INLINE Vec3F BGR() const { return HC_SHUFFLE3F(*this, 2, 1, 0); }
-	HC_INLINE Vec3F BGG() const { return HC_SHUFFLE3F(*this, 2, 1, 1); }
-	HC_INLINE Vec3F BGB() const { return HC_SHUFFLE3F(*this, 2, 1, 2); }
-	HC_INLINE Vec3F BGA() const { return HC_SHUFFLE3F(*this, 2, 1, 3); }
-	HC_INLINE Vec3F BBR() const { return HC_SHUFFLE3F(*this, 2, 2, 0); }
-	HC_INLINE Vec3F BBG() const { return HC_SHUFFLE3F(*this, 2, 2, 1); }
-	HC_INLINE Vec3F BBB() const { return HC_SHUFFLE3F(*this, 2, 2, 2); }
-	HC_INLINE Vec3F BBA() const { return HC_SHUFFLE3F(*this, 2, 2, 3); }
-	HC_INLINE Vec3F BAR() const { return HC_SHUFFLE3F(*this, 2, 3, 0); }
-	HC_INLINE Vec3F BAG() const { return HC_SHUFFLE3F(*this, 2, 3, 1); }
-	HC_INLINE Vec3F BAB() const { return HC_SHUFFLE3F(*this, 2, 3, 2); }
-	HC_INLINE Vec3F BAA() const { return HC_SHUFFLE3F(*this, 2, 3, 3); }
-	HC_INLINE Vec3F ARR() const { return HC_SHUFFLE3F(*this, 3, 0, 0); }
-	HC_INLINE Vec3F ARG() const { return HC_SHUFFLE3F(*this, 3, 0, 1); }
-	HC_INLINE Vec3F ARB() const { return HC_SHUFFLE3F(*this, 3, 0, 2); }
-	HC_INLINE Vec3F ARA() const { return HC_SHUFFLE3F(*this, 3, 0, 3); }
-	HC_INLINE Vec3F AGR() const { return HC_SHUFFLE3F(*this, 3, 1, 0); }
-	HC_INLINE Vec3F AGG() const { return HC_SHUFFLE3F(*this, 3, 1, 1); }
-	HC_INLINE Vec3F AGB() const { return HC_SHUFFLE3F(*this, 3, 1, 2); }
-	HC_INLINE Vec3F AGA() const { return HC_SHUFFLE3F(*this, 3, 1, 3); }
-	HC_INLINE Vec3F ABR() const { return HC_SHUFFLE3F(*this, 3, 2, 0); }
-	HC_INLINE Vec3F ABG() const { return HC_SHUFFLE3F(*this, 3, 2, 1); }
-	HC_INLINE Vec3F ABB() const { return HC_SHUFFLE3F(*this, 3, 2, 2); }
-	HC_INLINE Vec3F ABA() const { return HC_SHUFFLE3F(*this, 3, 2, 3); }
-	HC_INLINE Vec3F AAR() const { return HC_SHUFFLE3F(*this, 3, 3, 0); }
-	HC_INLINE Vec3F AAG() const { return HC_SHUFFLE3F(*this, 3, 3, 1); }
-	HC_INLINE Vec3F AAB() const { return HC_SHUFFLE3F(*this, 3, 3, 2); }
-	HC_INLINE Vec3F AAA() const { return HC_SHUFFLE3F(*this, 3, 3, 3); }
-	HC_INLINE Vec4F XXXX() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 0); }
-	HC_INLINE Vec4F XXXY() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 1); }
-	HC_INLINE Vec4F XXXZ() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 2); }
-	HC_INLINE Vec4F XXXW() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 3); }
-	HC_INLINE Vec4F XXYX() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 0); }
-	HC_INLINE Vec4F XXYY() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 1); }
-	HC_INLINE Vec4F XXYZ() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 2); }
-	HC_INLINE Vec4F XXYW() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 3); }
-	HC_INLINE Vec4F XXZX() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 0); }
-	HC_INLINE Vec4F XXZY() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 1); }
-	HC_INLINE Vec4F XXZZ() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 2); }
-	HC_INLINE Vec4F XXZW() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 3); }
-	HC_INLINE Vec4F XXWX() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 0); }
-	HC_INLINE Vec4F XXWY() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 1); }
-	HC_INLINE Vec4F XXWZ() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 2); }
-	HC_INLINE Vec4F XXWW() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 3); }
-	HC_INLINE Vec4F XYXX() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 0); }
-	HC_INLINE Vec4F XYXY() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 1); }
-	HC_INLINE Vec4F XYXZ() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 2); }
-	HC_INLINE Vec4F XYXW() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 3); }
-	HC_INLINE Vec4F XYYX() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 0); }
-	HC_INLINE Vec4F XYYY() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 1); }
-	HC_INLINE Vec4F XYYZ() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 2); }
-	HC_INLINE Vec4F XYYW() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 3); }
-	HC_INLINE Vec4F XYZX() const { return HC_SHUFFLE4F(*this, 0, 1, 2, 0); }
-	HC_INLINE Vec4F XYZY() const { return HC_SHUFFLE4F(*this, 0, 1, 2, 1); }
-	HC_INLINE Vec4F XYZZ() const { return HC_SHUFFLE4F(*this, 0, 1, 2, 2); }
-	HC_INLINE Vec4F XYWX() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 0); }
-	HC_INLINE Vec4F XYWY() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 1); }
-	HC_INLINE Vec4F XYWZ() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 2); }
-	HC_INLINE Vec4F XYWW() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 3); }
-	HC_INLINE Vec4F XZXX() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 0); }
-	HC_INLINE Vec4F XZXY() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 1); }
-	HC_INLINE Vec4F XZXZ() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 2); }
-	HC_INLINE Vec4F XZXW() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 3); }
-	HC_INLINE Vec4F XZYX() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 0); }
-	HC_INLINE Vec4F XZYY() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 1); }
-	HC_INLINE Vec4F XZYZ() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 2); }
-	HC_INLINE Vec4F XZYW() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 3); }
-	HC_INLINE Vec4F XZZX() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 0); }
-	HC_INLINE Vec4F XZZY() const { return HC_SHUFFLE4F(*this, 0, 2, 2, 1); }
-	HC_INLINE Vec4F XZZZ() const { return HC_SHUFFLE4F(*this, 0, 2, 2, 2); }
-	HC_INLINE Vec4F XZZW() const { return HC_SHUFFLE4F(*this, 0, 2, 2, 3); }
-	HC_INLINE Vec4F XZWX() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 0); }
-	HC_INLINE Vec4F XZWY() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 1); }
-	HC_INLINE Vec4F XZWZ() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 2); }
-	HC_INLINE Vec4F XZWW() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 3); }
-	HC_INLINE Vec4F XWXX() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 0); }
-	HC_INLINE Vec4F XWXY() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 1); }
-	HC_INLINE Vec4F XWXZ() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 2); }
-	HC_INLINE Vec4F XWXW() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 3); }
-	HC_INLINE Vec4F XWYX() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 0); }
-	HC_INLINE Vec4F XWYY() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 1); }
-	HC_INLINE Vec4F XWYZ() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 2); }
-	HC_INLINE Vec4F XWYW() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 3); }
-	HC_INLINE Vec4F XWZX() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 0); }
-	HC_INLINE Vec4F XWZY() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 1); }
-	HC_INLINE Vec4F XWZZ() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 2); }
-	HC_INLINE Vec4F XWZW() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 3); }
-	HC_INLINE Vec4F XWWX() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 0); }
-	HC_INLINE Vec4F XWWY() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 1); }
-	HC_INLINE Vec4F XWWZ() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 2); }
-	HC_INLINE Vec4F XWWW() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 3); }
-	HC_INLINE Vec4F YXXX() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 0); }
-	HC_INLINE Vec4F YXXY() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 1); }
-	HC_INLINE Vec4F YXXZ() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 2); }
-	HC_INLINE Vec4F YXXW() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 3); }
-	HC_INLINE Vec4F YXYX() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 0); }
-	HC_INLINE Vec4F YXYY() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 1); }
-	HC_INLINE Vec4F YXYZ() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 2); }
-	HC_INLINE Vec4F YXYW() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 3); }
-	HC_INLINE Vec4F YXZX() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 0); }
-	HC_INLINE Vec4F YXZY() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 1); }
-	HC_INLINE Vec4F YXZZ() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 2); }
-	HC_INLINE Vec4F YXZW() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 3); }
-	HC_INLINE Vec4F YXWX() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 0); }
-	HC_INLINE Vec4F YXWY() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 1); }
-	HC_INLINE Vec4F YXWZ() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 2); }
-	HC_INLINE Vec4F YXWW() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 3); }
-	HC_INLINE Vec4F YYXX() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 0); }
-	HC_INLINE Vec4F YYXY() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 1); }
-	HC_INLINE Vec4F YYXZ() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 2); }
-	HC_INLINE Vec4F YYXW() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 3); }
-	HC_INLINE Vec4F YYYX() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 0); }
-	HC_INLINE Vec4F YYYY() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 1); }
-	HC_INLINE Vec4F YYYZ() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 2); }
-	HC_INLINE Vec4F YYYW() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 3); }
-	HC_INLINE Vec4F YYZX() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 0); }
-	HC_INLINE Vec4F YYZY() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 1); }
-	HC_INLINE Vec4F YYZZ() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 2); }
-	HC_INLINE Vec4F YYZW() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 3); }
-	HC_INLINE Vec4F YYWX() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 0); }
-	HC_INLINE Vec4F YYWY() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 1); }
-	HC_INLINE Vec4F YYWZ() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 2); }
-	HC_INLINE Vec4F YYWW() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 3); }
-	HC_INLINE Vec4F YZXX() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 0); }
-	HC_INLINE Vec4F YZXY() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 1); }
-	HC_INLINE Vec4F YZXZ() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 2); }
-	HC_INLINE Vec4F YZXW() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 3); }
-	HC_INLINE Vec4F YZYX() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 0); }
-	HC_INLINE Vec4F YZYY() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 1); }
-	HC_INLINE Vec4F YZYZ() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 2); }
-	HC_INLINE Vec4F YZYW() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 3); }
-	HC_INLINE Vec4F YZZX() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 0); }
-	HC_INLINE Vec4F YZZY() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 1); }
-	HC_INLINE Vec4F YZZZ() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 2); }
-	HC_INLINE Vec4F YZZW() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 3); }
-	HC_INLINE Vec4F YZWX() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 0); }
-	HC_INLINE Vec4F YZWY() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 1); }
-	HC_INLINE Vec4F YZWZ() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 2); }
-	HC_INLINE Vec4F YZWW() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 3); }
-	HC_INLINE Vec4F YWXX() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 0); }
-	HC_INLINE Vec4F YWXY() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 1); }
-	HC_INLINE Vec4F YWXZ() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 2); }
-	HC_INLINE Vec4F YWXW() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 3); }
-	HC_INLINE Vec4F YWYX() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 0); }
-	HC_INLINE Vec4F YWYY() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 1); }
-	HC_INLINE Vec4F YWYZ() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 2); }
-	HC_INLINE Vec4F YWYW() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 3); }
-	HC_INLINE Vec4F YWZX() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 0); }
-	HC_INLINE Vec4F YWZY() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 1); }
-	HC_INLINE Vec4F YWZZ() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 2); }
-	HC_INLINE Vec4F YWZW() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 3); }
-	HC_INLINE Vec4F YWWX() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 0); }
-	HC_INLINE Vec4F YWWY() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 1); }
-	HC_INLINE Vec4F YWWZ() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 2); }
-	HC_INLINE Vec4F YWWW() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 3); }
-	HC_INLINE Vec4F ZXXX() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 0); }
-	HC_INLINE Vec4F ZXXY() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 1); }
-	HC_INLINE Vec4F ZXXZ() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 2); }
-	HC_INLINE Vec4F ZXXW() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 3); }
-	HC_INLINE Vec4F ZXYX() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 0); }
-	HC_INLINE Vec4F ZXYY() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 1); }
-	HC_INLINE Vec4F ZXYZ() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 2); }
-	HC_INLINE Vec4F ZXYW() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 3); }
-	HC_INLINE Vec4F ZXZX() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 0); }
-	HC_INLINE Vec4F ZXZY() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 1); }
-	HC_INLINE Vec4F ZXZZ() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 2); }
-	HC_INLINE Vec4F ZXZW() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 3); }
-	HC_INLINE Vec4F ZXWX() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 0); }
-	HC_INLINE Vec4F ZXWY() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 1); }
-	HC_INLINE Vec4F ZXWZ() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 2); }
-	HC_INLINE Vec4F ZXWW() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 3); }
-	HC_INLINE Vec4F ZYXX() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 0); }
-	HC_INLINE Vec4F ZYXY() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 1); }
-	HC_INLINE Vec4F ZYXZ() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 2); }
-	HC_INLINE Vec4F ZYXW() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 3); }
-	HC_INLINE Vec4F ZYYX() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 0); }
-	HC_INLINE Vec4F ZYYY() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 1); }
-	HC_INLINE Vec4F ZYYZ() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 2); }
-	HC_INLINE Vec4F ZYYW() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 3); }
-	HC_INLINE Vec4F ZYZX() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 0); }
-	HC_INLINE Vec4F ZYZY() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 1); }
-	HC_INLINE Vec4F ZYZZ() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 2); }
-	HC_INLINE Vec4F ZYZW() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 3); }
-	HC_INLINE Vec4F ZYWX() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 0); }
-	HC_INLINE Vec4F ZYWY() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 1); }
-	HC_INLINE Vec4F ZYWZ() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 2); }
-	HC_INLINE Vec4F ZYWW() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 3); }
-	HC_INLINE Vec4F ZZXX() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 0); }
-	HC_INLINE Vec4F ZZXY() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 1); }
-	HC_INLINE Vec4F ZZXZ() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 2); }
-	HC_INLINE Vec4F ZZXW() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 3); }
-	HC_INLINE Vec4F ZZYX() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 0); }
-	HC_INLINE Vec4F ZZYY() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 1); }
-	HC_INLINE Vec4F ZZYZ() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 2); }
-	HC_INLINE Vec4F ZZYW() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 3); }
-	HC_INLINE Vec4F ZZZX() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 0); }
-	HC_INLINE Vec4F ZZZY() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 1); }
-	HC_INLINE Vec4F ZZZZ() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 2); }
-	HC_INLINE Vec4F ZZZW() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 3); }
-	HC_INLINE Vec4F ZZWX() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 0); }
-	HC_INLINE Vec4F ZZWY() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 1); }
-	HC_INLINE Vec4F ZZWZ() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 2); }
-	HC_INLINE Vec4F ZZWW() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 3); }
-	HC_INLINE Vec4F ZWXX() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 0); }
-	HC_INLINE Vec4F ZWXY() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 1); }
-	HC_INLINE Vec4F ZWXZ() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 2); }
-	HC_INLINE Vec4F ZWXW() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 3); }
-	HC_INLINE Vec4F ZWYX() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 0); }
-	HC_INLINE Vec4F ZWYY() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 1); }
-	HC_INLINE Vec4F ZWYZ() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 2); }
-	HC_INLINE Vec4F ZWYW() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 3); }
-	HC_INLINE Vec4F ZWZX() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 0); }
-	HC_INLINE Vec4F ZWZY() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 1); }
-	HC_INLINE Vec4F ZWZZ() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 2); }
-	HC_INLINE Vec4F ZWZW() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 3); }
-	HC_INLINE Vec4F ZWWX() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 0); }
-	HC_INLINE Vec4F ZWWY() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 1); }
-	HC_INLINE Vec4F ZWWZ() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 2); }
-	HC_INLINE Vec4F ZWWW() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 3); }
-	HC_INLINE Vec4F WXXX() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 0); }
-	HC_INLINE Vec4F WXXY() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 1); }
-	HC_INLINE Vec4F WXXZ() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 2); }
-	HC_INLINE Vec4F WXXW() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 3); }
-	HC_INLINE Vec4F WXYX() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 0); }
-	HC_INLINE Vec4F WXYY() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 1); }
-	HC_INLINE Vec4F WXYZ() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 2); }
-	HC_INLINE Vec4F WXYW() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 3); }
-	HC_INLINE Vec4F WXZX() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 0); }
-	HC_INLINE Vec4F WXZY() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 1); }
-	HC_INLINE Vec4F WXZZ() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 2); }
-	HC_INLINE Vec4F WXZW() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 3); }
-	HC_INLINE Vec4F WXWX() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 0); }
-	HC_INLINE Vec4F WXWY() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 1); }
-	HC_INLINE Vec4F WXWZ() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 2); }
-	HC_INLINE Vec4F WXWW() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 3); }
-	HC_INLINE Vec4F WYXX() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 0); }
-	HC_INLINE Vec4F WYXY() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 1); }
-	HC_INLINE Vec4F WYXZ() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 2); }
-	HC_INLINE Vec4F WYXW() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 3); }
-	HC_INLINE Vec4F WYYX() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 0); }
-	HC_INLINE Vec4F WYYY() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 1); }
-	HC_INLINE Vec4F WYYZ() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 2); }
-	HC_INLINE Vec4F WYYW() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 3); }
-	HC_INLINE Vec4F WYZX() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 0); }
-	HC_INLINE Vec4F WYZY() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 1); }
-	HC_INLINE Vec4F WYZZ() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 2); }
-	HC_INLINE Vec4F WYZW() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 3); }
-	HC_INLINE Vec4F WYWX() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 0); }
-	HC_INLINE Vec4F WYWY() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 1); }
-	HC_INLINE Vec4F WYWZ() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 2); }
-	HC_INLINE Vec4F WYWW() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 3); }
-	HC_INLINE Vec4F WZXX() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 0); }
-	HC_INLINE Vec4F WZXY() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 1); }
-	HC_INLINE Vec4F WZXZ() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 2); }
-	HC_INLINE Vec4F WZXW() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 3); }
-	HC_INLINE Vec4F WZYX() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 0); }
-	HC_INLINE Vec4F WZYY() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 1); }
-	HC_INLINE Vec4F WZYZ() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 2); }
-	HC_INLINE Vec4F WZYW() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 3); }
-	HC_INLINE Vec4F WZZX() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 0); }
-	HC_INLINE Vec4F WZZY() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 1); }
-	HC_INLINE Vec4F WZZZ() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 2); }
-	HC_INLINE Vec4F WZZW() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 3); }
-	HC_INLINE Vec4F WZWX() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 0); }
-	HC_INLINE Vec4F WZWY() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 1); }
-	HC_INLINE Vec4F WZWZ() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 2); }
-	HC_INLINE Vec4F WZWW() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 3); }
-	HC_INLINE Vec4F WWXX() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 0); }
-	HC_INLINE Vec4F WWXY() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 1); }
-	HC_INLINE Vec4F WWXZ() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 2); }
-	HC_INLINE Vec4F WWXW() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 3); }
-	HC_INLINE Vec4F WWYX() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 0); }
-	HC_INLINE Vec4F WWYY() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 1); }
-	HC_INLINE Vec4F WWYZ() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 2); }
-	HC_INLINE Vec4F WWYW() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 3); }
-	HC_INLINE Vec4F WWZX() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 0); }
-	HC_INLINE Vec4F WWZY() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 1); }
-	HC_INLINE Vec4F WWZZ() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 2); }
-	HC_INLINE Vec4F WWZW() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 3); }
-	HC_INLINE Vec4F WWWX() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 0); }
-	HC_INLINE Vec4F WWWY() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 1); }
-	HC_INLINE Vec4F WWWZ() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 2); }
-	HC_INLINE Vec4F WWWW() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 3); }
-	HC_INLINE Vec4F RRRR() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 0); }
-	HC_INLINE Vec4F RRRG() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 1); }
-	HC_INLINE Vec4F RRRB() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 2); }
-	HC_INLINE Vec4F RRRA() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 3); }
-	HC_INLINE Vec4F RRGR() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 0); }
-	HC_INLINE Vec4F RRGG() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 1); }
-	HC_INLINE Vec4F RRGB() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 2); }
-	HC_INLINE Vec4F RRGA() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 3); }
-	HC_INLINE Vec4F RRBR() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 0); }
-	HC_INLINE Vec4F RRBG() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 1); }
-	HC_INLINE Vec4F RRBB() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 2); }
-	HC_INLINE Vec4F RRBA() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 3); }
-	HC_INLINE Vec4F RRAR() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 0); }
-	HC_INLINE Vec4F RRAG() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 1); }
-	HC_INLINE Vec4F RRAB() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 2); }
-	HC_INLINE Vec4F RRAA() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 3); }
-	HC_INLINE Vec4F RGRR() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 0); }
-	HC_INLINE Vec4F RGRG() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 1); }
-	HC_INLINE Vec4F RGRB() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 2); }
-	HC_INLINE Vec4F RGRA() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 3); }
-	HC_INLINE Vec4F RGGR() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 0); }
-	HC_INLINE Vec4F RGGG() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 1); }
-	HC_INLINE Vec4F RGGB() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 2); }
-	HC_INLINE Vec4F RGGA() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 3); }
-	HC_INLINE Vec4F RGBR() const { return HC_SHUFFLE4F(*this, 0, 1, 2, 0); }
-	HC_INLINE Vec4F RGBG() const { return HC_SHUFFLE4F(*this, 0, 1, 2, 1); }
-	HC_INLINE Vec4F RGBB() const { return HC_SHUFFLE4F(*this, 0, 1, 2, 2); }
-	HC_INLINE Vec4F RGAR() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 0); }
-	HC_INLINE Vec4F RGAG() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 1); }
-	HC_INLINE Vec4F RGAB() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 2); }
-	HC_INLINE Vec4F RGAA() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 3); }
-	HC_INLINE Vec4F RBRR() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 0); }
-	HC_INLINE Vec4F RBRG() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 1); }
-	HC_INLINE Vec4F RBRB() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 2); }
-	HC_INLINE Vec4F RBRA() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 3); }
-	HC_INLINE Vec4F RBGR() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 0); }
-	HC_INLINE Vec4F RBGG() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 1); }
-	HC_INLINE Vec4F RBGB() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 2); }
-	HC_INLINE Vec4F RBGA() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 3); }
-	HC_INLINE Vec4F RBBR() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 0); }
-	HC_INLINE Vec4F RBBG() const { return HC_SHUFFLE4F(*this, 0, 2, 2, 1); }
-	HC_INLINE Vec4F RBBB() const { return HC_SHUFFLE4F(*this, 0, 2, 2, 2); }
-	HC_INLINE Vec4F RBBA() const { return HC_SHUFFLE4F(*this, 0, 2, 2, 3); }
-	HC_INLINE Vec4F RBAR() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 0); }
-	HC_INLINE Vec4F RBAG() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 1); }
-	HC_INLINE Vec4F RBAB() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 2); }
-	HC_INLINE Vec4F RBAA() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 3); }
-	HC_INLINE Vec4F RARR() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 0); }
-	HC_INLINE Vec4F RARG() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 1); }
-	HC_INLINE Vec4F RARB() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 2); }
-	HC_INLINE Vec4F RARA() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 3); }
-	HC_INLINE Vec4F RAGR() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 0); }
-	HC_INLINE Vec4F RAGG() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 1); }
-	HC_INLINE Vec4F RAGB() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 2); }
-	HC_INLINE Vec4F RAGA() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 3); }
-	HC_INLINE Vec4F RABR() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 0); }
-	HC_INLINE Vec4F RABG() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 1); }
-	HC_INLINE Vec4F RABB() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 2); }
-	HC_INLINE Vec4F RABA() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 3); }
-	HC_INLINE Vec4F RAAR() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 0); }
-	HC_INLINE Vec4F RAAG() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 1); }
-	HC_INLINE Vec4F RAAB() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 2); }
-	HC_INLINE Vec4F RAAA() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 3); }
-	HC_INLINE Vec4F GRRR() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 0); }
-	HC_INLINE Vec4F GRRG() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 1); }
-	HC_INLINE Vec4F GRRB() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 2); }
-	HC_INLINE Vec4F GRRA() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 3); }
-	HC_INLINE Vec4F GRGR() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 0); }
-	HC_INLINE Vec4F GRGG() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 1); }
-	HC_INLINE Vec4F GRGB() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 2); }
-	HC_INLINE Vec4F GRGA() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 3); }
-	HC_INLINE Vec4F GRBR() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 0); }
-	HC_INLINE Vec4F GRBG() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 1); }
-	HC_INLINE Vec4F GRBB() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 2); }
-	HC_INLINE Vec4F GRBA() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 3); }
-	HC_INLINE Vec4F GRAR() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 0); }
-	HC_INLINE Vec4F GRAG() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 1); }
-	HC_INLINE Vec4F GRAB() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 2); }
-	HC_INLINE Vec4F GRAA() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 3); }
-	HC_INLINE Vec4F GGRR() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 0); }
-	HC_INLINE Vec4F GGRG() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 1); }
-	HC_INLINE Vec4F GGRB() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 2); }
-	HC_INLINE Vec4F GGRA() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 3); }
-	HC_INLINE Vec4F GGGR() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 0); }
-	HC_INLINE Vec4F GGGG() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 1); }
-	HC_INLINE Vec4F GGGB() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 2); }
-	HC_INLINE Vec4F GGGA() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 3); }
-	HC_INLINE Vec4F GGBR() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 0); }
-	HC_INLINE Vec4F GGBG() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 1); }
-	HC_INLINE Vec4F GGBB() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 2); }
-	HC_INLINE Vec4F GGBA() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 3); }
-	HC_INLINE Vec4F GGAR() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 0); }
-	HC_INLINE Vec4F GGAG() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 1); }
-	HC_INLINE Vec4F GGAB() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 2); }
-	HC_INLINE Vec4F GGAA() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 3); }
-	HC_INLINE Vec4F GBRR() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 0); }
-	HC_INLINE Vec4F GBRG() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 1); }
-	HC_INLINE Vec4F GBRB() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 2); }
-	HC_INLINE Vec4F GBRA() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 3); }
-	HC_INLINE Vec4F GBGR() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 0); }
-	HC_INLINE Vec4F GBGG() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 1); }
-	HC_INLINE Vec4F GBGB() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 2); }
-	HC_INLINE Vec4F GBGA() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 3); }
-	HC_INLINE Vec4F GBBR() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 0); }
-	HC_INLINE Vec4F GBBG() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 1); }
-	HC_INLINE Vec4F GBBB() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 2); }
-	HC_INLINE Vec4F GBBA() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 3); }
-	HC_INLINE Vec4F GBAR() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 0); }
-	HC_INLINE Vec4F GBAG() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 1); }
-	HC_INLINE Vec4F GBAB() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 2); }
-	HC_INLINE Vec4F GBAA() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 3); }
-	HC_INLINE Vec4F GARR() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 0); }
-	HC_INLINE Vec4F GARG() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 1); }
-	HC_INLINE Vec4F GARB() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 2); }
-	HC_INLINE Vec4F GARA() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 3); }
-	HC_INLINE Vec4F GAGR() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 0); }
-	HC_INLINE Vec4F GAGG() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 1); }
-	HC_INLINE Vec4F GAGB() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 2); }
-	HC_INLINE Vec4F GAGA() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 3); }
-	HC_INLINE Vec4F GABR() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 0); }
-	HC_INLINE Vec4F GABG() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 1); }
-	HC_INLINE Vec4F GABB() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 2); }
-	HC_INLINE Vec4F GABA() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 3); }
-	HC_INLINE Vec4F GAAR() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 0); }
-	HC_INLINE Vec4F GAAG() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 1); }
-	HC_INLINE Vec4F GAAB() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 2); }
-	HC_INLINE Vec4F GAAA() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 3); }
-	HC_INLINE Vec4F BRRR() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 0); }
-	HC_INLINE Vec4F BRRG() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 1); }
-	HC_INLINE Vec4F BRRB() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 2); }
-	HC_INLINE Vec4F BRRA() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 3); }
-	HC_INLINE Vec4F BRGR() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 0); }
-	HC_INLINE Vec4F BRGG() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 1); }
-	HC_INLINE Vec4F BRGB() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 2); }
-	HC_INLINE Vec4F BRGA() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 3); }
-	HC_INLINE Vec4F BRBR() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 0); }
-	HC_INLINE Vec4F BRBG() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 1); }
-	HC_INLINE Vec4F BRBB() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 2); }
-	HC_INLINE Vec4F BRBA() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 3); }
-	HC_INLINE Vec4F BRAR() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 0); }
-	HC_INLINE Vec4F BRAG() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 1); }
-	HC_INLINE Vec4F BRAB() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 2); }
-	HC_INLINE Vec4F BRAA() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 3); }
-	HC_INLINE Vec4F BGRR() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 0); }
-	HC_INLINE Vec4F BGRG() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 1); }
-	HC_INLINE Vec4F BGRB() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 2); }
-	HC_INLINE Vec4F BGRA() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 3); }
-	HC_INLINE Vec4F BGGR() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 0); }
-	HC_INLINE Vec4F BGGG() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 1); }
-	HC_INLINE Vec4F BGGB() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 2); }
-	HC_INLINE Vec4F BGGA() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 3); }
-	HC_INLINE Vec4F BGBR() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 0); }
-	HC_INLINE Vec4F BGBG() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 1); }
-	HC_INLINE Vec4F BGBB() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 2); }
-	HC_INLINE Vec4F BGBA() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 3); }
-	HC_INLINE Vec4F BGAR() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 0); }
-	HC_INLINE Vec4F BGAG() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 1); }
-	HC_INLINE Vec4F BGAB() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 2); }
-	HC_INLINE Vec4F BGAA() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 3); }
-	HC_INLINE Vec4F BBRR() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 0); }
-	HC_INLINE Vec4F BBRG() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 1); }
-	HC_INLINE Vec4F BBRB() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 2); }
-	HC_INLINE Vec4F BBRA() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 3); }
-	HC_INLINE Vec4F BBGR() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 0); }
-	HC_INLINE Vec4F BBGG() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 1); }
-	HC_INLINE Vec4F BBGB() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 2); }
-	HC_INLINE Vec4F BBGA() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 3); }
-	HC_INLINE Vec4F BBBR() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 0); }
-	HC_INLINE Vec4F BBBG() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 1); }
-	HC_INLINE Vec4F BBBB() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 2); }
-	HC_INLINE Vec4F BBBA() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 3); }
-	HC_INLINE Vec4F BBAR() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 0); }
-	HC_INLINE Vec4F BBAG() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 1); }
-	HC_INLINE Vec4F BBAB() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 2); }
-	HC_INLINE Vec4F BBAA() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 3); }
-	HC_INLINE Vec4F BARR() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 0); }
-	HC_INLINE Vec4F BARG() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 1); }
-	HC_INLINE Vec4F BARB() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 2); }
-	HC_INLINE Vec4F BARA() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 3); }
-	HC_INLINE Vec4F BAGR() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 0); }
-	HC_INLINE Vec4F BAGG() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 1); }
-	HC_INLINE Vec4F BAGB() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 2); }
-	HC_INLINE Vec4F BAGA() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 3); }
-	HC_INLINE Vec4F BABR() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 0); }
-	HC_INLINE Vec4F BABG() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 1); }
-	HC_INLINE Vec4F BABB() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 2); }
-	HC_INLINE Vec4F BABA() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 3); }
-	HC_INLINE Vec4F BAAR() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 0); }
-	HC_INLINE Vec4F BAAG() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 1); }
-	HC_INLINE Vec4F BAAB() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 2); }
-	HC_INLINE Vec4F BAAA() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 3); }
-	HC_INLINE Vec4F ARRR() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 0); }
-	HC_INLINE Vec4F ARRG() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 1); }
-	HC_INLINE Vec4F ARRB() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 2); }
-	HC_INLINE Vec4F ARRA() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 3); }
-	HC_INLINE Vec4F ARGR() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 0); }
-	HC_INLINE Vec4F ARGG() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 1); }
-	HC_INLINE Vec4F ARGB() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 2); }
-	HC_INLINE Vec4F ARGA() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 3); }
-	HC_INLINE Vec4F ARBR() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 0); }
-	HC_INLINE Vec4F ARBG() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 1); }
-	HC_INLINE Vec4F ARBB() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 2); }
-	HC_INLINE Vec4F ARBA() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 3); }
-	HC_INLINE Vec4F ARAR() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 0); }
-	HC_INLINE Vec4F ARAG() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 1); }
-	HC_INLINE Vec4F ARAB() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 2); }
-	HC_INLINE Vec4F ARAA() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 3); }
-	HC_INLINE Vec4F AGRR() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 0); }
-	HC_INLINE Vec4F AGRG() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 1); }
-	HC_INLINE Vec4F AGRB() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 2); }
-	HC_INLINE Vec4F AGRA() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 3); }
-	HC_INLINE Vec4F AGGR() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 0); }
-	HC_INLINE Vec4F AGGG() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 1); }
-	HC_INLINE Vec4F AGGB() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 2); }
-	HC_INLINE Vec4F AGGA() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 3); }
-	HC_INLINE Vec4F AGBR() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 0); }
-	HC_INLINE Vec4F AGBG() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 1); }
-	HC_INLINE Vec4F AGBB() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 2); }
-	HC_INLINE Vec4F AGBA() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 3); }
-	HC_INLINE Vec4F AGAR() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 0); }
-	HC_INLINE Vec4F AGAG() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 1); }
-	HC_INLINE Vec4F AGAB() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 2); }
-	HC_INLINE Vec4F AGAA() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 3); }
-	HC_INLINE Vec4F ABRR() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 0); }
-	HC_INLINE Vec4F ABRG() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 1); }
-	HC_INLINE Vec4F ABRB() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 2); }
-	HC_INLINE Vec4F ABRA() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 3); }
-	HC_INLINE Vec4F ABGR() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 0); }
-	HC_INLINE Vec4F ABGG() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 1); }
-	HC_INLINE Vec4F ABGB() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 2); }
-	HC_INLINE Vec4F ABGA() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 3); }
-	HC_INLINE Vec4F ABBR() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 0); }
-	HC_INLINE Vec4F ABBG() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 1); }
-	HC_INLINE Vec4F ABBB() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 2); }
-	HC_INLINE Vec4F ABBA() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 3); }
-	HC_INLINE Vec4F ABAR() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 0); }
-	HC_INLINE Vec4F ABAG() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 1); }
-	HC_INLINE Vec4F ABAB() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 2); }
-	HC_INLINE Vec4F ABAA() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 3); }
-	HC_INLINE Vec4F AARR() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 0); }
-	HC_INLINE Vec4F AARG() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 1); }
-	HC_INLINE Vec4F AARB() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 2); }
-	HC_INLINE Vec4F AARA() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 3); }
-	HC_INLINE Vec4F AAGR() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 0); }
-	HC_INLINE Vec4F AAGG() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 1); }
-	HC_INLINE Vec4F AAGB() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 2); }
-	HC_INLINE Vec4F AAGA() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 3); }
-	HC_INLINE Vec4F AABR() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 0); }
-	HC_INLINE Vec4F AABG() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 1); }
-	HC_INLINE Vec4F AABB() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 2); }
-	HC_INLINE Vec4F AABA() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 3); }
-	HC_INLINE Vec4F AAAR() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 0); }
-	HC_INLINE Vec4F AAAG() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 1); }
-	HC_INLINE Vec4F AAAB() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 2); }
-	HC_INLINE Vec4F AAAA() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 3); }
+	HC_INLINE HC_VECTORCALL Vec4F() { m_fVec = _mm_setzero_ps(); }
+	HC_INLINE explicit HC_VECTORCALL Vec4F(const float* _pValues) { m_fVec = _mm_set_ps(_pValues[3], _pValues[2], _pValues[1], _pValues[0]); }
+	HC_INLINE explicit HC_VECTORCALL Vec4F(float _fX, float _fY, float _fZ, float _fW) { m_fVec = _mm_set_ps(_fW, _fZ, _fY, _fX); }
+	HC_INLINE explicit HC_VECTORCALL Vec4F(int _iX, int _iY, int _iZ, int _iW) { m_fVec = _mm_set_ps(static_cast<float>(_iW), static_cast<float>(_iZ), static_cast<float>(_iY), static_cast<float>(_iZ)); }
+	HC_INLINE explicit HC_VECTORCALL Vec4F(__m128 _vData) { m_fVec = _vData; }
+	HC_INLINE float HC_VECTORCALL operator[](int _iNdx) const { assert(_iNdx < 4); return m_fVec.m128_f32[_iNdx]; }
+	HC_INLINE float& HC_VECTORCALL operator[](int _iNdx) { assert(_iNdx < 4); return m_fVec.m128_f32[_iNdx]; }
+	HC_INLINE float HC_VECTORCALL X() const { return _mm_cvtss_f32(m_fVec); }
+	HC_INLINE float HC_VECTORCALL Y() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE float HC_VECTORCALL Z() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(2, 2, 2, 2))); }
+	HC_INLINE float HC_VECTORCALL W() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(3, 3, 3, 3))); }
+	HC_INLINE float HC_VECTORCALL R() const { return _mm_cvtss_f32(m_fVec); }
+	HC_INLINE float HC_VECTORCALL G() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE float HC_VECTORCALL B() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(2, 2, 2, 2))); }
+	HC_INLINE float HC_VECTORCALL A() const { return _mm_cvtss_f32(_mm_shuffle_ps(m_fVec, m_fVec, _MM_SHUFFLE(3, 3, 3, 3))); }
+	HC_INLINE void HC_VECTORCALL SetX(float _fX) { m_fVec = _mm_move_ss(m_fVec, _mm_set_ss(_fX)); }
+	HC_INLINE void HC_VECTORCALL SetY(float _fY) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fY)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 2, 0, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
+	HC_INLINE void HC_VECTORCALL SetZ(float _fZ) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fZ)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 0, 1, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
+	HC_INLINE void HC_VECTORCALL SetW(float _fW) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fW)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(0, 2, 1, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
+	HC_INLINE void HC_VECTORCALL SetR(float _fR) { m_fVec = _mm_move_ss(m_fVec, _mm_set_ss(_fR)); }
+	HC_INLINE void HC_VECTORCALL SetG(float _fG) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fG)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 2, 0, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
+	HC_INLINE void HC_VECTORCALL SetB(float _fB) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fB)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(3, 0, 1, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
+	HC_INLINE void HC_VECTORCALL SetA(float _fA) { __m128 fTemp = _mm_move_ss(m_fVec, _mm_set_ss(_fA)); fTemp = _mm_shuffle_ps(fTemp, fTemp, _MM_SHUFFLE(0, 2, 1, 0)); m_fVec = _mm_move_ss(fTemp, m_fVec); }
+	HC_INLINE Vec2F HC_VECTORCALL XX() const { return HC_SHUFFLE2F(*this, 0, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL YY() const { return HC_SHUFFLE2F(*this, 1, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL ZZ() const { return HC_SHUFFLE2F(*this, 2, 2); }
+	HC_INLINE Vec2F HC_VECTORCALL WW() const { return HC_SHUFFLE2F(*this, 3, 3); }
+	HC_INLINE Vec2F HC_VECTORCALL XY() const { return HC_SHUFFLE2F(*this, 0, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL XZ() const { return HC_SHUFFLE2F(*this, 0, 2); }
+	HC_INLINE Vec2F HC_VECTORCALL XW() const { return HC_SHUFFLE2F(*this, 0, 3); }
+	HC_INLINE Vec2F HC_VECTORCALL YX() const { return HC_SHUFFLE2F(*this, 1, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL YZ() const { return HC_SHUFFLE2F(*this, 1, 2); }
+	HC_INLINE Vec2F HC_VECTORCALL YW() const { return HC_SHUFFLE2F(*this, 1, 3); }
+	HC_INLINE Vec2F HC_VECTORCALL ZX() const { return HC_SHUFFLE2F(*this, 2, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL ZY() const { return HC_SHUFFLE2F(*this, 2, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL ZW() const { return HC_SHUFFLE2F(*this, 2, 3); }
+	HC_INLINE Vec2F HC_VECTORCALL WX() const { return HC_SHUFFLE2F(*this, 3, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL WY() const { return HC_SHUFFLE2F(*this, 3, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL WZ() const { return HC_SHUFFLE2F(*this, 3, 2); }
+	HC_INLINE Vec2F HC_VECTORCALL RR() const { return HC_SHUFFLE2F(*this, 0, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL GG() const { return HC_SHUFFLE2F(*this, 1, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL BB() const { return HC_SHUFFLE2F(*this, 2, 2); }
+	HC_INLINE Vec2F HC_VECTORCALL AA() const { return HC_SHUFFLE2F(*this, 3, 3); }
+	HC_INLINE Vec2F HC_VECTORCALL RG() const { return HC_SHUFFLE2F(*this, 0, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL RB() const { return HC_SHUFFLE2F(*this, 0, 2); }
+	HC_INLINE Vec2F HC_VECTORCALL RA() const { return HC_SHUFFLE2F(*this, 0, 3); }
+	HC_INLINE Vec2F HC_VECTORCALL GR() const { return HC_SHUFFLE2F(*this, 1, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL GB() const { return HC_SHUFFLE2F(*this, 1, 2); }
+	HC_INLINE Vec2F HC_VECTORCALL GA() const { return HC_SHUFFLE2F(*this, 1, 3); }
+	HC_INLINE Vec2F HC_VECTORCALL BR() const { return HC_SHUFFLE2F(*this, 2, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL BG() const { return HC_SHUFFLE2F(*this, 2, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL BA() const { return HC_SHUFFLE2F(*this, 2, 3); }
+	HC_INLINE Vec2F HC_VECTORCALL AR() const { return HC_SHUFFLE2F(*this, 3, 0); }
+	HC_INLINE Vec2F HC_VECTORCALL AG() const { return HC_SHUFFLE2F(*this, 3, 1); }
+	HC_INLINE Vec2F HC_VECTORCALL AB() const { return HC_SHUFFLE2F(*this, 3, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL XXX() const { return HC_SHUFFLE3F(*this, 0, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL XXY() const { return HC_SHUFFLE3F(*this, 0, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL XXZ() const { return HC_SHUFFLE3F(*this, 0, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL XXW() const { return HC_SHUFFLE3F(*this, 0, 0, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL XYX() const { return HC_SHUFFLE3F(*this, 0, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL XYY() const { return HC_SHUFFLE3F(*this, 0, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL XYZ() const { return HC_SHUFFLE3F(*this, 0, 1, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL XYW() const { return HC_SHUFFLE3F(*this, 0, 1, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL XZX() const { return HC_SHUFFLE3F(*this, 0, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL XZY() const { return HC_SHUFFLE3F(*this, 0, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL XZZ() const { return HC_SHUFFLE3F(*this, 0, 2, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL XZW() const { return HC_SHUFFLE3F(*this, 0, 2, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL XWX() const { return HC_SHUFFLE3F(*this, 0, 3, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL XWY() const { return HC_SHUFFLE3F(*this, 0, 3, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL XWZ() const { return HC_SHUFFLE3F(*this, 0, 3, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL XWW() const { return HC_SHUFFLE3F(*this, 0, 3, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL YXX() const { return HC_SHUFFLE3F(*this, 1, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL YXY() const { return HC_SHUFFLE3F(*this, 1, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL YXZ() const { return HC_SHUFFLE3F(*this, 1, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL YXW() const { return HC_SHUFFLE3F(*this, 1, 0, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL YYX() const { return HC_SHUFFLE3F(*this, 1, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL YYY() const { return HC_SHUFFLE3F(*this, 1, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL YYZ() const { return HC_SHUFFLE3F(*this, 1, 1, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL YYW() const { return HC_SHUFFLE3F(*this, 1, 1, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL YZX() const { return HC_SHUFFLE3F(*this, 1, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL YZY() const { return HC_SHUFFLE3F(*this, 1, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL YZZ() const { return HC_SHUFFLE3F(*this, 1, 2, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL YZW() const { return HC_SHUFFLE3F(*this, 1, 2, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL YWX() const { return HC_SHUFFLE3F(*this, 1, 3, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL YWY() const { return HC_SHUFFLE3F(*this, 1, 3, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL YWZ() const { return HC_SHUFFLE3F(*this, 1, 3, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL YWW() const { return HC_SHUFFLE3F(*this, 1, 3, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL ZXX() const { return HC_SHUFFLE3F(*this, 2, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL ZXY() const { return HC_SHUFFLE3F(*this, 2, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL ZXZ() const { return HC_SHUFFLE3F(*this, 2, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL ZXW() const { return HC_SHUFFLE3F(*this, 2, 0, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL ZYX() const { return HC_SHUFFLE3F(*this, 2, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL ZYY() const { return HC_SHUFFLE3F(*this, 2, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL ZYZ() const { return HC_SHUFFLE3F(*this, 2, 1, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL ZYW() const { return HC_SHUFFLE3F(*this, 2, 1, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL ZZX() const { return HC_SHUFFLE3F(*this, 2, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL ZZY() const { return HC_SHUFFLE3F(*this, 2, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL ZZZ() const { return HC_SHUFFLE3F(*this, 2, 2, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL ZZW() const { return HC_SHUFFLE3F(*this, 2, 2, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL ZWX() const { return HC_SHUFFLE3F(*this, 2, 3, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL ZWY() const { return HC_SHUFFLE3F(*this, 2, 3, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL ZWZ() const { return HC_SHUFFLE3F(*this, 2, 3, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL ZWW() const { return HC_SHUFFLE3F(*this, 2, 3, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL WXX() const { return HC_SHUFFLE3F(*this, 3, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL WXY() const { return HC_SHUFFLE3F(*this, 3, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL WXZ() const { return HC_SHUFFLE3F(*this, 3, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL WXW() const { return HC_SHUFFLE3F(*this, 3, 0, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL WYX() const { return HC_SHUFFLE3F(*this, 3, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL WYY() const { return HC_SHUFFLE3F(*this, 3, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL WYZ() const { return HC_SHUFFLE3F(*this, 3, 1, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL WYW() const { return HC_SHUFFLE3F(*this, 3, 1, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL WZX() const { return HC_SHUFFLE3F(*this, 3, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL WZY() const { return HC_SHUFFLE3F(*this, 3, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL WZZ() const { return HC_SHUFFLE3F(*this, 3, 2, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL WZW() const { return HC_SHUFFLE3F(*this, 3, 2, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL WWX() const { return HC_SHUFFLE3F(*this, 3, 3, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL WWY() const { return HC_SHUFFLE3F(*this, 3, 3, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL WWZ() const { return HC_SHUFFLE3F(*this, 3, 3, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL WWW() const { return HC_SHUFFLE3F(*this, 3, 3, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL RRR() const { return HC_SHUFFLE3F(*this, 0, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL RRG() const { return HC_SHUFFLE3F(*this, 0, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL RRB() const { return HC_SHUFFLE3F(*this, 0, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL RRA() const { return HC_SHUFFLE3F(*this, 0, 0, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL RGR() const { return HC_SHUFFLE3F(*this, 0, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL RGG() const { return HC_SHUFFLE3F(*this, 0, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL RGA() const { return HC_SHUFFLE3F(*this, 0, 1, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL RGB() const { return HC_SHUFFLE3F(*this, 0, 1, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL RBR() const { return HC_SHUFFLE3F(*this, 0, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL RBG() const { return HC_SHUFFLE3F(*this, 0, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL RBB() const { return HC_SHUFFLE3F(*this, 0, 2, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL RBA() const { return HC_SHUFFLE3F(*this, 0, 2, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL RAR() const { return HC_SHUFFLE3F(*this, 0, 3, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL RAG() const { return HC_SHUFFLE3F(*this, 0, 3, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL RAB() const { return HC_SHUFFLE3F(*this, 0, 3, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL RAA() const { return HC_SHUFFLE3F(*this, 0, 3, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL GRR() const { return HC_SHUFFLE3F(*this, 1, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL GRG() const { return HC_SHUFFLE3F(*this, 1, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL GRB() const { return HC_SHUFFLE3F(*this, 1, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL GRA() const { return HC_SHUFFLE3F(*this, 1, 0, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL GGR() const { return HC_SHUFFLE3F(*this, 1, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL GGG() const { return HC_SHUFFLE3F(*this, 1, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL GGB() const { return HC_SHUFFLE3F(*this, 1, 1, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL GGA() const { return HC_SHUFFLE3F(*this, 1, 1, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL GBR() const { return HC_SHUFFLE3F(*this, 1, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL GBG() const { return HC_SHUFFLE3F(*this, 1, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL GBB() const { return HC_SHUFFLE3F(*this, 1, 2, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL GBA() const { return HC_SHUFFLE3F(*this, 1, 2, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL GAR() const { return HC_SHUFFLE3F(*this, 1, 3, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL GAG() const { return HC_SHUFFLE3F(*this, 1, 3, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL GAB() const { return HC_SHUFFLE3F(*this, 1, 3, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL GAA() const { return HC_SHUFFLE3F(*this, 1, 3, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL BRR() const { return HC_SHUFFLE3F(*this, 2, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL BRG() const { return HC_SHUFFLE3F(*this, 2, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL BRB() const { return HC_SHUFFLE3F(*this, 2, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL BRA() const { return HC_SHUFFLE3F(*this, 2, 0, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL BGR() const { return HC_SHUFFLE3F(*this, 2, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL BGG() const { return HC_SHUFFLE3F(*this, 2, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL BGB() const { return HC_SHUFFLE3F(*this, 2, 1, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL BGA() const { return HC_SHUFFLE3F(*this, 2, 1, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL BBR() const { return HC_SHUFFLE3F(*this, 2, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL BBG() const { return HC_SHUFFLE3F(*this, 2, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL BBB() const { return HC_SHUFFLE3F(*this, 2, 2, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL BBA() const { return HC_SHUFFLE3F(*this, 2, 2, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL BAR() const { return HC_SHUFFLE3F(*this, 2, 3, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL BAG() const { return HC_SHUFFLE3F(*this, 2, 3, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL BAB() const { return HC_SHUFFLE3F(*this, 2, 3, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL BAA() const { return HC_SHUFFLE3F(*this, 2, 3, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL ARR() const { return HC_SHUFFLE3F(*this, 3, 0, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL ARG() const { return HC_SHUFFLE3F(*this, 3, 0, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL ARB() const { return HC_SHUFFLE3F(*this, 3, 0, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL ARA() const { return HC_SHUFFLE3F(*this, 3, 0, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL AGR() const { return HC_SHUFFLE3F(*this, 3, 1, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL AGG() const { return HC_SHUFFLE3F(*this, 3, 1, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL AGB() const { return HC_SHUFFLE3F(*this, 3, 1, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL AGA() const { return HC_SHUFFLE3F(*this, 3, 1, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL ABR() const { return HC_SHUFFLE3F(*this, 3, 2, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL ABG() const { return HC_SHUFFLE3F(*this, 3, 2, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL ABB() const { return HC_SHUFFLE3F(*this, 3, 2, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL ABA() const { return HC_SHUFFLE3F(*this, 3, 2, 3); }
+	HC_INLINE Vec3F HC_VECTORCALL AAR() const { return HC_SHUFFLE3F(*this, 3, 3, 0); }
+	HC_INLINE Vec3F HC_VECTORCALL AAG() const { return HC_SHUFFLE3F(*this, 3, 3, 1); }
+	HC_INLINE Vec3F HC_VECTORCALL AAB() const { return HC_SHUFFLE3F(*this, 3, 3, 2); }
+	HC_INLINE Vec3F HC_VECTORCALL AAA() const { return HC_SHUFFLE3F(*this, 3, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XXXX() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XXXY() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XXXZ() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XXXW() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XXYX() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XXYY() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XXYZ() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XXYW() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XXZX() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XXZY() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XXZZ() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XXZW() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XXWX() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XXWY() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XXWZ() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XXWW() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XYXX() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XYXY() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XYXZ() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XYXW() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XYYX() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XYYY() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XYYZ() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XYYW() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XYZX() const { return HC_SHUFFLE4F(*this, 0, 1, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XYZY() const { return HC_SHUFFLE4F(*this, 0, 1, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XYZZ() const { return HC_SHUFFLE4F(*this, 0, 1, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XYWX() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XYWY() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XYWZ() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XYWW() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XZXX() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XZXY() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XZXZ() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XZXW() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XZYX() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XZYY() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XZYZ() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XZYW() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XZZX() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XZZY() const { return HC_SHUFFLE4F(*this, 0, 2, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XZZZ() const { return HC_SHUFFLE4F(*this, 0, 2, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XZZW() const { return HC_SHUFFLE4F(*this, 0, 2, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XZWX() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XZWY() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XZWZ() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XZWW() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XWXX() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XWXY() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XWXZ() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XWXW() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XWYX() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XWYY() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XWYZ() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XWYW() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XWZX() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XWZY() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XWZZ() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XWZW() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL XWWX() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL XWWY() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL XWWZ() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL XWWW() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YXXX() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YXXY() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YXXZ() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YXXW() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YXYX() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YXYY() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YXYZ() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YXYW() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YXZX() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YXZY() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YXZZ() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YXZW() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YXWX() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YXWY() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YXWZ() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YXWW() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YYXX() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YYXY() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YYXZ() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YYXW() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YYYX() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YYYY() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YYYZ() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YYYW() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YYZX() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YYZY() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YYZZ() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YYZW() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YYWX() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YYWY() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YYWZ() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YYWW() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YZXX() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YZXY() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YZXZ() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YZXW() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YZYX() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YZYY() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YZYZ() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YZYW() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YZZX() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YZZY() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YZZZ() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YZZW() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YZWX() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YZWY() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YZWZ() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YZWW() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YWXX() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YWXY() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YWXZ() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YWXW() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YWYX() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YWYY() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YWYZ() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YWYW() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YWZX() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YWZY() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YWZZ() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YWZW() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL YWWX() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL YWWY() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL YWWZ() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL YWWW() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXXX() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXXY() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXXZ() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXXW() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXYX() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXYY() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXYZ() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXYW() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXZX() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXZY() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXZZ() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXZW() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXWX() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXWY() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXWZ() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZXWW() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYXX() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYXY() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYXZ() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYXW() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYYX() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYYY() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYYZ() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYYW() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYZX() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYZY() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYZZ() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYZW() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYWX() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYWY() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYWZ() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZYWW() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZXX() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZXY() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZXZ() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZXW() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZYX() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZYY() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZYZ() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZYW() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZZX() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZZY() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZZZ() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZZW() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZWX() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZWY() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZWZ() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZZWW() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWXX() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWXY() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWXZ() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWXW() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWYX() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWYY() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWYZ() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWYW() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWZX() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWZY() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWZZ() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWZW() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWWX() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWWY() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWWZ() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ZWWW() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WXXX() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WXXY() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WXXZ() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WXXW() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WXYX() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WXYY() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WXYZ() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WXYW() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WXZX() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WXZY() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WXZZ() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WXZW() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WXWX() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WXWY() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WXWZ() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WXWW() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WYXX() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WYXY() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WYXZ() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WYXW() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WYYX() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WYYY() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WYYZ() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WYYW() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WYZX() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WYZY() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WYZZ() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WYZW() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WYWX() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WYWY() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WYWZ() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WYWW() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WZXX() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WZXY() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WZXZ() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WZXW() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WZYX() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WZYY() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WZYZ() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WZYW() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WZZX() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WZZY() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WZZZ() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WZZW() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WZWX() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WZWY() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WZWZ() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WZWW() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WWXX() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WWXY() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WWXZ() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WWXW() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WWYX() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WWYY() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WWYZ() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WWYW() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WWZX() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WWZY() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WWZZ() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WWZW() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL WWWX() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL WWWY() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL WWWZ() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL WWWW() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RRRR() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RRRG() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RRRB() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RRRA() const { return HC_SHUFFLE4F(*this, 0, 0, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RRGR() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RRGG() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RRGB() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RRGA() const { return HC_SHUFFLE4F(*this, 0, 0, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RRBR() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RRBG() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RRBB() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RRBA() const { return HC_SHUFFLE4F(*this, 0, 0, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RRAR() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RRAG() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RRAB() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RRAA() const { return HC_SHUFFLE4F(*this, 0, 0, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RGRR() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RGRG() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RGRB() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RGRA() const { return HC_SHUFFLE4F(*this, 0, 1, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RGGR() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RGGG() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RGGB() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RGGA() const { return HC_SHUFFLE4F(*this, 0, 1, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RGBR() const { return HC_SHUFFLE4F(*this, 0, 1, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RGBG() const { return HC_SHUFFLE4F(*this, 0, 1, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RGBB() const { return HC_SHUFFLE4F(*this, 0, 1, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RGAR() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RGAG() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RGAB() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RGAA() const { return HC_SHUFFLE4F(*this, 0, 1, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RBRR() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RBRG() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RBRB() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RBRA() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RBGR() const { return HC_SHUFFLE4F(*this, 0, 2, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RBGG() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RBGB() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RBGA() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RBBR() const { return HC_SHUFFLE4F(*this, 0, 2, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RBBG() const { return HC_SHUFFLE4F(*this, 0, 2, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RBBB() const { return HC_SHUFFLE4F(*this, 0, 2, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RBBA() const { return HC_SHUFFLE4F(*this, 0, 2, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RBAR() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RBAG() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RBAB() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RBAA() const { return HC_SHUFFLE4F(*this, 0, 2, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RARR() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RARG() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RARB() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RARA() const { return HC_SHUFFLE4F(*this, 0, 3, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RAGR() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RAGG() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RAGB() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RAGA() const { return HC_SHUFFLE4F(*this, 0, 3, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RABR() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RABG() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RABB() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RABA() const { return HC_SHUFFLE4F(*this, 0, 3, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL RAAR() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL RAAG() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL RAAB() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL RAAA() const { return HC_SHUFFLE4F(*this, 0, 3, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GRRR() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GRRG() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GRRB() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GRRA() const { return HC_SHUFFLE4F(*this, 1, 0, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GRGR() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GRGG() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GRGB() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GRGA() const { return HC_SHUFFLE4F(*this, 1, 0, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GRBR() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GRBG() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GRBB() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GRBA() const { return HC_SHUFFLE4F(*this, 1, 0, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GRAR() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GRAG() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GRAB() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GRAA() const { return HC_SHUFFLE4F(*this, 1, 0, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GGRR() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GGRG() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GGRB() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GGRA() const { return HC_SHUFFLE4F(*this, 1, 1, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GGGR() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GGGG() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GGGB() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GGGA() const { return HC_SHUFFLE4F(*this, 1, 1, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GGBR() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GGBG() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GGBB() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GGBA() const { return HC_SHUFFLE4F(*this, 1, 1, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GGAR() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GGAG() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GGAB() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GGAA() const { return HC_SHUFFLE4F(*this, 1, 1, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GBRR() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GBRG() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GBRB() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GBRA() const { return HC_SHUFFLE4F(*this, 1, 2, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GBGR() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GBGG() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GBGB() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GBGA() const { return HC_SHUFFLE4F(*this, 1, 2, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GBBR() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GBBG() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GBBB() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GBBA() const { return HC_SHUFFLE4F(*this, 1, 2, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GBAR() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GBAG() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GBAB() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GBAA() const { return HC_SHUFFLE4F(*this, 1, 2, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GARR() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GARG() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GARB() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GARA() const { return HC_SHUFFLE4F(*this, 1, 3, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GAGR() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GAGG() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GAGB() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GAGA() const { return HC_SHUFFLE4F(*this, 1, 3, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GABR() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GABG() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GABB() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GABA() const { return HC_SHUFFLE4F(*this, 1, 3, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL GAAR() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL GAAG() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL GAAB() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL GAAA() const { return HC_SHUFFLE4F(*this, 1, 3, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BRRR() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BRRG() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BRRB() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BRRA() const { return HC_SHUFFLE4F(*this, 2, 0, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BRGR() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BRGG() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BRGB() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BRGA() const { return HC_SHUFFLE4F(*this, 2, 0, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BRBR() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BRBG() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BRBB() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BRBA() const { return HC_SHUFFLE4F(*this, 2, 0, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BRAR() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BRAG() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BRAB() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BRAA() const { return HC_SHUFFLE4F(*this, 2, 0, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BGRR() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BGRG() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BGRB() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BGRA() const { return HC_SHUFFLE4F(*this, 2, 1, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BGGR() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BGGG() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BGGB() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BGGA() const { return HC_SHUFFLE4F(*this, 2, 1, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BGBR() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BGBG() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BGBB() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BGBA() const { return HC_SHUFFLE4F(*this, 2, 1, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BGAR() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BGAG() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BGAB() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BGAA() const { return HC_SHUFFLE4F(*this, 2, 1, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BBRR() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BBRG() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BBRB() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BBRA() const { return HC_SHUFFLE4F(*this, 2, 2, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BBGR() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BBGG() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BBGB() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BBGA() const { return HC_SHUFFLE4F(*this, 2, 2, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BBBR() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BBBG() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BBBB() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BBBA() const { return HC_SHUFFLE4F(*this, 2, 2, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BBAR() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BBAG() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BBAB() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BBAA() const { return HC_SHUFFLE4F(*this, 2, 2, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BARR() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BARG() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BARB() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BARA() const { return HC_SHUFFLE4F(*this, 2, 3, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BAGR() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BAGG() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BAGB() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BAGA() const { return HC_SHUFFLE4F(*this, 2, 3, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BABR() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BABG() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BABB() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BABA() const { return HC_SHUFFLE4F(*this, 2, 3, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL BAAR() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL BAAG() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL BAAB() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL BAAA() const { return HC_SHUFFLE4F(*this, 2, 3, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ARRR() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ARRG() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ARRB() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ARRA() const { return HC_SHUFFLE4F(*this, 3, 0, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ARGR() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ARGG() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ARGB() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ARGA() const { return HC_SHUFFLE4F(*this, 3, 0, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ARBR() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ARBG() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ARBB() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ARBA() const { return HC_SHUFFLE4F(*this, 3, 0, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ARAR() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ARAG() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ARAB() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ARAA() const { return HC_SHUFFLE4F(*this, 3, 0, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL AGRR() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL AGRG() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL AGRB() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL AGRA() const { return HC_SHUFFLE4F(*this, 3, 1, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL AGGR() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL AGGG() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL AGGB() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL AGGA() const { return HC_SHUFFLE4F(*this, 3, 1, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL AGBR() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL AGBG() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL AGBB() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL AGBA() const { return HC_SHUFFLE4F(*this, 3, 1, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL AGAR() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL AGAG() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL AGAB() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL AGAA() const { return HC_SHUFFLE4F(*this, 3, 1, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ABRR() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ABRG() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ABRB() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ABRA() const { return HC_SHUFFLE4F(*this, 3, 2, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ABGR() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ABGG() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ABGB() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ABGA() const { return HC_SHUFFLE4F(*this, 3, 2, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ABBR() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ABBG() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ABBB() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ABBA() const { return HC_SHUFFLE4F(*this, 3, 2, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL ABAR() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL ABAG() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL ABAB() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL ABAA() const { return HC_SHUFFLE4F(*this, 3, 2, 3, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL AARR() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL AARG() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL AARB() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL AARA() const { return HC_SHUFFLE4F(*this, 3, 3, 0, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL AAGR() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL AAGG() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL AAGB() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL AAGA() const { return HC_SHUFFLE4F(*this, 3, 3, 1, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL AABR() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL AABG() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL AABB() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL AABA() const { return HC_SHUFFLE4F(*this, 3, 3, 2, 3); }
+	HC_INLINE Vec4F HC_VECTORCALL AAAR() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 0); }
+	HC_INLINE Vec4F HC_VECTORCALL AAAG() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 1); }
+	HC_INLINE Vec4F HC_VECTORCALL AAAB() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 2); }
+	HC_INLINE Vec4F HC_VECTORCALL AAAA() const { return HC_SHUFFLE4F(*this, 3, 3, 3, 3); }
 };
+
+#if HC_ENABLE_EXTRA_VECTOR_TYPES && HC_USE_SIMD
 
 struct Vec2D {
 	__m256d m_dVec;
 
-	HC_INLINE Vec2D() { m_dVec = _mm256_setzero_pd(); }
-	HC_INLINE explicit Vec2D(const double* _pValues) { m_dVec = _mm256_set_pd(_pValues[1], _pValues[1], _pValues[1], _pValues[0]); }
-	HC_INLINE explicit Vec2D(double _dX, double _dY) { m_dVec = _mm256_set_pd(_dY, _dY, _dY, _dX); }
-	HC_INLINE explicit Vec2D(float _fX, float _fY) { m_dVec = _mm256_set_pd(static_cast<double>(_fY), static_cast<double>(_fY), static_cast<double>(_fY), static_cast<double>(_fX)); }
-	HC_INLINE explicit Vec2D(int _iX, int _iY) { m_dVec = _mm256_set_pd(static_cast<double>(_iY), static_cast<double>(_iY), static_cast<double>(_iY), static_cast<double>(_iX)); }
-	HC_INLINE explicit Vec2D(__m256d _vData) { m_dVec = _vData; }
-	HC_INLINE double operator[](int _iNdx) const { assert(_iNdx < 2); return m_dVec.m256d_f64[_iNdx]; }
-	HC_INLINE double& operator[](int _iNdx) { assert(_iNdx < 2); return m_dVec.m256d_f64[_iNdx]; }
-	HC_INLINE double X() const { return _mm256_cvtsd_f64(m_dVec); }
-	HC_INLINE double Y() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE double R() const { return _mm256_cvtsd_f64(m_dVec); }
-	HC_INLINE double G() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE void SetX(double _dX) { m_dVec = _mm256_set_pd(Y(), Y(), Y(), _dX); }
-	HC_INLINE void SetY(double _dY) { m_dVec = _mm256_set_pd(_dY, _dY, _dY, X()); }
-	HC_INLINE void SetR(double _dR) { m_dVec = _mm256_set_pd(Y(), Y(), Y(), _dR); }
-	HC_INLINE void SetG(double _dG) { m_dVec = _mm256_set_pd(_dG, _dG, _dG, X()); }
-	HC_INLINE Vec2D XX() const { return HC_SHUFFLE2D(*this, 0, 0); }
-	HC_INLINE Vec2D YY() const { return HC_SHUFFLE2D(*this, 1, 1); }
-	HC_INLINE Vec2D YX() const { return HC_SHUFFLE2D(*this, 1, 0); }
-	HC_INLINE Vec2D RR() const { return HC_SHUFFLE2D(*this, 0, 0); }
-	HC_INLINE Vec2D GG() const { return HC_SHUFFLE2D(*this, 1, 1); }
-	HC_INLINE Vec2D GR() const { return HC_SHUFFLE2D(*this, 1, 0); }
+	HC_INLINE HC_VECTORCALL Vec2D() { m_dVec = _mm256_setzero_pd(); }
+	HC_INLINE explicit HC_VECTORCALL Vec2D(const double* _pValues) { m_dVec = _mm256_set_pd(_pValues[1], _pValues[1], _pValues[1], _pValues[0]); }
+	HC_INLINE explicit HC_VECTORCALL Vec2D(double _dX, double _dY) { m_dVec = _mm256_set_pd(_dY, _dY, _dY, _dX); }
+	HC_INLINE explicit HC_VECTORCALL Vec2D(float _fX, float _fY) { m_dVec = _mm256_set_pd(static_cast<double>(_fY), static_cast<double>(_fY), static_cast<double>(_fY), static_cast<double>(_fX)); }
+	HC_INLINE explicit HC_VECTORCALL Vec2D(int _iX, int _iY) { m_dVec = _mm256_set_pd(static_cast<double>(_iY), static_cast<double>(_iY), static_cast<double>(_iY), static_cast<double>(_iX)); }
+	HC_INLINE explicit HC_VECTORCALL Vec2D(__m256d _vData) { m_dVec = _vData; }
+	HC_INLINE double HC_VECTORCALL operator[](int _iNdx) const { assert(_iNdx < 2); return m_dVec.m256d_f64[_iNdx]; }
+	HC_INLINE double& HC_VECTORCALL operator[](int _iNdx) { assert(_iNdx < 2); return m_dVec.m256d_f64[_iNdx]; }
+	HC_INLINE double HC_VECTORCALL X() const { return _mm256_cvtsd_f64(m_dVec); }
+	HC_INLINE double HC_VECTORCALL Y() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE double HC_VECTORCALL R() const { return _mm256_cvtsd_f64(m_dVec); }
+	HC_INLINE double HC_VECTORCALL G() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE void HC_VECTORCALL SetX(double _dX) { m_dVec = _mm256_set_pd(Y(), Y(), Y(), _dX); }
+	HC_INLINE void HC_VECTORCALL SetY(double _dY) { m_dVec = _mm256_set_pd(_dY, _dY, _dY, X()); }
+	HC_INLINE void HC_VECTORCALL SetR(double _dR) { m_dVec = _mm256_set_pd(Y(), Y(), Y(), _dR); }
+	HC_INLINE void HC_VECTORCALL SetG(double _dG) { m_dVec = _mm256_set_pd(_dG, _dG, _dG, X()); }
+	HC_INLINE Vec2D HC_VECTORCALL XX() const { return HC_SHUFFLE2D(*this, 0, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL YY() const { return HC_SHUFFLE2D(*this, 1, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL YX() const { return HC_SHUFFLE2D(*this, 1, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL RR() const { return HC_SHUFFLE2D(*this, 0, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL GG() const { return HC_SHUFFLE2D(*this, 1, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL GR() const { return HC_SHUFFLE2D(*this, 1, 0); }
 };
 
 struct Vec3D {
 	__m256d m_dVec;
 
-	HC_INLINE Vec3D() { m_dVec = _mm256_setzero_pd(); }
-	HC_INLINE explicit Vec3D(const double* _pValues) { m_dVec = _mm256_set_pd(_pValues[2], _pValues[2], _pValues[1], _pValues[0]); }
-	HC_INLINE explicit Vec3D(double _dX, double _dY, double _dZ) { m_dVec = _mm256_set_pd(_dZ, _dZ, _dY, _dX); }
-	HC_INLINE explicit Vec3D(float _fX, float _fY, float _fZ) { m_dVec = _mm256_set_pd(static_cast<double>(_fZ), static_cast<double>(_fZ), static_cast<double>(_fY), static_cast<double>(_fX)); }
-	HC_INLINE explicit Vec3D(int _iX, int _iY, int _iZ) { m_dVec = _mm256_set_pd(static_cast<double>(_iZ), static_cast<double>(_iZ), static_cast<double>(_iY), static_cast<double>(_iX)); }
-	HC_INLINE explicit Vec3D(__m256d _vData) { m_dVec = _vData; }
-	HC_INLINE double operator[](int _iNdx) const { assert(_iNdx < 3); return m_dVec.m256d_f64[_iNdx]; }
-	HC_INLINE double& operator[](int _iNdx) { assert(_iNdx < 3); return m_dVec.m256d_f64[_iNdx]; }
-	HC_INLINE double X() const { return _mm256_cvtsd_f64(m_dVec); }
-	HC_INLINE double Y() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE double Z() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(2, 2, 2, 2))); }
-	HC_INLINE double R() const { return _mm256_cvtsd_f64(m_dVec); }
-	HC_INLINE double G() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE double B() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(2, 2, 2, 2))); }
-	HC_INLINE void SetX(double _dX) { m_dVec = _mm256_set_pd(Z(), Z(), Y(), _dX); }
-	HC_INLINE void SetY(double _dY) { m_dVec = _mm256_set_pd(Z(), Z(), _dY, X()); }
-	HC_INLINE void SetZ(double _dZ) { m_dVec = _mm256_set_pd(_dZ, _dZ, Y(), X()); }
-	HC_INLINE void SetR(double _dR) { m_dVec = _mm256_set_pd(Y(), Y(), Y(), _dR); }
-	HC_INLINE void SetG(double _dG) { m_dVec = _mm256_set_pd(Z(), Z(), _dG, X()); }
-	HC_INLINE void SetB(double _dB) { m_dVec = _mm256_set_pd(_dB, _dB, Y(), X()); }
-	HC_INLINE Vec2D XX() const { return HC_SHUFFLE2D(*this, 0, 0); }
-	HC_INLINE Vec2D YY() const { return HC_SHUFFLE2D(*this, 1, 1); }
-	HC_INLINE Vec2D ZZ() const { return HC_SHUFFLE2D(*this, 2, 2); }
-	HC_INLINE Vec2D XY() const { return HC_SHUFFLE2D(*this, 0, 1); }
-	HC_INLINE Vec2D XZ() const { return HC_SHUFFLE2D(*this, 0, 2); }
-	HC_INLINE Vec2D YX() const { return HC_SHUFFLE2D(*this, 1, 0); }
-	HC_INLINE Vec2D YZ() const { return HC_SHUFFLE2D(*this, 1, 2); }
-	HC_INLINE Vec2D ZX() const { return HC_SHUFFLE2D(*this, 2, 0); }
-	HC_INLINE Vec2D ZY() const { return HC_SHUFFLE2D(*this, 2, 1); }
-	HC_INLINE Vec2D RR() const { return HC_SHUFFLE2D(*this, 0, 0); }
-	HC_INLINE Vec2D GG() const { return HC_SHUFFLE2D(*this, 1, 1); }
-	HC_INLINE Vec2D BB() const { return HC_SHUFFLE2D(*this, 2, 2); }
-	HC_INLINE Vec2D RG() const { return HC_SHUFFLE2D(*this, 0, 1); }
-	HC_INLINE Vec2D RB() const { return HC_SHUFFLE2D(*this, 0, 2); }
-	HC_INLINE Vec2D GR() const { return HC_SHUFFLE2D(*this, 1, 0); }
-	HC_INLINE Vec2D GB() const { return HC_SHUFFLE2D(*this, 1, 2); }
-	HC_INLINE Vec2D BR() const { return HC_SHUFFLE2D(*this, 2, 0); }
-	HC_INLINE Vec2D BG() const { return HC_SHUFFLE2D(*this, 2, 1); }
-	HC_INLINE Vec3D XXX() const { return HC_SHUFFLE3D(*this, 0, 0, 0); }
-	HC_INLINE Vec3D XXY() const { return HC_SHUFFLE3D(*this, 0, 0, 1); }
-	HC_INLINE Vec3D XXZ() const { return HC_SHUFFLE3D(*this, 0, 0, 2); }
-	HC_INLINE Vec3D XYX() const { return HC_SHUFFLE3D(*this, 0, 1, 0); }
-	HC_INLINE Vec3D XYY() const { return HC_SHUFFLE3D(*this, 0, 1, 1); }
-	HC_INLINE Vec3D XZX() const { return HC_SHUFFLE3D(*this, 0, 2, 0); }
-	HC_INLINE Vec3D XZY() const { return HC_SHUFFLE3D(*this, 0, 2, 1); }
-	HC_INLINE Vec3D XZZ() const { return HC_SHUFFLE3D(*this, 0, 2, 2); }
-	HC_INLINE Vec3D YXX() const { return HC_SHUFFLE3D(*this, 1, 0, 0); }
-	HC_INLINE Vec3D YXY() const { return HC_SHUFFLE3D(*this, 1, 0, 1); }
-	HC_INLINE Vec3D YXZ() const { return HC_SHUFFLE3D(*this, 1, 0, 2); }
-	HC_INLINE Vec3D YYX() const { return HC_SHUFFLE3D(*this, 1, 1, 0); }
-	HC_INLINE Vec3D YYY() const { return HC_SHUFFLE3D(*this, 1, 1, 1); }
-	HC_INLINE Vec3D YYZ() const { return HC_SHUFFLE3D(*this, 1, 1, 2); }
-	HC_INLINE Vec3D YZX() const { return HC_SHUFFLE3D(*this, 1, 2, 0); }
-	HC_INLINE Vec3D YZY() const { return HC_SHUFFLE3D(*this, 1, 2, 1); }
-	HC_INLINE Vec3D YZZ() const { return HC_SHUFFLE3D(*this, 1, 2, 2); }
-	HC_INLINE Vec3D ZXX() const { return HC_SHUFFLE3D(*this, 2, 0, 0); }
-	HC_INLINE Vec3D ZXY() const { return HC_SHUFFLE3D(*this, 2, 0, 1); }
-	HC_INLINE Vec3D ZXZ() const { return HC_SHUFFLE3D(*this, 2, 0, 2); }
-	HC_INLINE Vec3D ZYX() const { return HC_SHUFFLE3D(*this, 2, 1, 0); }
-	HC_INLINE Vec3D ZYY() const { return HC_SHUFFLE3D(*this, 2, 1, 1); }
-	HC_INLINE Vec3D ZYZ() const { return HC_SHUFFLE3D(*this, 2, 1, 2); }
-	HC_INLINE Vec3D ZZX() const { return HC_SHUFFLE3D(*this, 2, 2, 0); }
-	HC_INLINE Vec3D ZZY() const { return HC_SHUFFLE3D(*this, 2, 2, 1); }
-	HC_INLINE Vec3D ZZZ() const { return HC_SHUFFLE3D(*this, 2, 2, 2); }
-	HC_INLINE Vec3D RRR() const { return HC_SHUFFLE3D(*this, 0, 0, 0); }
-	HC_INLINE Vec3D RRG() const { return HC_SHUFFLE3D(*this, 0, 0, 1); }
-	HC_INLINE Vec3D RRB() const { return HC_SHUFFLE3D(*this, 0, 0, 2); }
-	HC_INLINE Vec3D RGR() const { return HC_SHUFFLE3D(*this, 0, 1, 0); }
-	HC_INLINE Vec3D RGG() const { return HC_SHUFFLE3D(*this, 0, 1, 1); }
-	HC_INLINE Vec3D RBR() const { return HC_SHUFFLE3D(*this, 0, 2, 0); }
-	HC_INLINE Vec3D RBG() const { return HC_SHUFFLE3D(*this, 0, 2, 1); }
-	HC_INLINE Vec3D RBB() const { return HC_SHUFFLE3D(*this, 0, 2, 2); }
-	HC_INLINE Vec3D GRR() const { return HC_SHUFFLE3D(*this, 1, 0, 0); }
-	HC_INLINE Vec3D GRG() const { return HC_SHUFFLE3D(*this, 1, 0, 1); }
-	HC_INLINE Vec3D GRB() const { return HC_SHUFFLE3D(*this, 1, 0, 2); }
-	HC_INLINE Vec3D GGR() const { return HC_SHUFFLE3D(*this, 1, 1, 0); }
-	HC_INLINE Vec3D GGG() const { return HC_SHUFFLE3D(*this, 1, 1, 1); }
-	HC_INLINE Vec3D GGB() const { return HC_SHUFFLE3D(*this, 1, 1, 2); }
-	HC_INLINE Vec3D GBR() const { return HC_SHUFFLE3D(*this, 1, 2, 0); }
-	HC_INLINE Vec3D GBG() const { return HC_SHUFFLE3D(*this, 1, 2, 1); }
-	HC_INLINE Vec3D GBB() const { return HC_SHUFFLE3D(*this, 1, 2, 2); }
-	HC_INLINE Vec3D BRR() const { return HC_SHUFFLE3D(*this, 2, 0, 0); }
-	HC_INLINE Vec3D BRG() const { return HC_SHUFFLE3D(*this, 2, 0, 1); }
-	HC_INLINE Vec3D BRB() const { return HC_SHUFFLE3D(*this, 2, 0, 2); }
-	HC_INLINE Vec3D BGR() const { return HC_SHUFFLE3D(*this, 2, 1, 0); }
-	HC_INLINE Vec3D BGG() const { return HC_SHUFFLE3D(*this, 2, 1, 1); }
-	HC_INLINE Vec3D BGB() const { return HC_SHUFFLE3D(*this, 2, 1, 2); }
-	HC_INLINE Vec3D BBR() const { return HC_SHUFFLE3D(*this, 2, 2, 0); }
-	HC_INLINE Vec3D BBG() const { return HC_SHUFFLE3D(*this, 2, 2, 1); }
-	HC_INLINE Vec3D BBB() const { return HC_SHUFFLE3D(*this, 2, 2, 2); }
+	HC_INLINE HC_VECTORCALL Vec3D() { m_dVec = _mm256_setzero_pd(); }
+	HC_INLINE explicit HC_VECTORCALL Vec3D(const double* _pValues) { m_dVec = _mm256_set_pd(_pValues[2], _pValues[2], _pValues[1], _pValues[0]); }
+	HC_INLINE explicit HC_VECTORCALL Vec3D(double _dX, double _dY, double _dZ) { m_dVec = _mm256_set_pd(_dZ, _dZ, _dY, _dX); }
+	HC_INLINE explicit HC_VECTORCALL Vec3D(float _fX, float _fY, float _fZ) { m_dVec = _mm256_set_pd(static_cast<double>(_fZ), static_cast<double>(_fZ), static_cast<double>(_fY), static_cast<double>(_fX)); }
+	HC_INLINE explicit HC_VECTORCALL Vec3D(int _iX, int _iY, int _iZ) { m_dVec = _mm256_set_pd(static_cast<double>(_iZ), static_cast<double>(_iZ), static_cast<double>(_iY), static_cast<double>(_iX)); }
+	HC_INLINE explicit HC_VECTORCALL Vec3D(__m256d _vData) { m_dVec = _vData; }
+	HC_INLINE double HC_VECTORCALL operator[](int _iNdx) const { assert(_iNdx < 3); return m_dVec.m256d_f64[_iNdx]; }
+	HC_INLINE double& HC_VECTORCALL operator[](int _iNdx) { assert(_iNdx < 3); return m_dVec.m256d_f64[_iNdx]; }
+	HC_INLINE double HC_VECTORCALL X() const { return _mm256_cvtsd_f64(m_dVec); }
+	HC_INLINE double HC_VECTORCALL Y() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE double HC_VECTORCALL Z() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(2, 2, 2, 2))); }
+	HC_INLINE double HC_VECTORCALL R() const { return _mm256_cvtsd_f64(m_dVec); }
+	HC_INLINE double HC_VECTORCALL G() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE double HC_VECTORCALL B() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(2, 2, 2, 2))); }
+	HC_INLINE void HC_VECTORCALL SetX(double _dX) { m_dVec = _mm256_set_pd(Z(), Z(), Y(), _dX); }
+	HC_INLINE void HC_VECTORCALL SetY(double _dY) { m_dVec = _mm256_set_pd(Z(), Z(), _dY, X()); }
+	HC_INLINE void HC_VECTORCALL SetZ(double _dZ) { m_dVec = _mm256_set_pd(_dZ, _dZ, Y(), X()); }
+	HC_INLINE void HC_VECTORCALL SetR(double _dR) { m_dVec = _mm256_set_pd(Y(), Y(), Y(), _dR); }
+	HC_INLINE void HC_VECTORCALL SetG(double _dG) { m_dVec = _mm256_set_pd(Z(), Z(), _dG, X()); }
+	HC_INLINE void HC_VECTORCALL SetB(double _dB) { m_dVec = _mm256_set_pd(_dB, _dB, Y(), X()); }
+	HC_INLINE Vec2D HC_VECTORCALL XX() const { return HC_SHUFFLE2D(*this, 0, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL YY() const { return HC_SHUFFLE2D(*this, 1, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL ZZ() const { return HC_SHUFFLE2D(*this, 2, 2); }
+	HC_INLINE Vec2D HC_VECTORCALL XY() const { return HC_SHUFFLE2D(*this, 0, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL XZ() const { return HC_SHUFFLE2D(*this, 0, 2); }
+	HC_INLINE Vec2D HC_VECTORCALL YX() const { return HC_SHUFFLE2D(*this, 1, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL YZ() const { return HC_SHUFFLE2D(*this, 1, 2); }
+	HC_INLINE Vec2D HC_VECTORCALL ZX() const { return HC_SHUFFLE2D(*this, 2, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL ZY() const { return HC_SHUFFLE2D(*this, 2, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL RR() const { return HC_SHUFFLE2D(*this, 0, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL GG() const { return HC_SHUFFLE2D(*this, 1, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL BB() const { return HC_SHUFFLE2D(*this, 2, 2); }
+	HC_INLINE Vec2D HC_VECTORCALL RG() const { return HC_SHUFFLE2D(*this, 0, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL RB() const { return HC_SHUFFLE2D(*this, 0, 2); }
+	HC_INLINE Vec2D HC_VECTORCALL GR() const { return HC_SHUFFLE2D(*this, 1, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL GB() const { return HC_SHUFFLE2D(*this, 1, 2); }
+	HC_INLINE Vec2D HC_VECTORCALL BR() const { return HC_SHUFFLE2D(*this, 2, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL BG() const { return HC_SHUFFLE2D(*this, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL XXX() const { return HC_SHUFFLE3D(*this, 0, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL XXY() const { return HC_SHUFFLE3D(*this, 0, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL XXZ() const { return HC_SHUFFLE3D(*this, 0, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL XYX() const { return HC_SHUFFLE3D(*this, 0, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL XYY() const { return HC_SHUFFLE3D(*this, 0, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL XZX() const { return HC_SHUFFLE3D(*this, 0, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL XZY() const { return HC_SHUFFLE3D(*this, 0, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL XZZ() const { return HC_SHUFFLE3D(*this, 0, 2, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL YXX() const { return HC_SHUFFLE3D(*this, 1, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL YXY() const { return HC_SHUFFLE3D(*this, 1, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL YXZ() const { return HC_SHUFFLE3D(*this, 1, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL YYX() const { return HC_SHUFFLE3D(*this, 1, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL YYY() const { return HC_SHUFFLE3D(*this, 1, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL YYZ() const { return HC_SHUFFLE3D(*this, 1, 1, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL YZX() const { return HC_SHUFFLE3D(*this, 1, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL YZY() const { return HC_SHUFFLE3D(*this, 1, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL YZZ() const { return HC_SHUFFLE3D(*this, 1, 2, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL ZXX() const { return HC_SHUFFLE3D(*this, 2, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL ZXY() const { return HC_SHUFFLE3D(*this, 2, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL ZXZ() const { return HC_SHUFFLE3D(*this, 2, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL ZYX() const { return HC_SHUFFLE3D(*this, 2, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL ZYY() const { return HC_SHUFFLE3D(*this, 2, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL ZYZ() const { return HC_SHUFFLE3D(*this, 2, 1, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL ZZX() const { return HC_SHUFFLE3D(*this, 2, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL ZZY() const { return HC_SHUFFLE3D(*this, 2, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL ZZZ() const { return HC_SHUFFLE3D(*this, 2, 2, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL RRR() const { return HC_SHUFFLE3D(*this, 0, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL RRG() const { return HC_SHUFFLE3D(*this, 0, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL RRB() const { return HC_SHUFFLE3D(*this, 0, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL RGR() const { return HC_SHUFFLE3D(*this, 0, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL RGG() const { return HC_SHUFFLE3D(*this, 0, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL RBR() const { return HC_SHUFFLE3D(*this, 0, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL RBG() const { return HC_SHUFFLE3D(*this, 0, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL RBB() const { return HC_SHUFFLE3D(*this, 0, 2, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL GRR() const { return HC_SHUFFLE3D(*this, 1, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL GRG() const { return HC_SHUFFLE3D(*this, 1, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL GRB() const { return HC_SHUFFLE3D(*this, 1, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL GGR() const { return HC_SHUFFLE3D(*this, 1, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL GGG() const { return HC_SHUFFLE3D(*this, 1, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL GGB() const { return HC_SHUFFLE3D(*this, 1, 1, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL GBR() const { return HC_SHUFFLE3D(*this, 1, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL GBG() const { return HC_SHUFFLE3D(*this, 1, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL GBB() const { return HC_SHUFFLE3D(*this, 1, 2, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL BRR() const { return HC_SHUFFLE3D(*this, 2, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL BRG() const { return HC_SHUFFLE3D(*this, 2, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL BRB() const { return HC_SHUFFLE3D(*this, 2, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL BGR() const { return HC_SHUFFLE3D(*this, 2, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL BGG() const { return HC_SHUFFLE3D(*this, 2, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL BGB() const { return HC_SHUFFLE3D(*this, 2, 1, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL BBR() const { return HC_SHUFFLE3D(*this, 2, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL BBG() const { return HC_SHUFFLE3D(*this, 2, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL BBB() const { return HC_SHUFFLE3D(*this, 2, 2, 2); }
 };
 
 struct Vec4D {
 	__m256d m_dVec;
 
-	HC_INLINE Vec4D() { m_dVec = _mm256_setzero_pd(); }
-	HC_INLINE explicit Vec4D(const double* _pValues) { m_dVec = _mm256_set_pd(_pValues[3], _pValues[2], _pValues[1], _pValues[0]); }
-	HC_INLINE explicit Vec4D(double _dX, double _dY, double _dZ, double _dA) { m_dVec = _mm256_set_pd(_dA, _dZ, _dY, _dX); }
-	HC_INLINE explicit Vec4D(float _fX, float _fY, float _fZ, float _fA) { m_dVec = _mm256_set_pd(static_cast<double>(_fA), static_cast<double>(_fZ), static_cast<double>(_fY), static_cast<double>(_fX)); }
-	HC_INLINE explicit Vec4D(int _iX, int _iY, int _iZ, int _iA) { m_dVec = _mm256_set_pd(static_cast<double>(_iA), static_cast<double>(_iZ), static_cast<double>(_iY), static_cast<double>(_iX)); }
-	HC_INLINE explicit Vec4D(__m256d _vData) { m_dVec = _vData; }
-	HC_INLINE double operator[](int _iNdx) const { assert(_iNdx < 4); return m_dVec.m256d_f64[_iNdx]; }
-	HC_INLINE double& operator[](int _iNdx) { assert(_iNdx < 4); return m_dVec.m256d_f64[_iNdx]; }
-	HC_INLINE double X() const { return _mm256_cvtsd_f64(m_dVec); }
-	HC_INLINE double Y() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE double Z() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(2, 2, 2, 2))); }
-	HC_INLINE double W() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(3, 3, 3, 3))); }
-	HC_INLINE double R() const { return _mm256_cvtsd_f64(m_dVec); }
-	HC_INLINE double G() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE double B() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(2, 2, 2, 2))); }
-	HC_INLINE double A() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(3, 3, 3, 3))); }
-	HC_INLINE void SetX(double _dX) { m_dVec = _mm256_set_pd(W(), Z(), Y(), _dX); }
-	HC_INLINE void SetY(double _dY) { m_dVec = _mm256_set_pd(W(), Z(), _dY, X()); }
-	HC_INLINE void SetZ(double _dZ) { m_dVec = _mm256_set_pd(W(), _dZ, Y(), X()); }
-	HC_INLINE void SetW(double _dW) { m_dVec = _mm256_set_pd(_dW, Z(), Y(), X()); }
-	HC_INLINE void SetR(double _dR) { m_dVec = _mm256_set_pd(W(), Z(), Y(), _dR); }
-	HC_INLINE void SetG(double _dG) { m_dVec = _mm256_set_pd(W(), Z(), _dG, X()); }
-	HC_INLINE void SetB(double _dB) { m_dVec = _mm256_set_pd(W(), _dB, Y(), X()); }
-	HC_INLINE void SetA(double _dA) { m_dVec = _mm256_set_pd(_dA, Z(), Y(), X()); }
-	HC_INLINE Vec2D XX() const { return HC_SHUFFLE2D(*this, 0, 0); }
-	HC_INLINE Vec2D YY() const { return HC_SHUFFLE2D(*this, 1, 1); }
-	HC_INLINE Vec2D ZZ() const { return HC_SHUFFLE2D(*this, 2, 2); }
-	HC_INLINE Vec2D WW() const { return HC_SHUFFLE2D(*this, 3, 3); }
-	HC_INLINE Vec2D XY() const { return HC_SHUFFLE2D(*this, 0, 1); }
-	HC_INLINE Vec2D XZ() const { return HC_SHUFFLE2D(*this, 0, 2); }
-	HC_INLINE Vec2D XW() const { return HC_SHUFFLE2D(*this, 0, 3); }
-	HC_INLINE Vec2D YX() const { return HC_SHUFFLE2D(*this, 1, 0); }
-	HC_INLINE Vec2D YZ() const { return HC_SHUFFLE2D(*this, 1, 2); }
-	HC_INLINE Vec2D YW() const { return HC_SHUFFLE2D(*this, 1, 3); }
-	HC_INLINE Vec2D ZX() const { return HC_SHUFFLE2D(*this, 2, 0); }
-	HC_INLINE Vec2D ZY() const { return HC_SHUFFLE2D(*this, 2, 1); }
-	HC_INLINE Vec2D ZW() const { return HC_SHUFFLE2D(*this, 2, 3); }
-	HC_INLINE Vec2D WX() const { return HC_SHUFFLE2D(*this, 3, 0); }
-	HC_INLINE Vec2D WY() const { return HC_SHUFFLE2D(*this, 3, 1); }
-	HC_INLINE Vec2D WZ() const { return HC_SHUFFLE2D(*this, 3, 2); }
-	HC_INLINE Vec2D RR() const { return HC_SHUFFLE2D(*this, 0, 0); }
-	HC_INLINE Vec2D GG() const { return HC_SHUFFLE2D(*this, 1, 1); }
-	HC_INLINE Vec2D BB() const { return HC_SHUFFLE2D(*this, 2, 2); }
-	HC_INLINE Vec2D AA() const { return HC_SHUFFLE2D(*this, 3, 3); }
-	HC_INLINE Vec2D RG() const { return HC_SHUFFLE2D(*this, 0, 1); }
-	HC_INLINE Vec2D RB() const { return HC_SHUFFLE2D(*this, 0, 2); }
-	HC_INLINE Vec2D RA() const { return HC_SHUFFLE2D(*this, 0, 3); }
-	HC_INLINE Vec2D GR() const { return HC_SHUFFLE2D(*this, 1, 0); }
-	HC_INLINE Vec2D GB() const { return HC_SHUFFLE2D(*this, 1, 2); }
-	HC_INLINE Vec2D GA() const { return HC_SHUFFLE2D(*this, 1, 3); }
-	HC_INLINE Vec2D BR() const { return HC_SHUFFLE2D(*this, 2, 0); }
-	HC_INLINE Vec2D BG() const { return HC_SHUFFLE2D(*this, 2, 1); }
-	HC_INLINE Vec2D BA() const { return HC_SHUFFLE2D(*this, 2, 3); }
-	HC_INLINE Vec2D AR() const { return HC_SHUFFLE2D(*this, 3, 0); }
-	HC_INLINE Vec2D AG() const { return HC_SHUFFLE2D(*this, 3, 1); }
-	HC_INLINE Vec2D AB() const { return HC_SHUFFLE2D(*this, 3, 2); }
-	HC_INLINE Vec3D XXX() const { return HC_SHUFFLE3D(*this, 0, 0, 0); }
-	HC_INLINE Vec3D XXY() const { return HC_SHUFFLE3D(*this, 0, 0, 1); }
-	HC_INLINE Vec3D XXZ() const { return HC_SHUFFLE3D(*this, 0, 0, 2); }
-	HC_INLINE Vec3D XXW() const { return HC_SHUFFLE3D(*this, 0, 0, 3); }
-	HC_INLINE Vec3D XYX() const { return HC_SHUFFLE3D(*this, 0, 1, 0); }
-	HC_INLINE Vec3D XYY() const { return HC_SHUFFLE3D(*this, 0, 1, 1); }
-	HC_INLINE Vec3D XYZ() const { return HC_SHUFFLE3D(*this, 0, 1, 2); }
-	HC_INLINE Vec3D XYW() const { return HC_SHUFFLE3D(*this, 0, 1, 3); }
-	HC_INLINE Vec3D XZX() const { return HC_SHUFFLE3D(*this, 0, 2, 0); }
-	HC_INLINE Vec3D XZY() const { return HC_SHUFFLE3D(*this, 0, 2, 1); }
-	HC_INLINE Vec3D XZZ() const { return HC_SHUFFLE3D(*this, 0, 2, 2); }
-	HC_INLINE Vec3D XZW() const { return HC_SHUFFLE3D(*this, 0, 2, 3); }
-	HC_INLINE Vec3D XWX() const { return HC_SHUFFLE3D(*this, 0, 3, 0); }
-	HC_INLINE Vec3D XWY() const { return HC_SHUFFLE3D(*this, 0, 3, 1); }
-	HC_INLINE Vec3D XWZ() const { return HC_SHUFFLE3D(*this, 0, 3, 2); }
-	HC_INLINE Vec3D XWW() const { return HC_SHUFFLE3D(*this, 0, 3, 3); }
-	HC_INLINE Vec3D YXX() const { return HC_SHUFFLE3D(*this, 1, 0, 0); }
-	HC_INLINE Vec3D YXY() const { return HC_SHUFFLE3D(*this, 1, 0, 1); }
-	HC_INLINE Vec3D YXZ() const { return HC_SHUFFLE3D(*this, 1, 0, 2); }
-	HC_INLINE Vec3D YXW() const { return HC_SHUFFLE3D(*this, 1, 0, 3); }
-	HC_INLINE Vec3D YYX() const { return HC_SHUFFLE3D(*this, 1, 1, 0); }
-	HC_INLINE Vec3D YYY() const { return HC_SHUFFLE3D(*this, 1, 1, 1); }
-	HC_INLINE Vec3D YYZ() const { return HC_SHUFFLE3D(*this, 1, 1, 2); }
-	HC_INLINE Vec3D YYW() const { return HC_SHUFFLE3D(*this, 1, 1, 3); }
-	HC_INLINE Vec3D YZX() const { return HC_SHUFFLE3D(*this, 1, 2, 0); }
-	HC_INLINE Vec3D YZY() const { return HC_SHUFFLE3D(*this, 1, 2, 1); }
-	HC_INLINE Vec3D YZZ() const { return HC_SHUFFLE3D(*this, 1, 2, 2); }
-	HC_INLINE Vec3D YZW() const { return HC_SHUFFLE3D(*this, 1, 2, 3); }
-	HC_INLINE Vec3D YWX() const { return HC_SHUFFLE3D(*this, 1, 3, 0); }
-	HC_INLINE Vec3D YWY() const { return HC_SHUFFLE3D(*this, 1, 3, 1); }
-	HC_INLINE Vec3D YWZ() const { return HC_SHUFFLE3D(*this, 1, 3, 2); }
-	HC_INLINE Vec3D YWW() const { return HC_SHUFFLE3D(*this, 1, 3, 3); }
-	HC_INLINE Vec3D ZXX() const { return HC_SHUFFLE3D(*this, 2, 0, 0); }
-	HC_INLINE Vec3D ZXY() const { return HC_SHUFFLE3D(*this, 2, 0, 1); }
-	HC_INLINE Vec3D ZXZ() const { return HC_SHUFFLE3D(*this, 2, 0, 2); }
-	HC_INLINE Vec3D ZXW() const { return HC_SHUFFLE3D(*this, 2, 0, 3); }
-	HC_INLINE Vec3D ZYX() const { return HC_SHUFFLE3D(*this, 2, 1, 0); }
-	HC_INLINE Vec3D ZYY() const { return HC_SHUFFLE3D(*this, 2, 1, 1); }
-	HC_INLINE Vec3D ZYZ() const { return HC_SHUFFLE3D(*this, 2, 1, 2); }
-	HC_INLINE Vec3D ZYW() const { return HC_SHUFFLE3D(*this, 2, 1, 3); }
-	HC_INLINE Vec3D ZZX() const { return HC_SHUFFLE3D(*this, 2, 2, 0); }
-	HC_INLINE Vec3D ZZY() const { return HC_SHUFFLE3D(*this, 2, 2, 1); }
-	HC_INLINE Vec3D ZZZ() const { return HC_SHUFFLE3D(*this, 2, 2, 2); }
-	HC_INLINE Vec3D ZZW() const { return HC_SHUFFLE3D(*this, 2, 2, 3); }
-	HC_INLINE Vec3D ZWX() const { return HC_SHUFFLE3D(*this, 2, 3, 0); }
-	HC_INLINE Vec3D ZWY() const { return HC_SHUFFLE3D(*this, 2, 3, 1); }
-	HC_INLINE Vec3D ZWZ() const { return HC_SHUFFLE3D(*this, 2, 3, 2); }
-	HC_INLINE Vec3D ZWW() const { return HC_SHUFFLE3D(*this, 2, 3, 3); }
-	HC_INLINE Vec3D WXX() const { return HC_SHUFFLE3D(*this, 3, 0, 0); }
-	HC_INLINE Vec3D WXY() const { return HC_SHUFFLE3D(*this, 3, 0, 1); }
-	HC_INLINE Vec3D WXZ() const { return HC_SHUFFLE3D(*this, 3, 0, 2); }
-	HC_INLINE Vec3D WXW() const { return HC_SHUFFLE3D(*this, 3, 0, 3); }
-	HC_INLINE Vec3D WYX() const { return HC_SHUFFLE3D(*this, 3, 1, 0); }
-	HC_INLINE Vec3D WYY() const { return HC_SHUFFLE3D(*this, 3, 1, 1); }
-	HC_INLINE Vec3D WYZ() const { return HC_SHUFFLE3D(*this, 3, 1, 2); }
-	HC_INLINE Vec3D WYW() const { return HC_SHUFFLE3D(*this, 3, 1, 3); }
-	HC_INLINE Vec3D WZX() const { return HC_SHUFFLE3D(*this, 3, 2, 0); }
-	HC_INLINE Vec3D WZY() const { return HC_SHUFFLE3D(*this, 3, 2, 1); }
-	HC_INLINE Vec3D WZZ() const { return HC_SHUFFLE3D(*this, 3, 2, 2); }
-	HC_INLINE Vec3D WZW() const { return HC_SHUFFLE3D(*this, 3, 2, 3); }
-	HC_INLINE Vec3D WWX() const { return HC_SHUFFLE3D(*this, 3, 3, 0); }
-	HC_INLINE Vec3D WWY() const { return HC_SHUFFLE3D(*this, 3, 3, 1); }
-	HC_INLINE Vec3D WWZ() const { return HC_SHUFFLE3D(*this, 3, 3, 2); }
-	HC_INLINE Vec3D WWW() const { return HC_SHUFFLE3D(*this, 3, 3, 3); }
-	HC_INLINE Vec3D RRR() const { return HC_SHUFFLE3D(*this, 0, 0, 0); }
-	HC_INLINE Vec3D RRG() const { return HC_SHUFFLE3D(*this, 0, 0, 1); }
-	HC_INLINE Vec3D RRB() const { return HC_SHUFFLE3D(*this, 0, 0, 2); }
-	HC_INLINE Vec3D RRA() const { return HC_SHUFFLE3D(*this, 0, 0, 3); }
-	HC_INLINE Vec3D RGR() const { return HC_SHUFFLE3D(*this, 0, 1, 0); }
-	HC_INLINE Vec3D RGG() const { return HC_SHUFFLE3D(*this, 0, 1, 1); }
-	HC_INLINE Vec3D RGA() const { return HC_SHUFFLE3D(*this, 0, 1, 2); }
-	HC_INLINE Vec3D RGB() const { return HC_SHUFFLE3D(*this, 0, 1, 3); }
-	HC_INLINE Vec3D RBR() const { return HC_SHUFFLE3D(*this, 0, 2, 0); }
-	HC_INLINE Vec3D RBG() const { return HC_SHUFFLE3D(*this, 0, 2, 1); }
-	HC_INLINE Vec3D RBB() const { return HC_SHUFFLE3D(*this, 0, 2, 2); }
-	HC_INLINE Vec3D RBA() const { return HC_SHUFFLE3D(*this, 0, 2, 3); }
-	HC_INLINE Vec3D RAR() const { return HC_SHUFFLE3D(*this, 0, 3, 0); }
-	HC_INLINE Vec3D RAG() const { return HC_SHUFFLE3D(*this, 0, 3, 1); }
-	HC_INLINE Vec3D RAB() const { return HC_SHUFFLE3D(*this, 0, 3, 2); }
-	HC_INLINE Vec3D RAA() const { return HC_SHUFFLE3D(*this, 0, 3, 3); }
-	HC_INLINE Vec3D GRR() const { return HC_SHUFFLE3D(*this, 1, 0, 0); }
-	HC_INLINE Vec3D GRG() const { return HC_SHUFFLE3D(*this, 1, 0, 1); }
-	HC_INLINE Vec3D GRB() const { return HC_SHUFFLE3D(*this, 1, 0, 2); }
-	HC_INLINE Vec3D GRA() const { return HC_SHUFFLE3D(*this, 1, 0, 3); }
-	HC_INLINE Vec3D GGR() const { return HC_SHUFFLE3D(*this, 1, 1, 0); }
-	HC_INLINE Vec3D GGG() const { return HC_SHUFFLE3D(*this, 1, 1, 1); }
-	HC_INLINE Vec3D GGB() const { return HC_SHUFFLE3D(*this, 1, 1, 2); }
-	HC_INLINE Vec3D GGA() const { return HC_SHUFFLE3D(*this, 1, 1, 3); }
-	HC_INLINE Vec3D GBR() const { return HC_SHUFFLE3D(*this, 1, 2, 0); }
-	HC_INLINE Vec3D GBG() const { return HC_SHUFFLE3D(*this, 1, 2, 1); }
-	HC_INLINE Vec3D GBB() const { return HC_SHUFFLE3D(*this, 1, 2, 2); }
-	HC_INLINE Vec3D GBA() const { return HC_SHUFFLE3D(*this, 1, 2, 3); }
-	HC_INLINE Vec3D GAR() const { return HC_SHUFFLE3D(*this, 1, 3, 0); }
-	HC_INLINE Vec3D GAG() const { return HC_SHUFFLE3D(*this, 1, 3, 1); }
-	HC_INLINE Vec3D GAB() const { return HC_SHUFFLE3D(*this, 1, 3, 2); }
-	HC_INLINE Vec3D GAA() const { return HC_SHUFFLE3D(*this, 1, 3, 3); }
-	HC_INLINE Vec3D BRR() const { return HC_SHUFFLE3D(*this, 2, 0, 0); }
-	HC_INLINE Vec3D BRG() const { return HC_SHUFFLE3D(*this, 2, 0, 1); }
-	HC_INLINE Vec3D BRB() const { return HC_SHUFFLE3D(*this, 2, 0, 2); }
-	HC_INLINE Vec3D BRA() const { return HC_SHUFFLE3D(*this, 2, 0, 3); }
-	HC_INLINE Vec3D BGR() const { return HC_SHUFFLE3D(*this, 2, 1, 0); }
-	HC_INLINE Vec3D BGG() const { return HC_SHUFFLE3D(*this, 2, 1, 1); }
-	HC_INLINE Vec3D BGB() const { return HC_SHUFFLE3D(*this, 2, 1, 2); }
-	HC_INLINE Vec3D BGA() const { return HC_SHUFFLE3D(*this, 2, 1, 3); }
-	HC_INLINE Vec3D BBR() const { return HC_SHUFFLE3D(*this, 2, 2, 0); }
-	HC_INLINE Vec3D BBG() const { return HC_SHUFFLE3D(*this, 2, 2, 1); }
-	HC_INLINE Vec3D BBB() const { return HC_SHUFFLE3D(*this, 2, 2, 2); }
-	HC_INLINE Vec3D BBA() const { return HC_SHUFFLE3D(*this, 2, 2, 3); }
-	HC_INLINE Vec3D BAR() const { return HC_SHUFFLE3D(*this, 2, 3, 0); }
-	HC_INLINE Vec3D BAG() const { return HC_SHUFFLE3D(*this, 2, 3, 1); }
-	HC_INLINE Vec3D BAB() const { return HC_SHUFFLE3D(*this, 2, 3, 2); }
-	HC_INLINE Vec3D BAA() const { return HC_SHUFFLE3D(*this, 2, 3, 3); }
-	HC_INLINE Vec3D ARR() const { return HC_SHUFFLE3D(*this, 3, 0, 0); }
-	HC_INLINE Vec3D ARG() const { return HC_SHUFFLE3D(*this, 3, 0, 1); }
-	HC_INLINE Vec3D ARB() const { return HC_SHUFFLE3D(*this, 3, 0, 2); }
-	HC_INLINE Vec3D ARA() const { return HC_SHUFFLE3D(*this, 3, 0, 3); }
-	HC_INLINE Vec3D AGR() const { return HC_SHUFFLE3D(*this, 3, 1, 0); }
-	HC_INLINE Vec3D AGG() const { return HC_SHUFFLE3D(*this, 3, 1, 1); }
-	HC_INLINE Vec3D AGB() const { return HC_SHUFFLE3D(*this, 3, 1, 2); }
-	HC_INLINE Vec3D AGA() const { return HC_SHUFFLE3D(*this, 3, 1, 3); }
-	HC_INLINE Vec3D ABR() const { return HC_SHUFFLE3D(*this, 3, 2, 0); }
-	HC_INLINE Vec3D ABG() const { return HC_SHUFFLE3D(*this, 3, 2, 1); }
-	HC_INLINE Vec3D ABB() const { return HC_SHUFFLE3D(*this, 3, 2, 2); }
-	HC_INLINE Vec3D ABA() const { return HC_SHUFFLE3D(*this, 3, 2, 3); }
-	HC_INLINE Vec3D AAR() const { return HC_SHUFFLE3D(*this, 3, 3, 0); }
-	HC_INLINE Vec3D AAG() const { return HC_SHUFFLE3D(*this, 3, 3, 1); }
-	HC_INLINE Vec3D AAB() const { return HC_SHUFFLE3D(*this, 3, 3, 2); }
-	HC_INLINE Vec3D AAA() const { return HC_SHUFFLE3D(*this, 3, 3, 3); }
-	HC_INLINE Vec4D XXXX() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 0); }
-	HC_INLINE Vec4D XXXY() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 1); }
-	HC_INLINE Vec4D XXXZ() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 2); }
-	HC_INLINE Vec4D XXXW() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 3); }
-	HC_INLINE Vec4D XXYX() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 0); }
-	HC_INLINE Vec4D XXYY() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 1); }
-	HC_INLINE Vec4D XXYZ() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 2); }
-	HC_INLINE Vec4D XXYW() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 3); }
-	HC_INLINE Vec4D XXZX() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 0); }
-	HC_INLINE Vec4D XXZY() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 1); }
-	HC_INLINE Vec4D XXZZ() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 2); }
-	HC_INLINE Vec4D XXZW() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 3); }
-	HC_INLINE Vec4D XXWX() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 0); }
-	HC_INLINE Vec4D XXWY() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 1); }
-	HC_INLINE Vec4D XXWZ() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 2); }
-	HC_INLINE Vec4D XXWW() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 3); }
-	HC_INLINE Vec4D XYXX() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 0); }
-	HC_INLINE Vec4D XYXY() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 1); }
-	HC_INLINE Vec4D XYXZ() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 2); }
-	HC_INLINE Vec4D XYXW() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 3); }
-	HC_INLINE Vec4D XYYX() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 0); }
-	HC_INLINE Vec4D XYYY() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 1); }
-	HC_INLINE Vec4D XYYZ() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 2); }
-	HC_INLINE Vec4D XYYW() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 3); }
-	HC_INLINE Vec4D XYZX() const { return HC_SHUFFLE4D(*this, 0, 1, 2, 0); }
-	HC_INLINE Vec4D XYZY() const { return HC_SHUFFLE4D(*this, 0, 1, 2, 1); }
-	HC_INLINE Vec4D XYZZ() const { return HC_SHUFFLE4D(*this, 0, 1, 2, 2); }
-	HC_INLINE Vec4D XYWX() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 0); }
-	HC_INLINE Vec4D XYWY() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 1); }
-	HC_INLINE Vec4D XYWZ() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 2); }
-	HC_INLINE Vec4D XYWW() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 3); }
-	HC_INLINE Vec4D XZXX() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 0); }
-	HC_INLINE Vec4D XZXY() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 1); }
-	HC_INLINE Vec4D XZXZ() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 2); }
-	HC_INLINE Vec4D XZXW() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 3); }
-	HC_INLINE Vec4D XZYX() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 0); }
-	HC_INLINE Vec4D XZYY() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 1); }
-	HC_INLINE Vec4D XZYZ() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 2); }
-	HC_INLINE Vec4D XZYW() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 3); }
-	HC_INLINE Vec4D XZZX() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 0); }
-	HC_INLINE Vec4D XZZY() const { return HC_SHUFFLE4D(*this, 0, 2, 2, 1); }
-	HC_INLINE Vec4D XZZZ() const { return HC_SHUFFLE4D(*this, 0, 2, 2, 2); }
-	HC_INLINE Vec4D XZZW() const { return HC_SHUFFLE4D(*this, 0, 2, 2, 3); }
-	HC_INLINE Vec4D XZWX() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 0); }
-	HC_INLINE Vec4D XZWY() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 1); }
-	HC_INLINE Vec4D XZWZ() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 2); }
-	HC_INLINE Vec4D XZWW() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 3); }
-	HC_INLINE Vec4D XWXX() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 0); }
-	HC_INLINE Vec4D XWXY() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 1); }
-	HC_INLINE Vec4D XWXZ() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 2); }
-	HC_INLINE Vec4D XWXW() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 3); }
-	HC_INLINE Vec4D XWYX() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 0); }
-	HC_INLINE Vec4D XWYY() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 1); }
-	HC_INLINE Vec4D XWYZ() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 2); }
-	HC_INLINE Vec4D XWYW() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 3); }
-	HC_INLINE Vec4D XWZX() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 0); }
-	HC_INLINE Vec4D XWZY() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 1); }
-	HC_INLINE Vec4D XWZZ() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 2); }
-	HC_INLINE Vec4D XWZW() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 3); }
-	HC_INLINE Vec4D XWWX() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 0); }
-	HC_INLINE Vec4D XWWY() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 1); }
-	HC_INLINE Vec4D XWWZ() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 2); }
-	HC_INLINE Vec4D XWWW() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 3); }
-	HC_INLINE Vec4D YXXX() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 0); }
-	HC_INLINE Vec4D YXXY() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 1); }
-	HC_INLINE Vec4D YXXZ() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 2); }
-	HC_INLINE Vec4D YXXW() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 3); }
-	HC_INLINE Vec4D YXYX() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 0); }
-	HC_INLINE Vec4D YXYY() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 1); }
-	HC_INLINE Vec4D YXYZ() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 2); }
-	HC_INLINE Vec4D YXYW() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 3); }
-	HC_INLINE Vec4D YXZX() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 0); }
-	HC_INLINE Vec4D YXZY() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 1); }
-	HC_INLINE Vec4D YXZZ() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 2); }
-	HC_INLINE Vec4D YXZW() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 3); }
-	HC_INLINE Vec4D YXWX() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 0); }
-	HC_INLINE Vec4D YXWY() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 1); }
-	HC_INLINE Vec4D YXWZ() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 2); }
-	HC_INLINE Vec4D YXWW() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 3); }
-	HC_INLINE Vec4D YYXX() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 0); }
-	HC_INLINE Vec4D YYXY() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 1); }
-	HC_INLINE Vec4D YYXZ() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 2); }
-	HC_INLINE Vec4D YYXW() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 3); }
-	HC_INLINE Vec4D YYYX() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 0); }
-	HC_INLINE Vec4D YYYY() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 1); }
-	HC_INLINE Vec4D YYYZ() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 2); }
-	HC_INLINE Vec4D YYYW() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 3); }
-	HC_INLINE Vec4D YYZX() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 0); }
-	HC_INLINE Vec4D YYZY() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 1); }
-	HC_INLINE Vec4D YYZZ() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 2); }
-	HC_INLINE Vec4D YYZW() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 3); }
-	HC_INLINE Vec4D YYWX() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 0); }
-	HC_INLINE Vec4D YYWY() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 1); }
-	HC_INLINE Vec4D YYWZ() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 2); }
-	HC_INLINE Vec4D YYWW() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 3); }
-	HC_INLINE Vec4D YZXX() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 0); }
-	HC_INLINE Vec4D YZXY() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 1); }
-	HC_INLINE Vec4D YZXZ() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 2); }
-	HC_INLINE Vec4D YZXW() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 3); }
-	HC_INLINE Vec4D YZYX() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 0); }
-	HC_INLINE Vec4D YZYY() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 1); }
-	HC_INLINE Vec4D YZYZ() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 2); }
-	HC_INLINE Vec4D YZYW() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 3); }
-	HC_INLINE Vec4D YZZX() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 0); }
-	HC_INLINE Vec4D YZZY() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 1); }
-	HC_INLINE Vec4D YZZZ() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 2); }
-	HC_INLINE Vec4D YZZW() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 3); }
-	HC_INLINE Vec4D YZWX() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 0); }
-	HC_INLINE Vec4D YZWY() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 1); }
-	HC_INLINE Vec4D YZWZ() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 2); }
-	HC_INLINE Vec4D YZWW() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 3); }
-	HC_INLINE Vec4D YWXX() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 0); }
-	HC_INLINE Vec4D YWXY() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 1); }
-	HC_INLINE Vec4D YWXZ() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 2); }
-	HC_INLINE Vec4D YWXW() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 3); }
-	HC_INLINE Vec4D YWYX() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 0); }
-	HC_INLINE Vec4D YWYY() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 1); }
-	HC_INLINE Vec4D YWYZ() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 2); }
-	HC_INLINE Vec4D YWYW() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 3); }
-	HC_INLINE Vec4D YWZX() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 0); }
-	HC_INLINE Vec4D YWZY() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 1); }
-	HC_INLINE Vec4D YWZZ() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 2); }
-	HC_INLINE Vec4D YWZW() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 3); }
-	HC_INLINE Vec4D YWWX() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 0); }
-	HC_INLINE Vec4D YWWY() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 1); }
-	HC_INLINE Vec4D YWWZ() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 2); }
-	HC_INLINE Vec4D YWWW() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 3); }
-	HC_INLINE Vec4D ZXXX() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 0); }
-	HC_INLINE Vec4D ZXXY() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 1); }
-	HC_INLINE Vec4D ZXXZ() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 2); }
-	HC_INLINE Vec4D ZXXW() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 3); }
-	HC_INLINE Vec4D ZXYX() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 0); }
-	HC_INLINE Vec4D ZXYY() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 1); }
-	HC_INLINE Vec4D ZXYZ() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 2); }
-	HC_INLINE Vec4D ZXYW() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 3); }
-	HC_INLINE Vec4D ZXZX() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 0); }
-	HC_INLINE Vec4D ZXZY() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 1); }
-	HC_INLINE Vec4D ZXZZ() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 2); }
-	HC_INLINE Vec4D ZXZW() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 3); }
-	HC_INLINE Vec4D ZXWX() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 0); }
-	HC_INLINE Vec4D ZXWY() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 1); }
-	HC_INLINE Vec4D ZXWZ() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 2); }
-	HC_INLINE Vec4D ZXWW() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 3); }
-	HC_INLINE Vec4D ZYXX() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 0); }
-	HC_INLINE Vec4D ZYXY() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 1); }
-	HC_INLINE Vec4D ZYXZ() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 2); }
-	HC_INLINE Vec4D ZYXW() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 3); }
-	HC_INLINE Vec4D ZYYX() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 0); }
-	HC_INLINE Vec4D ZYYY() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 1); }
-	HC_INLINE Vec4D ZYYZ() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 2); }
-	HC_INLINE Vec4D ZYYW() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 3); }
-	HC_INLINE Vec4D ZYZX() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 0); }
-	HC_INLINE Vec4D ZYZY() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 1); }
-	HC_INLINE Vec4D ZYZZ() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 2); }
-	HC_INLINE Vec4D ZYZW() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 3); }
-	HC_INLINE Vec4D ZYWX() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 0); }
-	HC_INLINE Vec4D ZYWY() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 1); }
-	HC_INLINE Vec4D ZYWZ() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 2); }
-	HC_INLINE Vec4D ZYWW() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 3); }
-	HC_INLINE Vec4D ZZXX() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 0); }
-	HC_INLINE Vec4D ZZXY() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 1); }
-	HC_INLINE Vec4D ZZXZ() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 2); }
-	HC_INLINE Vec4D ZZXW() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 3); }
-	HC_INLINE Vec4D ZZYX() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 0); }
-	HC_INLINE Vec4D ZZYY() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 1); }
-	HC_INLINE Vec4D ZZYZ() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 2); }
-	HC_INLINE Vec4D ZZYW() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 3); }
-	HC_INLINE Vec4D ZZZX() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 0); }
-	HC_INLINE Vec4D ZZZY() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 1); }
-	HC_INLINE Vec4D ZZZZ() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 2); }
-	HC_INLINE Vec4D ZZZW() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 3); }
-	HC_INLINE Vec4D ZZWX() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 0); }
-	HC_INLINE Vec4D ZZWY() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 1); }
-	HC_INLINE Vec4D ZZWZ() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 2); }
-	HC_INLINE Vec4D ZZWW() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 3); }
-	HC_INLINE Vec4D ZWXX() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 0); }
-	HC_INLINE Vec4D ZWXY() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 1); }
-	HC_INLINE Vec4D ZWXZ() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 2); }
-	HC_INLINE Vec4D ZWXW() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 3); }
-	HC_INLINE Vec4D ZWYX() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 0); }
-	HC_INLINE Vec4D ZWYY() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 1); }
-	HC_INLINE Vec4D ZWYZ() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 2); }
-	HC_INLINE Vec4D ZWYW() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 3); }
-	HC_INLINE Vec4D ZWZX() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 0); }
-	HC_INLINE Vec4D ZWZY() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 1); }
-	HC_INLINE Vec4D ZWZZ() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 2); }
-	HC_INLINE Vec4D ZWZW() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 3); }
-	HC_INLINE Vec4D ZWWX() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 0); }
-	HC_INLINE Vec4D ZWWY() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 1); }
-	HC_INLINE Vec4D ZWWZ() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 2); }
-	HC_INLINE Vec4D ZWWW() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 3); }
-	HC_INLINE Vec4D WXXX() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 0); }
-	HC_INLINE Vec4D WXXY() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 1); }
-	HC_INLINE Vec4D WXXZ() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 2); }
-	HC_INLINE Vec4D WXXW() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 3); }
-	HC_INLINE Vec4D WXYX() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 0); }
-	HC_INLINE Vec4D WXYY() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 1); }
-	HC_INLINE Vec4D WXYZ() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 2); }
-	HC_INLINE Vec4D WXYW() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 3); }
-	HC_INLINE Vec4D WXZX() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 0); }
-	HC_INLINE Vec4D WXZY() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 1); }
-	HC_INLINE Vec4D WXZZ() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 2); }
-	HC_INLINE Vec4D WXZW() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 3); }
-	HC_INLINE Vec4D WXWX() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 0); }
-	HC_INLINE Vec4D WXWY() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 1); }
-	HC_INLINE Vec4D WXWZ() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 2); }
-	HC_INLINE Vec4D WXWW() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 3); }
-	HC_INLINE Vec4D WYXX() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 0); }
-	HC_INLINE Vec4D WYXY() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 1); }
-	HC_INLINE Vec4D WYXZ() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 2); }
-	HC_INLINE Vec4D WYXW() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 3); }
-	HC_INLINE Vec4D WYYX() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 0); }
-	HC_INLINE Vec4D WYYY() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 1); }
-	HC_INLINE Vec4D WYYZ() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 2); }
-	HC_INLINE Vec4D WYYW() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 3); }
-	HC_INLINE Vec4D WYZX() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 0); }
-	HC_INLINE Vec4D WYZY() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 1); }
-	HC_INLINE Vec4D WYZZ() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 2); }
-	HC_INLINE Vec4D WYZW() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 3); }
-	HC_INLINE Vec4D WYWX() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 0); }
-	HC_INLINE Vec4D WYWY() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 1); }
-	HC_INLINE Vec4D WYWZ() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 2); }
-	HC_INLINE Vec4D WYWW() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 3); }
-	HC_INLINE Vec4D WZXX() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 0); }
-	HC_INLINE Vec4D WZXY() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 1); }
-	HC_INLINE Vec4D WZXZ() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 2); }
-	HC_INLINE Vec4D WZXW() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 3); }
-	HC_INLINE Vec4D WZYX() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 0); }
-	HC_INLINE Vec4D WZYY() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 1); }
-	HC_INLINE Vec4D WZYZ() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 2); }
-	HC_INLINE Vec4D WZYW() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 3); }
-	HC_INLINE Vec4D WZZX() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 0); }
-	HC_INLINE Vec4D WZZY() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 1); }
-	HC_INLINE Vec4D WZZZ() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 2); }
-	HC_INLINE Vec4D WZZW() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 3); }
-	HC_INLINE Vec4D WZWX() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 0); }
-	HC_INLINE Vec4D WZWY() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 1); }
-	HC_INLINE Vec4D WZWZ() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 2); }
-	HC_INLINE Vec4D WZWW() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 3); }
-	HC_INLINE Vec4D WWXX() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 0); }
-	HC_INLINE Vec4D WWXY() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 1); }
-	HC_INLINE Vec4D WWXZ() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 2); }
-	HC_INLINE Vec4D WWXW() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 3); }
-	HC_INLINE Vec4D WWYX() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 0); }
-	HC_INLINE Vec4D WWYY() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 1); }
-	HC_INLINE Vec4D WWYZ() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 2); }
-	HC_INLINE Vec4D WWYW() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 3); }
-	HC_INLINE Vec4D WWZX() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 0); }
-	HC_INLINE Vec4D WWZY() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 1); }
-	HC_INLINE Vec4D WWZZ() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 2); }
-	HC_INLINE Vec4D WWZW() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 3); }
-	HC_INLINE Vec4D WWWX() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 0); }
-	HC_INLINE Vec4D WWWY() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 1); }
-	HC_INLINE Vec4D WWWZ() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 2); }
-	HC_INLINE Vec4D WWWW() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 3); }
-	HC_INLINE Vec4D RRRR() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 0); }
-	HC_INLINE Vec4D RRRG() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 1); }
-	HC_INLINE Vec4D RRRB() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 2); }
-	HC_INLINE Vec4D RRRA() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 3); }
-	HC_INLINE Vec4D RRGR() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 0); }
-	HC_INLINE Vec4D RRGG() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 1); }
-	HC_INLINE Vec4D RRGB() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 2); }
-	HC_INLINE Vec4D RRGA() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 3); }
-	HC_INLINE Vec4D RRBR() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 0); }
-	HC_INLINE Vec4D RRBG() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 1); }
-	HC_INLINE Vec4D RRBB() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 2); }
-	HC_INLINE Vec4D RRBA() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 3); }
-	HC_INLINE Vec4D RRAR() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 0); }
-	HC_INLINE Vec4D RRAG() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 1); }
-	HC_INLINE Vec4D RRAB() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 2); }
-	HC_INLINE Vec4D RRAA() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 3); }
-	HC_INLINE Vec4D RGRR() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 0); }
-	HC_INLINE Vec4D RGRG() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 1); }
-	HC_INLINE Vec4D RGRB() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 2); }
-	HC_INLINE Vec4D RGRA() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 3); }
-	HC_INLINE Vec4D RGGR() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 0); }
-	HC_INLINE Vec4D RGGG() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 1); }
-	HC_INLINE Vec4D RGGB() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 2); }
-	HC_INLINE Vec4D RGGA() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 3); }
-	HC_INLINE Vec4D RGBR() const { return HC_SHUFFLE4D(*this, 0, 1, 2, 0); }
-	HC_INLINE Vec4D RGBG() const { return HC_SHUFFLE4D(*this, 0, 1, 2, 1); }
-	HC_INLINE Vec4D RGBB() const { return HC_SHUFFLE4D(*this, 0, 1, 2, 2); }
-	HC_INLINE Vec4D RGAR() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 0); }
-	HC_INLINE Vec4D RGAG() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 1); }
-	HC_INLINE Vec4D RGAB() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 2); }
-	HC_INLINE Vec4D RGAA() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 3); }
-	HC_INLINE Vec4D RBRR() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 0); }
-	HC_INLINE Vec4D RBRG() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 1); }
-	HC_INLINE Vec4D RBRB() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 2); }
-	HC_INLINE Vec4D RBRA() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 3); }
-	HC_INLINE Vec4D RBGR() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 0); }
-	HC_INLINE Vec4D RBGG() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 1); }
-	HC_INLINE Vec4D RBGB() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 2); }
-	HC_INLINE Vec4D RBGA() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 3); }
-	HC_INLINE Vec4D RBBR() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 0); }
-	HC_INLINE Vec4D RBBG() const { return HC_SHUFFLE4D(*this, 0, 2, 2, 1); }
-	HC_INLINE Vec4D RBBB() const { return HC_SHUFFLE4D(*this, 0, 2, 2, 2); }
-	HC_INLINE Vec4D RBBA() const { return HC_SHUFFLE4D(*this, 0, 2, 2, 3); }
-	HC_INLINE Vec4D RBAR() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 0); }
-	HC_INLINE Vec4D RBAG() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 1); }
-	HC_INLINE Vec4D RBAB() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 2); }
-	HC_INLINE Vec4D RBAA() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 3); }
-	HC_INLINE Vec4D RARR() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 0); }
-	HC_INLINE Vec4D RARG() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 1); }
-	HC_INLINE Vec4D RARB() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 2); }
-	HC_INLINE Vec4D RARA() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 3); }
-	HC_INLINE Vec4D RAGR() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 0); }
-	HC_INLINE Vec4D RAGG() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 1); }
-	HC_INLINE Vec4D RAGB() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 2); }
-	HC_INLINE Vec4D RAGA() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 3); }
-	HC_INLINE Vec4D RABR() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 0); }
-	HC_INLINE Vec4D RABG() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 1); }
-	HC_INLINE Vec4D RABB() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 2); }
-	HC_INLINE Vec4D RABA() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 3); }
-	HC_INLINE Vec4D RAAR() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 0); }
-	HC_INLINE Vec4D RAAG() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 1); }
-	HC_INLINE Vec4D RAAB() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 2); }
-	HC_INLINE Vec4D RAAA() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 3); }
-	HC_INLINE Vec4D GRRR() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 0); }
-	HC_INLINE Vec4D GRRG() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 1); }
-	HC_INLINE Vec4D GRRB() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 2); }
-	HC_INLINE Vec4D GRRA() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 3); }
-	HC_INLINE Vec4D GRGR() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 0); }
-	HC_INLINE Vec4D GRGG() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 1); }
-	HC_INLINE Vec4D GRGB() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 2); }
-	HC_INLINE Vec4D GRGA() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 3); }
-	HC_INLINE Vec4D GRBR() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 0); }
-	HC_INLINE Vec4D GRBG() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 1); }
-	HC_INLINE Vec4D GRBB() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 2); }
-	HC_INLINE Vec4D GRBA() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 3); }
-	HC_INLINE Vec4D GRAR() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 0); }
-	HC_INLINE Vec4D GRAG() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 1); }
-	HC_INLINE Vec4D GRAB() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 2); }
-	HC_INLINE Vec4D GRAA() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 3); }
-	HC_INLINE Vec4D GGRR() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 0); }
-	HC_INLINE Vec4D GGRG() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 1); }
-	HC_INLINE Vec4D GGRB() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 2); }
-	HC_INLINE Vec4D GGRA() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 3); }
-	HC_INLINE Vec4D GGGR() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 0); }
-	HC_INLINE Vec4D GGGG() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 1); }
-	HC_INLINE Vec4D GGGB() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 2); }
-	HC_INLINE Vec4D GGGA() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 3); }
-	HC_INLINE Vec4D GGBR() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 0); }
-	HC_INLINE Vec4D GGBG() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 1); }
-	HC_INLINE Vec4D GGBB() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 2); }
-	HC_INLINE Vec4D GGBA() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 3); }
-	HC_INLINE Vec4D GGAR() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 0); }
-	HC_INLINE Vec4D GGAG() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 1); }
-	HC_INLINE Vec4D GGAB() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 2); }
-	HC_INLINE Vec4D GGAA() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 3); }
-	HC_INLINE Vec4D GBRR() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 0); }
-	HC_INLINE Vec4D GBRG() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 1); }
-	HC_INLINE Vec4D GBRB() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 2); }
-	HC_INLINE Vec4D GBRA() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 3); }
-	HC_INLINE Vec4D GBGR() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 0); }
-	HC_INLINE Vec4D GBGG() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 1); }
-	HC_INLINE Vec4D GBGB() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 2); }
-	HC_INLINE Vec4D GBGA() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 3); }
-	HC_INLINE Vec4D GBBR() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 0); }
-	HC_INLINE Vec4D GBBG() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 1); }
-	HC_INLINE Vec4D GBBB() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 2); }
-	HC_INLINE Vec4D GBBA() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 3); }
-	HC_INLINE Vec4D GBAR() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 0); }
-	HC_INLINE Vec4D GBAG() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 1); }
-	HC_INLINE Vec4D GBAB() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 2); }
-	HC_INLINE Vec4D GBAA() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 3); }
-	HC_INLINE Vec4D GARR() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 0); }
-	HC_INLINE Vec4D GARG() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 1); }
-	HC_INLINE Vec4D GARB() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 2); }
-	HC_INLINE Vec4D GARA() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 3); }
-	HC_INLINE Vec4D GAGR() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 0); }
-	HC_INLINE Vec4D GAGG() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 1); }
-	HC_INLINE Vec4D GAGB() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 2); }
-	HC_INLINE Vec4D GAGA() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 3); }
-	HC_INLINE Vec4D GABR() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 0); }
-	HC_INLINE Vec4D GABG() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 1); }
-	HC_INLINE Vec4D GABB() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 2); }
-	HC_INLINE Vec4D GABA() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 3); }
-	HC_INLINE Vec4D GAAR() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 0); }
-	HC_INLINE Vec4D GAAG() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 1); }
-	HC_INLINE Vec4D GAAB() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 2); }
-	HC_INLINE Vec4D GAAA() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 3); }
-	HC_INLINE Vec4D BRRR() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 0); }
-	HC_INLINE Vec4D BRRG() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 1); }
-	HC_INLINE Vec4D BRRB() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 2); }
-	HC_INLINE Vec4D BRRA() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 3); }
-	HC_INLINE Vec4D BRGR() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 0); }
-	HC_INLINE Vec4D BRGG() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 1); }
-	HC_INLINE Vec4D BRGB() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 2); }
-	HC_INLINE Vec4D BRGA() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 3); }
-	HC_INLINE Vec4D BRBR() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 0); }
-	HC_INLINE Vec4D BRBG() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 1); }
-	HC_INLINE Vec4D BRBB() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 2); }
-	HC_INLINE Vec4D BRBA() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 3); }
-	HC_INLINE Vec4D BRAR() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 0); }
-	HC_INLINE Vec4D BRAG() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 1); }
-	HC_INLINE Vec4D BRAB() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 2); }
-	HC_INLINE Vec4D BRAA() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 3); }
-	HC_INLINE Vec4D BGRR() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 0); }
-	HC_INLINE Vec4D BGRG() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 1); }
-	HC_INLINE Vec4D BGRB() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 2); }
-	HC_INLINE Vec4D BGRA() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 3); }
-	HC_INLINE Vec4D BGGR() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 0); }
-	HC_INLINE Vec4D BGGG() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 1); }
-	HC_INLINE Vec4D BGGB() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 2); }
-	HC_INLINE Vec4D BGGA() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 3); }
-	HC_INLINE Vec4D BGBR() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 0); }
-	HC_INLINE Vec4D BGBG() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 1); }
-	HC_INLINE Vec4D BGBB() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 2); }
-	HC_INLINE Vec4D BGBA() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 3); }
-	HC_INLINE Vec4D BGAR() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 0); }
-	HC_INLINE Vec4D BGAG() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 1); }
-	HC_INLINE Vec4D BGAB() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 2); }
-	HC_INLINE Vec4D BGAA() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 3); }
-	HC_INLINE Vec4D BBRR() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 0); }
-	HC_INLINE Vec4D BBRG() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 1); }
-	HC_INLINE Vec4D BBRB() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 2); }
-	HC_INLINE Vec4D BBRA() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 3); }
-	HC_INLINE Vec4D BBGR() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 0); }
-	HC_INLINE Vec4D BBGG() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 1); }
-	HC_INLINE Vec4D BBGB() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 2); }
-	HC_INLINE Vec4D BBGA() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 3); }
-	HC_INLINE Vec4D BBBR() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 0); }
-	HC_INLINE Vec4D BBBG() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 1); }
-	HC_INLINE Vec4D BBBB() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 2); }
-	HC_INLINE Vec4D BBBA() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 3); }
-	HC_INLINE Vec4D BBAR() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 0); }
-	HC_INLINE Vec4D BBAG() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 1); }
-	HC_INLINE Vec4D BBAB() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 2); }
-	HC_INLINE Vec4D BBAA() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 3); }
-	HC_INLINE Vec4D BARR() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 0); }
-	HC_INLINE Vec4D BARG() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 1); }
-	HC_INLINE Vec4D BARB() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 2); }
-	HC_INLINE Vec4D BARA() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 3); }
-	HC_INLINE Vec4D BAGR() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 0); }
-	HC_INLINE Vec4D BAGG() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 1); }
-	HC_INLINE Vec4D BAGB() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 2); }
-	HC_INLINE Vec4D BAGA() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 3); }
-	HC_INLINE Vec4D BABR() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 0); }
-	HC_INLINE Vec4D BABG() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 1); }
-	HC_INLINE Vec4D BABB() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 2); }
-	HC_INLINE Vec4D BABA() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 3); }
-	HC_INLINE Vec4D BAAR() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 0); }
-	HC_INLINE Vec4D BAAG() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 1); }
-	HC_INLINE Vec4D BAAB() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 2); }
-	HC_INLINE Vec4D BAAA() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 3); }
-	HC_INLINE Vec4D ARRR() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 0); }
-	HC_INLINE Vec4D ARRG() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 1); }
-	HC_INLINE Vec4D ARRB() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 2); }
-	HC_INLINE Vec4D ARRA() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 3); }
-	HC_INLINE Vec4D ARGR() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 0); }
-	HC_INLINE Vec4D ARGG() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 1); }
-	HC_INLINE Vec4D ARGB() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 2); }
-	HC_INLINE Vec4D ARGA() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 3); }
-	HC_INLINE Vec4D ARBR() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 0); }
-	HC_INLINE Vec4D ARBG() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 1); }
-	HC_INLINE Vec4D ARBB() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 2); }
-	HC_INLINE Vec4D ARBA() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 3); }
-	HC_INLINE Vec4D ARAR() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 0); }
-	HC_INLINE Vec4D ARAG() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 1); }
-	HC_INLINE Vec4D ARAB() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 2); }
-	HC_INLINE Vec4D ARAA() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 3); }
-	HC_INLINE Vec4D AGRR() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 0); }
-	HC_INLINE Vec4D AGRG() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 1); }
-	HC_INLINE Vec4D AGRB() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 2); }
-	HC_INLINE Vec4D AGRA() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 3); }
-	HC_INLINE Vec4D AGGR() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 0); }
-	HC_INLINE Vec4D AGGG() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 1); }
-	HC_INLINE Vec4D AGGB() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 2); }
-	HC_INLINE Vec4D AGGA() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 3); }
-	HC_INLINE Vec4D AGBR() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 0); }
-	HC_INLINE Vec4D AGBG() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 1); }
-	HC_INLINE Vec4D AGBB() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 2); }
-	HC_INLINE Vec4D AGBA() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 3); }
-	HC_INLINE Vec4D AGAR() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 0); }
-	HC_INLINE Vec4D AGAG() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 1); }
-	HC_INLINE Vec4D AGAB() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 2); }
-	HC_INLINE Vec4D AGAA() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 3); }
-	HC_INLINE Vec4D ABRR() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 0); }
-	HC_INLINE Vec4D ABRG() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 1); }
-	HC_INLINE Vec4D ABRB() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 2); }
-	HC_INLINE Vec4D ABRA() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 3); }
-	HC_INLINE Vec4D ABGR() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 0); }
-	HC_INLINE Vec4D ABGG() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 1); }
-	HC_INLINE Vec4D ABGB() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 2); }
-	HC_INLINE Vec4D ABGA() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 3); }
-	HC_INLINE Vec4D ABBR() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 0); }
-	HC_INLINE Vec4D ABBG() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 1); }
-	HC_INLINE Vec4D ABBB() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 2); }
-	HC_INLINE Vec4D ABBA() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 3); }
-	HC_INLINE Vec4D ABAR() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 0); }
-	HC_INLINE Vec4D ABAG() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 1); }
-	HC_INLINE Vec4D ABAB() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 2); }
-	HC_INLINE Vec4D ABAA() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 3); }
-	HC_INLINE Vec4D AARR() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 0); }
-	HC_INLINE Vec4D AARG() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 1); }
-	HC_INLINE Vec4D AARB() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 2); }
-	HC_INLINE Vec4D AARA() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 3); }
-	HC_INLINE Vec4D AAGR() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 0); }
-	HC_INLINE Vec4D AAGG() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 1); }
-	HC_INLINE Vec4D AAGB() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 2); }
-	HC_INLINE Vec4D AAGA() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 3); }
-	HC_INLINE Vec4D AABR() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 0); }
-	HC_INLINE Vec4D AABG() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 1); }
-	HC_INLINE Vec4D AABB() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 2); }
-	HC_INLINE Vec4D AABA() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 3); }
-	HC_INLINE Vec4D AAAR() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 0); }
-	HC_INLINE Vec4D AAAG() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 1); }
-	HC_INLINE Vec4D AAAB() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 2); }
-	HC_INLINE Vec4D AAAA() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 3); }
+	HC_INLINE HC_VECTORCALL Vec4D() { m_dVec = _mm256_setzero_pd(); }
+	HC_INLINE explicit HC_VECTORCALL Vec4D(const double* _pValues) { m_dVec = _mm256_set_pd(_pValues[3], _pValues[2], _pValues[1], _pValues[0]); }
+	HC_INLINE explicit HC_VECTORCALL Vec4D(double _dX, double _dY, double _dZ, double _dA) { m_dVec = _mm256_set_pd(_dA, _dZ, _dY, _dX); }
+	HC_INLINE explicit HC_VECTORCALL Vec4D(float _fX, float _fY, float _fZ, float _fA) { m_dVec = _mm256_set_pd(static_cast<double>(_fA), static_cast<double>(_fZ), static_cast<double>(_fY), static_cast<double>(_fX)); }
+	HC_INLINE explicit HC_VECTORCALL Vec4D(int _iX, int _iY, int _iZ, int _iA) { m_dVec = _mm256_set_pd(static_cast<double>(_iA), static_cast<double>(_iZ), static_cast<double>(_iY), static_cast<double>(_iX)); }
+	HC_INLINE explicit HC_VECTORCALL Vec4D(__m256d _vData) { m_dVec = _vData; }
+	HC_INLINE double HC_VECTORCALL operator[](int _iNdx) const { assert(_iNdx < 4); return m_dVec.m256d_f64[_iNdx]; }
+	HC_INLINE double& HC_VECTORCALL operator[](int _iNdx) { assert(_iNdx < 4); return m_dVec.m256d_f64[_iNdx]; }
+	HC_INLINE double HC_VECTORCALL X() const { return _mm256_cvtsd_f64(m_dVec); }
+	HC_INLINE double HC_VECTORCALL Y() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE double HC_VECTORCALL Z() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(2, 2, 2, 2))); }
+	HC_INLINE double HC_VECTORCALL W() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(3, 3, 3, 3))); }
+	HC_INLINE double HC_VECTORCALL R() const { return _mm256_cvtsd_f64(m_dVec); }
+	HC_INLINE double HC_VECTORCALL G() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE double HC_VECTORCALL B() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(2, 2, 2, 2))); }
+	HC_INLINE double HC_VECTORCALL A() const { return _mm256_cvtsd_f64(_mm256_shuffle_pd(m_dVec, m_dVec, _MM_SHUFFLE(3, 3, 3, 3))); }
+	HC_INLINE void HC_VECTORCALL SetX(double _dX) { m_dVec = _mm256_set_pd(W(), Z(), Y(), _dX); }
+	HC_INLINE void HC_VECTORCALL SetY(double _dY) { m_dVec = _mm256_set_pd(W(), Z(), _dY, X()); }
+	HC_INLINE void HC_VECTORCALL SetZ(double _dZ) { m_dVec = _mm256_set_pd(W(), _dZ, Y(), X()); }
+	HC_INLINE void HC_VECTORCALL SetW(double _dW) { m_dVec = _mm256_set_pd(_dW, Z(), Y(), X()); }
+	HC_INLINE void HC_VECTORCALL SetR(double _dR) { m_dVec = _mm256_set_pd(W(), Z(), Y(), _dR); }
+	HC_INLINE void HC_VECTORCALL SetG(double _dG) { m_dVec = _mm256_set_pd(W(), Z(), _dG, X()); }
+	HC_INLINE void HC_VECTORCALL SetB(double _dB) { m_dVec = _mm256_set_pd(W(), _dB, Y(), X()); }
+	HC_INLINE void HC_VECTORCALL SetA(double _dA) { m_dVec = _mm256_set_pd(_dA, Z(), Y(), X()); }
+	HC_INLINE Vec2D HC_VECTORCALL XX() const { return HC_SHUFFLE2D(*this, 0, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL YY() const { return HC_SHUFFLE2D(*this, 1, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL ZZ() const { return HC_SHUFFLE2D(*this, 2, 2); }
+	HC_INLINE Vec2D HC_VECTORCALL WW() const { return HC_SHUFFLE2D(*this, 3, 3); }
+	HC_INLINE Vec2D HC_VECTORCALL XY() const { return HC_SHUFFLE2D(*this, 0, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL XZ() const { return HC_SHUFFLE2D(*this, 0, 2); }
+	HC_INLINE Vec2D HC_VECTORCALL XW() const { return HC_SHUFFLE2D(*this, 0, 3); }
+	HC_INLINE Vec2D HC_VECTORCALL YX() const { return HC_SHUFFLE2D(*this, 1, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL YZ() const { return HC_SHUFFLE2D(*this, 1, 2); }
+	HC_INLINE Vec2D HC_VECTORCALL YW() const { return HC_SHUFFLE2D(*this, 1, 3); }
+	HC_INLINE Vec2D HC_VECTORCALL ZX() const { return HC_SHUFFLE2D(*this, 2, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL ZY() const { return HC_SHUFFLE2D(*this, 2, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL ZW() const { return HC_SHUFFLE2D(*this, 2, 3); }
+	HC_INLINE Vec2D HC_VECTORCALL WX() const { return HC_SHUFFLE2D(*this, 3, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL WY() const { return HC_SHUFFLE2D(*this, 3, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL WZ() const { return HC_SHUFFLE2D(*this, 3, 2); }
+	HC_INLINE Vec2D HC_VECTORCALL RR() const { return HC_SHUFFLE2D(*this, 0, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL GG() const { return HC_SHUFFLE2D(*this, 1, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL BB() const { return HC_SHUFFLE2D(*this, 2, 2); }
+	HC_INLINE Vec2D HC_VECTORCALL AA() const { return HC_SHUFFLE2D(*this, 3, 3); }
+	HC_INLINE Vec2D HC_VECTORCALL RG() const { return HC_SHUFFLE2D(*this, 0, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL RB() const { return HC_SHUFFLE2D(*this, 0, 2); }
+	HC_INLINE Vec2D HC_VECTORCALL RA() const { return HC_SHUFFLE2D(*this, 0, 3); }
+	HC_INLINE Vec2D HC_VECTORCALL GR() const { return HC_SHUFFLE2D(*this, 1, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL GB() const { return HC_SHUFFLE2D(*this, 1, 2); }
+	HC_INLINE Vec2D HC_VECTORCALL GA() const { return HC_SHUFFLE2D(*this, 1, 3); }
+	HC_INLINE Vec2D HC_VECTORCALL BR() const { return HC_SHUFFLE2D(*this, 2, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL BG() const { return HC_SHUFFLE2D(*this, 2, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL BA() const { return HC_SHUFFLE2D(*this, 2, 3); }
+	HC_INLINE Vec2D HC_VECTORCALL AR() const { return HC_SHUFFLE2D(*this, 3, 0); }
+	HC_INLINE Vec2D HC_VECTORCALL AG() const { return HC_SHUFFLE2D(*this, 3, 1); }
+	HC_INLINE Vec2D HC_VECTORCALL AB() const { return HC_SHUFFLE2D(*this, 3, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL XXX() const { return HC_SHUFFLE3D(*this, 0, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL XXY() const { return HC_SHUFFLE3D(*this, 0, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL XXZ() const { return HC_SHUFFLE3D(*this, 0, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL XXW() const { return HC_SHUFFLE3D(*this, 0, 0, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL XYX() const { return HC_SHUFFLE3D(*this, 0, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL XYY() const { return HC_SHUFFLE3D(*this, 0, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL XYZ() const { return HC_SHUFFLE3D(*this, 0, 1, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL XYW() const { return HC_SHUFFLE3D(*this, 0, 1, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL XZX() const { return HC_SHUFFLE3D(*this, 0, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL XZY() const { return HC_SHUFFLE3D(*this, 0, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL XZZ() const { return HC_SHUFFLE3D(*this, 0, 2, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL XZW() const { return HC_SHUFFLE3D(*this, 0, 2, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL XWX() const { return HC_SHUFFLE3D(*this, 0, 3, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL XWY() const { return HC_SHUFFLE3D(*this, 0, 3, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL XWZ() const { return HC_SHUFFLE3D(*this, 0, 3, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL XWW() const { return HC_SHUFFLE3D(*this, 0, 3, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL YXX() const { return HC_SHUFFLE3D(*this, 1, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL YXY() const { return HC_SHUFFLE3D(*this, 1, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL YXZ() const { return HC_SHUFFLE3D(*this, 1, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL YXW() const { return HC_SHUFFLE3D(*this, 1, 0, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL YYX() const { return HC_SHUFFLE3D(*this, 1, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL YYY() const { return HC_SHUFFLE3D(*this, 1, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL YYZ() const { return HC_SHUFFLE3D(*this, 1, 1, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL YYW() const { return HC_SHUFFLE3D(*this, 1, 1, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL YZX() const { return HC_SHUFFLE3D(*this, 1, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL YZY() const { return HC_SHUFFLE3D(*this, 1, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL YZZ() const { return HC_SHUFFLE3D(*this, 1, 2, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL YZW() const { return HC_SHUFFLE3D(*this, 1, 2, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL YWX() const { return HC_SHUFFLE3D(*this, 1, 3, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL YWY() const { return HC_SHUFFLE3D(*this, 1, 3, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL YWZ() const { return HC_SHUFFLE3D(*this, 1, 3, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL YWW() const { return HC_SHUFFLE3D(*this, 1, 3, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL ZXX() const { return HC_SHUFFLE3D(*this, 2, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL ZXY() const { return HC_SHUFFLE3D(*this, 2, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL ZXZ() const { return HC_SHUFFLE3D(*this, 2, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL ZXW() const { return HC_SHUFFLE3D(*this, 2, 0, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL ZYX() const { return HC_SHUFFLE3D(*this, 2, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL ZYY() const { return HC_SHUFFLE3D(*this, 2, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL ZYZ() const { return HC_SHUFFLE3D(*this, 2, 1, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL ZYW() const { return HC_SHUFFLE3D(*this, 2, 1, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL ZZX() const { return HC_SHUFFLE3D(*this, 2, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL ZZY() const { return HC_SHUFFLE3D(*this, 2, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL ZZZ() const { return HC_SHUFFLE3D(*this, 2, 2, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL ZZW() const { return HC_SHUFFLE3D(*this, 2, 2, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL ZWX() const { return HC_SHUFFLE3D(*this, 2, 3, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL ZWY() const { return HC_SHUFFLE3D(*this, 2, 3, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL ZWZ() const { return HC_SHUFFLE3D(*this, 2, 3, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL ZWW() const { return HC_SHUFFLE3D(*this, 2, 3, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL WXX() const { return HC_SHUFFLE3D(*this, 3, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL WXY() const { return HC_SHUFFLE3D(*this, 3, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL WXZ() const { return HC_SHUFFLE3D(*this, 3, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL WXW() const { return HC_SHUFFLE3D(*this, 3, 0, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL WYX() const { return HC_SHUFFLE3D(*this, 3, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL WYY() const { return HC_SHUFFLE3D(*this, 3, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL WYZ() const { return HC_SHUFFLE3D(*this, 3, 1, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL WYW() const { return HC_SHUFFLE3D(*this, 3, 1, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL WZX() const { return HC_SHUFFLE3D(*this, 3, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL WZY() const { return HC_SHUFFLE3D(*this, 3, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL WZZ() const { return HC_SHUFFLE3D(*this, 3, 2, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL WZW() const { return HC_SHUFFLE3D(*this, 3, 2, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL WWX() const { return HC_SHUFFLE3D(*this, 3, 3, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL WWY() const { return HC_SHUFFLE3D(*this, 3, 3, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL WWZ() const { return HC_SHUFFLE3D(*this, 3, 3, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL WWW() const { return HC_SHUFFLE3D(*this, 3, 3, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL RRR() const { return HC_SHUFFLE3D(*this, 0, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL RRG() const { return HC_SHUFFLE3D(*this, 0, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL RRB() const { return HC_SHUFFLE3D(*this, 0, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL RRA() const { return HC_SHUFFLE3D(*this, 0, 0, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL RGR() const { return HC_SHUFFLE3D(*this, 0, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL RGG() const { return HC_SHUFFLE3D(*this, 0, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL RGA() const { return HC_SHUFFLE3D(*this, 0, 1, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL RGB() const { return HC_SHUFFLE3D(*this, 0, 1, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL RBR() const { return HC_SHUFFLE3D(*this, 0, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL RBG() const { return HC_SHUFFLE3D(*this, 0, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL RBB() const { return HC_SHUFFLE3D(*this, 0, 2, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL RBA() const { return HC_SHUFFLE3D(*this, 0, 2, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL RAR() const { return HC_SHUFFLE3D(*this, 0, 3, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL RAG() const { return HC_SHUFFLE3D(*this, 0, 3, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL RAB() const { return HC_SHUFFLE3D(*this, 0, 3, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL RAA() const { return HC_SHUFFLE3D(*this, 0, 3, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL GRR() const { return HC_SHUFFLE3D(*this, 1, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL GRG() const { return HC_SHUFFLE3D(*this, 1, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL GRB() const { return HC_SHUFFLE3D(*this, 1, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL GRA() const { return HC_SHUFFLE3D(*this, 1, 0, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL GGR() const { return HC_SHUFFLE3D(*this, 1, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL GGG() const { return HC_SHUFFLE3D(*this, 1, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL GGB() const { return HC_SHUFFLE3D(*this, 1, 1, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL GGA() const { return HC_SHUFFLE3D(*this, 1, 1, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL GBR() const { return HC_SHUFFLE3D(*this, 1, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL GBG() const { return HC_SHUFFLE3D(*this, 1, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL GBB() const { return HC_SHUFFLE3D(*this, 1, 2, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL GBA() const { return HC_SHUFFLE3D(*this, 1, 2, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL GAR() const { return HC_SHUFFLE3D(*this, 1, 3, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL GAG() const { return HC_SHUFFLE3D(*this, 1, 3, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL GAB() const { return HC_SHUFFLE3D(*this, 1, 3, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL GAA() const { return HC_SHUFFLE3D(*this, 1, 3, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL BRR() const { return HC_SHUFFLE3D(*this, 2, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL BRG() const { return HC_SHUFFLE3D(*this, 2, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL BRB() const { return HC_SHUFFLE3D(*this, 2, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL BRA() const { return HC_SHUFFLE3D(*this, 2, 0, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL BGR() const { return HC_SHUFFLE3D(*this, 2, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL BGG() const { return HC_SHUFFLE3D(*this, 2, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL BGB() const { return HC_SHUFFLE3D(*this, 2, 1, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL BGA() const { return HC_SHUFFLE3D(*this, 2, 1, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL BBR() const { return HC_SHUFFLE3D(*this, 2, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL BBG() const { return HC_SHUFFLE3D(*this, 2, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL BBB() const { return HC_SHUFFLE3D(*this, 2, 2, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL BBA() const { return HC_SHUFFLE3D(*this, 2, 2, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL BAR() const { return HC_SHUFFLE3D(*this, 2, 3, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL BAG() const { return HC_SHUFFLE3D(*this, 2, 3, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL BAB() const { return HC_SHUFFLE3D(*this, 2, 3, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL BAA() const { return HC_SHUFFLE3D(*this, 2, 3, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL ARR() const { return HC_SHUFFLE3D(*this, 3, 0, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL ARG() const { return HC_SHUFFLE3D(*this, 3, 0, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL ARB() const { return HC_SHUFFLE3D(*this, 3, 0, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL ARA() const { return HC_SHUFFLE3D(*this, 3, 0, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL AGR() const { return HC_SHUFFLE3D(*this, 3, 1, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL AGG() const { return HC_SHUFFLE3D(*this, 3, 1, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL AGB() const { return HC_SHUFFLE3D(*this, 3, 1, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL AGA() const { return HC_SHUFFLE3D(*this, 3, 1, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL ABR() const { return HC_SHUFFLE3D(*this, 3, 2, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL ABG() const { return HC_SHUFFLE3D(*this, 3, 2, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL ABB() const { return HC_SHUFFLE3D(*this, 3, 2, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL ABA() const { return HC_SHUFFLE3D(*this, 3, 2, 3); }
+	HC_INLINE Vec3D HC_VECTORCALL AAR() const { return HC_SHUFFLE3D(*this, 3, 3, 0); }
+	HC_INLINE Vec3D HC_VECTORCALL AAG() const { return HC_SHUFFLE3D(*this, 3, 3, 1); }
+	HC_INLINE Vec3D HC_VECTORCALL AAB() const { return HC_SHUFFLE3D(*this, 3, 3, 2); }
+	HC_INLINE Vec3D HC_VECTORCALL AAA() const { return HC_SHUFFLE3D(*this, 3, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XXXX() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XXXY() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XXXZ() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XXXW() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XXYX() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XXYY() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XXYZ() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XXYW() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XXZX() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XXZY() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XXZZ() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XXZW() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XXWX() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XXWY() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XXWZ() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XXWW() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XYXX() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XYXY() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XYXZ() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XYXW() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XYYX() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XYYY() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XYYZ() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XYYW() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XYZX() const { return HC_SHUFFLE4D(*this, 0, 1, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XYZY() const { return HC_SHUFFLE4D(*this, 0, 1, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XYZZ() const { return HC_SHUFFLE4D(*this, 0, 1, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XYWX() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XYWY() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XYWZ() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XYWW() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XZXX() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XZXY() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XZXZ() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XZXW() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XZYX() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XZYY() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XZYZ() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XZYW() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XZZX() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XZZY() const { return HC_SHUFFLE4D(*this, 0, 2, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XZZZ() const { return HC_SHUFFLE4D(*this, 0, 2, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XZZW() const { return HC_SHUFFLE4D(*this, 0, 2, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XZWX() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XZWY() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XZWZ() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XZWW() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XWXX() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XWXY() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XWXZ() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XWXW() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XWYX() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XWYY() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XWYZ() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XWYW() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XWZX() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XWZY() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XWZZ() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XWZW() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL XWWX() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL XWWY() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL XWWZ() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL XWWW() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YXXX() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YXXY() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YXXZ() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YXXW() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YXYX() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YXYY() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YXYZ() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YXYW() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YXZX() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YXZY() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YXZZ() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YXZW() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YXWX() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YXWY() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YXWZ() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YXWW() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YYXX() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YYXY() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YYXZ() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YYXW() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YYYX() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YYYY() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YYYZ() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YYYW() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YYZX() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YYZY() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YYZZ() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YYZW() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YYWX() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YYWY() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YYWZ() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YYWW() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YZXX() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YZXY() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YZXZ() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YZXW() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YZYX() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YZYY() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YZYZ() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YZYW() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YZZX() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YZZY() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YZZZ() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YZZW() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YZWX() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YZWY() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YZWZ() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YZWW() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YWXX() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YWXY() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YWXZ() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YWXW() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YWYX() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YWYY() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YWYZ() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YWYW() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YWZX() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YWZY() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YWZZ() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YWZW() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL YWWX() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL YWWY() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL YWWZ() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL YWWW() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXXX() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXXY() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXXZ() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXXW() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXYX() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXYY() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXYZ() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXYW() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXZX() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXZY() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXZZ() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXZW() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXWX() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXWY() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXWZ() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZXWW() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYXX() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYXY() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYXZ() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYXW() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYYX() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYYY() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYYZ() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYYW() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYZX() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYZY() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYZZ() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYZW() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYWX() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYWY() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYWZ() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZYWW() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZXX() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZXY() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZXZ() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZXW() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZYX() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZYY() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZYZ() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZYW() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZZX() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZZY() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZZZ() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZZW() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZWX() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZWY() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZWZ() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZZWW() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWXX() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWXY() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWXZ() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWXW() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWYX() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWYY() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWYZ() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWYW() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWZX() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWZY() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWZZ() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWZW() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWWX() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWWY() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWWZ() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ZWWW() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WXXX() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WXXY() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WXXZ() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WXXW() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WXYX() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WXYY() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WXYZ() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WXYW() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WXZX() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WXZY() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WXZZ() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WXZW() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WXWX() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WXWY() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WXWZ() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WXWW() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WYXX() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WYXY() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WYXZ() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WYXW() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WYYX() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WYYY() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WYYZ() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WYYW() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WYZX() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WYZY() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WYZZ() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WYZW() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WYWX() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WYWY() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WYWZ() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WYWW() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WZXX() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WZXY() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WZXZ() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WZXW() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WZYX() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WZYY() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WZYZ() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WZYW() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WZZX() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WZZY() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WZZZ() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WZZW() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WZWX() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WZWY() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WZWZ() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WZWW() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WWXX() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WWXY() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WWXZ() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WWXW() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WWYX() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WWYY() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WWYZ() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WWYW() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WWZX() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WWZY() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WWZZ() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WWZW() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL WWWX() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL WWWY() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL WWWZ() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL WWWW() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RRRR() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RRRG() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RRRB() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RRRA() const { return HC_SHUFFLE4D(*this, 0, 0, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RRGR() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RRGG() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RRGB() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RRGA() const { return HC_SHUFFLE4D(*this, 0, 0, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RRBR() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RRBG() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RRBB() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RRBA() const { return HC_SHUFFLE4D(*this, 0, 0, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RRAR() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RRAG() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RRAB() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RRAA() const { return HC_SHUFFLE4D(*this, 0, 0, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RGRR() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RGRG() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RGRB() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RGRA() const { return HC_SHUFFLE4D(*this, 0, 1, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RGGR() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RGGG() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RGGB() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RGGA() const { return HC_SHUFFLE4D(*this, 0, 1, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RGBR() const { return HC_SHUFFLE4D(*this, 0, 1, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RGBG() const { return HC_SHUFFLE4D(*this, 0, 1, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RGBB() const { return HC_SHUFFLE4D(*this, 0, 1, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RGAR() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RGAG() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RGAB() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RGAA() const { return HC_SHUFFLE4D(*this, 0, 1, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RBRR() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RBRG() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RBRB() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RBRA() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RBGR() const { return HC_SHUFFLE4D(*this, 0, 2, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RBGG() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RBGB() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RBGA() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RBBR() const { return HC_SHUFFLE4D(*this, 0, 2, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RBBG() const { return HC_SHUFFLE4D(*this, 0, 2, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RBBB() const { return HC_SHUFFLE4D(*this, 0, 2, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RBBA() const { return HC_SHUFFLE4D(*this, 0, 2, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RBAR() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RBAG() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RBAB() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RBAA() const { return HC_SHUFFLE4D(*this, 0, 2, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RARR() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RARG() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RARB() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RARA() const { return HC_SHUFFLE4D(*this, 0, 3, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RAGR() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RAGG() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RAGB() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RAGA() const { return HC_SHUFFLE4D(*this, 0, 3, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RABR() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RABG() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RABB() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RABA() const { return HC_SHUFFLE4D(*this, 0, 3, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL RAAR() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL RAAG() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL RAAB() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL RAAA() const { return HC_SHUFFLE4D(*this, 0, 3, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GRRR() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GRRG() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GRRB() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GRRA() const { return HC_SHUFFLE4D(*this, 1, 0, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GRGR() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GRGG() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GRGB() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GRGA() const { return HC_SHUFFLE4D(*this, 1, 0, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GRBR() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GRBG() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GRBB() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GRBA() const { return HC_SHUFFLE4D(*this, 1, 0, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GRAR() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GRAG() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GRAB() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GRAA() const { return HC_SHUFFLE4D(*this, 1, 0, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GGRR() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GGRG() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GGRB() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GGRA() const { return HC_SHUFFLE4D(*this, 1, 1, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GGGR() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GGGG() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GGGB() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GGGA() const { return HC_SHUFFLE4D(*this, 1, 1, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GGBR() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GGBG() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GGBB() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GGBA() const { return HC_SHUFFLE4D(*this, 1, 1, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GGAR() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GGAG() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GGAB() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GGAA() const { return HC_SHUFFLE4D(*this, 1, 1, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GBRR() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GBRG() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GBRB() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GBRA() const { return HC_SHUFFLE4D(*this, 1, 2, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GBGR() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GBGG() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GBGB() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GBGA() const { return HC_SHUFFLE4D(*this, 1, 2, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GBBR() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GBBG() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GBBB() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GBBA() const { return HC_SHUFFLE4D(*this, 1, 2, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GBAR() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GBAG() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GBAB() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GBAA() const { return HC_SHUFFLE4D(*this, 1, 2, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GARR() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GARG() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GARB() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GARA() const { return HC_SHUFFLE4D(*this, 1, 3, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GAGR() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GAGG() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GAGB() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GAGA() const { return HC_SHUFFLE4D(*this, 1, 3, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GABR() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GABG() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GABB() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GABA() const { return HC_SHUFFLE4D(*this, 1, 3, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL GAAR() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL GAAG() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL GAAB() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL GAAA() const { return HC_SHUFFLE4D(*this, 1, 3, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BRRR() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BRRG() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BRRB() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BRRA() const { return HC_SHUFFLE4D(*this, 2, 0, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BRGR() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BRGG() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BRGB() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BRGA() const { return HC_SHUFFLE4D(*this, 2, 0, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BRBR() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BRBG() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BRBB() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BRBA() const { return HC_SHUFFLE4D(*this, 2, 0, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BRAR() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BRAG() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BRAB() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BRAA() const { return HC_SHUFFLE4D(*this, 2, 0, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BGRR() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BGRG() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BGRB() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BGRA() const { return HC_SHUFFLE4D(*this, 2, 1, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BGGR() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BGGG() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BGGB() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BGGA() const { return HC_SHUFFLE4D(*this, 2, 1, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BGBR() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BGBG() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BGBB() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BGBA() const { return HC_SHUFFLE4D(*this, 2, 1, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BGAR() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BGAG() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BGAB() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BGAA() const { return HC_SHUFFLE4D(*this, 2, 1, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BBRR() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BBRG() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BBRB() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BBRA() const { return HC_SHUFFLE4D(*this, 2, 2, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BBGR() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BBGG() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BBGB() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BBGA() const { return HC_SHUFFLE4D(*this, 2, 2, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BBBR() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BBBG() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BBBB() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BBBA() const { return HC_SHUFFLE4D(*this, 2, 2, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BBAR() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BBAG() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BBAB() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BBAA() const { return HC_SHUFFLE4D(*this, 2, 2, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BARR() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BARG() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BARB() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BARA() const { return HC_SHUFFLE4D(*this, 2, 3, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BAGR() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BAGG() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BAGB() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BAGA() const { return HC_SHUFFLE4D(*this, 2, 3, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BABR() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BABG() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BABB() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BABA() const { return HC_SHUFFLE4D(*this, 2, 3, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL BAAR() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL BAAG() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL BAAB() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL BAAA() const { return HC_SHUFFLE4D(*this, 2, 3, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ARRR() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ARRG() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ARRB() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ARRA() const { return HC_SHUFFLE4D(*this, 3, 0, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ARGR() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ARGG() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ARGB() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ARGA() const { return HC_SHUFFLE4D(*this, 3, 0, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ARBR() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ARBG() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ARBB() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ARBA() const { return HC_SHUFFLE4D(*this, 3, 0, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ARAR() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ARAG() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ARAB() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ARAA() const { return HC_SHUFFLE4D(*this, 3, 0, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL AGRR() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL AGRG() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL AGRB() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL AGRA() const { return HC_SHUFFLE4D(*this, 3, 1, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL AGGR() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL AGGG() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL AGGB() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL AGGA() const { return HC_SHUFFLE4D(*this, 3, 1, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL AGBR() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL AGBG() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL AGBB() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL AGBA() const { return HC_SHUFFLE4D(*this, 3, 1, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL AGAR() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL AGAG() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL AGAB() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL AGAA() const { return HC_SHUFFLE4D(*this, 3, 1, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ABRR() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ABRG() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ABRB() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ABRA() const { return HC_SHUFFLE4D(*this, 3, 2, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ABGR() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ABGG() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ABGB() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ABGA() const { return HC_SHUFFLE4D(*this, 3, 2, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ABBR() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ABBG() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ABBB() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ABBA() const { return HC_SHUFFLE4D(*this, 3, 2, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL ABAR() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL ABAG() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL ABAB() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL ABAA() const { return HC_SHUFFLE4D(*this, 3, 2, 3, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL AARR() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL AARG() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL AARB() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL AARA() const { return HC_SHUFFLE4D(*this, 3, 3, 0, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL AAGR() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL AAGG() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL AAGB() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL AAGA() const { return HC_SHUFFLE4D(*this, 3, 3, 1, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL AABR() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL AABG() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL AABB() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL AABA() const { return HC_SHUFFLE4D(*this, 3, 3, 2, 3); }
+	HC_INLINE Vec4D HC_VECTORCALL AAAR() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 0); }
+	HC_INLINE Vec4D HC_VECTORCALL AAAG() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 1); }
+	HC_INLINE Vec4D HC_VECTORCALL AAAB() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 2); }
+	HC_INLINE Vec4D HC_VECTORCALL AAAA() const { return HC_SHUFFLE4D(*this, 3, 3, 3, 3); }
 };
 
 struct Vec2I {
 	__m128i m_iVec;
 
-	HC_INLINE Vec2I() { m_iVec = _mm_setzero_si128(); }
-	HC_INLINE explicit Vec2I(const int* _pValues) { m_iVec = _mm_set_epi32(_pValues[1], _pValues[1], _pValues[1], _pValues[0]); }
-	HC_INLINE explicit Vec2I(int _iX, int _iY) { m_iVec = _mm_set_epi32(_iY, _iY, _iY, _iX); }
-	HC_INLINE explicit Vec2I(__m128i _vData) { m_iVec = _vData; }
-	HC_INLINE int operator[](int _iNdx) const { assert(_iNdx < 2); return m_iVec.m128i_i32[_iNdx]; }
-	HC_INLINE int& operator[](int _iNdx) { assert(_iNdx < 2); return m_iVec.m128i_i32[_iNdx]; }
-	HC_INLINE int X() const { return _mm_cvtsi128_si32(m_iVec); }
-	HC_INLINE int Y() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE int R() const { return _mm_cvtsi128_si32(m_iVec); }
-	HC_INLINE int G() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE void SetX(int _iX) { m_iVec = _mm_set_epi32(Y(), Y(), Y(), _iX); }
-	HC_INLINE void SetY(int _iY) { m_iVec = _mm_set_epi32(_iY, _iY, _iY, X()); }
-	HC_INLINE void SetR(int _iR) { m_iVec = _mm_set_epi32(Y(), Y(), Y(), _iR); }
-	HC_INLINE void SetG(int _iG) { m_iVec = _mm_set_epi32(_iG, _iG, _iG, X()); }
-	HC_INLINE Vec2I XX() const { return HC_SHUFFLE2I(*this, 0, 0); }
-	HC_INLINE Vec2I YY() const { return HC_SHUFFLE2I(*this, 1, 1); }
-	HC_INLINE Vec2I YX() const { return HC_SHUFFLE2I(*this, 1, 0); }
-	HC_INLINE Vec2I RR() const { return HC_SHUFFLE2I(*this, 0, 0); }
-	HC_INLINE Vec2I GG() const { return HC_SHUFFLE2I(*this, 1, 1); }
-	HC_INLINE Vec2I GR() const { return HC_SHUFFLE2I(*this, 1, 0); }
+	HC_INLINE HC_VECTORCALL Vec2I() { m_iVec = _mm_setzero_si128(); }
+	HC_INLINE explicit HC_VECTORCALL Vec2I(const int* _pValues) { m_iVec = _mm_set_epi32(_pValues[1], _pValues[1], _pValues[1], _pValues[0]); }
+	HC_INLINE explicit HC_VECTORCALL Vec2I(int _iX, int _iY) { m_iVec = _mm_set_epi32(_iY, _iY, _iY, _iX); }
+	HC_INLINE explicit HC_VECTORCALL Vec2I(__m128i _vData) { m_iVec = _vData; }
+	HC_INLINE int HC_VECTORCALL operator[](int _iNdx) const { assert(_iNdx < 2); return m_iVec.m128i_i32[_iNdx]; }
+	HC_INLINE int& HC_VECTORCALL operator[](int _iNdx) { assert(_iNdx < 2); return m_iVec.m128i_i32[_iNdx]; }
+	HC_INLINE int HC_VECTORCALL X() const { return _mm_cvtsi128_si32(m_iVec); }
+	HC_INLINE int HC_VECTORCALL Y() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE int HC_VECTORCALL R() const { return _mm_cvtsi128_si32(m_iVec); }
+	HC_INLINE int HC_VECTORCALL G() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE void HC_VECTORCALL SetX(int _iX) { m_iVec = _mm_set_epi32(Y(), Y(), Y(), _iX); }
+	HC_INLINE void HC_VECTORCALL SetY(int _iY) { m_iVec = _mm_set_epi32(_iY, _iY, _iY, X()); }
+	HC_INLINE void HC_VECTORCALL SetR(int _iR) { m_iVec = _mm_set_epi32(Y(), Y(), Y(), _iR); }
+	HC_INLINE void HC_VECTORCALL SetG(int _iG) { m_iVec = _mm_set_epi32(_iG, _iG, _iG, X()); }
+	HC_INLINE Vec2I HC_VECTORCALL XX() const { return HC_SHUFFLE2I(*this, 0, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL YY() const { return HC_SHUFFLE2I(*this, 1, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL YX() const { return HC_SHUFFLE2I(*this, 1, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL RR() const { return HC_SHUFFLE2I(*this, 0, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL GG() const { return HC_SHUFFLE2I(*this, 1, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL GR() const { return HC_SHUFFLE2I(*this, 1, 0); }
 };
 
 struct Vec3I {
 	__m128i m_iVec;
 
-	HC_INLINE Vec3I() { m_iVec = _mm_setzero_si128(); }
-	HC_INLINE explicit Vec3I(const int* _pValues) { m_iVec = _mm_set_epi32(_pValues[2], _pValues[2], _pValues[1], _pValues[0]); }
-	HC_INLINE explicit Vec3I(int _iX, int _iY, int _iZ) { m_iVec = _mm_set_epi32(_iZ, _iZ, _iY, _iX); }
-	HC_INLINE explicit Vec3I(__m128i _vData) { m_iVec = _vData; }
-	HC_INLINE int operator[](int _iNdx) const { assert(_iNdx < 3); return m_iVec.m128i_i32[_iNdx]; }
-	HC_INLINE int& operator[](int _iNdx) { assert(_iNdx < 3); return m_iVec.m128i_i32[_iNdx]; }
-	HC_INLINE int X() const { return _mm_cvtsi128_si32(m_iVec); }
-	HC_INLINE int Y() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE int Z() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(2, 2, 2, 2))); }
-	HC_INLINE int R() const { return _mm_cvtsi128_si32(m_iVec); }
-	HC_INLINE int G() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE int B() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(2, 2, 2, 2))); }
-	HC_INLINE void SetX(int _iX) { m_iVec = _mm_set_epi32(Z(), Z(), Y(), _iX); }
-	HC_INLINE void SetY(int _iY) { m_iVec = _mm_set_epi32(Z(), Z(), _iY, X()); }
-	HC_INLINE void SetZ(int _iZ) { m_iVec = _mm_set_epi32(_iZ, _iZ, Y(), X()); }
-	HC_INLINE void SetR(int _iR) { m_iVec = _mm_set_epi32(Z(), Z(), Y(), _iR); }
-	HC_INLINE void SetG(int _iG) { m_iVec = _mm_set_epi32(Z(), Z(), _iG, X()); }
-	HC_INLINE void SetB(int _iB) { m_iVec = _mm_set_epi32(_iB, _iB, Y(), X()); }
-	HC_INLINE Vec2I XX() const { return HC_SHUFFLE2I(*this, 0, 0); }
-	HC_INLINE Vec2I YY() const { return HC_SHUFFLE2I(*this, 1, 1); }
-	HC_INLINE Vec2I ZZ() const { return HC_SHUFFLE2I(*this, 2, 2); }
-	HC_INLINE Vec2I XY() const { return HC_SHUFFLE2I(*this, 0, 1); }
-	HC_INLINE Vec2I XZ() const { return HC_SHUFFLE2I(*this, 0, 2); }
-	HC_INLINE Vec2I YX() const { return HC_SHUFFLE2I(*this, 1, 0); }
-	HC_INLINE Vec2I YZ() const { return HC_SHUFFLE2I(*this, 1, 2); }
-	HC_INLINE Vec2I ZX() const { return HC_SHUFFLE2I(*this, 2, 0); }
-	HC_INLINE Vec2I ZY() const { return HC_SHUFFLE2I(*this, 2, 1); }
-	HC_INLINE Vec2I RR() const { return HC_SHUFFLE2I(*this, 0, 0); }
-	HC_INLINE Vec2I GG() const { return HC_SHUFFLE2I(*this, 1, 1); }
-	HC_INLINE Vec2I BB() const { return HC_SHUFFLE2I(*this, 2, 2); }
-	HC_INLINE Vec2I RG() const { return HC_SHUFFLE2I(*this, 0, 1); }
-	HC_INLINE Vec2I RB() const { return HC_SHUFFLE2I(*this, 0, 2); }
-	HC_INLINE Vec2I GR() const { return HC_SHUFFLE2I(*this, 1, 0); }
-	HC_INLINE Vec2I GB() const { return HC_SHUFFLE2I(*this, 1, 2); }
-	HC_INLINE Vec2I BR() const { return HC_SHUFFLE2I(*this, 2, 0); }
-	HC_INLINE Vec2I BG() const { return HC_SHUFFLE2I(*this, 2, 1); }
-	HC_INLINE Vec3I XXX() const { return HC_SHUFFLE3I(*this, 0, 0, 0); }
-	HC_INLINE Vec3I XXY() const { return HC_SHUFFLE3I(*this, 0, 0, 1); }
-	HC_INLINE Vec3I XXZ() const { return HC_SHUFFLE3I(*this, 0, 0, 2); }
-	HC_INLINE Vec3I XYX() const { return HC_SHUFFLE3I(*this, 0, 1, 0); }
-	HC_INLINE Vec3I XYY() const { return HC_SHUFFLE3I(*this, 0, 1, 1); }
-	HC_INLINE Vec3I XZX() const { return HC_SHUFFLE3I(*this, 0, 2, 0); }
-	HC_INLINE Vec3I XZY() const { return HC_SHUFFLE3I(*this, 0, 2, 1); }
-	HC_INLINE Vec3I XZZ() const { return HC_SHUFFLE3I(*this, 0, 2, 2); }
-	HC_INLINE Vec3I YXX() const { return HC_SHUFFLE3I(*this, 1, 0, 0); }
-	HC_INLINE Vec3I YXY() const { return HC_SHUFFLE3I(*this, 1, 0, 1); }
-	HC_INLINE Vec3I YXZ() const { return HC_SHUFFLE3I(*this, 1, 0, 2); }
-	HC_INLINE Vec3I YYX() const { return HC_SHUFFLE3I(*this, 1, 1, 0); }
-	HC_INLINE Vec3I YYY() const { return HC_SHUFFLE3I(*this, 1, 1, 1); }
-	HC_INLINE Vec3I YYZ() const { return HC_SHUFFLE3I(*this, 1, 1, 2); }
-	HC_INLINE Vec3I YZX() const { return HC_SHUFFLE3I(*this, 1, 2, 0); }
-	HC_INLINE Vec3I YZY() const { return HC_SHUFFLE3I(*this, 1, 2, 1); }
-	HC_INLINE Vec3I YZZ() const { return HC_SHUFFLE3I(*this, 1, 2, 2); }
-	HC_INLINE Vec3I ZXX() const { return HC_SHUFFLE3I(*this, 2, 0, 0); }
-	HC_INLINE Vec3I ZXY() const { return HC_SHUFFLE3I(*this, 2, 0, 1); }
-	HC_INLINE Vec3I ZXZ() const { return HC_SHUFFLE3I(*this, 2, 0, 2); }
-	HC_INLINE Vec3I ZYX() const { return HC_SHUFFLE3I(*this, 2, 1, 0); }
-	HC_INLINE Vec3I ZYY() const { return HC_SHUFFLE3I(*this, 2, 1, 1); }
-	HC_INLINE Vec3I ZYZ() const { return HC_SHUFFLE3I(*this, 2, 1, 2); }
-	HC_INLINE Vec3I ZZX() const { return HC_SHUFFLE3I(*this, 2, 2, 0); }
-	HC_INLINE Vec3I ZZY() const { return HC_SHUFFLE3I(*this, 2, 2, 1); }
-	HC_INLINE Vec3I ZZZ() const { return HC_SHUFFLE3I(*this, 2, 2, 2); }
-	HC_INLINE Vec3I RRR() const { return HC_SHUFFLE3I(*this, 0, 0, 0); }
-	HC_INLINE Vec3I RRG() const { return HC_SHUFFLE3I(*this, 0, 0, 1); }
-	HC_INLINE Vec3I RRB() const { return HC_SHUFFLE3I(*this, 0, 0, 2); }
-	HC_INLINE Vec3I RGR() const { return HC_SHUFFLE3I(*this, 0, 1, 0); }
-	HC_INLINE Vec3I RGG() const { return HC_SHUFFLE3I(*this, 0, 1, 1); }
-	HC_INLINE Vec3I RBR() const { return HC_SHUFFLE3I(*this, 0, 2, 0); }
-	HC_INLINE Vec3I RBG() const { return HC_SHUFFLE3I(*this, 0, 2, 1); }
-	HC_INLINE Vec3I RBB() const { return HC_SHUFFLE3I(*this, 0, 2, 2); }
-	HC_INLINE Vec3I GRR() const { return HC_SHUFFLE3I(*this, 1, 0, 0); }
-	HC_INLINE Vec3I GRG() const { return HC_SHUFFLE3I(*this, 1, 0, 1); }
-	HC_INLINE Vec3I GRB() const { return HC_SHUFFLE3I(*this, 1, 0, 2); }
-	HC_INLINE Vec3I GGR() const { return HC_SHUFFLE3I(*this, 1, 1, 0); }
-	HC_INLINE Vec3I GGG() const { return HC_SHUFFLE3I(*this, 1, 1, 1); }
-	HC_INLINE Vec3I GGB() const { return HC_SHUFFLE3I(*this, 1, 1, 2); }
-	HC_INLINE Vec3I GBR() const { return HC_SHUFFLE3I(*this, 1, 2, 0); }
-	HC_INLINE Vec3I GBG() const { return HC_SHUFFLE3I(*this, 1, 2, 1); }
-	HC_INLINE Vec3I GBB() const { return HC_SHUFFLE3I(*this, 1, 2, 2); }
-	HC_INLINE Vec3I BRR() const { return HC_SHUFFLE3I(*this, 2, 0, 0); }
-	HC_INLINE Vec3I BRG() const { return HC_SHUFFLE3I(*this, 2, 0, 1); }
-	HC_INLINE Vec3I BRB() const { return HC_SHUFFLE3I(*this, 2, 0, 2); }
-	HC_INLINE Vec3I BGR() const { return HC_SHUFFLE3I(*this, 2, 1, 0); }
-	HC_INLINE Vec3I BGG() const { return HC_SHUFFLE3I(*this, 2, 1, 1); }
-	HC_INLINE Vec3I BGB() const { return HC_SHUFFLE3I(*this, 2, 1, 2); }
-	HC_INLINE Vec3I BBR() const { return HC_SHUFFLE3I(*this, 2, 2, 0); }
-	HC_INLINE Vec3I BBG() const { return HC_SHUFFLE3I(*this, 2, 2, 1); }
-	HC_INLINE Vec3I BBB() const { return HC_SHUFFLE3I(*this, 2, 2, 2); }
+	HC_INLINE HC_VECTORCALL Vec3I() { m_iVec = _mm_setzero_si128(); }
+	HC_INLINE explicit HC_VECTORCALL Vec3I(const int* _pValues) { m_iVec = _mm_set_epi32(_pValues[2], _pValues[2], _pValues[1], _pValues[0]); }
+	HC_INLINE explicit HC_VECTORCALL Vec3I(int _iX, int _iY, int _iZ) { m_iVec = _mm_set_epi32(_iZ, _iZ, _iY, _iX); }
+	HC_INLINE explicit HC_VECTORCALL Vec3I(__m128i _vData) { m_iVec = _vData; }
+	HC_INLINE int HC_VECTORCALL operator[](int _iNdx) const { assert(_iNdx < 3); return m_iVec.m128i_i32[_iNdx]; }
+	HC_INLINE int& HC_VECTORCALL operator[](int _iNdx) { assert(_iNdx < 3); return m_iVec.m128i_i32[_iNdx]; }
+	HC_INLINE int HC_VECTORCALL X() const { return _mm_cvtsi128_si32(m_iVec); }
+	HC_INLINE int HC_VECTORCALL Y() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE int HC_VECTORCALL Z() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(2, 2, 2, 2))); }
+	HC_INLINE int HC_VECTORCALL R() const { return _mm_cvtsi128_si32(m_iVec); }
+	HC_INLINE int HC_VECTORCALL G() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE int HC_VECTORCALL B() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(2, 2, 2, 2))); }
+	HC_INLINE void HC_VECTORCALL SetX(int _iX) { m_iVec = _mm_set_epi32(Z(), Z(), Y(), _iX); }
+	HC_INLINE void HC_VECTORCALL SetY(int _iY) { m_iVec = _mm_set_epi32(Z(), Z(), _iY, X()); }
+	HC_INLINE void HC_VECTORCALL SetZ(int _iZ) { m_iVec = _mm_set_epi32(_iZ, _iZ, Y(), X()); }
+	HC_INLINE void HC_VECTORCALL SetR(int _iR) { m_iVec = _mm_set_epi32(Z(), Z(), Y(), _iR); }
+	HC_INLINE void HC_VECTORCALL SetG(int _iG) { m_iVec = _mm_set_epi32(Z(), Z(), _iG, X()); }
+	HC_INLINE void HC_VECTORCALL SetB(int _iB) { m_iVec = _mm_set_epi32(_iB, _iB, Y(), X()); }
+	HC_INLINE Vec2I HC_VECTORCALL XX() const { return HC_SHUFFLE2I(*this, 0, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL YY() const { return HC_SHUFFLE2I(*this, 1, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL ZZ() const { return HC_SHUFFLE2I(*this, 2, 2); }
+	HC_INLINE Vec2I HC_VECTORCALL XY() const { return HC_SHUFFLE2I(*this, 0, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL XZ() const { return HC_SHUFFLE2I(*this, 0, 2); }
+	HC_INLINE Vec2I HC_VECTORCALL YX() const { return HC_SHUFFLE2I(*this, 1, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL YZ() const { return HC_SHUFFLE2I(*this, 1, 2); }
+	HC_INLINE Vec2I HC_VECTORCALL ZX() const { return HC_SHUFFLE2I(*this, 2, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL ZY() const { return HC_SHUFFLE2I(*this, 2, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL RR() const { return HC_SHUFFLE2I(*this, 0, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL GG() const { return HC_SHUFFLE2I(*this, 1, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL BB() const { return HC_SHUFFLE2I(*this, 2, 2); }
+	HC_INLINE Vec2I HC_VECTORCALL RG() const { return HC_SHUFFLE2I(*this, 0, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL RB() const { return HC_SHUFFLE2I(*this, 0, 2); }
+	HC_INLINE Vec2I HC_VECTORCALL GR() const { return HC_SHUFFLE2I(*this, 1, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL GB() const { return HC_SHUFFLE2I(*this, 1, 2); }
+	HC_INLINE Vec2I HC_VECTORCALL BR() const { return HC_SHUFFLE2I(*this, 2, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL BG() const { return HC_SHUFFLE2I(*this, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL XXX() const { return HC_SHUFFLE3I(*this, 0, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL XXY() const { return HC_SHUFFLE3I(*this, 0, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL XXZ() const { return HC_SHUFFLE3I(*this, 0, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL XYX() const { return HC_SHUFFLE3I(*this, 0, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL XYY() const { return HC_SHUFFLE3I(*this, 0, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL XZX() const { return HC_SHUFFLE3I(*this, 0, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL XZY() const { return HC_SHUFFLE3I(*this, 0, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL XZZ() const { return HC_SHUFFLE3I(*this, 0, 2, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL YXX() const { return HC_SHUFFLE3I(*this, 1, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL YXY() const { return HC_SHUFFLE3I(*this, 1, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL YXZ() const { return HC_SHUFFLE3I(*this, 1, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL YYX() const { return HC_SHUFFLE3I(*this, 1, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL YYY() const { return HC_SHUFFLE3I(*this, 1, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL YYZ() const { return HC_SHUFFLE3I(*this, 1, 1, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL YZX() const { return HC_SHUFFLE3I(*this, 1, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL YZY() const { return HC_SHUFFLE3I(*this, 1, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL YZZ() const { return HC_SHUFFLE3I(*this, 1, 2, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL ZXX() const { return HC_SHUFFLE3I(*this, 2, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL ZXY() const { return HC_SHUFFLE3I(*this, 2, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL ZXZ() const { return HC_SHUFFLE3I(*this, 2, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL ZYX() const { return HC_SHUFFLE3I(*this, 2, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL ZYY() const { return HC_SHUFFLE3I(*this, 2, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL ZYZ() const { return HC_SHUFFLE3I(*this, 2, 1, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL ZZX() const { return HC_SHUFFLE3I(*this, 2, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL ZZY() const { return HC_SHUFFLE3I(*this, 2, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL ZZZ() const { return HC_SHUFFLE3I(*this, 2, 2, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL RRR() const { return HC_SHUFFLE3I(*this, 0, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL RRG() const { return HC_SHUFFLE3I(*this, 0, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL RRB() const { return HC_SHUFFLE3I(*this, 0, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL RGR() const { return HC_SHUFFLE3I(*this, 0, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL RGG() const { return HC_SHUFFLE3I(*this, 0, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL RBR() const { return HC_SHUFFLE3I(*this, 0, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL RBG() const { return HC_SHUFFLE3I(*this, 0, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL RBB() const { return HC_SHUFFLE3I(*this, 0, 2, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL GRR() const { return HC_SHUFFLE3I(*this, 1, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL GRG() const { return HC_SHUFFLE3I(*this, 1, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL GRB() const { return HC_SHUFFLE3I(*this, 1, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL GGR() const { return HC_SHUFFLE3I(*this, 1, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL GGG() const { return HC_SHUFFLE3I(*this, 1, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL GGB() const { return HC_SHUFFLE3I(*this, 1, 1, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL GBR() const { return HC_SHUFFLE3I(*this, 1, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL GBG() const { return HC_SHUFFLE3I(*this, 1, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL GBB() const { return HC_SHUFFLE3I(*this, 1, 2, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL BRR() const { return HC_SHUFFLE3I(*this, 2, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL BRG() const { return HC_SHUFFLE3I(*this, 2, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL BRB() const { return HC_SHUFFLE3I(*this, 2, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL BGR() const { return HC_SHUFFLE3I(*this, 2, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL BGG() const { return HC_SHUFFLE3I(*this, 2, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL BGB() const { return HC_SHUFFLE3I(*this, 2, 1, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL BBR() const { return HC_SHUFFLE3I(*this, 2, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL BBG() const { return HC_SHUFFLE3I(*this, 2, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL BBB() const { return HC_SHUFFLE3I(*this, 2, 2, 2); }
 };
 
 struct Vec4I {
 	__m128i m_iVec;
 
-	HC_INLINE Vec4I() { m_iVec = _mm_setzero_si128(); }
-	HC_INLINE explicit Vec4I(const int* _pValues) { m_iVec = _mm_set_epi32(_pValues[3], _pValues[2], _pValues[1], _pValues[0]); }
-	HC_INLINE explicit Vec4I(int _iX, int _iY, int _iZ, int _iW) { m_iVec = _mm_set_epi32(_iW, _iZ, _iY, _iX); }
-	HC_INLINE explicit Vec4I(__m128i _vData) { m_iVec = _vData; }
-	HC_INLINE int operator[](int _iNdx) const { assert(_iNdx < 3); return m_iVec.m128i_i32[_iNdx]; }
-	HC_INLINE int& operator[](int _iNdx) { assert(_iNdx < 3); return m_iVec.m128i_i32[_iNdx]; }
-	HC_INLINE int X() const { return _mm_cvtsi128_si32(m_iVec); }
-	HC_INLINE int Y() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE int Z() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(2, 2, 2, 2))); }
-	HC_INLINE int W() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(3, 3, 3, 3))); }
-	HC_INLINE int R() const { return _mm_cvtsi128_si32(m_iVec); }
-	HC_INLINE int G() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(1, 1, 1, 1))); }
-	HC_INLINE int B() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(2, 2, 2, 2))); }
-	HC_INLINE int A() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(3, 3, 3, 3))); }
-	HC_INLINE void SetX(int _iX) { m_iVec = _mm_set_epi32(W(), Z(), Y(), _iX); }
-	HC_INLINE void SetY(int _iY) { m_iVec = _mm_set_epi32(W(), Z(), _iY, X()); }
-	HC_INLINE void SetZ(int _iZ) { m_iVec = _mm_set_epi32(W(), _iZ, Y(), X()); }
-	HC_INLINE void SetW(int _iW) { m_iVec = _mm_set_epi32(_iW, W(), Y(), X()); }
-	HC_INLINE void SetR(int _iR) { m_iVec = _mm_set_epi32(W(), Z(), Y(), _iR); }
-	HC_INLINE void SetG(int _iG) { m_iVec = _mm_set_epi32(W(), Z(), _iG, X()); }
-	HC_INLINE void SetB(int _iB) { m_iVec = _mm_set_epi32(W(), _iB, Y(), X()); }
-	HC_INLINE void SetA(int _iA) { m_iVec = _mm_set_epi32(_iA, Z(), Y(), X()); }
-	HC_INLINE Vec2I XX() const { return HC_SHUFFLE2I(*this, 0, 0); }
-	HC_INLINE Vec2I YY() const { return HC_SHUFFLE2I(*this, 1, 1); }
-	HC_INLINE Vec2I ZZ() const { return HC_SHUFFLE2I(*this, 2, 2); }
-	HC_INLINE Vec2I WW() const { return HC_SHUFFLE2I(*this, 3, 3); }
-	HC_INLINE Vec2I XY() const { return HC_SHUFFLE2I(*this, 0, 1); }
-	HC_INLINE Vec2I XZ() const { return HC_SHUFFLE2I(*this, 0, 2); }
-	HC_INLINE Vec2I XW() const { return HC_SHUFFLE2I(*this, 0, 3); }
-	HC_INLINE Vec2I YX() const { return HC_SHUFFLE2I(*this, 1, 0); }
-	HC_INLINE Vec2I YZ() const { return HC_SHUFFLE2I(*this, 1, 2); }
-	HC_INLINE Vec2I YW() const { return HC_SHUFFLE2I(*this, 1, 3); }
-	HC_INLINE Vec2I ZX() const { return HC_SHUFFLE2I(*this, 2, 0); }
-	HC_INLINE Vec2I ZY() const { return HC_SHUFFLE2I(*this, 2, 1); }
-	HC_INLINE Vec2I ZW() const { return HC_SHUFFLE2I(*this, 2, 3); }
-	HC_INLINE Vec2I WX() const { return HC_SHUFFLE2I(*this, 3, 0); }
-	HC_INLINE Vec2I WY() const { return HC_SHUFFLE2I(*this, 3, 1); }
-	HC_INLINE Vec2I WZ() const { return HC_SHUFFLE2I(*this, 3, 2); }
-	HC_INLINE Vec2I RR() const { return HC_SHUFFLE2I(*this, 0, 0); }
-	HC_INLINE Vec2I GG() const { return HC_SHUFFLE2I(*this, 1, 1); }
-	HC_INLINE Vec2I BB() const { return HC_SHUFFLE2I(*this, 2, 2); }
-	HC_INLINE Vec2I AA() const { return HC_SHUFFLE2I(*this, 3, 3); }
-	HC_INLINE Vec2I RG() const { return HC_SHUFFLE2I(*this, 0, 1); }
-	HC_INLINE Vec2I RB() const { return HC_SHUFFLE2I(*this, 0, 2); }
-	HC_INLINE Vec2I RA() const { return HC_SHUFFLE2I(*this, 0, 3); }
-	HC_INLINE Vec2I GR() const { return HC_SHUFFLE2I(*this, 1, 0); }
-	HC_INLINE Vec2I GB() const { return HC_SHUFFLE2I(*this, 1, 2); }
-	HC_INLINE Vec2I GA() const { return HC_SHUFFLE2I(*this, 1, 3); }
-	HC_INLINE Vec2I BR() const { return HC_SHUFFLE2I(*this, 2, 0); }
-	HC_INLINE Vec2I BG() const { return HC_SHUFFLE2I(*this, 2, 1); }
-	HC_INLINE Vec2I BA() const { return HC_SHUFFLE2I(*this, 2, 3); }
-	HC_INLINE Vec2I AR() const { return HC_SHUFFLE2I(*this, 3, 0); }
-	HC_INLINE Vec2I AG() const { return HC_SHUFFLE2I(*this, 3, 1); }
-	HC_INLINE Vec2I AB() const { return HC_SHUFFLE2I(*this, 3, 2); }
-	HC_INLINE Vec3I XXX() const { return HC_SHUFFLE3I(*this, 0, 0, 0); }
-	HC_INLINE Vec3I XXY() const { return HC_SHUFFLE3I(*this, 0, 0, 1); }
-	HC_INLINE Vec3I XXZ() const { return HC_SHUFFLE3I(*this, 0, 0, 2); }
-	HC_INLINE Vec3I XXW() const { return HC_SHUFFLE3I(*this, 0, 0, 3); }
-	HC_INLINE Vec3I XYX() const { return HC_SHUFFLE3I(*this, 0, 1, 0); }
-	HC_INLINE Vec3I XYY() const { return HC_SHUFFLE3I(*this, 0, 1, 1); }
-	HC_INLINE Vec3I XYZ() const { return HC_SHUFFLE3I(*this, 0, 1, 2); }
-	HC_INLINE Vec3I XYW() const { return HC_SHUFFLE3I(*this, 0, 1, 3); }
-	HC_INLINE Vec3I XZX() const { return HC_SHUFFLE3I(*this, 0, 2, 0); }
-	HC_INLINE Vec3I XZY() const { return HC_SHUFFLE3I(*this, 0, 2, 1); }
-	HC_INLINE Vec3I XZZ() const { return HC_SHUFFLE3I(*this, 0, 2, 2); }
-	HC_INLINE Vec3I XZW() const { return HC_SHUFFLE3I(*this, 0, 2, 3); }
-	HC_INLINE Vec3I XWX() const { return HC_SHUFFLE3I(*this, 0, 3, 0); }
-	HC_INLINE Vec3I XWY() const { return HC_SHUFFLE3I(*this, 0, 3, 1); }
-	HC_INLINE Vec3I XWZ() const { return HC_SHUFFLE3I(*this, 0, 3, 2); }
-	HC_INLINE Vec3I XWW() const { return HC_SHUFFLE3I(*this, 0, 3, 3); }
-	HC_INLINE Vec3I YXX() const { return HC_SHUFFLE3I(*this, 1, 0, 0); }
-	HC_INLINE Vec3I YXY() const { return HC_SHUFFLE3I(*this, 1, 0, 1); }
-	HC_INLINE Vec3I YXZ() const { return HC_SHUFFLE3I(*this, 1, 0, 2); }
-	HC_INLINE Vec3I YXW() const { return HC_SHUFFLE3I(*this, 1, 0, 3); }
-	HC_INLINE Vec3I YYX() const { return HC_SHUFFLE3I(*this, 1, 1, 0); }
-	HC_INLINE Vec3I YYY() const { return HC_SHUFFLE3I(*this, 1, 1, 1); }
-	HC_INLINE Vec3I YYZ() const { return HC_SHUFFLE3I(*this, 1, 1, 2); }
-	HC_INLINE Vec3I YYW() const { return HC_SHUFFLE3I(*this, 1, 1, 3); }
-	HC_INLINE Vec3I YZX() const { return HC_SHUFFLE3I(*this, 1, 2, 0); }
-	HC_INLINE Vec3I YZY() const { return HC_SHUFFLE3I(*this, 1, 2, 1); }
-	HC_INLINE Vec3I YZZ() const { return HC_SHUFFLE3I(*this, 1, 2, 2); }
-	HC_INLINE Vec3I YZW() const { return HC_SHUFFLE3I(*this, 1, 2, 3); }
-	HC_INLINE Vec3I YWX() const { return HC_SHUFFLE3I(*this, 1, 3, 0); }
-	HC_INLINE Vec3I YWY() const { return HC_SHUFFLE3I(*this, 1, 3, 1); }
-	HC_INLINE Vec3I YWZ() const { return HC_SHUFFLE3I(*this, 1, 3, 2); }
-	HC_INLINE Vec3I YWW() const { return HC_SHUFFLE3I(*this, 1, 3, 3); }
-	HC_INLINE Vec3I ZXX() const { return HC_SHUFFLE3I(*this, 2, 0, 0); }
-	HC_INLINE Vec3I ZXY() const { return HC_SHUFFLE3I(*this, 2, 0, 1); }
-	HC_INLINE Vec3I ZXZ() const { return HC_SHUFFLE3I(*this, 2, 0, 2); }
-	HC_INLINE Vec3I ZXW() const { return HC_SHUFFLE3I(*this, 2, 0, 3); }
-	HC_INLINE Vec3I ZYX() const { return HC_SHUFFLE3I(*this, 2, 1, 0); }
-	HC_INLINE Vec3I ZYY() const { return HC_SHUFFLE3I(*this, 2, 1, 1); }
-	HC_INLINE Vec3I ZYZ() const { return HC_SHUFFLE3I(*this, 2, 1, 2); }
-	HC_INLINE Vec3I ZYW() const { return HC_SHUFFLE3I(*this, 2, 1, 3); }
-	HC_INLINE Vec3I ZZX() const { return HC_SHUFFLE3I(*this, 2, 2, 0); }
-	HC_INLINE Vec3I ZZY() const { return HC_SHUFFLE3I(*this, 2, 2, 1); }
-	HC_INLINE Vec3I ZZZ() const { return HC_SHUFFLE3I(*this, 2, 2, 2); }
-	HC_INLINE Vec3I ZZW() const { return HC_SHUFFLE3I(*this, 2, 2, 3); }
-	HC_INLINE Vec3I ZWX() const { return HC_SHUFFLE3I(*this, 2, 3, 0); }
-	HC_INLINE Vec3I ZWY() const { return HC_SHUFFLE3I(*this, 2, 3, 1); }
-	HC_INLINE Vec3I ZWZ() const { return HC_SHUFFLE3I(*this, 2, 3, 2); }
-	HC_INLINE Vec3I ZWW() const { return HC_SHUFFLE3I(*this, 2, 3, 3); }
-	HC_INLINE Vec3I WXX() const { return HC_SHUFFLE3I(*this, 3, 0, 0); }
-	HC_INLINE Vec3I WXY() const { return HC_SHUFFLE3I(*this, 3, 0, 1); }
-	HC_INLINE Vec3I WXZ() const { return HC_SHUFFLE3I(*this, 3, 0, 2); }
-	HC_INLINE Vec3I WXW() const { return HC_SHUFFLE3I(*this, 3, 0, 3); }
-	HC_INLINE Vec3I WYX() const { return HC_SHUFFLE3I(*this, 3, 1, 0); }
-	HC_INLINE Vec3I WYY() const { return HC_SHUFFLE3I(*this, 3, 1, 1); }
-	HC_INLINE Vec3I WYZ() const { return HC_SHUFFLE3I(*this, 3, 1, 2); }
-	HC_INLINE Vec3I WYW() const { return HC_SHUFFLE3I(*this, 3, 1, 3); }
-	HC_INLINE Vec3I WZX() const { return HC_SHUFFLE3I(*this, 3, 2, 0); }
-	HC_INLINE Vec3I WZY() const { return HC_SHUFFLE3I(*this, 3, 2, 1); }
-	HC_INLINE Vec3I WZZ() const { return HC_SHUFFLE3I(*this, 3, 2, 2); }
-	HC_INLINE Vec3I WZW() const { return HC_SHUFFLE3I(*this, 3, 2, 3); }
-	HC_INLINE Vec3I WWX() const { return HC_SHUFFLE3I(*this, 3, 3, 0); }
-	HC_INLINE Vec3I WWY() const { return HC_SHUFFLE3I(*this, 3, 3, 1); }
-	HC_INLINE Vec3I WWZ() const { return HC_SHUFFLE3I(*this, 3, 3, 2); }
-	HC_INLINE Vec3I WWW() const { return HC_SHUFFLE3I(*this, 3, 3, 3); }
-	HC_INLINE Vec3I RRR() const { return HC_SHUFFLE3I(*this, 0, 0, 0); }
-	HC_INLINE Vec3I RRG() const { return HC_SHUFFLE3I(*this, 0, 0, 1); }
-	HC_INLINE Vec3I RRB() const { return HC_SHUFFLE3I(*this, 0, 0, 2); }
-	HC_INLINE Vec3I RRA() const { return HC_SHUFFLE3I(*this, 0, 0, 3); }
-	HC_INLINE Vec3I RGR() const { return HC_SHUFFLE3I(*this, 0, 1, 0); }
-	HC_INLINE Vec3I RGG() const { return HC_SHUFFLE3I(*this, 0, 1, 1); }
-	HC_INLINE Vec3I RGA() const { return HC_SHUFFLE3I(*this, 0, 1, 2); }
-	HC_INLINE Vec3I RGB() const { return HC_SHUFFLE3I(*this, 0, 1, 3); }
-	HC_INLINE Vec3I RBR() const { return HC_SHUFFLE3I(*this, 0, 2, 0); }
-	HC_INLINE Vec3I RBG() const { return HC_SHUFFLE3I(*this, 0, 2, 1); }
-	HC_INLINE Vec3I RBB() const { return HC_SHUFFLE3I(*this, 0, 2, 2); }
-	HC_INLINE Vec3I RBA() const { return HC_SHUFFLE3I(*this, 0, 2, 3); }
-	HC_INLINE Vec3I RAR() const { return HC_SHUFFLE3I(*this, 0, 3, 0); }
-	HC_INLINE Vec3I RAG() const { return HC_SHUFFLE3I(*this, 0, 3, 1); }
-	HC_INLINE Vec3I RAB() const { return HC_SHUFFLE3I(*this, 0, 3, 2); }
-	HC_INLINE Vec3I RAA() const { return HC_SHUFFLE3I(*this, 0, 3, 3); }
-	HC_INLINE Vec3I GRR() const { return HC_SHUFFLE3I(*this, 1, 0, 0); }
-	HC_INLINE Vec3I GRG() const { return HC_SHUFFLE3I(*this, 1, 0, 1); }
-	HC_INLINE Vec3I GRB() const { return HC_SHUFFLE3I(*this, 1, 0, 2); }
-	HC_INLINE Vec3I GRA() const { return HC_SHUFFLE3I(*this, 1, 0, 3); }
-	HC_INLINE Vec3I GGR() const { return HC_SHUFFLE3I(*this, 1, 1, 0); }
-	HC_INLINE Vec3I GGG() const { return HC_SHUFFLE3I(*this, 1, 1, 1); }
-	HC_INLINE Vec3I GGB() const { return HC_SHUFFLE3I(*this, 1, 1, 2); }
-	HC_INLINE Vec3I GGA() const { return HC_SHUFFLE3I(*this, 1, 1, 3); }
-	HC_INLINE Vec3I GBR() const { return HC_SHUFFLE3I(*this, 1, 2, 0); }
-	HC_INLINE Vec3I GBG() const { return HC_SHUFFLE3I(*this, 1, 2, 1); }
-	HC_INLINE Vec3I GBB() const { return HC_SHUFFLE3I(*this, 1, 2, 2); }
-	HC_INLINE Vec3I GBA() const { return HC_SHUFFLE3I(*this, 1, 2, 3); }
-	HC_INLINE Vec3I GAR() const { return HC_SHUFFLE3I(*this, 1, 3, 0); }
-	HC_INLINE Vec3I GAG() const { return HC_SHUFFLE3I(*this, 1, 3, 1); }
-	HC_INLINE Vec3I GAB() const { return HC_SHUFFLE3I(*this, 1, 3, 2); }
-	HC_INLINE Vec3I GAA() const { return HC_SHUFFLE3I(*this, 1, 3, 3); }
-	HC_INLINE Vec3I BRR() const { return HC_SHUFFLE3I(*this, 2, 0, 0); }
-	HC_INLINE Vec3I BRG() const { return HC_SHUFFLE3I(*this, 2, 0, 1); }
-	HC_INLINE Vec3I BRB() const { return HC_SHUFFLE3I(*this, 2, 0, 2); }
-	HC_INLINE Vec3I BRA() const { return HC_SHUFFLE3I(*this, 2, 0, 3); }
-	HC_INLINE Vec3I BGR() const { return HC_SHUFFLE3I(*this, 2, 1, 0); }
-	HC_INLINE Vec3I BGG() const { return HC_SHUFFLE3I(*this, 2, 1, 1); }
-	HC_INLINE Vec3I BGB() const { return HC_SHUFFLE3I(*this, 2, 1, 2); }
-	HC_INLINE Vec3I BGA() const { return HC_SHUFFLE3I(*this, 2, 1, 3); }
-	HC_INLINE Vec3I BBR() const { return HC_SHUFFLE3I(*this, 2, 2, 0); }
-	HC_INLINE Vec3I BBG() const { return HC_SHUFFLE3I(*this, 2, 2, 1); }
-	HC_INLINE Vec3I BBB() const { return HC_SHUFFLE3I(*this, 2, 2, 2); }
-	HC_INLINE Vec3I BBA() const { return HC_SHUFFLE3I(*this, 2, 2, 3); }
-	HC_INLINE Vec3I BAR() const { return HC_SHUFFLE3I(*this, 2, 3, 0); }
-	HC_INLINE Vec3I BAG() const { return HC_SHUFFLE3I(*this, 2, 3, 1); }
-	HC_INLINE Vec3I BAB() const { return HC_SHUFFLE3I(*this, 2, 3, 2); }
-	HC_INLINE Vec3I BAA() const { return HC_SHUFFLE3I(*this, 2, 3, 3); }
-	HC_INLINE Vec3I ARR() const { return HC_SHUFFLE3I(*this, 3, 0, 0); }
-	HC_INLINE Vec3I ARG() const { return HC_SHUFFLE3I(*this, 3, 0, 1); }
-	HC_INLINE Vec3I ARB() const { return HC_SHUFFLE3I(*this, 3, 0, 2); }
-	HC_INLINE Vec3I ARA() const { return HC_SHUFFLE3I(*this, 3, 0, 3); }
-	HC_INLINE Vec3I AGR() const { return HC_SHUFFLE3I(*this, 3, 1, 0); }
-	HC_INLINE Vec3I AGG() const { return HC_SHUFFLE3I(*this, 3, 1, 1); }
-	HC_INLINE Vec3I AGB() const { return HC_SHUFFLE3I(*this, 3, 1, 2); }
-	HC_INLINE Vec3I AGA() const { return HC_SHUFFLE3I(*this, 3, 1, 3); }
-	HC_INLINE Vec3I ABR() const { return HC_SHUFFLE3I(*this, 3, 2, 0); }
-	HC_INLINE Vec3I ABG() const { return HC_SHUFFLE3I(*this, 3, 2, 1); }
-	HC_INLINE Vec3I ABB() const { return HC_SHUFFLE3I(*this, 3, 2, 2); }
-	HC_INLINE Vec3I ABA() const { return HC_SHUFFLE3I(*this, 3, 2, 3); }
-	HC_INLINE Vec3I AAR() const { return HC_SHUFFLE3I(*this, 3, 3, 0); }
-	HC_INLINE Vec3I AAG() const { return HC_SHUFFLE3I(*this, 3, 3, 1); }
-	HC_INLINE Vec3I AAB() const { return HC_SHUFFLE3I(*this, 3, 3, 2); }
-	HC_INLINE Vec3I AAA() const { return HC_SHUFFLE3I(*this, 3, 3, 3); }
-	HC_INLINE Vec4I XXXX() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 0); }
-	HC_INLINE Vec4I XXXY() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 1); }
-	HC_INLINE Vec4I XXXZ() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 2); }
-	HC_INLINE Vec4I XXXW() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 3); }
-	HC_INLINE Vec4I XXYX() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 0); }
-	HC_INLINE Vec4I XXYY() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 1); }
-	HC_INLINE Vec4I XXYZ() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 2); }
-	HC_INLINE Vec4I XXYW() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 3); }
-	HC_INLINE Vec4I XXZX() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 0); }
-	HC_INLINE Vec4I XXZY() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 1); }
-	HC_INLINE Vec4I XXZZ() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 2); }
-	HC_INLINE Vec4I XXZW() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 3); }
-	HC_INLINE Vec4I XXWX() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 0); }
-	HC_INLINE Vec4I XXWY() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 1); }
-	HC_INLINE Vec4I XXWZ() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 2); }
-	HC_INLINE Vec4I XXWW() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 3); }
-	HC_INLINE Vec4I XYXX() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 0); }
-	HC_INLINE Vec4I XYXY() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 1); }
-	HC_INLINE Vec4I XYXZ() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 2); }
-	HC_INLINE Vec4I XYXW() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 3); }
-	HC_INLINE Vec4I XYYX() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 0); }
-	HC_INLINE Vec4I XYYY() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 1); }
-	HC_INLINE Vec4I XYYZ() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 2); }
-	HC_INLINE Vec4I XYYW() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 3); }
-	HC_INLINE Vec4I XYZX() const { return HC_SHUFFLE4I(*this, 0, 1, 2, 0); }
-	HC_INLINE Vec4I XYZY() const { return HC_SHUFFLE4I(*this, 0, 1, 2, 1); }
-	HC_INLINE Vec4I XYZZ() const { return HC_SHUFFLE4I(*this, 0, 1, 2, 2); }
-	HC_INLINE Vec4I XYWX() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 0); }
-	HC_INLINE Vec4I XYWY() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 1); }
-	HC_INLINE Vec4I XYWZ() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 2); }
-	HC_INLINE Vec4I XYWW() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 3); }
-	HC_INLINE Vec4I XZXX() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 0); }
-	HC_INLINE Vec4I XZXY() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 1); }
-	HC_INLINE Vec4I XZXZ() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 2); }
-	HC_INLINE Vec4I XZXW() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 3); }
-	HC_INLINE Vec4I XZYX() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 0); }
-	HC_INLINE Vec4I XZYY() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 1); }
-	HC_INLINE Vec4I XZYZ() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 2); }
-	HC_INLINE Vec4I XZYW() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 3); }
-	HC_INLINE Vec4I XZZX() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 0); }
-	HC_INLINE Vec4I XZZY() const { return HC_SHUFFLE4I(*this, 0, 2, 2, 1); }
-	HC_INLINE Vec4I XZZZ() const { return HC_SHUFFLE4I(*this, 0, 2, 2, 2); }
-	HC_INLINE Vec4I XZZW() const { return HC_SHUFFLE4I(*this, 0, 2, 2, 3); }
-	HC_INLINE Vec4I XZWX() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 0); }
-	HC_INLINE Vec4I XZWY() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 1); }
-	HC_INLINE Vec4I XZWZ() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 2); }
-	HC_INLINE Vec4I XZWW() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 3); }
-	HC_INLINE Vec4I XWXX() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 0); }
-	HC_INLINE Vec4I XWXY() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 1); }
-	HC_INLINE Vec4I XWXZ() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 2); }
-	HC_INLINE Vec4I XWXW() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 3); }
-	HC_INLINE Vec4I XWYX() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 0); }
-	HC_INLINE Vec4I XWYY() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 1); }
-	HC_INLINE Vec4I XWYZ() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 2); }
-	HC_INLINE Vec4I XWYW() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 3); }
-	HC_INLINE Vec4I XWZX() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 0); }
-	HC_INLINE Vec4I XWZY() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 1); }
-	HC_INLINE Vec4I XWZZ() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 2); }
-	HC_INLINE Vec4I XWZW() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 3); }
-	HC_INLINE Vec4I XWWX() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 0); }
-	HC_INLINE Vec4I XWWY() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 1); }
-	HC_INLINE Vec4I XWWZ() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 2); }
-	HC_INLINE Vec4I XWWW() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 3); }
-	HC_INLINE Vec4I YXXX() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 0); }
-	HC_INLINE Vec4I YXXY() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 1); }
-	HC_INLINE Vec4I YXXZ() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 2); }
-	HC_INLINE Vec4I YXXW() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 3); }
-	HC_INLINE Vec4I YXYX() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 0); }
-	HC_INLINE Vec4I YXYY() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 1); }
-	HC_INLINE Vec4I YXYZ() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 2); }
-	HC_INLINE Vec4I YXYW() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 3); }
-	HC_INLINE Vec4I YXZX() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 0); }
-	HC_INLINE Vec4I YXZY() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 1); }
-	HC_INLINE Vec4I YXZZ() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 2); }
-	HC_INLINE Vec4I YXZW() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 3); }
-	HC_INLINE Vec4I YXWX() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 0); }
-	HC_INLINE Vec4I YXWY() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 1); }
-	HC_INLINE Vec4I YXWZ() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 2); }
-	HC_INLINE Vec4I YXWW() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 3); }
-	HC_INLINE Vec4I YYXX() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 0); }
-	HC_INLINE Vec4I YYXY() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 1); }
-	HC_INLINE Vec4I YYXZ() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 2); }
-	HC_INLINE Vec4I YYXW() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 3); }
-	HC_INLINE Vec4I YYYX() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 0); }
-	HC_INLINE Vec4I YYYY() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 1); }
-	HC_INLINE Vec4I YYYZ() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 2); }
-	HC_INLINE Vec4I YYYW() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 3); }
-	HC_INLINE Vec4I YYZX() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 0); }
-	HC_INLINE Vec4I YYZY() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 1); }
-	HC_INLINE Vec4I YYZZ() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 2); }
-	HC_INLINE Vec4I YYZW() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 3); }
-	HC_INLINE Vec4I YYWX() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 0); }
-	HC_INLINE Vec4I YYWY() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 1); }
-	HC_INLINE Vec4I YYWZ() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 2); }
-	HC_INLINE Vec4I YYWW() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 3); }
-	HC_INLINE Vec4I YZXX() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 0); }
-	HC_INLINE Vec4I YZXY() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 1); }
-	HC_INLINE Vec4I YZXZ() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 2); }
-	HC_INLINE Vec4I YZXW() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 3); }
-	HC_INLINE Vec4I YZYX() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 0); }
-	HC_INLINE Vec4I YZYY() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 1); }
-	HC_INLINE Vec4I YZYZ() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 2); }
-	HC_INLINE Vec4I YZYW() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 3); }
-	HC_INLINE Vec4I YZZX() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 0); }
-	HC_INLINE Vec4I YZZY() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 1); }
-	HC_INLINE Vec4I YZZZ() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 2); }
-	HC_INLINE Vec4I YZZW() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 3); }
-	HC_INLINE Vec4I YZWX() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 0); }
-	HC_INLINE Vec4I YZWY() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 1); }
-	HC_INLINE Vec4I YZWZ() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 2); }
-	HC_INLINE Vec4I YZWW() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 3); }
-	HC_INLINE Vec4I YWXX() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 0); }
-	HC_INLINE Vec4I YWXY() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 1); }
-	HC_INLINE Vec4I YWXZ() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 2); }
-	HC_INLINE Vec4I YWXW() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 3); }
-	HC_INLINE Vec4I YWYX() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 0); }
-	HC_INLINE Vec4I YWYY() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 1); }
-	HC_INLINE Vec4I YWYZ() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 2); }
-	HC_INLINE Vec4I YWYW() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 3); }
-	HC_INLINE Vec4I YWZX() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 0); }
-	HC_INLINE Vec4I YWZY() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 1); }
-	HC_INLINE Vec4I YWZZ() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 2); }
-	HC_INLINE Vec4I YWZW() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 3); }
-	HC_INLINE Vec4I YWWX() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 0); }
-	HC_INLINE Vec4I YWWY() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 1); }
-	HC_INLINE Vec4I YWWZ() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 2); }
-	HC_INLINE Vec4I YWWW() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 3); }
-	HC_INLINE Vec4I ZXXX() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 0); }
-	HC_INLINE Vec4I ZXXY() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 1); }
-	HC_INLINE Vec4I ZXXZ() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 2); }
-	HC_INLINE Vec4I ZXXW() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 3); }
-	HC_INLINE Vec4I ZXYX() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 0); }
-	HC_INLINE Vec4I ZXYY() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 1); }
-	HC_INLINE Vec4I ZXYZ() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 2); }
-	HC_INLINE Vec4I ZXYW() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 3); }
-	HC_INLINE Vec4I ZXZX() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 0); }
-	HC_INLINE Vec4I ZXZY() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 1); }
-	HC_INLINE Vec4I ZXZZ() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 2); }
-	HC_INLINE Vec4I ZXZW() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 3); }
-	HC_INLINE Vec4I ZXWX() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 0); }
-	HC_INLINE Vec4I ZXWY() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 1); }
-	HC_INLINE Vec4I ZXWZ() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 2); }
-	HC_INLINE Vec4I ZXWW() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 3); }
-	HC_INLINE Vec4I ZYXX() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 0); }
-	HC_INLINE Vec4I ZYXY() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 1); }
-	HC_INLINE Vec4I ZYXZ() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 2); }
-	HC_INLINE Vec4I ZYXW() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 3); }
-	HC_INLINE Vec4I ZYYX() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 0); }
-	HC_INLINE Vec4I ZYYY() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 1); }
-	HC_INLINE Vec4I ZYYZ() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 2); }
-	HC_INLINE Vec4I ZYYW() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 3); }
-	HC_INLINE Vec4I ZYZX() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 0); }
-	HC_INLINE Vec4I ZYZY() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 1); }
-	HC_INLINE Vec4I ZYZZ() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 2); }
-	HC_INLINE Vec4I ZYZW() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 3); }
-	HC_INLINE Vec4I ZYWX() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 0); }
-	HC_INLINE Vec4I ZYWY() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 1); }
-	HC_INLINE Vec4I ZYWZ() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 2); }
-	HC_INLINE Vec4I ZYWW() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 3); }
-	HC_INLINE Vec4I ZZXX() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 0); }
-	HC_INLINE Vec4I ZZXY() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 1); }
-	HC_INLINE Vec4I ZZXZ() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 2); }
-	HC_INLINE Vec4I ZZXW() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 3); }
-	HC_INLINE Vec4I ZZYX() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 0); }
-	HC_INLINE Vec4I ZZYY() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 1); }
-	HC_INLINE Vec4I ZZYZ() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 2); }
-	HC_INLINE Vec4I ZZYW() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 3); }
-	HC_INLINE Vec4I ZZZX() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 0); }
-	HC_INLINE Vec4I ZZZY() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 1); }
-	HC_INLINE Vec4I ZZZZ() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 2); }
-	HC_INLINE Vec4I ZZZW() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 3); }
-	HC_INLINE Vec4I ZZWX() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 0); }
-	HC_INLINE Vec4I ZZWY() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 1); }
-	HC_INLINE Vec4I ZZWZ() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 2); }
-	HC_INLINE Vec4I ZZWW() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 3); }
-	HC_INLINE Vec4I ZWXX() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 0); }
-	HC_INLINE Vec4I ZWXY() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 1); }
-	HC_INLINE Vec4I ZWXZ() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 2); }
-	HC_INLINE Vec4I ZWXW() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 3); }
-	HC_INLINE Vec4I ZWYX() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 0); }
-	HC_INLINE Vec4I ZWYY() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 1); }
-	HC_INLINE Vec4I ZWYZ() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 2); }
-	HC_INLINE Vec4I ZWYW() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 3); }
-	HC_INLINE Vec4I ZWZX() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 0); }
-	HC_INLINE Vec4I ZWZY() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 1); }
-	HC_INLINE Vec4I ZWZZ() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 2); }
-	HC_INLINE Vec4I ZWZW() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 3); }
-	HC_INLINE Vec4I ZWWX() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 0); }
-	HC_INLINE Vec4I ZWWY() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 1); }
-	HC_INLINE Vec4I ZWWZ() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 2); }
-	HC_INLINE Vec4I ZWWW() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 3); }
-	HC_INLINE Vec4I WXXX() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 0); }
-	HC_INLINE Vec4I WXXY() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 1); }
-	HC_INLINE Vec4I WXXZ() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 2); }
-	HC_INLINE Vec4I WXXW() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 3); }
-	HC_INLINE Vec4I WXYX() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 0); }
-	HC_INLINE Vec4I WXYY() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 1); }
-	HC_INLINE Vec4I WXYZ() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 2); }
-	HC_INLINE Vec4I WXYW() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 3); }
-	HC_INLINE Vec4I WXZX() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 0); }
-	HC_INLINE Vec4I WXZY() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 1); }
-	HC_INLINE Vec4I WXZZ() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 2); }
-	HC_INLINE Vec4I WXZW() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 3); }
-	HC_INLINE Vec4I WXWX() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 0); }
-	HC_INLINE Vec4I WXWY() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 1); }
-	HC_INLINE Vec4I WXWZ() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 2); }
-	HC_INLINE Vec4I WXWW() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 3); }
-	HC_INLINE Vec4I WYXX() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 0); }
-	HC_INLINE Vec4I WYXY() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 1); }
-	HC_INLINE Vec4I WYXZ() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 2); }
-	HC_INLINE Vec4I WYXW() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 3); }
-	HC_INLINE Vec4I WYYX() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 0); }
-	HC_INLINE Vec4I WYYY() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 1); }
-	HC_INLINE Vec4I WYYZ() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 2); }
-	HC_INLINE Vec4I WYYW() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 3); }
-	HC_INLINE Vec4I WYZX() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 0); }
-	HC_INLINE Vec4I WYZY() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 1); }
-	HC_INLINE Vec4I WYZZ() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 2); }
-	HC_INLINE Vec4I WYZW() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 3); }
-	HC_INLINE Vec4I WYWX() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 0); }
-	HC_INLINE Vec4I WYWY() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 1); }
-	HC_INLINE Vec4I WYWZ() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 2); }
-	HC_INLINE Vec4I WYWW() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 3); }
-	HC_INLINE Vec4I WZXX() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 0); }
-	HC_INLINE Vec4I WZXY() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 1); }
-	HC_INLINE Vec4I WZXZ() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 2); }
-	HC_INLINE Vec4I WZXW() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 3); }
-	HC_INLINE Vec4I WZYX() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 0); }
-	HC_INLINE Vec4I WZYY() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 1); }
-	HC_INLINE Vec4I WZYZ() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 2); }
-	HC_INLINE Vec4I WZYW() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 3); }
-	HC_INLINE Vec4I WZZX() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 0); }
-	HC_INLINE Vec4I WZZY() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 1); }
-	HC_INLINE Vec4I WZZZ() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 2); }
-	HC_INLINE Vec4I WZZW() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 3); }
-	HC_INLINE Vec4I WZWX() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 0); }
-	HC_INLINE Vec4I WZWY() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 1); }
-	HC_INLINE Vec4I WZWZ() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 2); }
-	HC_INLINE Vec4I WZWW() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 3); }
-	HC_INLINE Vec4I WWXX() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 0); }
-	HC_INLINE Vec4I WWXY() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 1); }
-	HC_INLINE Vec4I WWXZ() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 2); }
-	HC_INLINE Vec4I WWXW() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 3); }
-	HC_INLINE Vec4I WWYX() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 0); }
-	HC_INLINE Vec4I WWYY() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 1); }
-	HC_INLINE Vec4I WWYZ() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 2); }
-	HC_INLINE Vec4I WWYW() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 3); }
-	HC_INLINE Vec4I WWZX() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 0); }
-	HC_INLINE Vec4I WWZY() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 1); }
-	HC_INLINE Vec4I WWZZ() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 2); }
-	HC_INLINE Vec4I WWZW() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 3); }
-	HC_INLINE Vec4I WWWX() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 0); }
-	HC_INLINE Vec4I WWWY() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 1); }
-	HC_INLINE Vec4I WWWZ() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 2); }
-	HC_INLINE Vec4I WWWW() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 3); }
-	HC_INLINE Vec4I RRRR() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 0); }
-	HC_INLINE Vec4I RRRG() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 1); }
-	HC_INLINE Vec4I RRRB() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 2); }
-	HC_INLINE Vec4I RRRA() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 3); }
-	HC_INLINE Vec4I RRGR() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 0); }
-	HC_INLINE Vec4I RRGG() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 1); }
-	HC_INLINE Vec4I RRGB() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 2); }
-	HC_INLINE Vec4I RRGA() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 3); }
-	HC_INLINE Vec4I RRBR() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 0); }
-	HC_INLINE Vec4I RRBG() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 1); }
-	HC_INLINE Vec4I RRBB() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 2); }
-	HC_INLINE Vec4I RRBA() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 3); }
-	HC_INLINE Vec4I RRAR() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 0); }
-	HC_INLINE Vec4I RRAG() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 1); }
-	HC_INLINE Vec4I RRAB() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 2); }
-	HC_INLINE Vec4I RRAA() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 3); }
-	HC_INLINE Vec4I RGRR() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 0); }
-	HC_INLINE Vec4I RGRG() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 1); }
-	HC_INLINE Vec4I RGRB() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 2); }
-	HC_INLINE Vec4I RGRA() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 3); }
-	HC_INLINE Vec4I RGGR() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 0); }
-	HC_INLINE Vec4I RGGG() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 1); }
-	HC_INLINE Vec4I RGGB() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 2); }
-	HC_INLINE Vec4I RGGA() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 3); }
-	HC_INLINE Vec4I RGBR() const { return HC_SHUFFLE4I(*this, 0, 1, 2, 0); }
-	HC_INLINE Vec4I RGBG() const { return HC_SHUFFLE4I(*this, 0, 1, 2, 1); }
-	HC_INLINE Vec4I RGBB() const { return HC_SHUFFLE4I(*this, 0, 1, 2, 2); }
-	HC_INLINE Vec4I RGAR() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 0); }
-	HC_INLINE Vec4I RGAG() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 1); }
-	HC_INLINE Vec4I RGAB() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 2); }
-	HC_INLINE Vec4I RGAA() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 3); }
-	HC_INLINE Vec4I RBRR() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 0); }
-	HC_INLINE Vec4I RBRG() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 1); }
-	HC_INLINE Vec4I RBRB() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 2); }
-	HC_INLINE Vec4I RBRA() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 3); }
-	HC_INLINE Vec4I RBGR() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 0); }
-	HC_INLINE Vec4I RBGG() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 1); }
-	HC_INLINE Vec4I RBGB() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 2); }
-	HC_INLINE Vec4I RBGA() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 3); }
-	HC_INLINE Vec4I RBBR() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 0); }
-	HC_INLINE Vec4I RBBG() const { return HC_SHUFFLE4I(*this, 0, 2, 2, 1); }
-	HC_INLINE Vec4I RBBB() const { return HC_SHUFFLE4I(*this, 0, 2, 2, 2); }
-	HC_INLINE Vec4I RBBA() const { return HC_SHUFFLE4I(*this, 0, 2, 2, 3); }
-	HC_INLINE Vec4I RBAR() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 0); }
-	HC_INLINE Vec4I RBAG() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 1); }
-	HC_INLINE Vec4I RBAB() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 2); }
-	HC_INLINE Vec4I RBAA() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 3); }
-	HC_INLINE Vec4I RARR() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 0); }
-	HC_INLINE Vec4I RARG() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 1); }
-	HC_INLINE Vec4I RARB() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 2); }
-	HC_INLINE Vec4I RARA() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 3); }
-	HC_INLINE Vec4I RAGR() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 0); }
-	HC_INLINE Vec4I RAGG() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 1); }
-	HC_INLINE Vec4I RAGB() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 2); }
-	HC_INLINE Vec4I RAGA() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 3); }
-	HC_INLINE Vec4I RABR() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 0); }
-	HC_INLINE Vec4I RABG() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 1); }
-	HC_INLINE Vec4I RABB() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 2); }
-	HC_INLINE Vec4I RABA() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 3); }
-	HC_INLINE Vec4I RAAR() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 0); }
-	HC_INLINE Vec4I RAAG() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 1); }
-	HC_INLINE Vec4I RAAB() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 2); }
-	HC_INLINE Vec4I RAAA() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 3); }
-	HC_INLINE Vec4I GRRR() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 0); }
-	HC_INLINE Vec4I GRRG() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 1); }
-	HC_INLINE Vec4I GRRB() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 2); }
-	HC_INLINE Vec4I GRRA() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 3); }
-	HC_INLINE Vec4I GRGR() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 0); }
-	HC_INLINE Vec4I GRGG() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 1); }
-	HC_INLINE Vec4I GRGB() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 2); }
-	HC_INLINE Vec4I GRGA() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 3); }
-	HC_INLINE Vec4I GRBR() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 0); }
-	HC_INLINE Vec4I GRBG() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 1); }
-	HC_INLINE Vec4I GRBB() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 2); }
-	HC_INLINE Vec4I GRBA() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 3); }
-	HC_INLINE Vec4I GRAR() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 0); }
-	HC_INLINE Vec4I GRAG() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 1); }
-	HC_INLINE Vec4I GRAB() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 2); }
-	HC_INLINE Vec4I GRAA() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 3); }
-	HC_INLINE Vec4I GGRR() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 0); }
-	HC_INLINE Vec4I GGRG() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 1); }
-	HC_INLINE Vec4I GGRB() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 2); }
-	HC_INLINE Vec4I GGRA() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 3); }
-	HC_INLINE Vec4I GGGR() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 0); }
-	HC_INLINE Vec4I GGGG() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 1); }
-	HC_INLINE Vec4I GGGB() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 2); }
-	HC_INLINE Vec4I GGGA() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 3); }
-	HC_INLINE Vec4I GGBR() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 0); }
-	HC_INLINE Vec4I GGBG() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 1); }
-	HC_INLINE Vec4I GGBB() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 2); }
-	HC_INLINE Vec4I GGBA() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 3); }
-	HC_INLINE Vec4I GGAR() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 0); }
-	HC_INLINE Vec4I GGAG() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 1); }
-	HC_INLINE Vec4I GGAB() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 2); }
-	HC_INLINE Vec4I GGAA() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 3); }
-	HC_INLINE Vec4I GBRR() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 0); }
-	HC_INLINE Vec4I GBRG() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 1); }
-	HC_INLINE Vec4I GBRB() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 2); }
-	HC_INLINE Vec4I GBRA() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 3); }
-	HC_INLINE Vec4I GBGR() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 0); }
-	HC_INLINE Vec4I GBGG() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 1); }
-	HC_INLINE Vec4I GBGB() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 2); }
-	HC_INLINE Vec4I GBGA() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 3); }
-	HC_INLINE Vec4I GBBR() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 0); }
-	HC_INLINE Vec4I GBBG() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 1); }
-	HC_INLINE Vec4I GBBB() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 2); }
-	HC_INLINE Vec4I GBBA() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 3); }
-	HC_INLINE Vec4I GBAR() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 0); }
-	HC_INLINE Vec4I GBAG() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 1); }
-	HC_INLINE Vec4I GBAB() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 2); }
-	HC_INLINE Vec4I GBAA() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 3); }
-	HC_INLINE Vec4I GARR() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 0); }
-	HC_INLINE Vec4I GARG() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 1); }
-	HC_INLINE Vec4I GARB() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 2); }
-	HC_INLINE Vec4I GARA() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 3); }
-	HC_INLINE Vec4I GAGR() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 0); }
-	HC_INLINE Vec4I GAGG() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 1); }
-	HC_INLINE Vec4I GAGB() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 2); }
-	HC_INLINE Vec4I GAGA() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 3); }
-	HC_INLINE Vec4I GABR() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 0); }
-	HC_INLINE Vec4I GABG() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 1); }
-	HC_INLINE Vec4I GABB() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 2); }
-	HC_INLINE Vec4I GABA() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 3); }
-	HC_INLINE Vec4I GAAR() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 0); }
-	HC_INLINE Vec4I GAAG() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 1); }
-	HC_INLINE Vec4I GAAB() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 2); }
-	HC_INLINE Vec4I GAAA() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 3); }
-	HC_INLINE Vec4I BRRR() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 0); }
-	HC_INLINE Vec4I BRRG() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 1); }
-	HC_INLINE Vec4I BRRB() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 2); }
-	HC_INLINE Vec4I BRRA() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 3); }
-	HC_INLINE Vec4I BRGR() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 0); }
-	HC_INLINE Vec4I BRGG() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 1); }
-	HC_INLINE Vec4I BRGB() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 2); }
-	HC_INLINE Vec4I BRGA() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 3); }
-	HC_INLINE Vec4I BRBR() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 0); }
-	HC_INLINE Vec4I BRBG() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 1); }
-	HC_INLINE Vec4I BRBB() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 2); }
-	HC_INLINE Vec4I BRBA() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 3); }
-	HC_INLINE Vec4I BRAR() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 0); }
-	HC_INLINE Vec4I BRAG() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 1); }
-	HC_INLINE Vec4I BRAB() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 2); }
-	HC_INLINE Vec4I BRAA() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 3); }
-	HC_INLINE Vec4I BGRR() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 0); }
-	HC_INLINE Vec4I BGRG() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 1); }
-	HC_INLINE Vec4I BGRB() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 2); }
-	HC_INLINE Vec4I BGRA() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 3); }
-	HC_INLINE Vec4I BGGR() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 0); }
-	HC_INLINE Vec4I BGGG() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 1); }
-	HC_INLINE Vec4I BGGB() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 2); }
-	HC_INLINE Vec4I BGGA() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 3); }
-	HC_INLINE Vec4I BGBR() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 0); }
-	HC_INLINE Vec4I BGBG() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 1); }
-	HC_INLINE Vec4I BGBB() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 2); }
-	HC_INLINE Vec4I BGBA() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 3); }
-	HC_INLINE Vec4I BGAR() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 0); }
-	HC_INLINE Vec4I BGAG() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 1); }
-	HC_INLINE Vec4I BGAB() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 2); }
-	HC_INLINE Vec4I BGAA() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 3); }
-	HC_INLINE Vec4I BBRR() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 0); }
-	HC_INLINE Vec4I BBRG() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 1); }
-	HC_INLINE Vec4I BBRB() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 2); }
-	HC_INLINE Vec4I BBRA() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 3); }
-	HC_INLINE Vec4I BBGR() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 0); }
-	HC_INLINE Vec4I BBGG() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 1); }
-	HC_INLINE Vec4I BBGB() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 2); }
-	HC_INLINE Vec4I BBGA() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 3); }
-	HC_INLINE Vec4I BBBR() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 0); }
-	HC_INLINE Vec4I BBBG() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 1); }
-	HC_INLINE Vec4I BBBB() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 2); }
-	HC_INLINE Vec4I BBBA() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 3); }
-	HC_INLINE Vec4I BBAR() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 0); }
-	HC_INLINE Vec4I BBAG() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 1); }
-	HC_INLINE Vec4I BBAB() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 2); }
-	HC_INLINE Vec4I BBAA() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 3); }
-	HC_INLINE Vec4I BARR() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 0); }
-	HC_INLINE Vec4I BARG() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 1); }
-	HC_INLINE Vec4I BARB() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 2); }
-	HC_INLINE Vec4I BARA() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 3); }
-	HC_INLINE Vec4I BAGR() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 0); }
-	HC_INLINE Vec4I BAGG() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 1); }
-	HC_INLINE Vec4I BAGB() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 2); }
-	HC_INLINE Vec4I BAGA() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 3); }
-	HC_INLINE Vec4I BABR() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 0); }
-	HC_INLINE Vec4I BABG() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 1); }
-	HC_INLINE Vec4I BABB() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 2); }
-	HC_INLINE Vec4I BABA() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 3); }
-	HC_INLINE Vec4I BAAR() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 0); }
-	HC_INLINE Vec4I BAAG() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 1); }
-	HC_INLINE Vec4I BAAB() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 2); }
-	HC_INLINE Vec4I BAAA() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 3); }
-	HC_INLINE Vec4I ARRR() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 0); }
-	HC_INLINE Vec4I ARRG() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 1); }
-	HC_INLINE Vec4I ARRB() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 2); }
-	HC_INLINE Vec4I ARRA() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 3); }
-	HC_INLINE Vec4I ARGR() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 0); }
-	HC_INLINE Vec4I ARGG() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 1); }
-	HC_INLINE Vec4I ARGB() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 2); }
-	HC_INLINE Vec4I ARGA() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 3); }
-	HC_INLINE Vec4I ARBR() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 0); }
-	HC_INLINE Vec4I ARBG() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 1); }
-	HC_INLINE Vec4I ARBB() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 2); }
-	HC_INLINE Vec4I ARBA() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 3); }
-	HC_INLINE Vec4I ARAR() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 0); }
-	HC_INLINE Vec4I ARAG() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 1); }
-	HC_INLINE Vec4I ARAB() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 2); }
-	HC_INLINE Vec4I ARAA() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 3); }
-	HC_INLINE Vec4I AGRR() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 0); }
-	HC_INLINE Vec4I AGRG() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 1); }
-	HC_INLINE Vec4I AGRB() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 2); }
-	HC_INLINE Vec4I AGRA() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 3); }
-	HC_INLINE Vec4I AGGR() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 0); }
-	HC_INLINE Vec4I AGGG() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 1); }
-	HC_INLINE Vec4I AGGB() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 2); }
-	HC_INLINE Vec4I AGGA() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 3); }
-	HC_INLINE Vec4I AGBR() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 0); }
-	HC_INLINE Vec4I AGBG() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 1); }
-	HC_INLINE Vec4I AGBB() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 2); }
-	HC_INLINE Vec4I AGBA() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 3); }
-	HC_INLINE Vec4I AGAR() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 0); }
-	HC_INLINE Vec4I AGAG() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 1); }
-	HC_INLINE Vec4I AGAB() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 2); }
-	HC_INLINE Vec4I AGAA() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 3); }
-	HC_INLINE Vec4I ABRR() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 0); }
-	HC_INLINE Vec4I ABRG() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 1); }
-	HC_INLINE Vec4I ABRB() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 2); }
-	HC_INLINE Vec4I ABRA() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 3); }
-	HC_INLINE Vec4I ABGR() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 0); }
-	HC_INLINE Vec4I ABGG() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 1); }
-	HC_INLINE Vec4I ABGB() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 2); }
-	HC_INLINE Vec4I ABGA() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 3); }
-	HC_INLINE Vec4I ABBR() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 0); }
-	HC_INLINE Vec4I ABBG() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 1); }
-	HC_INLINE Vec4I ABBB() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 2); }
-	HC_INLINE Vec4I ABBA() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 3); }
-	HC_INLINE Vec4I ABAR() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 0); }
-	HC_INLINE Vec4I ABAG() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 1); }
-	HC_INLINE Vec4I ABAB() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 2); }
-	HC_INLINE Vec4I ABAA() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 3); }
-	HC_INLINE Vec4I AARR() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 0); }
-	HC_INLINE Vec4I AARG() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 1); }
-	HC_INLINE Vec4I AARB() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 2); }
-	HC_INLINE Vec4I AARA() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 3); }
-	HC_INLINE Vec4I AAGR() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 0); }
-	HC_INLINE Vec4I AAGG() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 1); }
-	HC_INLINE Vec4I AAGB() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 2); }
-	HC_INLINE Vec4I AAGA() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 3); }
-	HC_INLINE Vec4I AABR() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 0); }
-	HC_INLINE Vec4I AABG() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 1); }
-	HC_INLINE Vec4I AABB() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 2); }
-	HC_INLINE Vec4I AABA() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 3); }
-	HC_INLINE Vec4I AAAR() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 0); }
-	HC_INLINE Vec4I AAAG() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 1); }
-	HC_INLINE Vec4I AAAB() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 2); }
-	HC_INLINE Vec4I AAAA() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 3); }
+	HC_INLINE HC_VECTORCALL Vec4I() { m_iVec = _mm_setzero_si128(); }
+	HC_INLINE explicit HC_VECTORCALL Vec4I(const int* _pValues) { m_iVec = _mm_set_epi32(_pValues[3], _pValues[2], _pValues[1], _pValues[0]); }
+	HC_INLINE explicit HC_VECTORCALL Vec4I(int _iX, int _iY, int _iZ, int _iW) { m_iVec = _mm_set_epi32(_iW, _iZ, _iY, _iX); }
+	HC_INLINE explicit HC_VECTORCALL Vec4I(__m128i _vData) { m_iVec = _vData; }
+	HC_INLINE int HC_VECTORCALL operator[](int _iNdx) const { assert(_iNdx < 3); return m_iVec.m128i_i32[_iNdx]; }
+	HC_INLINE int& HC_VECTORCALL operator[](int _iNdx) { assert(_iNdx < 3); return m_iVec.m128i_i32[_iNdx]; }
+	HC_INLINE int HC_VECTORCALL X() const { return _mm_cvtsi128_si32(m_iVec); }
+	HC_INLINE int HC_VECTORCALL Y() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE int HC_VECTORCALL Z() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(2, 2, 2, 2))); }
+	HC_INLINE int HC_VECTORCALL W() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(3, 3, 3, 3))); }
+	HC_INLINE int HC_VECTORCALL R() const { return _mm_cvtsi128_si32(m_iVec); }
+	HC_INLINE int HC_VECTORCALL G() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(1, 1, 1, 1))); }
+	HC_INLINE int HC_VECTORCALL B() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(2, 2, 2, 2))); }
+	HC_INLINE int HC_VECTORCALL A() const { return _mm_cvtsi128_si32(_mm_shuffle_epi32(m_iVec, _MM_SHUFFLE(3, 3, 3, 3))); }
+	HC_INLINE void HC_VECTORCALL SetX(int _iX) { m_iVec = _mm_set_epi32(W(), Z(), Y(), _iX); }
+	HC_INLINE void HC_VECTORCALL SetY(int _iY) { m_iVec = _mm_set_epi32(W(), Z(), _iY, X()); }
+	HC_INLINE void HC_VECTORCALL SetZ(int _iZ) { m_iVec = _mm_set_epi32(W(), _iZ, Y(), X()); }
+	HC_INLINE void HC_VECTORCALL SetW(int _iW) { m_iVec = _mm_set_epi32(_iW, W(), Y(), X()); }
+	HC_INLINE void HC_VECTORCALL SetR(int _iR) { m_iVec = _mm_set_epi32(W(), Z(), Y(), _iR); }
+	HC_INLINE void HC_VECTORCALL SetG(int _iG) { m_iVec = _mm_set_epi32(W(), Z(), _iG, X()); }
+	HC_INLINE void HC_VECTORCALL SetB(int _iB) { m_iVec = _mm_set_epi32(W(), _iB, Y(), X()); }
+	HC_INLINE void HC_VECTORCALL SetA(int _iA) { m_iVec = _mm_set_epi32(_iA, Z(), Y(), X()); }
+	HC_INLINE Vec2I HC_VECTORCALL XX() const { return HC_SHUFFLE2I(*this, 0, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL YY() const { return HC_SHUFFLE2I(*this, 1, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL ZZ() const { return HC_SHUFFLE2I(*this, 2, 2); }
+	HC_INLINE Vec2I HC_VECTORCALL WW() const { return HC_SHUFFLE2I(*this, 3, 3); }
+	HC_INLINE Vec2I HC_VECTORCALL XY() const { return HC_SHUFFLE2I(*this, 0, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL XZ() const { return HC_SHUFFLE2I(*this, 0, 2); }
+	HC_INLINE Vec2I HC_VECTORCALL XW() const { return HC_SHUFFLE2I(*this, 0, 3); }
+	HC_INLINE Vec2I HC_VECTORCALL YX() const { return HC_SHUFFLE2I(*this, 1, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL YZ() const { return HC_SHUFFLE2I(*this, 1, 2); }
+	HC_INLINE Vec2I HC_VECTORCALL YW() const { return HC_SHUFFLE2I(*this, 1, 3); }
+	HC_INLINE Vec2I HC_VECTORCALL ZX() const { return HC_SHUFFLE2I(*this, 2, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL ZY() const { return HC_SHUFFLE2I(*this, 2, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL ZW() const { return HC_SHUFFLE2I(*this, 2, 3); }
+	HC_INLINE Vec2I HC_VECTORCALL WX() const { return HC_SHUFFLE2I(*this, 3, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL WY() const { return HC_SHUFFLE2I(*this, 3, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL WZ() const { return HC_SHUFFLE2I(*this, 3, 2); }
+	HC_INLINE Vec2I HC_VECTORCALL RR() const { return HC_SHUFFLE2I(*this, 0, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL GG() const { return HC_SHUFFLE2I(*this, 1, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL BB() const { return HC_SHUFFLE2I(*this, 2, 2); }
+	HC_INLINE Vec2I HC_VECTORCALL AA() const { return HC_SHUFFLE2I(*this, 3, 3); }
+	HC_INLINE Vec2I HC_VECTORCALL RG() const { return HC_SHUFFLE2I(*this, 0, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL RB() const { return HC_SHUFFLE2I(*this, 0, 2); }
+	HC_INLINE Vec2I HC_VECTORCALL RA() const { return HC_SHUFFLE2I(*this, 0, 3); }
+	HC_INLINE Vec2I HC_VECTORCALL GR() const { return HC_SHUFFLE2I(*this, 1, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL GB() const { return HC_SHUFFLE2I(*this, 1, 2); }
+	HC_INLINE Vec2I HC_VECTORCALL GA() const { return HC_SHUFFLE2I(*this, 1, 3); }
+	HC_INLINE Vec2I HC_VECTORCALL BR() const { return HC_SHUFFLE2I(*this, 2, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL BG() const { return HC_SHUFFLE2I(*this, 2, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL BA() const { return HC_SHUFFLE2I(*this, 2, 3); }
+	HC_INLINE Vec2I HC_VECTORCALL AR() const { return HC_SHUFFLE2I(*this, 3, 0); }
+	HC_INLINE Vec2I HC_VECTORCALL AG() const { return HC_SHUFFLE2I(*this, 3, 1); }
+	HC_INLINE Vec2I HC_VECTORCALL AB() const { return HC_SHUFFLE2I(*this, 3, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL XXX() const { return HC_SHUFFLE3I(*this, 0, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL XXY() const { return HC_SHUFFLE3I(*this, 0, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL XXZ() const { return HC_SHUFFLE3I(*this, 0, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL XXW() const { return HC_SHUFFLE3I(*this, 0, 0, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL XYX() const { return HC_SHUFFLE3I(*this, 0, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL XYY() const { return HC_SHUFFLE3I(*this, 0, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL XYZ() const { return HC_SHUFFLE3I(*this, 0, 1, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL XYW() const { return HC_SHUFFLE3I(*this, 0, 1, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL XZX() const { return HC_SHUFFLE3I(*this, 0, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL XZY() const { return HC_SHUFFLE3I(*this, 0, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL XZZ() const { return HC_SHUFFLE3I(*this, 0, 2, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL XZW() const { return HC_SHUFFLE3I(*this, 0, 2, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL XWX() const { return HC_SHUFFLE3I(*this, 0, 3, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL XWY() const { return HC_SHUFFLE3I(*this, 0, 3, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL XWZ() const { return HC_SHUFFLE3I(*this, 0, 3, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL XWW() const { return HC_SHUFFLE3I(*this, 0, 3, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL YXX() const { return HC_SHUFFLE3I(*this, 1, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL YXY() const { return HC_SHUFFLE3I(*this, 1, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL YXZ() const { return HC_SHUFFLE3I(*this, 1, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL YXW() const { return HC_SHUFFLE3I(*this, 1, 0, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL YYX() const { return HC_SHUFFLE3I(*this, 1, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL YYY() const { return HC_SHUFFLE3I(*this, 1, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL YYZ() const { return HC_SHUFFLE3I(*this, 1, 1, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL YYW() const { return HC_SHUFFLE3I(*this, 1, 1, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL YZX() const { return HC_SHUFFLE3I(*this, 1, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL YZY() const { return HC_SHUFFLE3I(*this, 1, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL YZZ() const { return HC_SHUFFLE3I(*this, 1, 2, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL YZW() const { return HC_SHUFFLE3I(*this, 1, 2, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL YWX() const { return HC_SHUFFLE3I(*this, 1, 3, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL YWY() const { return HC_SHUFFLE3I(*this, 1, 3, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL YWZ() const { return HC_SHUFFLE3I(*this, 1, 3, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL YWW() const { return HC_SHUFFLE3I(*this, 1, 3, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL ZXX() const { return HC_SHUFFLE3I(*this, 2, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL ZXY() const { return HC_SHUFFLE3I(*this, 2, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL ZXZ() const { return HC_SHUFFLE3I(*this, 2, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL ZXW() const { return HC_SHUFFLE3I(*this, 2, 0, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL ZYX() const { return HC_SHUFFLE3I(*this, 2, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL ZYY() const { return HC_SHUFFLE3I(*this, 2, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL ZYZ() const { return HC_SHUFFLE3I(*this, 2, 1, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL ZYW() const { return HC_SHUFFLE3I(*this, 2, 1, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL ZZX() const { return HC_SHUFFLE3I(*this, 2, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL ZZY() const { return HC_SHUFFLE3I(*this, 2, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL ZZZ() const { return HC_SHUFFLE3I(*this, 2, 2, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL ZZW() const { return HC_SHUFFLE3I(*this, 2, 2, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL ZWX() const { return HC_SHUFFLE3I(*this, 2, 3, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL ZWY() const { return HC_SHUFFLE3I(*this, 2, 3, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL ZWZ() const { return HC_SHUFFLE3I(*this, 2, 3, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL ZWW() const { return HC_SHUFFLE3I(*this, 2, 3, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL WXX() const { return HC_SHUFFLE3I(*this, 3, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL WXY() const { return HC_SHUFFLE3I(*this, 3, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL WXZ() const { return HC_SHUFFLE3I(*this, 3, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL WXW() const { return HC_SHUFFLE3I(*this, 3, 0, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL WYX() const { return HC_SHUFFLE3I(*this, 3, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL WYY() const { return HC_SHUFFLE3I(*this, 3, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL WYZ() const { return HC_SHUFFLE3I(*this, 3, 1, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL WYW() const { return HC_SHUFFLE3I(*this, 3, 1, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL WZX() const { return HC_SHUFFLE3I(*this, 3, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL WZY() const { return HC_SHUFFLE3I(*this, 3, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL WZZ() const { return HC_SHUFFLE3I(*this, 3, 2, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL WZW() const { return HC_SHUFFLE3I(*this, 3, 2, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL WWX() const { return HC_SHUFFLE3I(*this, 3, 3, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL WWY() const { return HC_SHUFFLE3I(*this, 3, 3, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL WWZ() const { return HC_SHUFFLE3I(*this, 3, 3, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL WWW() const { return HC_SHUFFLE3I(*this, 3, 3, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL RRR() const { return HC_SHUFFLE3I(*this, 0, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL RRG() const { return HC_SHUFFLE3I(*this, 0, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL RRB() const { return HC_SHUFFLE3I(*this, 0, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL RRA() const { return HC_SHUFFLE3I(*this, 0, 0, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL RGR() const { return HC_SHUFFLE3I(*this, 0, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL RGG() const { return HC_SHUFFLE3I(*this, 0, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL RGA() const { return HC_SHUFFLE3I(*this, 0, 1, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL RGB() const { return HC_SHUFFLE3I(*this, 0, 1, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL RBR() const { return HC_SHUFFLE3I(*this, 0, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL RBG() const { return HC_SHUFFLE3I(*this, 0, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL RBB() const { return HC_SHUFFLE3I(*this, 0, 2, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL RBA() const { return HC_SHUFFLE3I(*this, 0, 2, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL RAR() const { return HC_SHUFFLE3I(*this, 0, 3, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL RAG() const { return HC_SHUFFLE3I(*this, 0, 3, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL RAB() const { return HC_SHUFFLE3I(*this, 0, 3, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL RAA() const { return HC_SHUFFLE3I(*this, 0, 3, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL GRR() const { return HC_SHUFFLE3I(*this, 1, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL GRG() const { return HC_SHUFFLE3I(*this, 1, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL GRB() const { return HC_SHUFFLE3I(*this, 1, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL GRA() const { return HC_SHUFFLE3I(*this, 1, 0, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL GGR() const { return HC_SHUFFLE3I(*this, 1, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL GGG() const { return HC_SHUFFLE3I(*this, 1, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL GGB() const { return HC_SHUFFLE3I(*this, 1, 1, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL GGA() const { return HC_SHUFFLE3I(*this, 1, 1, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL GBR() const { return HC_SHUFFLE3I(*this, 1, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL GBG() const { return HC_SHUFFLE3I(*this, 1, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL GBB() const { return HC_SHUFFLE3I(*this, 1, 2, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL GBA() const { return HC_SHUFFLE3I(*this, 1, 2, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL GAR() const { return HC_SHUFFLE3I(*this, 1, 3, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL GAG() const { return HC_SHUFFLE3I(*this, 1, 3, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL GAB() const { return HC_SHUFFLE3I(*this, 1, 3, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL GAA() const { return HC_SHUFFLE3I(*this, 1, 3, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL BRR() const { return HC_SHUFFLE3I(*this, 2, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL BRG() const { return HC_SHUFFLE3I(*this, 2, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL BRB() const { return HC_SHUFFLE3I(*this, 2, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL BRA() const { return HC_SHUFFLE3I(*this, 2, 0, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL BGR() const { return HC_SHUFFLE3I(*this, 2, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL BGG() const { return HC_SHUFFLE3I(*this, 2, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL BGB() const { return HC_SHUFFLE3I(*this, 2, 1, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL BGA() const { return HC_SHUFFLE3I(*this, 2, 1, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL BBR() const { return HC_SHUFFLE3I(*this, 2, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL BBG() const { return HC_SHUFFLE3I(*this, 2, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL BBB() const { return HC_SHUFFLE3I(*this, 2, 2, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL BBA() const { return HC_SHUFFLE3I(*this, 2, 2, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL BAR() const { return HC_SHUFFLE3I(*this, 2, 3, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL BAG() const { return HC_SHUFFLE3I(*this, 2, 3, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL BAB() const { return HC_SHUFFLE3I(*this, 2, 3, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL BAA() const { return HC_SHUFFLE3I(*this, 2, 3, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL ARR() const { return HC_SHUFFLE3I(*this, 3, 0, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL ARG() const { return HC_SHUFFLE3I(*this, 3, 0, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL ARB() const { return HC_SHUFFLE3I(*this, 3, 0, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL ARA() const { return HC_SHUFFLE3I(*this, 3, 0, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL AGR() const { return HC_SHUFFLE3I(*this, 3, 1, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL AGG() const { return HC_SHUFFLE3I(*this, 3, 1, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL AGB() const { return HC_SHUFFLE3I(*this, 3, 1, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL AGA() const { return HC_SHUFFLE3I(*this, 3, 1, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL ABR() const { return HC_SHUFFLE3I(*this, 3, 2, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL ABG() const { return HC_SHUFFLE3I(*this, 3, 2, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL ABB() const { return HC_SHUFFLE3I(*this, 3, 2, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL ABA() const { return HC_SHUFFLE3I(*this, 3, 2, 3); }
+	HC_INLINE Vec3I HC_VECTORCALL AAR() const { return HC_SHUFFLE3I(*this, 3, 3, 0); }
+	HC_INLINE Vec3I HC_VECTORCALL AAG() const { return HC_SHUFFLE3I(*this, 3, 3, 1); }
+	HC_INLINE Vec3I HC_VECTORCALL AAB() const { return HC_SHUFFLE3I(*this, 3, 3, 2); }
+	HC_INLINE Vec3I HC_VECTORCALL AAA() const { return HC_SHUFFLE3I(*this, 3, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XXXX() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XXXY() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XXXZ() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XXXW() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XXYX() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XXYY() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XXYZ() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XXYW() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XXZX() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XXZY() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XXZZ() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XXZW() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XXWX() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XXWY() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XXWZ() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XXWW() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XYXX() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XYXY() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XYXZ() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XYXW() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XYYX() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XYYY() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XYYZ() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XYYW() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XYZX() const { return HC_SHUFFLE4I(*this, 0, 1, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XYZY() const { return HC_SHUFFLE4I(*this, 0, 1, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XYZZ() const { return HC_SHUFFLE4I(*this, 0, 1, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XYWX() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XYWY() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XYWZ() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XYWW() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XZXX() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XZXY() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XZXZ() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XZXW() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XZYX() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XZYY() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XZYZ() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XZYW() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XZZX() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XZZY() const { return HC_SHUFFLE4I(*this, 0, 2, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XZZZ() const { return HC_SHUFFLE4I(*this, 0, 2, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XZZW() const { return HC_SHUFFLE4I(*this, 0, 2, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XZWX() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XZWY() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XZWZ() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XZWW() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XWXX() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XWXY() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XWXZ() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XWXW() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XWYX() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XWYY() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XWYZ() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XWYW() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XWZX() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XWZY() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XWZZ() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XWZW() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL XWWX() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL XWWY() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL XWWZ() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL XWWW() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YXXX() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YXXY() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YXXZ() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YXXW() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YXYX() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YXYY() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YXYZ() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YXYW() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YXZX() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YXZY() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YXZZ() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YXZW() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YXWX() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YXWY() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YXWZ() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YXWW() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YYXX() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YYXY() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YYXZ() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YYXW() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YYYX() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YYYY() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YYYZ() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YYYW() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YYZX() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YYZY() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YYZZ() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YYZW() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YYWX() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YYWY() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YYWZ() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YYWW() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YZXX() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YZXY() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YZXZ() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YZXW() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YZYX() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YZYY() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YZYZ() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YZYW() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YZZX() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YZZY() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YZZZ() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YZZW() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YZWX() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YZWY() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YZWZ() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YZWW() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YWXX() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YWXY() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YWXZ() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YWXW() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YWYX() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YWYY() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YWYZ() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YWYW() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YWZX() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YWZY() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YWZZ() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YWZW() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL YWWX() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL YWWY() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL YWWZ() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL YWWW() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXXX() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXXY() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXXZ() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXXW() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXYX() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXYY() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXYZ() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXYW() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXZX() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXZY() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXZZ() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXZW() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXWX() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXWY() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXWZ() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZXWW() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYXX() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYXY() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYXZ() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYXW() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYYX() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYYY() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYYZ() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYYW() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYZX() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYZY() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYZZ() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYZW() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYWX() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYWY() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYWZ() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZYWW() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZXX() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZXY() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZXZ() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZXW() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZYX() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZYY() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZYZ() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZYW() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZZX() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZZY() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZZZ() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZZW() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZWX() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZWY() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZWZ() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZZWW() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWXX() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWXY() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWXZ() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWXW() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWYX() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWYY() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWYZ() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWYW() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWZX() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWZY() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWZZ() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWZW() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWWX() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWWY() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWWZ() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ZWWW() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WXXX() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WXXY() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WXXZ() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WXXW() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WXYX() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WXYY() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WXYZ() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WXYW() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WXZX() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WXZY() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WXZZ() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WXZW() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WXWX() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WXWY() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WXWZ() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WXWW() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WYXX() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WYXY() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WYXZ() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WYXW() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WYYX() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WYYY() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WYYZ() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WYYW() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WYZX() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WYZY() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WYZZ() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WYZW() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WYWX() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WYWY() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WYWZ() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WYWW() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WZXX() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WZXY() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WZXZ() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WZXW() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WZYX() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WZYY() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WZYZ() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WZYW() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WZZX() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WZZY() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WZZZ() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WZZW() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WZWX() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WZWY() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WZWZ() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WZWW() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WWXX() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WWXY() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WWXZ() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WWXW() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WWYX() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WWYY() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WWYZ() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WWYW() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WWZX() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WWZY() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WWZZ() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WWZW() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL WWWX() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL WWWY() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL WWWZ() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL WWWW() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RRRR() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RRRG() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RRRB() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RRRA() const { return HC_SHUFFLE4I(*this, 0, 0, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RRGR() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RRGG() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RRGB() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RRGA() const { return HC_SHUFFLE4I(*this, 0, 0, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RRBR() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RRBG() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RRBB() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RRBA() const { return HC_SHUFFLE4I(*this, 0, 0, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RRAR() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RRAG() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RRAB() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RRAA() const { return HC_SHUFFLE4I(*this, 0, 0, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RGRR() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RGRG() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RGRB() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RGRA() const { return HC_SHUFFLE4I(*this, 0, 1, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RGGR() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RGGG() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RGGB() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RGGA() const { return HC_SHUFFLE4I(*this, 0, 1, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RGBR() const { return HC_SHUFFLE4I(*this, 0, 1, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RGBG() const { return HC_SHUFFLE4I(*this, 0, 1, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RGBB() const { return HC_SHUFFLE4I(*this, 0, 1, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RGAR() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RGAG() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RGAB() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RGAA() const { return HC_SHUFFLE4I(*this, 0, 1, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RBRR() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RBRG() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RBRB() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RBRA() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RBGR() const { return HC_SHUFFLE4I(*this, 0, 2, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RBGG() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RBGB() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RBGA() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RBBR() const { return HC_SHUFFLE4I(*this, 0, 2, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RBBG() const { return HC_SHUFFLE4I(*this, 0, 2, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RBBB() const { return HC_SHUFFLE4I(*this, 0, 2, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RBBA() const { return HC_SHUFFLE4I(*this, 0, 2, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RBAR() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RBAG() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RBAB() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RBAA() const { return HC_SHUFFLE4I(*this, 0, 2, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RARR() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RARG() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RARB() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RARA() const { return HC_SHUFFLE4I(*this, 0, 3, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RAGR() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RAGG() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RAGB() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RAGA() const { return HC_SHUFFLE4I(*this, 0, 3, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RABR() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RABG() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RABB() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RABA() const { return HC_SHUFFLE4I(*this, 0, 3, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL RAAR() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL RAAG() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL RAAB() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL RAAA() const { return HC_SHUFFLE4I(*this, 0, 3, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GRRR() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GRRG() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GRRB() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GRRA() const { return HC_SHUFFLE4I(*this, 1, 0, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GRGR() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GRGG() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GRGB() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GRGA() const { return HC_SHUFFLE4I(*this, 1, 0, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GRBR() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GRBG() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GRBB() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GRBA() const { return HC_SHUFFLE4I(*this, 1, 0, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GRAR() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GRAG() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GRAB() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GRAA() const { return HC_SHUFFLE4I(*this, 1, 0, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GGRR() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GGRG() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GGRB() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GGRA() const { return HC_SHUFFLE4I(*this, 1, 1, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GGGR() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GGGG() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GGGB() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GGGA() const { return HC_SHUFFLE4I(*this, 1, 1, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GGBR() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GGBG() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GGBB() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GGBA() const { return HC_SHUFFLE4I(*this, 1, 1, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GGAR() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GGAG() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GGAB() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GGAA() const { return HC_SHUFFLE4I(*this, 1, 1, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GBRR() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GBRG() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GBRB() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GBRA() const { return HC_SHUFFLE4I(*this, 1, 2, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GBGR() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GBGG() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GBGB() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GBGA() const { return HC_SHUFFLE4I(*this, 1, 2, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GBBR() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GBBG() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GBBB() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GBBA() const { return HC_SHUFFLE4I(*this, 1, 2, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GBAR() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GBAG() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GBAB() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GBAA() const { return HC_SHUFFLE4I(*this, 1, 2, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GARR() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GARG() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GARB() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GARA() const { return HC_SHUFFLE4I(*this, 1, 3, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GAGR() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GAGG() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GAGB() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GAGA() const { return HC_SHUFFLE4I(*this, 1, 3, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GABR() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GABG() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GABB() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GABA() const { return HC_SHUFFLE4I(*this, 1, 3, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL GAAR() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL GAAG() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL GAAB() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL GAAA() const { return HC_SHUFFLE4I(*this, 1, 3, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BRRR() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BRRG() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BRRB() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BRRA() const { return HC_SHUFFLE4I(*this, 2, 0, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BRGR() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BRGG() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BRGB() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BRGA() const { return HC_SHUFFLE4I(*this, 2, 0, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BRBR() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BRBG() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BRBB() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BRBA() const { return HC_SHUFFLE4I(*this, 2, 0, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BRAR() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BRAG() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BRAB() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BRAA() const { return HC_SHUFFLE4I(*this, 2, 0, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BGRR() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BGRG() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BGRB() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BGRA() const { return HC_SHUFFLE4I(*this, 2, 1, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BGGR() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BGGG() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BGGB() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BGGA() const { return HC_SHUFFLE4I(*this, 2, 1, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BGBR() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BGBG() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BGBB() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BGBA() const { return HC_SHUFFLE4I(*this, 2, 1, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BGAR() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BGAG() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BGAB() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BGAA() const { return HC_SHUFFLE4I(*this, 2, 1, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BBRR() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BBRG() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BBRB() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BBRA() const { return HC_SHUFFLE4I(*this, 2, 2, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BBGR() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BBGG() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BBGB() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BBGA() const { return HC_SHUFFLE4I(*this, 2, 2, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BBBR() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BBBG() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BBBB() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BBBA() const { return HC_SHUFFLE4I(*this, 2, 2, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BBAR() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BBAG() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BBAB() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BBAA() const { return HC_SHUFFLE4I(*this, 2, 2, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BARR() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BARG() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BARB() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BARA() const { return HC_SHUFFLE4I(*this, 2, 3, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BAGR() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BAGG() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BAGB() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BAGA() const { return HC_SHUFFLE4I(*this, 2, 3, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BABR() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BABG() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BABB() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BABA() const { return HC_SHUFFLE4I(*this, 2, 3, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL BAAR() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL BAAG() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL BAAB() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL BAAA() const { return HC_SHUFFLE4I(*this, 2, 3, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ARRR() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ARRG() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ARRB() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ARRA() const { return HC_SHUFFLE4I(*this, 3, 0, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ARGR() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ARGG() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ARGB() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ARGA() const { return HC_SHUFFLE4I(*this, 3, 0, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ARBR() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ARBG() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ARBB() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ARBA() const { return HC_SHUFFLE4I(*this, 3, 0, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ARAR() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ARAG() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ARAB() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ARAA() const { return HC_SHUFFLE4I(*this, 3, 0, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL AGRR() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL AGRG() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL AGRB() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL AGRA() const { return HC_SHUFFLE4I(*this, 3, 1, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL AGGR() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL AGGG() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL AGGB() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL AGGA() const { return HC_SHUFFLE4I(*this, 3, 1, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL AGBR() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL AGBG() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL AGBB() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL AGBA() const { return HC_SHUFFLE4I(*this, 3, 1, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL AGAR() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL AGAG() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL AGAB() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL AGAA() const { return HC_SHUFFLE4I(*this, 3, 1, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ABRR() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ABRG() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ABRB() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ABRA() const { return HC_SHUFFLE4I(*this, 3, 2, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ABGR() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ABGG() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ABGB() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ABGA() const { return HC_SHUFFLE4I(*this, 3, 2, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ABBR() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ABBG() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ABBB() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ABBA() const { return HC_SHUFFLE4I(*this, 3, 2, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL ABAR() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL ABAG() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL ABAB() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL ABAA() const { return HC_SHUFFLE4I(*this, 3, 2, 3, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL AARR() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL AARG() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL AARB() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL AARA() const { return HC_SHUFFLE4I(*this, 3, 3, 0, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL AAGR() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL AAGG() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL AAGB() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL AAGA() const { return HC_SHUFFLE4I(*this, 3, 3, 1, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL AABR() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL AABG() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL AABB() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL AABA() const { return HC_SHUFFLE4I(*this, 3, 3, 2, 3); }
+	HC_INLINE Vec4I HC_VECTORCALL AAAR() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 0); }
+	HC_INLINE Vec4I HC_VECTORCALL AAAG() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 1); }
+	HC_INLINE Vec4I HC_VECTORCALL AAAB() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 2); }
+	HC_INLINE Vec4I HC_VECTORCALL AAAA() const { return HC_SHUFFLE4I(*this, 3, 3, 3, 3); }
 };
 
-HC_INLINE Vec2F operator+(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_add_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec2F operator-(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_sub_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec2F operator*(Vec2F _vLeft, float _fRight) { _vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _mm_set1_ps(_fRight)); return _vLeft; }
-HC_INLINE Vec2F operator*(float _fLeft, Vec2F _vRight) { _vRight.m_fVec = _mm_mul_ps(_mm_set1_ps(_fLeft), _vRight.m_fVec); return _vRight; }
-HC_INLINE Vec2F operator/(Vec2F _vLeft, float _fRight) { _vLeft.m_fVec = _mm_div_ps(_vLeft.m_fVec, _mm_set1_ps(_fRight)); return _vLeft; }
-HC_INLINE Vec2F operator/(float _fLeft, Vec2F _vRight) { _vRight.m_fVec = _mm_div_ps(_mm_set1_ps(_fLeft), _vRight.m_fVec); return _vRight; }
-HC_INLINE Vec2F operator*(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec2F operator/(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_div_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec2F& operator+=(Vec2F& _vLeft, Vec2F _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
-HC_INLINE Vec2F& operator-=(Vec2F& _vLeft, Vec2F _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
-HC_INLINE Vec2F& operator*=(Vec2F& _vLeft, Vec2F _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
-HC_INLINE Vec2F& operator/=(Vec2F& _vLeft, Vec2F _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
-HC_INLINE Vec2F& operator*=(Vec2F& _vLeft, float _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
-HC_INLINE Vec2F& operator/=(Vec2F& _vLeft, float _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
-HC_INLINE Vec2F operator~(Vec2F _vVector) { return Vec2F(); }
-HC_INLINE Vec2F operator-(Vec2F _vVector) { return Vec2F() - (_vVector); }
-HC_INLINE bool operator==(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_cmpeq_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 3) == 3; }
-HC_INLINE bool operator<(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_cmplt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 3) == 3; }
-HC_INLINE bool operator>(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_cmpgt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 3) == 3; }
-HC_INLINE bool operator<=(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_cmple_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 3) == 3; }
-HC_INLINE bool operator>=(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_cmpgt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 3) == 3; }
-HC_INLINE bool operator!=(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_cmpneq_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 3) != 0; }
-HC_INLINE Vec2F Min(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_min_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec2F Max(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_max_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec2F Clamp(Vec2F _vVector, Vec2F _vMin, Vec2F _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
-HC_INLINE float Sum(const Vec2F _vVector) { return _vVector.X() + _vVector.Y(); }
-HC_INLINE float Dot(Vec2F _vLeft, Vec2F _vRight) { return Sum(_vLeft * _vRight); }
-HC_INLINE float Length(Vec2F _vVector) { return sqrtf(Dot(_vVector, _vVector)); }
-HC_INLINE float LengthSquared(Vec2F _vVector) { return Dot(_vVector, _vVector); }
-HC_INLINE Vec2F Normalize(Vec2F _vVector) { return _vVector * (1.0f / Length(_vVector)); }
-HC_INLINE float AngleBetween(Vec2F _vLeft, Vec2F _vRight) { return acosf(Dot(_vLeft, _vRight)); }
-HC_INLINE float Cross(Vec2F _vLeft, Vec2F _vRight) { return _vLeft.X() * _vRight.Y() - _vLeft.Y() * _vRight.X(); }
-HC_INLINE Vec2F Abs(Vec2F _vVector) { _vVector.m_fVec = _mm_andnot_ps(_vVector.m_fVec, SignBitMaskF().m_fVec); return _vVector; }
+#endif
 
-HC_INLINE Vec3F operator+(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_add_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec3F operator-(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_sub_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec3F operator*(Vec3F _vLeft, float _fRight) { _vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _mm_set1_ps(_fRight)); return _vLeft; }
-HC_INLINE Vec3F operator*(float _fLeft, Vec3F _vRight) { _vRight.m_fVec = _mm_mul_ps(_mm_set1_ps(_fLeft), _vRight.m_fVec); return _vRight; }
-HC_INLINE Vec3F operator/(Vec3F _vLeft, float _fRight) { _vLeft.m_fVec = _mm_div_ps(_vLeft.m_fVec, _mm_set1_ps(_fRight)); return _vLeft; }
-HC_INLINE Vec3F operator/(float _fLeft, Vec3F _vRight) { _vRight.m_fVec = _mm_div_ps(_mm_set1_ps(_fLeft), _vRight.m_fVec); return _vRight; }
-HC_INLINE Vec3F operator*(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec3F operator/(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_div_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec3F& operator+=(Vec3F& _vLeft, Vec3F _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
-HC_INLINE Vec3F& operator-=(Vec3F& _vLeft, Vec3F _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
-HC_INLINE Vec3F& operator*=(Vec3F& _vLeft, Vec3F _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
-HC_INLINE Vec3F& operator/=(Vec3F& _vLeft, Vec3F _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
-HC_INLINE Vec3F& operator*=(Vec3F& _vLeft, float _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
-HC_INLINE Vec3F& operator/=(Vec3F& _vLeft, float _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
-HC_INLINE Vec3F operator~(Vec3F _vVector) { return Vec3F(); }
-HC_INLINE Vec3F operator-(Vec3F _vVector) { return Vec3F() - _vVector; }
-HC_INLINE bool operator==(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_cmpeq_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 7) == 7; }
-HC_INLINE bool operator<(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_cmplt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 7) == 7; }
-HC_INLINE bool operator>(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_cmpgt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 7) == 7; }
-HC_INLINE bool operator<=(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_cmple_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 7) == 7; }
-HC_INLINE bool operator>=(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_cmpge_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 7) == 7; }
-HC_INLINE bool operator!=(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_cmpneq_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 7) != 0; }
-HC_INLINE Vec3F Min(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_min_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec3F Max(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_max_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec3F Clamp(Vec3F _vVector, Vec3F _vMin, Vec3F _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
-HC_INLINE float HorizontalMin(Vec3F _vVector) { _vVector = Min(_vVector, HC_SHUFFLE3F(_vVector, 1, 0, 2)); return Min(_vVector, HC_SHUFFLE3F(_vVector, 2, 0, 1)).X(); }
-HC_INLINE float HorizontalMax(Vec3F _vVector) { _vVector = Max(_vVector, HC_SHUFFLE3F(_vVector, 1, 0, 2)); return Max(_vVector, HC_SHUFFLE3F(_vVector, 2, 0, 1)).X(); }
-HC_INLINE float Sum(const Vec3F _vVector) { return _vVector.X() + _vVector.Y() + _vVector.Z(); }
-HC_INLINE float Dot(Vec3F _vLeft, Vec3F _vRight) { return Sum(_vLeft * _vRight); }
-HC_INLINE float Length(Vec3F _vVector) { return sqrtf(Dot(_vVector, _vVector)); }
-HC_INLINE float LengthSquared(Vec3F _vVector) { return Dot(_vVector, _vVector); }
-HC_INLINE Vec3F Normalize(Vec3F _vVector) { return _vVector * (1.0f / Length(_vVector)); }
-HC_INLINE float AngleBetween(Vec3F _vLeft, Vec3F _vRight) { return acosf(Dot(_vLeft, _vRight)); }
-HC_INLINE Vec3F Cross(Vec3F _vLeft, Vec3F _vRight) { return (_vLeft.ZXY() * _vRight - _vLeft * _vRight.ZXY()).ZXY(); }
-HC_INLINE Vec3F Abs(Vec3F _vVector) { _vVector.m_fVec = _mm_andnot_ps(_vVector.m_fVec, SignBitMaskF().m_fVec); return _vVector; }
+HC_INLINE Vec2F HC_VECTORCALL operator+(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_add_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec2F HC_VECTORCALL operator-(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_sub_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec2F HC_VECTORCALL operator*(Vec2F _vLeft, float _fRight) { _vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _mm_set1_ps(_fRight)); return _vLeft; }
+HC_INLINE Vec2F HC_VECTORCALL operator*(float _fLeft, Vec2F _vRight) { _vRight.m_fVec = _mm_mul_ps(_mm_set1_ps(_fLeft), _vRight.m_fVec); return _vRight; }
+HC_INLINE Vec2F HC_VECTORCALL operator/(Vec2F _vLeft, float _fRight) { _vLeft.m_fVec = _mm_div_ps(_vLeft.m_fVec, _mm_set1_ps(_fRight)); return _vLeft; }
+HC_INLINE Vec2F HC_VECTORCALL operator/(float _fLeft, Vec2F _vRight) { _vRight.m_fVec = _mm_div_ps(_mm_set1_ps(_fLeft), _vRight.m_fVec); return _vRight; }
+HC_INLINE Vec2F HC_VECTORCALL operator*(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec2F HC_VECTORCALL operator/(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_div_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec2F& HC_VECTORCALL operator+=(Vec2F& _vLeft, Vec2F _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
+HC_INLINE Vec2F& HC_VECTORCALL operator-=(Vec2F& _vLeft, Vec2F _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
+HC_INLINE Vec2F& HC_VECTORCALL operator*=(Vec2F& _vLeft, Vec2F _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
+HC_INLINE Vec2F& HC_VECTORCALL operator/=(Vec2F& _vLeft, Vec2F _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
+HC_INLINE Vec2F& HC_VECTORCALL operator*=(Vec2F& _vLeft, float _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
+HC_INLINE Vec2F& HC_VECTORCALL operator/=(Vec2F& _vLeft, float _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
+HC_INLINE Vec2F HC_VECTORCALL operator~(Vec2F _vVector) { return Vec2F(); }
+HC_INLINE Vec2F HC_VECTORCALL operator-(Vec2F _vVector) { return Vec2F() - (_vVector); }
+HC_INLINE bool HC_VECTORCALL operator==(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_cmpeq_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 3) == 3; }
+HC_INLINE bool HC_VECTORCALL operator<(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_cmplt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 3) == 3; }
+HC_INLINE bool HC_VECTORCALL operator>(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_cmpgt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 3) == 3; }
+HC_INLINE bool HC_VECTORCALL operator<=(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_cmple_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 3) == 3; }
+HC_INLINE bool HC_VECTORCALL operator>=(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_cmpgt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 3) == 3; }
+HC_INLINE bool HC_VECTORCALL operator!=(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_cmpneq_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 3) != 0; }
+HC_INLINE Vec2F HC_VECTORCALL Min(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_min_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec2F HC_VECTORCALL Max(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_max_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec2F HC_VECTORCALL Clamp(Vec2F _vVector, Vec2F _vMin, Vec2F _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+HC_INLINE float HC_VECTORCALL Sum(const Vec2F _vVector) { return _vVector.X() + _vVector.Y(); }
+HC_INLINE float HC_VECTORCALL Dot(Vec2F _vLeft, Vec2F _vRight) { return Sum(_vLeft * _vRight); }
+HC_INLINE float HC_VECTORCALL Length(Vec2F _vVector) { return sqrtf(Dot(_vVector, _vVector)); }
+HC_INLINE float HC_VECTORCALL LengthSquared(Vec2F _vVector) { return Dot(_vVector, _vVector); }
+HC_INLINE Vec2F HC_VECTORCALL Normalize(Vec2F _vVector) { return _vVector * (1.0f / Length(_vVector)); }
+HC_INLINE float HC_VECTORCALL AngleBetween(Vec2F _vLeft, Vec2F _vRight) { return acosf(Dot(_vLeft, _vRight)); }
+HC_INLINE float HC_VECTORCALL Cross(Vec2F _vLeft, Vec2F _vRight) { return _vLeft.X() * _vRight.Y() - _vLeft.Y() * _vRight.X(); }
+HC_INLINE Vec2F HC_VECTORCALL Abs(Vec2F _vVector) { _vVector.m_fVec = _mm_andnot_ps(_vVector.m_fVec, SignBitMaskF().m_fVec); return _vVector; }
 
-HC_INLINE Vec4F operator+(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_add_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec4F operator-(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_sub_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec4F operator*(Vec4F _vLeft, float _fRight) { _vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _mm_set1_ps(_fRight)); return _vLeft; }
-HC_INLINE Vec4F operator*(float _fLeft, Vec4F _vRight) { _vRight.m_fVec = _mm_mul_ps(_mm_set1_ps(_fLeft), _vRight.m_fVec); return _vRight; }
-HC_INLINE Vec4F operator/(Vec4F _vLeft, float _fRight) { _vLeft.m_fVec = _mm_div_ps(_vLeft.m_fVec, _mm_set1_ps(_fRight)); return _vLeft; }
-HC_INLINE Vec4F operator/(float _fLeft, Vec4F _vRight) { _vRight.m_fVec = _mm_div_ps(_mm_set1_ps(_fLeft), _vRight.m_fVec); return _vRight; }
-HC_INLINE Vec4F operator*(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec4F operator/(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_div_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec4F& operator+=(Vec4F& _vLeft, Vec4F _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
-HC_INLINE Vec4F& operator-=(Vec4F& _vLeft, Vec4F _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
-HC_INLINE Vec4F& operator*=(Vec4F& _vLeft, Vec4F _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
-HC_INLINE Vec4F& operator/=(Vec4F& _vLeft, Vec4F _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
-HC_INLINE Vec4F& operator*=(Vec4F& _vLeft, float _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
-HC_INLINE Vec4F& operator/=(Vec4F& _vLeft, float _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
-HC_INLINE Vec4F operator~(Vec4F _vVector) { return Vec4F(); }
-HC_INLINE Vec4F operator-(Vec4F _vVector) { return Vec4F() - _vVector; }
-HC_INLINE bool operator==(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_cmpeq_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 15) == 15; }
-HC_INLINE bool operator<(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_cmplt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 15) == 15; }
-HC_INLINE bool operator>(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_cmpgt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 15) == 15; }
-HC_INLINE bool operator<=(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_cmple_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 15) == 15; }
-HC_INLINE bool operator>=(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_cmpge_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 15) == 15; }
-HC_INLINE bool operator!=(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_cmpneq_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 15) == 15; }
-HC_INLINE Vec4F Min(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_min_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec4F Max(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_max_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
-HC_INLINE Vec4F Clamp(Vec4F _vVector, Vec4F _vMin, Vec4F _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
-HC_INLINE float Sum(const Vec4F _vVector) { return _vVector.X() + _vVector.Y() + _vVector.Z() + _vVector.W(); }
-HC_INLINE float Dot(Vec4F _vLeft, Vec4F _vRight) { return Sum(_vLeft * _vRight); }
-HC_INLINE float Length(Vec4F _vVector) { return sqrtf(Dot(_vVector, _vVector)); }
-HC_INLINE float LengthSquared(Vec4F _vVector) { return Dot(_vVector, _vVector); }
-HC_INLINE Vec4F Normalize(Vec4F _vVector) { return _vVector * (1.0f / Length(_vVector)); }
-HC_INLINE float AngleBetween(Vec4F _vLeft, Vec4F _vRight) { return acosf(Dot(_vLeft, _vRight)); }
-HC_INLINE Vec4F Cross(Vec4F _vLeft, Vec4F _vRight) { _vRight.m_fVec = (_vLeft.ZXY() * _vRight.XYZ() - _vLeft.XYZ() * _vRight.ZXY()).ZXY().m_fVec; _vRight.SetW(_vLeft.W()); return _vRight; }
-HC_INLINE Vec4F Abs(Vec4F _vVector) { return Vec4F(_mm_andnot_ps(_vVector.m_fVec, SignBitMaskF().m_fVec)); }
+HC_INLINE Vec3F HC_VECTORCALL operator+(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_add_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec3F HC_VECTORCALL operator-(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_sub_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec3F HC_VECTORCALL operator*(Vec3F _vLeft, float _fRight) { _vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _mm_set1_ps(_fRight)); return _vLeft; }
+HC_INLINE Vec3F HC_VECTORCALL operator*(float _fLeft, Vec3F _vRight) { _vRight.m_fVec = _mm_mul_ps(_mm_set1_ps(_fLeft), _vRight.m_fVec); return _vRight; }
+HC_INLINE Vec3F HC_VECTORCALL operator/(Vec3F _vLeft, float _fRight) { _vLeft.m_fVec = _mm_div_ps(_vLeft.m_fVec, _mm_set1_ps(_fRight)); return _vLeft; }
+HC_INLINE Vec3F HC_VECTORCALL operator/(float _fLeft, Vec3F _vRight) { _vRight.m_fVec = _mm_div_ps(_mm_set1_ps(_fLeft), _vRight.m_fVec); return _vRight; }
+HC_INLINE Vec3F HC_VECTORCALL operator*(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec3F HC_VECTORCALL operator/(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_div_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec3F& HC_VECTORCALL operator+=(Vec3F& _vLeft, Vec3F _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
+HC_INLINE Vec3F& HC_VECTORCALL operator-=(Vec3F& _vLeft, Vec3F _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
+HC_INLINE Vec3F& HC_VECTORCALL operator*=(Vec3F& _vLeft, Vec3F _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
+HC_INLINE Vec3F& HC_VECTORCALL operator/=(Vec3F& _vLeft, Vec3F _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
+HC_INLINE Vec3F& HC_VECTORCALL operator*=(Vec3F& _vLeft, float _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
+HC_INLINE Vec3F& HC_VECTORCALL operator/=(Vec3F& _vLeft, float _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
+HC_INLINE Vec3F HC_VECTORCALL operator~(Vec3F _vVector) { return Vec3F(); }
+HC_INLINE Vec3F HC_VECTORCALL operator-(Vec3F _vVector) { return Vec3F() - _vVector; }
+HC_INLINE bool HC_VECTORCALL operator==(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_cmpeq_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 7) == 7; }
+HC_INLINE bool HC_VECTORCALL operator<(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_cmplt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 7) == 7; }
+HC_INLINE bool HC_VECTORCALL operator>(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_cmpgt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 7) == 7; }
+HC_INLINE bool HC_VECTORCALL operator<=(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_cmple_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 7) == 7; }
+HC_INLINE bool HC_VECTORCALL operator>=(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_cmpge_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 7) == 7; }
+HC_INLINE bool HC_VECTORCALL operator!=(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_cmpneq_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 7) != 0; }
+HC_INLINE Vec3F HC_VECTORCALL Min(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_min_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec3F HC_VECTORCALL Max(Vec3F _vLeft, Vec3F _vRight) { _vLeft.m_fVec = _mm_max_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec3F HC_VECTORCALL Clamp(Vec3F _vVector, Vec3F _vMin, Vec3F _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+HC_INLINE float HC_VECTORCALL HorizontalMin(Vec3F _vVector) { _vVector = Min(_vVector, HC_SHUFFLE3F(_vVector, 1, 0, 2)); return Min(_vVector, HC_SHUFFLE3F(_vVector, 2, 0, 1)).X(); }
+HC_INLINE float HC_VECTORCALL HorizontalMax(Vec3F _vVector) { _vVector = Max(_vVector, HC_SHUFFLE3F(_vVector, 1, 0, 2)); return Max(_vVector, HC_SHUFFLE3F(_vVector, 2, 0, 1)).X(); }
+HC_INLINE float HC_VECTORCALL Sum(const Vec3F _vVector) { return _vVector.X() + _vVector.Y() + _vVector.Z(); }
+HC_INLINE float HC_VECTORCALL Dot(Vec3F _vLeft, Vec3F _vRight) { return Sum(_vLeft * _vRight); }
+HC_INLINE float HC_VECTORCALL Length(Vec3F _vVector) { return sqrtf(Dot(_vVector, _vVector)); }
+HC_INLINE float HC_VECTORCALL LengthSquared(Vec3F _vVector) { return Dot(_vVector, _vVector); }
+HC_INLINE Vec3F HC_VECTORCALL Normalize(Vec3F _vVector) { return _vVector * (1.0f / Length(_vVector)); }
+HC_INLINE float HC_VECTORCALL AngleBetween(Vec3F _vLeft, Vec3F _vRight) { return acosf(Dot(_vLeft, _vRight)); }
+HC_INLINE Vec3F HC_VECTORCALL Cross(Vec3F _vLeft, Vec3F _vRight) { return (_vLeft.ZXY() * _vRight - _vLeft * _vRight.ZXY()).ZXY(); }
+HC_INLINE Vec3F HC_VECTORCALL Abs(Vec3F _vVector) { _vVector.m_fVec = _mm_andnot_ps(_vVector.m_fVec, SignBitMaskF().m_fVec); return _vVector; }
 
-HC_INLINE Vec2D operator+(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_add_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec2D operator-(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_sub_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec2D operator*(Vec2D _vLeft, double _fRight) { _vLeft.m_dVec = _mm256_mul_pd(_vLeft.m_dVec, _mm256_set1_pd(_fRight)); return _vLeft; }
-HC_INLINE Vec2D operator*(double _fLeft, Vec2D _vRight) { _vRight.m_dVec = _mm256_mul_pd(_mm256_set1_pd(_fLeft), _vRight.m_dVec); return _vRight; }
-HC_INLINE Vec2D operator/(Vec2D _vLeft, double _fRight) { _vLeft.m_dVec = _mm256_div_pd(_vLeft.m_dVec, _mm256_set1_pd(_fRight)); return _vLeft; }
-HC_INLINE Vec2D operator/(double _fLeft, Vec2D _vRight) { _vRight.m_dVec = _mm256_div_pd(_mm256_set1_pd(_fLeft), _vRight.m_dVec); return _vRight; }
-HC_INLINE Vec2D operator*(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_mul_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec2D operator/(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_div_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec2D& operator+=(Vec2D& _vLeft, Vec2D _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
-HC_INLINE Vec2D& operator-=(Vec2D& _vLeft, Vec2D _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
-HC_INLINE Vec2D& operator*=(Vec2D& _vLeft, Vec2D _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
-HC_INLINE Vec2D& operator/=(Vec2D& _vLeft, Vec2D _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
-HC_INLINE Vec2D& operator*=(Vec2D& _vLeft, double _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
-HC_INLINE Vec2D& operator/=(Vec2D& _vLeft, double _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
-HC_INLINE Vec2D operator~(Vec2D _vVector) { return Vec2D(); }
-HC_INLINE Vec2D operator-(Vec2D _vVector) { return Vec2D() - _vVector; }
-HC_INLINE bool operator==(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_EQ_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 3) == 3; }
-HC_INLINE bool operator<(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_LT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 3) == 3; }
-HC_INLINE bool operator>(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_GT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 3) == 3; }
-HC_INLINE bool operator<=(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_LE_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 3) == 3; }
-HC_INLINE bool operator>=(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_GT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 3) == 3; }
-HC_INLINE bool operator!=(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_NEQ_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 3) != 0; }
-HC_INLINE Vec2D Min(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_min_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec2D Max(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_max_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec2D Clamp(Vec2D _vVector, Vec2D _vMin, Vec2D _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
-HC_INLINE double Sum(const Vec2D _vVector) { return _vVector.X() + _vVector.Y(); }
-HC_INLINE double Dot(Vec2D _vLeft, Vec2D _vRight) { return Sum(_vLeft * _vRight); }
-HC_INLINE double Length(Vec2D _vVector) { return sqrt(Dot(_vVector, _vVector)); }
-HC_INLINE double LengthSquared(Vec2D _vVector) { return Dot(_vVector, _vVector); }
-HC_INLINE Vec2D Normalize(Vec2D _vVector) { return _vVector * (1.0 / Length(_vVector)); }
-HC_INLINE double AngleBetween(Vec2D _vLeft, Vec2D _vRight) { return acos(Dot(_vLeft, _vRight)); }
-HC_INLINE double Cross(Vec2D _vLeft, Vec2D _vRight) { return _vLeft.X() * _vRight.Y() - _vLeft.Y() * _vRight.X(); }
-HC_INLINE Vec2D Abs(Vec2D _vVector) { _vVector.m_dVec = _mm256_andnot_pd(_vVector.m_dVec, SignBitMaskD().m_dVec); return _vVector; }
+HC_INLINE Vec4F HC_VECTORCALL operator+(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_add_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec4F HC_VECTORCALL operator-(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_sub_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec4F HC_VECTORCALL operator*(Vec4F _vLeft, float _fRight) { _vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _mm_set1_ps(_fRight)); return _vLeft; }
+HC_INLINE Vec4F HC_VECTORCALL operator*(float _fLeft, Vec4F _vRight) { _vRight.m_fVec = _mm_mul_ps(_mm_set1_ps(_fLeft), _vRight.m_fVec); return _vRight; }
+HC_INLINE Vec4F HC_VECTORCALL operator/(Vec4F _vLeft, float _fRight) { _vLeft.m_fVec = _mm_div_ps(_vLeft.m_fVec, _mm_set1_ps(_fRight)); return _vLeft; }
+HC_INLINE Vec4F HC_VECTORCALL operator/(float _fLeft, Vec4F _vRight) { _vRight.m_fVec = _mm_div_ps(_mm_set1_ps(_fLeft), _vRight.m_fVec); return _vRight; }
+HC_INLINE Vec4F HC_VECTORCALL operator*(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_mul_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec4F HC_VECTORCALL operator/(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_div_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec4F& HC_VECTORCALL operator+=(Vec4F& _vLeft, Vec4F _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
+HC_INLINE Vec4F& HC_VECTORCALL operator-=(Vec4F& _vLeft, Vec4F _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
+HC_INLINE Vec4F& HC_VECTORCALL operator*=(Vec4F& _vLeft, Vec4F _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
+HC_INLINE Vec4F& HC_VECTORCALL operator/=(Vec4F& _vLeft, Vec4F _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
+HC_INLINE Vec4F& HC_VECTORCALL operator*=(Vec4F& _vLeft, float _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
+HC_INLINE Vec4F& HC_VECTORCALL operator/=(Vec4F& _vLeft, float _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
+HC_INLINE Vec4F HC_VECTORCALL operator~(Vec4F _vVector) { return Vec4F(); }
+HC_INLINE Vec4F HC_VECTORCALL operator-(Vec4F _vVector) { return Vec4F() - _vVector; }
+HC_INLINE bool HC_VECTORCALL operator==(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_cmpeq_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 15) == 15; }
+HC_INLINE bool HC_VECTORCALL operator<(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_cmplt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 15) == 15; }
+HC_INLINE bool HC_VECTORCALL operator>(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_cmpgt_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 15) == 15; }
+HC_INLINE bool HC_VECTORCALL operator<=(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_cmple_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 15) == 15; }
+HC_INLINE bool HC_VECTORCALL operator>=(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_cmpge_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 15) == 15; }
+HC_INLINE bool HC_VECTORCALL operator!=(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_cmpneq_ps(_vLeft.m_fVec, _vRight.m_fVec); return (_mm_movemask_ps(_vLeft.m_fVec) & 15) == 15; }
+HC_INLINE Vec4F HC_VECTORCALL Min(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_min_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec4F HC_VECTORCALL Max(Vec4F _vLeft, Vec4F _vRight) { _vLeft.m_fVec = _mm_max_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
+HC_INLINE Vec4F HC_VECTORCALL Clamp(Vec4F _vVector, Vec4F _vMin, Vec4F _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+HC_INLINE float HC_VECTORCALL Sum(const Vec4F _vVector) { return _vVector.X() + _vVector.Y() + _vVector.Z() + _vVector.W(); }
+HC_INLINE float HC_VECTORCALL Dot(Vec4F _vLeft, Vec4F _vRight) { return Sum(_vLeft * _vRight); }
+HC_INLINE float HC_VECTORCALL Length(Vec4F _vVector) { return sqrtf(Dot(_vVector, _vVector)); }
+HC_INLINE float HC_VECTORCALL LengthSquared(Vec4F _vVector) { return Dot(_vVector, _vVector); }
+HC_INLINE Vec4F HC_VECTORCALL Normalize(Vec4F _vVector) { return _vVector * (1.0f / Length(_vVector)); }
+HC_INLINE float HC_VECTORCALL AngleBetween(Vec4F _vLeft, Vec4F _vRight) { return acosf(Dot(_vLeft, _vRight)); }
+HC_INLINE Vec4F HC_VECTORCALL Cross(Vec4F _vLeft, Vec4F _vRight) { _vRight.m_fVec = (_vLeft.ZXY() * _vRight.XYZ() - _vLeft.XYZ() * _vRight.ZXY()).ZXY().m_fVec; _vRight.SetW(_vLeft.W()); return _vRight; }
+HC_INLINE Vec4F HC_VECTORCALL Abs(Vec4F _vVector) { return Vec4F(_mm_andnot_ps(_vVector.m_fVec, SignBitMaskF().m_fVec)); }
 
-HC_INLINE Vec3D operator+(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_add_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec3D operator-(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_sub_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec3D operator*(Vec3D _vLeft, double _fRight) { _vLeft.m_dVec = _mm256_mul_pd(_vLeft.m_dVec, _mm256_set1_pd(_fRight)); return _vLeft; }
-HC_INLINE Vec3D operator*(double _fLeft, Vec3D _vRight) { _vRight.m_dVec = _mm256_mul_pd(_mm256_set1_pd(_fLeft), _vRight.m_dVec); return _vRight; }
-HC_INLINE Vec3D operator/(Vec3D _vLeft, double _fRight) { _vLeft.m_dVec = _mm256_div_pd(_vLeft.m_dVec, _mm256_set1_pd(_fRight)); return _vLeft; }
-HC_INLINE Vec3D operator/(double _fLeft, Vec3D _vRight) { _vRight.m_dVec = _mm256_div_pd(_mm256_set1_pd(_fLeft), _vRight.m_dVec); return _vRight; }
-HC_INLINE Vec3D operator*(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_mul_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec3D operator/(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_div_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec3D& operator+=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
-HC_INLINE Vec3D& operator-=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
-HC_INLINE Vec3D& operator*=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
-HC_INLINE Vec3D& operator/=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
-HC_INLINE Vec3D& operator*=(Vec3D& _vLeft, double _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
-HC_INLINE Vec3D& operator/=(Vec3D& _vLeft, double _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
-HC_INLINE Vec3D operator~(Vec3D _vVector) { return Vec3D(); }
-HC_INLINE Vec3D operator-(Vec3D _vVector) { return Vec3D() - _vVector; }
-HC_INLINE bool operator==(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_EQ_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 7) == 7; }
-HC_INLINE bool operator<(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_LT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 7) == 7; }
-HC_INLINE bool operator>(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_GT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 7) == 7; }
-HC_INLINE bool operator<=(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_LE_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 7) == 7; }
-HC_INLINE bool operator>=(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_GT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 7) == 7; }
-HC_INLINE bool operator!=(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_NEQ_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 7) != 0; }
-HC_INLINE Vec3D Min(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_min_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec3D Max(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_max_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec3D Clamp(Vec3D _vVector, Vec3D _vMin, Vec3D _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
-HC_INLINE double HorizontalMin(Vec3D _vVector) { _vVector = Min(_vVector, HC_SHUFFLE3D(_vVector, 1, 0, 2)); return Min(_vVector, HC_SHUFFLE3D(_vVector, 2, 0, 1)).X(); }
-HC_INLINE double HorizontalMax(Vec3D _vVector) { _vVector = Max(_vVector, HC_SHUFFLE3D(_vVector, 1, 0, 2)); return Max(_vVector, HC_SHUFFLE3D(_vVector, 2, 0, 1)).X(); }
-HC_INLINE double Sum(const Vec3D _vVector) { return _vVector.X() + _vVector.Y() + _vVector.Z(); }
-HC_INLINE double Dot(Vec3D _vLeft, Vec3D _vRight) { return Sum(_vLeft * _vRight); }
-HC_INLINE double Length(Vec3D _vVector) { return sqrt(Dot(_vVector, _vVector)); }
-HC_INLINE double LengthSquared(Vec3D _vVector) { return Dot(_vVector, _vVector); }
-HC_INLINE Vec3D Normalize(Vec3D _vVector) { return _vVector * (1.0 / Length(_vVector)); }
-HC_INLINE double AngleBetween(Vec3D _vLeft, Vec3D _vRight) { return acos(Dot(_vLeft, _vRight)); }
-HC_INLINE Vec3D Cross(Vec3D _vLeft, Vec3D _vRight) { return (_vLeft.ZXY() * _vRight - _vLeft * _vRight.ZXY()).ZXY(); }
-HC_INLINE Vec3D Abs(Vec3D _vVector) { _vVector.m_dVec = _mm256_andnot_pd(_vVector.m_dVec, SignBitMaskD().m_dVec); return _vVector; }
+#if HC_ENABLE_EXTRA_VECTOR_TYPES && HC_USE_SIMD
 
-HC_INLINE Vec4D operator+(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_add_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec4D operator-(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_sub_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec4D operator*(Vec4D _vLeft, double _fRight) { _vLeft.m_dVec = _mm256_mul_pd(_vLeft.m_dVec, _mm256_set1_pd(_fRight)); return _vLeft; }
-HC_INLINE Vec4D operator*(double _fLeft, Vec4D _vRight) { _vRight.m_dVec = _mm256_mul_pd(_mm256_set1_pd(_fLeft), _vRight.m_dVec); return _vRight; }
-HC_INLINE Vec4D operator/(Vec4D _vLeft, double _fRight) { _vLeft.m_dVec = _mm256_div_pd(_vLeft.m_dVec, _mm256_set1_pd(_fRight)); return _vLeft; }
-HC_INLINE Vec4D operator/(double _fLeft, Vec4D _vRight) { _vRight.m_dVec = _mm256_div_pd(_mm256_set1_pd(_fLeft), _vRight.m_dVec); return _vRight; }
-HC_INLINE Vec4D operator*(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_mul_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec4D operator/(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_div_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec4D& operator+=(Vec4D& _vLeft, Vec4D _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
-HC_INLINE Vec4D& operator-=(Vec4D& _vLeft, Vec4D _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
-HC_INLINE Vec4D& operator*=(Vec4D& _vLeft, Vec4D _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
-HC_INLINE Vec4D& operator/=(Vec4D& _vLeft, Vec4D _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
-HC_INLINE Vec4D& operator*=(Vec4D& _vLeft, double _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
-HC_INLINE Vec4D& operator/=(Vec4D& _vLeft, double _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
-HC_INLINE Vec4D operator~(Vec4D _vVector) { return Vec4D(); }
-HC_INLINE Vec4D operator-(Vec4D _vVector) { return Vec4D() - _vVector; }
-HC_INLINE bool operator==(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_EQ_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 15) == 15;}
-HC_INLINE bool operator<(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_LT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 15) == 15; }
-HC_INLINE bool operator>(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_GT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 15) == 15; }
-HC_INLINE bool operator<=(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_LE_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 15) == 15; }
-HC_INLINE bool operator>=(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_GT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 15) == 15; }
-HC_INLINE bool operator!=(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_NEQ_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 15) != 0; }
-HC_INLINE Vec4D Min(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_min_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec4D Max(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_max_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
-HC_INLINE Vec4D Clamp(Vec4D _vVector, Vec4D _vMin, Vec4D _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
-HC_INLINE double Sum(const Vec4D _vVector) { return _vVector.X() + _vVector.Y() + _vVector.Z() + _vVector.W(); }
-HC_INLINE double Dot(Vec4D _vLeft, Vec4D _vRight) { return Sum(_vLeft * _vRight); }
-HC_INLINE double Length(Vec4D _vVector) { return sqrt(Dot(_vVector, _vVector)); }
-HC_INLINE double LengthSquared(Vec4D _vVector) { return Dot(_vVector, _vVector); }
-HC_INLINE Vec4D Normalize(Vec4D _vVector) { return _vVector * (1.0 / Length(_vVector)); }
-HC_INLINE double AngleBetween(Vec4D _vLeft, Vec4D _vRight) { return acos(Dot(_vLeft, _vRight)); }
-HC_INLINE Vec4D Cross(Vec4D _vLeft, Vec4D _vRight) { _vRight.m_dVec = (_vLeft.ZXY() * _vRight.XYZ() - _vLeft.XYZ() * _vRight.ZXY()).ZXY().m_dVec; _vRight.SetW(_vLeft.W()); return _vRight; }
-HC_INLINE Vec4D Abs(Vec4D _vVector) { return Vec4D(_mm256_andnot_pd(_vVector.m_dVec, SignBitMaskD().m_dVec)); }
+HC_INLINE Vec2D HC_VECTORCALL operator+(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_add_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec2D HC_VECTORCALL operator-(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_sub_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec2D HC_VECTORCALL operator*(Vec2D _vLeft, double _fRight) { _vLeft.m_dVec = _mm256_mul_pd(_vLeft.m_dVec, _mm256_set1_pd(_fRight)); return _vLeft; }
+HC_INLINE Vec2D HC_VECTORCALL operator*(double _fLeft, Vec2D _vRight) { _vRight.m_dVec = _mm256_mul_pd(_mm256_set1_pd(_fLeft), _vRight.m_dVec); return _vRight; }
+HC_INLINE Vec2D HC_VECTORCALL operator/(Vec2D _vLeft, double _fRight) { _vLeft.m_dVec = _mm256_div_pd(_vLeft.m_dVec, _mm256_set1_pd(_fRight)); return _vLeft; }
+HC_INLINE Vec2D HC_VECTORCALL operator/(double _fLeft, Vec2D _vRight) { _vRight.m_dVec = _mm256_div_pd(_mm256_set1_pd(_fLeft), _vRight.m_dVec); return _vRight; }
+HC_INLINE Vec2D HC_VECTORCALL operator*(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_mul_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec2D HC_VECTORCALL operator/(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_div_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec2D& HC_VECTORCALL operator+=(Vec2D& _vLeft, Vec2D _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
+HC_INLINE Vec2D& HC_VECTORCALL operator-=(Vec2D& _vLeft, Vec2D _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
+HC_INLINE Vec2D& HC_VECTORCALL operator*=(Vec2D& _vLeft, Vec2D _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
+HC_INLINE Vec2D& HC_VECTORCALL operator/=(Vec2D& _vLeft, Vec2D _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
+HC_INLINE Vec2D& HC_VECTORCALL operator*=(Vec2D& _vLeft, double _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
+HC_INLINE Vec2D& HC_VECTORCALL operator/=(Vec2D& _vLeft, double _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
+HC_INLINE Vec2D HC_VECTORCALL operator~(Vec2D _vVector) { return Vec2D(); }
+HC_INLINE Vec2D HC_VECTORCALL operator-(Vec2D _vVector) { return Vec2D() - _vVector; }
+HC_INLINE bool HC_VECTORCALL operator==(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_EQ_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 3) == 3; }
+HC_INLINE bool HC_VECTORCALL operator<(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_LT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 3) == 3; }
+HC_INLINE bool HC_VECTORCALL operator>(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_GT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 3) == 3; }
+HC_INLINE bool HC_VECTORCALL operator<=(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_LE_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 3) == 3; }
+HC_INLINE bool HC_VECTORCALL operator>=(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_GT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 3) == 3; }
+HC_INLINE bool HC_VECTORCALL operator!=(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_NEQ_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 3) != 0; }
+HC_INLINE Vec2D HC_VECTORCALL Min(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_min_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec2D HC_VECTORCALL Max(Vec2D _vLeft, Vec2D _vRight) { _vLeft.m_dVec = _mm256_max_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec2D HC_VECTORCALL Clamp(Vec2D _vVector, Vec2D _vMin, Vec2D _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+HC_INLINE double HC_VECTORCALL Sum(const Vec2D _vVector) { return _vVector.X() + _vVector.Y(); }
+HC_INLINE double HC_VECTORCALL Dot(Vec2D _vLeft, Vec2D _vRight) { return Sum(_vLeft * _vRight); }
+HC_INLINE double HC_VECTORCALL Length(Vec2D _vVector) { return sqrt(Dot(_vVector, _vVector)); }
+HC_INLINE double HC_VECTORCALL LengthSquared(Vec2D _vVector) { return Dot(_vVector, _vVector); }
+HC_INLINE Vec2D HC_VECTORCALL Normalize(Vec2D _vVector) { return _vVector * (1.0 / Length(_vVector)); }
+HC_INLINE double HC_VECTORCALL AngleBetween(Vec2D _vLeft, Vec2D _vRight) { return acos(Dot(_vLeft, _vRight)); }
+HC_INLINE double HC_VECTORCALL Cross(Vec2D _vLeft, Vec2D _vRight) { return _vLeft.X() * _vRight.Y() - _vLeft.Y() * _vRight.X(); }
+HC_INLINE Vec2D HC_VECTORCALL Abs(Vec2D _vVector) { _vVector.m_dVec = _mm256_andnot_pd(_vVector.m_dVec, SignBitMaskD().m_dVec); return _vVector; }
 
-HC_INLINE Vec2I operator+(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_add_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec2I operator-(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_sub_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec2I operator*(Vec2I _vLeft, int _fRight) { _vLeft.m_iVec = _mm_mul_epi32(_vLeft.m_iVec, _mm_set1_epi32(_fRight)); return _vLeft; }
-HC_INLINE Vec2I operator*(int _fLeft, Vec2I _vRight) { _vRight.m_iVec = _mm_mul_epi32(_mm_set1_epi32(_fLeft), _vRight.m_iVec); return _vRight; }
-HC_INLINE Vec2I operator/(Vec2I _vLeft, int _fRight) { _vLeft.m_iVec = _mm_div_epi32(_vLeft.m_iVec, _mm_set1_epi32(_fRight)); return _vLeft; }
-HC_INLINE Vec2I operator/(int _fLeft, Vec2I _vRight) { _vRight.m_iVec = _mm_div_epi32(_mm_set1_epi32(_fLeft), _vRight.m_iVec); return _vRight; }
-HC_INLINE Vec2I operator*(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_mul_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec2I operator/(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_div_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec2I& operator+=(Vec2I& _vLeft, Vec2I _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
-HC_INLINE Vec2I& operator-=(Vec2I& _vLeft, Vec2I _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
-HC_INLINE Vec2I& operator*=(Vec2I& _vLeft, Vec2I _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
-HC_INLINE Vec2I& operator/=(Vec2I& _vLeft, Vec2I _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
-HC_INLINE Vec2I& operator*=(Vec2I& _vLeft, int _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
-HC_INLINE Vec2I& operator/=(Vec2I& _vLeft, int _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
-HC_INLINE Vec2I operator~(Vec2I _vVector) { return Vec2I(); }
-HC_INLINE Vec2I operator-(Vec2I _vVector) { return Vec2I() - (_vVector); }
-HC_INLINE bool operator==(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_cmpeq_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
-HC_INLINE bool operator<(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_cmplt_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
-HC_INLINE bool operator>(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_cmpgt_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
-HC_INLINE bool operator<=(Vec2I _vLeft, Vec2I _vRight) { return (_vLeft < _vRight) || (_vLeft == _vRight); }
-HC_INLINE bool operator>=(Vec2I _vLeft, Vec2I _vRight) { return (_vLeft > _vRight) || (_vLeft == _vRight); }
-HC_INLINE bool operator!=(Vec2I _vLeft, Vec2I _vRight) { return !(_vLeft == _vRight); }
-HC_INLINE Vec2I Min(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_min_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec2I Max(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_max_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec2I Clamp(Vec2I _vVector, Vec2I _vMin, Vec2I _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
-HC_INLINE int Sum(const Vec2I _vVector) { return _vVector.X() + _vVector.Y(); }
-HC_INLINE int Dot(Vec2I _vLeft, Vec2I _vRight) { return Sum(_vLeft * _vRight); }
-HC_INLINE float Length(Vec2I _vVector) { return sqrtf(static_cast<float>(Dot(_vVector, _vVector))); }
-HC_INLINE int LengthSquared(Vec2I _vVector) { return Dot(_vVector, _vVector); }
-HC_INLINE Vec2I Normalize(Vec2I _vVector) { return _vVector * static_cast<int>((1.0f / Length(_vVector))); }
-HC_INLINE float AngleBetween(Vec2I _vLeft, Vec2I _vRight) { return acosf(static_cast<float>(Dot(_vLeft, _vRight))); }
-HC_INLINE int Cross(Vec2I _vLeft, Vec2I _vRight) { return _vLeft.X() * _vRight.Y() - _vLeft.Y() * _vRight.X(); }
-HC_INLINE Vec2I Abs(Vec2I _vVector) { _vVector.m_iVec = _mm_abs_epi32(_vVector.m_iVec); return _vVector; }
+HC_INLINE Vec3D HC_VECTORCALL operator+(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_add_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec3D HC_VECTORCALL operator-(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_sub_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec3D HC_VECTORCALL operator*(Vec3D _vLeft, double _fRight) { _vLeft.m_dVec = _mm256_mul_pd(_vLeft.m_dVec, _mm256_set1_pd(_fRight)); return _vLeft; }
+HC_INLINE Vec3D HC_VECTORCALL operator*(double _fLeft, Vec3D _vRight) { _vRight.m_dVec = _mm256_mul_pd(_mm256_set1_pd(_fLeft), _vRight.m_dVec); return _vRight; }
+HC_INLINE Vec3D HC_VECTORCALL operator/(Vec3D _vLeft, double _fRight) { _vLeft.m_dVec = _mm256_div_pd(_vLeft.m_dVec, _mm256_set1_pd(_fRight)); return _vLeft; }
+HC_INLINE Vec3D HC_VECTORCALL operator/(double _fLeft, Vec3D _vRight) { _vRight.m_dVec = _mm256_div_pd(_mm256_set1_pd(_fLeft), _vRight.m_dVec); return _vRight; }
+HC_INLINE Vec3D HC_VECTORCALL operator*(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_mul_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec3D HC_VECTORCALL operator/(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_div_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec3D& HC_VECTORCALL operator+=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
+HC_INLINE Vec3D& HC_VECTORCALL operator-=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
+HC_INLINE Vec3D& HC_VECTORCALL operator*=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
+HC_INLINE Vec3D& HC_VECTORCALL operator/=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
+HC_INLINE Vec3D& HC_VECTORCALL operator*=(Vec3D& _vLeft, double _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
+HC_INLINE Vec3D& HC_VECTORCALL operator/=(Vec3D& _vLeft, double _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
+HC_INLINE Vec3D HC_VECTORCALL operator~(Vec3D _vVector) { return Vec3D(); }
+HC_INLINE Vec3D HC_VECTORCALL operator-(Vec3D _vVector) { return Vec3D() - _vVector; }
+HC_INLINE bool HC_VECTORCALL operator==(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_EQ_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 7) == 7; }
+HC_INLINE bool HC_VECTORCALL operator<(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_LT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 7) == 7; }
+HC_INLINE bool HC_VECTORCALL operator>(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_GT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 7) == 7; }
+HC_INLINE bool HC_VECTORCALL operator<=(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_LE_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 7) == 7; }
+HC_INLINE bool HC_VECTORCALL operator>=(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_GT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 7) == 7; }
+HC_INLINE bool HC_VECTORCALL operator!=(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_NEQ_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 7) != 0; }
+HC_INLINE Vec3D HC_VECTORCALL Min(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_min_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec3D HC_VECTORCALL Max(Vec3D _vLeft, Vec3D _vRight) { _vLeft.m_dVec = _mm256_max_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec3D HC_VECTORCALL Clamp(Vec3D _vVector, Vec3D _vMin, Vec3D _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+HC_INLINE double HC_VECTORCALL HorizontalMin(Vec3D _vVector) { _vVector = Min(_vVector, HC_SHUFFLE3D(_vVector, 1, 0, 2)); return Min(_vVector, HC_SHUFFLE3D(_vVector, 2, 0, 1)).X(); }
+HC_INLINE double HC_VECTORCALL HorizontalMax(Vec3D _vVector) { _vVector = Max(_vVector, HC_SHUFFLE3D(_vVector, 1, 0, 2)); return Max(_vVector, HC_SHUFFLE3D(_vVector, 2, 0, 1)).X(); }
+HC_INLINE double HC_VECTORCALL Sum(const Vec3D _vVector) { return _vVector.X() + _vVector.Y() + _vVector.Z(); }
+HC_INLINE double HC_VECTORCALL Dot(Vec3D _vLeft, Vec3D _vRight) { return Sum(_vLeft * _vRight); }
+HC_INLINE double HC_VECTORCALL Length(Vec3D _vVector) { return sqrt(Dot(_vVector, _vVector)); }
+HC_INLINE double HC_VECTORCALL LengthSquared(Vec3D _vVector) { return Dot(_vVector, _vVector); }
+HC_INLINE Vec3D HC_VECTORCALL Normalize(Vec3D _vVector) { return _vVector * (1.0 / Length(_vVector)); }
+HC_INLINE double HC_VECTORCALL AngleBetween(Vec3D _vLeft, Vec3D _vRight) { return acos(Dot(_vLeft, _vRight)); }
+HC_INLINE Vec3D HC_VECTORCALL Cross(Vec3D _vLeft, Vec3D _vRight) { return (_vLeft.ZXY() * _vRight - _vLeft * _vRight.ZXY()).ZXY(); }
+HC_INLINE Vec3D HC_VECTORCALL Abs(Vec3D _vVector) { _vVector.m_dVec = _mm256_andnot_pd(_vVector.m_dVec, SignBitMaskD().m_dVec); return _vVector; }
 
-HC_INLINE Vec3I operator+(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_add_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec3I operator-(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_sub_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec3I operator*(Vec3I _vLeft, int _fRight) { _vLeft.m_iVec = _mm_mul_epi32(_vLeft.m_iVec, _mm_set1_epi32(_fRight)); return _vLeft; }
-HC_INLINE Vec3I operator*(int _fLeft, Vec3I _vRight) { _vRight.m_iVec = _mm_mul_epi32(_mm_set1_epi32(_fLeft), _vRight.m_iVec); return _vRight; }
-HC_INLINE Vec3I operator/(Vec3I _vLeft, int _fRight) { _vLeft.m_iVec = _mm_div_epi32(_vLeft.m_iVec, _mm_set1_epi32(_fRight)); return _vLeft; }
-HC_INLINE Vec3I operator/(int _fLeft, Vec3I _vRight) { _vRight.m_iVec = _mm_div_epi32(_mm_set1_epi32(_fLeft), _vRight.m_iVec); return _vRight; }
-HC_INLINE Vec3I operator*(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_mul_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec3I operator/(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_div_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec3I& operator+=(Vec3I& _vLeft, Vec3I _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
-HC_INLINE Vec3I& operator-=(Vec3I& _vLeft, Vec3I _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
-HC_INLINE Vec3I& operator*=(Vec3I& _vLeft, Vec3I _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
-HC_INLINE Vec3I& operator/=(Vec3I& _vLeft, Vec3I _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
-HC_INLINE Vec3I& operator*=(Vec3I& _vLeft, int _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
-HC_INLINE Vec3I& operator/=(Vec3I& _vLeft, int _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
-HC_INLINE Vec3I operator~(Vec3I _vVector) { return Vec3I(); }
-HC_INLINE Vec3I operator-(Vec3I _vVector) { return Vec3I() - (_vVector); }
-HC_INLINE bool operator==(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_cmpeq_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
-HC_INLINE bool operator<(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_cmplt_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
-HC_INLINE bool operator>(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_cmpgt_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
-HC_INLINE bool operator<=(Vec3I _vLeft, Vec3I _vRight) { return (_vLeft < _vRight) || (_vLeft == _vRight); }
-HC_INLINE bool operator>=(Vec3I _vLeft, Vec3I _vRight) { return (_vLeft > _vRight) || (_vLeft == _vRight); }
-HC_INLINE bool operator!=(Vec3I _vLeft, Vec3I _vRight) { return !(_vLeft == _vRight); }
-HC_INLINE Vec3I Min(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_min_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec3I Max(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_max_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec3I Clamp(Vec3I _vVector, Vec3I _vMin, Vec3I _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
-HC_INLINE int Sum(const Vec3I _vVector) { return _vVector.X() + _vVector.Y() + _vVector.Z(); }
-HC_INLINE int Dot(Vec3I _vLeft, Vec3I _vRight) { return Sum(_vLeft * _vRight); }
-HC_INLINE float Length(Vec3I _vVector) { return sqrtf(static_cast<float>(Dot(_vVector, _vVector))); }
-HC_INLINE int LengthSquared(Vec3I _vVector) { return Dot(_vVector, _vVector); }
-HC_INLINE Vec3I Normalize(Vec3I _vVector) { return _vVector * static_cast<int>((1.0f / Length(_vVector))); }
-HC_INLINE float AngleBetween(Vec3I _vLeft, Vec3I _vRight) { return acosf(static_cast<float>(Dot(_vLeft, _vRight))); }
-HC_INLINE Vec3I Cross(Vec3I _vLeft, Vec3I _vRight) { return (_vLeft.ZXY() * _vRight - _vLeft * _vRight.ZXY()).ZXY(); }
-HC_INLINE Vec3I Abs(Vec3I _vVector) { _vVector.m_iVec = _mm_abs_epi32(_vVector.m_iVec); return _vVector; }
+HC_INLINE Vec4D HC_VECTORCALL operator+(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_add_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec4D HC_VECTORCALL operator-(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_sub_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec4D HC_VECTORCALL operator*(Vec4D _vLeft, double _fRight) { _vLeft.m_dVec = _mm256_mul_pd(_vLeft.m_dVec, _mm256_set1_pd(_fRight)); return _vLeft; }
+HC_INLINE Vec4D HC_VECTORCALL operator*(double _fLeft, Vec4D _vRight) { _vRight.m_dVec = _mm256_mul_pd(_mm256_set1_pd(_fLeft), _vRight.m_dVec); return _vRight; }
+HC_INLINE Vec4D HC_VECTORCALL operator/(Vec4D _vLeft, double _fRight) { _vLeft.m_dVec = _mm256_div_pd(_vLeft.m_dVec, _mm256_set1_pd(_fRight)); return _vLeft; }
+HC_INLINE Vec4D HC_VECTORCALL operator/(double _fLeft, Vec4D _vRight) { _vRight.m_dVec = _mm256_div_pd(_mm256_set1_pd(_fLeft), _vRight.m_dVec); return _vRight; }
+HC_INLINE Vec4D HC_VECTORCALL operator*(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_mul_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec4D HC_VECTORCALL operator/(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_div_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec4D& HC_VECTORCALL operator+=(Vec4D& _vLeft, Vec4D _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
+HC_INLINE Vec4D& HC_VECTORCALL operator-=(Vec4D& _vLeft, Vec4D _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
+HC_INLINE Vec4D& HC_VECTORCALL operator*=(Vec4D& _vLeft, Vec4D _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
+HC_INLINE Vec4D& HC_VECTORCALL operator/=(Vec4D& _vLeft, Vec4D _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
+HC_INLINE Vec4D& HC_VECTORCALL operator*=(Vec4D& _vLeft, double _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
+HC_INLINE Vec4D& HC_VECTORCALL operator/=(Vec4D& _vLeft, double _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
+HC_INLINE Vec4D HC_VECTORCALL operator~(Vec4D _vVector) { return Vec4D(); }
+HC_INLINE Vec4D HC_VECTORCALL operator-(Vec4D _vVector) { return Vec4D() - _vVector; }
+HC_INLINE bool HC_VECTORCALL operator==(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_EQ_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 15) == 15;}
+HC_INLINE bool HC_VECTORCALL operator<(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_LT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 15) == 15; }
+HC_INLINE bool HC_VECTORCALL operator>(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_GT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 15) == 15; }
+HC_INLINE bool HC_VECTORCALL operator<=(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_LE_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 15) == 15; }
+HC_INLINE bool HC_VECTORCALL operator>=(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_GT_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 15) == 15; }
+HC_INLINE bool HC_VECTORCALL operator!=(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_cmp_pd(_vLeft.m_dVec, _vRight.m_dVec, _CMP_NEQ_OQ); return (_mm256_movemask_pd(_vLeft.m_dVec) & 15) != 0; }
+HC_INLINE Vec4D HC_VECTORCALL Min(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_min_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec4D HC_VECTORCALL Max(Vec4D _vLeft, Vec4D _vRight) { _vLeft.m_dVec = _mm256_max_pd(_vLeft.m_dVec, _vRight.m_dVec); return _vLeft; }
+HC_INLINE Vec4D HC_VECTORCALL Clamp(Vec4D _vVector, Vec4D _vMin, Vec4D _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+HC_INLINE double HC_VECTORCALL Sum(const Vec4D _vVector) { return _vVector.X() + _vVector.Y() + _vVector.Z() + _vVector.W(); }
+HC_INLINE double HC_VECTORCALL Dot(Vec4D _vLeft, Vec4D _vRight) { return Sum(_vLeft * _vRight); }
+HC_INLINE double HC_VECTORCALL Length(Vec4D _vVector) { return sqrt(Dot(_vVector, _vVector)); }
+HC_INLINE double HC_VECTORCALL LengthSquared(Vec4D _vVector) { return Dot(_vVector, _vVector); }
+HC_INLINE Vec4D HC_VECTORCALL Normalize(Vec4D _vVector) { return _vVector * (1.0 / Length(_vVector)); }
+HC_INLINE double HC_VECTORCALL AngleBetween(Vec4D _vLeft, Vec4D _vRight) { return acos(Dot(_vLeft, _vRight)); }
+HC_INLINE Vec4D HC_VECTORCALL Cross(Vec4D _vLeft, Vec4D _vRight) { _vRight.m_dVec = (_vLeft.ZXY() * _vRight.XYZ() - _vLeft.XYZ() * _vRight.ZXY()).ZXY().m_dVec; _vRight.SetW(_vLeft.W()); return _vRight; }
+HC_INLINE Vec4D HC_VECTORCALL Abs(Vec4D _vVector) { return Vec4D(_mm256_andnot_pd(_vVector.m_dVec, SignBitMaskD().m_dVec)); }
 
-HC_INLINE Vec4I operator+(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_add_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec4I operator-(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_sub_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec4I operator*(Vec4I _vLeft, int _fRight) { _vLeft.m_iVec = _mm_mul_epi32(_vLeft.m_iVec, _mm_set1_epi32(_fRight)); return _vLeft; }
-HC_INLINE Vec4I operator*(int _fLeft, Vec4I _vRight) { _vRight.m_iVec = _mm_mul_epi32(_mm_set1_epi32(_fLeft), _vRight.m_iVec); return _vRight; }
-HC_INLINE Vec4I operator/(Vec4I _vLeft, int _fRight) { _vLeft.m_iVec = _mm_div_epi32(_vLeft.m_iVec, _mm_set1_epi32(_fRight)); return _vLeft; }
-HC_INLINE Vec4I operator/(int _fLeft, Vec4I _vRight) { _vRight.m_iVec = _mm_div_epi32(_mm_set1_epi32(_fLeft), _vRight.m_iVec); return _vRight; }
-HC_INLINE Vec4I operator*(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_mul_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec4I operator/(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_div_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec4I& operator+=(Vec4I& _vLeft, Vec4I _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
-HC_INLINE Vec4I& operator-=(Vec4I& _vLeft, Vec4I _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
-HC_INLINE Vec4I& operator*=(Vec4I& _vLeft, Vec4I _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
-HC_INLINE Vec4I& operator/=(Vec4I& _vLeft, Vec4I _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
-HC_INLINE Vec4I& operator*=(Vec4I& _vLeft, int _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
-HC_INLINE Vec4I& operator/=(Vec4I& _vLeft, int _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
-HC_INLINE Vec4I operator~(Vec4I _vVector) { return Vec4I(); }
-HC_INLINE Vec4I operator-(Vec4I _vVector) { return Vec4I() - (_vVector); }
-HC_INLINE bool operator==(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_cmpeq_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
-HC_INLINE bool operator<(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_cmplt_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
-HC_INLINE bool operator>(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_cmpgt_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
-HC_INLINE bool operator<=(Vec4I _vLeft, Vec4I _vRight) { return (_vLeft < _vRight) || (_vLeft == _vRight); }
-HC_INLINE bool operator>=(Vec4I _vLeft, Vec4I _vRight) { return (_vLeft > _vRight) || (_vLeft == _vRight); }
-HC_INLINE bool operator!=(Vec4I _vLeft, Vec4I _vRight) { return !(_vLeft == _vRight); }
-HC_INLINE Vec4I Min(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_min_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec4I Max(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_max_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
-HC_INLINE Vec4I Clamp(Vec4I _vVector, Vec4I _vMin, Vec4I _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
-HC_INLINE int Sum(const Vec4I _vVector) { return _vVector.X() + _vVector.Y() + _vVector.Z(); }
-HC_INLINE int Dot(Vec4I _vLeft, Vec4I _vRight) { return Sum(_vLeft * _vRight); }
-HC_INLINE float Length(Vec4I _vVector) { return sqrtf(static_cast<float>(Dot(_vVector, _vVector))); }
-HC_INLINE int LengthSquared(Vec4I _vVector) { return Dot(_vVector, _vVector); }
-HC_INLINE Vec4I Normalize(Vec4I _vVector) { return _vVector * static_cast<int>((1.0f / Length(_vVector))); }
-HC_INLINE float AngleBetween(Vec4I _vLeft, Vec4I _vRight) { return acosf(static_cast<float>(Dot(_vLeft, _vRight))); }
-HC_INLINE Vec4I Cross(Vec4I _vLeft, Vec4I _vRight) { _vRight.m_iVec = (_vLeft.ZXY() * _vRight.XYZ() - _vLeft.XYZ() * _vRight.ZXY()).ZXY().m_iVec; _vRight.SetW(_vLeft.W()); return _vRight; }
-HC_INLINE Vec4I Abs(Vec4I _vVector) { _vVector.m_iVec = _mm_abs_epi32(_vVector.m_iVec); return _vVector; }
+HC_INLINE Vec2I HC_VECTORCALL operator+(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_add_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec2I HC_VECTORCALL operator-(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_sub_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec2I HC_VECTORCALL operator*(Vec2I _vLeft, int _fRight) { _vLeft.m_iVec = _mm_mul_epi32(_vLeft.m_iVec, _mm_set1_epi32(_fRight)); return _vLeft; }
+HC_INLINE Vec2I HC_VECTORCALL operator*(int _fLeft, Vec2I _vRight) { _vRight.m_iVec = _mm_mul_epi32(_mm_set1_epi32(_fLeft), _vRight.m_iVec); return _vRight; }
+HC_INLINE Vec2I HC_VECTORCALL operator/(Vec2I _vLeft, int _fRight) { _vLeft.m_iVec = _mm_div_epi32(_vLeft.m_iVec, _mm_set1_epi32(_fRight)); return _vLeft; }
+HC_INLINE Vec2I HC_VECTORCALL operator/(int _fLeft, Vec2I _vRight) { _vRight.m_iVec = _mm_div_epi32(_mm_set1_epi32(_fLeft), _vRight.m_iVec); return _vRight; }
+HC_INLINE Vec2I HC_VECTORCALL operator*(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_mul_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec2I HC_VECTORCALL operator/(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_div_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec2I& HC_VECTORCALL operator+=(Vec2I& _vLeft, Vec2I _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
+HC_INLINE Vec2I& HC_VECTORCALL operator-=(Vec2I& _vLeft, Vec2I _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
+HC_INLINE Vec2I& HC_VECTORCALL operator*=(Vec2I& _vLeft, Vec2I _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
+HC_INLINE Vec2I& HC_VECTORCALL operator/=(Vec2I& _vLeft, Vec2I _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
+HC_INLINE Vec2I& HC_VECTORCALL operator*=(Vec2I& _vLeft, int _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
+HC_INLINE Vec2I& HC_VECTORCALL operator/=(Vec2I& _vLeft, int _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
+HC_INLINE Vec2I HC_VECTORCALL operator~(Vec2I _vVector) { return Vec2I(); }
+HC_INLINE Vec2I HC_VECTORCALL operator-(Vec2I _vVector) { return Vec2I() - (_vVector); }
+HC_INLINE bool HC_VECTORCALL operator==(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_cmpeq_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
+HC_INLINE bool HC_VECTORCALL operator<(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_cmplt_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
+HC_INLINE bool HC_VECTORCALL operator>(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_cmpgt_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
+HC_INLINE bool HC_VECTORCALL operator<=(Vec2I _vLeft, Vec2I _vRight) { return (_vLeft < _vRight) || (_vLeft == _vRight); }
+HC_INLINE bool HC_VECTORCALL operator>=(Vec2I _vLeft, Vec2I _vRight) { return (_vLeft > _vRight) || (_vLeft == _vRight); }
+HC_INLINE bool HC_VECTORCALL operator!=(Vec2I _vLeft, Vec2I _vRight) { return !(_vLeft == _vRight); }
+HC_INLINE Vec2I HC_VECTORCALL Min(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_min_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec2I HC_VECTORCALL Max(Vec2I _vLeft, Vec2I _vRight) { _vLeft.m_iVec = _mm_max_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec2I HC_VECTORCALL Clamp(Vec2I _vVector, Vec2I _vMin, Vec2I _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+HC_INLINE int HC_VECTORCALL Sum(const Vec2I _vVector) { return _vVector.X() + _vVector.Y(); }
+HC_INLINE int HC_VECTORCALL Dot(Vec2I _vLeft, Vec2I _vRight) { return Sum(_vLeft * _vRight); }
+HC_INLINE float HC_VECTORCALL Length(Vec2I _vVector) { return sqrtf(static_cast<float>(Dot(_vVector, _vVector))); }
+HC_INLINE int HC_VECTORCALL LengthSquared(Vec2I _vVector) { return Dot(_vVector, _vVector); }
+HC_INLINE Vec2I HC_VECTORCALL Normalize(Vec2I _vVector) { return _vVector * static_cast<int>((1.0f / Length(_vVector))); }
+HC_INLINE float HC_VECTORCALL AngleBetween(Vec2I _vLeft, Vec2I _vRight) { return acosf(static_cast<float>(Dot(_vLeft, _vRight))); }
+HC_INLINE int HC_VECTORCALL Cross(Vec2I _vLeft, Vec2I _vRight) { return _vLeft.X() * _vRight.Y() - _vLeft.Y() * _vRight.X(); }
+HC_INLINE Vec2I HC_VECTORCALL Abs(Vec2I _vVector) { _vVector.m_iVec = _mm_abs_epi32(_vVector.m_iVec); return _vVector; }
+
+HC_INLINE Vec3I HC_VECTORCALL operator+(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_add_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec3I HC_VECTORCALL operator-(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_sub_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec3I HC_VECTORCALL operator*(Vec3I _vLeft, int _fRight) { _vLeft.m_iVec = _mm_mul_epi32(_vLeft.m_iVec, _mm_set1_epi32(_fRight)); return _vLeft; }
+HC_INLINE Vec3I HC_VECTORCALL operator*(int _fLeft, Vec3I _vRight) { _vRight.m_iVec = _mm_mul_epi32(_mm_set1_epi32(_fLeft), _vRight.m_iVec); return _vRight; }
+HC_INLINE Vec3I HC_VECTORCALL operator/(Vec3I _vLeft, int _fRight) { _vLeft.m_iVec = _mm_div_epi32(_vLeft.m_iVec, _mm_set1_epi32(_fRight)); return _vLeft; }
+HC_INLINE Vec3I HC_VECTORCALL operator/(int _fLeft, Vec3I _vRight) { _vRight.m_iVec = _mm_div_epi32(_mm_set1_epi32(_fLeft), _vRight.m_iVec); return _vRight; }
+HC_INLINE Vec3I HC_VECTORCALL operator*(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_mul_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec3I HC_VECTORCALL operator/(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_div_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec3I& HC_VECTORCALL operator+=(Vec3I& _vLeft, Vec3I _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
+HC_INLINE Vec3I& HC_VECTORCALL operator-=(Vec3I& _vLeft, Vec3I _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
+HC_INLINE Vec3I& HC_VECTORCALL operator*=(Vec3I& _vLeft, Vec3I _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
+HC_INLINE Vec3I& HC_VECTORCALL operator/=(Vec3I& _vLeft, Vec3I _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
+HC_INLINE Vec3I& HC_VECTORCALL operator*=(Vec3I& _vLeft, int _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
+HC_INLINE Vec3I& HC_VECTORCALL operator/=(Vec3I& _vLeft, int _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
+HC_INLINE Vec3I HC_VECTORCALL operator~(Vec3I _vVector) { return Vec3I(); }
+HC_INLINE Vec3I HC_VECTORCALL operator-(Vec3I _vVector) { return Vec3I() - (_vVector); }
+HC_INLINE bool HC_VECTORCALL operator==(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_cmpeq_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
+HC_INLINE bool HC_VECTORCALL operator<(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_cmplt_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
+HC_INLINE bool HC_VECTORCALL operator>(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_cmpgt_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
+HC_INLINE bool HC_VECTORCALL operator<=(Vec3I _vLeft, Vec3I _vRight) { return (_vLeft < _vRight) || (_vLeft == _vRight); }
+HC_INLINE bool HC_VECTORCALL operator>=(Vec3I _vLeft, Vec3I _vRight) { return (_vLeft > _vRight) || (_vLeft == _vRight); }
+HC_INLINE bool HC_VECTORCALL operator!=(Vec3I _vLeft, Vec3I _vRight) { return !(_vLeft == _vRight); }
+HC_INLINE Vec3I HC_VECTORCALL Min(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_min_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec3I HC_VECTORCALL Max(Vec3I _vLeft, Vec3I _vRight) { _vLeft.m_iVec = _mm_max_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec3I HC_VECTORCALL Clamp(Vec3I _vVector, Vec3I _vMin, Vec3I _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+HC_INLINE int HC_VECTORCALL Sum(const Vec3I _vVector) { return _vVector.X() + _vVector.Y() + _vVector.Z(); }
+HC_INLINE int HC_VECTORCALL Dot(Vec3I _vLeft, Vec3I _vRight) { return Sum(_vLeft * _vRight); }
+HC_INLINE float HC_VECTORCALL Length(Vec3I _vVector) { return sqrtf(static_cast<float>(Dot(_vVector, _vVector))); }
+HC_INLINE int HC_VECTORCALL LengthSquared(Vec3I _vVector) { return Dot(_vVector, _vVector); }
+HC_INLINE Vec3I HC_VECTORCALL Normalize(Vec3I _vVector) { return _vVector * static_cast<int>((1.0f / Length(_vVector))); }
+HC_INLINE float HC_VECTORCALL AngleBetween(Vec3I _vLeft, Vec3I _vRight) { return acosf(static_cast<float>(Dot(_vLeft, _vRight))); }
+HC_INLINE Vec3I HC_VECTORCALL Cross(Vec3I _vLeft, Vec3I _vRight) { return (_vLeft.ZXY() * _vRight - _vLeft * _vRight.ZXY()).ZXY(); }
+HC_INLINE Vec3I HC_VECTORCALL Abs(Vec3I _vVector) { _vVector.m_iVec = _mm_abs_epi32(_vVector.m_iVec); return _vVector; }
+
+HC_INLINE Vec4I HC_VECTORCALL operator+(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_add_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec4I HC_VECTORCALL operator-(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_sub_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec4I HC_VECTORCALL operator*(Vec4I _vLeft, int _fRight) { _vLeft.m_iVec = _mm_mul_epi32(_vLeft.m_iVec, _mm_set1_epi32(_fRight)); return _vLeft; }
+HC_INLINE Vec4I HC_VECTORCALL operator*(int _fLeft, Vec4I _vRight) { _vRight.m_iVec = _mm_mul_epi32(_mm_set1_epi32(_fLeft), _vRight.m_iVec); return _vRight; }
+HC_INLINE Vec4I HC_VECTORCALL operator/(Vec4I _vLeft, int _fRight) { _vLeft.m_iVec = _mm_div_epi32(_vLeft.m_iVec, _mm_set1_epi32(_fRight)); return _vLeft; }
+HC_INLINE Vec4I HC_VECTORCALL operator/(int _fLeft, Vec4I _vRight) { _vRight.m_iVec = _mm_div_epi32(_mm_set1_epi32(_fLeft), _vRight.m_iVec); return _vRight; }
+HC_INLINE Vec4I HC_VECTORCALL operator*(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_mul_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec4I HC_VECTORCALL operator/(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_div_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec4I& HC_VECTORCALL operator+=(Vec4I& _vLeft, Vec4I _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
+HC_INLINE Vec4I& HC_VECTORCALL operator-=(Vec4I& _vLeft, Vec4I _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
+HC_INLINE Vec4I& HC_VECTORCALL operator*=(Vec4I& _vLeft, Vec4I _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
+HC_INLINE Vec4I& HC_VECTORCALL operator/=(Vec4I& _vLeft, Vec4I _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
+HC_INLINE Vec4I& HC_VECTORCALL operator*=(Vec4I& _vLeft, int _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
+HC_INLINE Vec4I& HC_VECTORCALL operator/=(Vec4I& _vLeft, int _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
+HC_INLINE Vec4I HC_VECTORCALL operator~(Vec4I _vVector) { return Vec4I(); }
+HC_INLINE Vec4I HC_VECTORCALL operator-(Vec4I _vVector) { return Vec4I() - (_vVector); }
+HC_INLINE bool HC_VECTORCALL operator==(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_cmpeq_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
+HC_INLINE bool HC_VECTORCALL operator<(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_cmplt_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
+HC_INLINE bool HC_VECTORCALL operator>(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_cmpgt_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _mm_test_all_ones(_vLeft.m_iVec) == 1; }
+HC_INLINE bool HC_VECTORCALL operator<=(Vec4I _vLeft, Vec4I _vRight) { return (_vLeft < _vRight) || (_vLeft == _vRight); }
+HC_INLINE bool HC_VECTORCALL operator>=(Vec4I _vLeft, Vec4I _vRight) { return (_vLeft > _vRight) || (_vLeft == _vRight); }
+HC_INLINE bool HC_VECTORCALL operator!=(Vec4I _vLeft, Vec4I _vRight) { return !(_vLeft == _vRight); }
+HC_INLINE Vec4I HC_VECTORCALL Min(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_min_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec4I HC_VECTORCALL Max(Vec4I _vLeft, Vec4I _vRight) { _vLeft.m_iVec = _mm_max_epi32(_vLeft.m_iVec, _vRight.m_iVec); return _vLeft; }
+HC_INLINE Vec4I HC_VECTORCALL Clamp(Vec4I _vVector, Vec4I _vMin, Vec4I _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+HC_INLINE int HC_VECTORCALL Sum(const Vec4I _vVector) { return _vVector.X() + _vVector.Y() + _vVector.Z(); }
+HC_INLINE int HC_VECTORCALL Dot(Vec4I _vLeft, Vec4I _vRight) { return Sum(_vLeft * _vRight); }
+HC_INLINE float HC_VECTORCALL Length(Vec4I _vVector) { return sqrtf(static_cast<float>(Dot(_vVector, _vVector))); }
+HC_INLINE int HC_VECTORCALL LengthSquared(Vec4I _vVector) { return Dot(_vVector, _vVector); }
+HC_INLINE Vec4I HC_VECTORCALL Normalize(Vec4I _vVector) { return _vVector * static_cast<int>((1.0f / Length(_vVector))); }
+HC_INLINE float HC_VECTORCALL AngleBetween(Vec4I _vLeft, Vec4I _vRight) { return acosf(static_cast<float>(Dot(_vLeft, _vRight))); }
+HC_INLINE Vec4I HC_VECTORCALL Cross(Vec4I _vLeft, Vec4I _vRight) { _vRight.m_iVec = (_vLeft.ZXY() * _vRight.XYZ() - _vLeft.XYZ() * _vRight.ZXY()).ZXY().m_iVec; _vRight.SetW(_vLeft.W()); return _vRight; }
+HC_INLINE Vec4I HC_VECTORCALL Abs(Vec4I _vVector) { _vVector.m_iVec = _mm_abs_epi32(_vVector.m_iVec); return _vVector; }
+
+#endif
+
+#else
+
+struct Vec2F
+{
+	union
+	{
+		float data[2];
+		struct
+		{
+			float x;
+			float y;
+		};
+	};
+};
+
+struct Vec3F
+{
+	union
+	{
+		float data[3];
+		struct
+		{
+			float x;
+			float y;
+			float z;
+		};
+	};
+};
+
+struct Vec4F
+{
+	union
+	{
+		float data[4];
+		struct
+		{
+			float x;
+			float y;
+			float z;
+			float w;
+		};
+	};
+};
+
+#if HC_ENABLE_EXTRA_VECTOR_TYPES
+
+struct Vec2D
+{
+	union
+	{
+		double data[2];
+		struct
+		{
+			double x;
+			double y;
+		};
+	};
+};
+
+struct Vec3D
+{
+	union
+	{
+		double data[3];
+		struct
+		{
+			double x;
+			double y;
+			double z;
+		};
+	};
+};
+
+struct Vec4D
+{
+	union
+	{
+		double data[4];
+		struct
+		{
+			double x;
+			double y;
+			double z;
+			double w;
+		};
+	};
+};
+
+struct Vec2I
+{
+	union
+	{
+		int data[2];
+		struct
+		{
+			int x;
+			int y;
+		};
+	};
+};
+
+struct Vec3I
+{
+	union
+	{
+		int data[3];
+		struct
+		{
+			int x;
+			int y;
+			int z;
+		};
+	};
+};
+
+struct Vec4I
+{
+	union
+	{
+		int data[4];
+		struct
+		{
+			int x;
+			int y;
+			int z;
+			int w;
+		};
+	};
+};
+
+#endif
+
+#endif

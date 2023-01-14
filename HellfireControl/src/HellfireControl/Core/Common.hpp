@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <utility>
 #include <math.h>
-#include <immintrin.h>
+#include <intrin.h>
 #include <cassert>
 
 //Defines for quick rad/deg conversion
@@ -14,3 +14,8 @@
 
 //Defines for standardized function declaration
 #define HC_INLINE __forceinline
+#define HC_VECTORCALL __vectorcall
+
+//Defines for engine conditionals
+#define HC_USE_SIMD 0
+#define HC_ENABLE_EXTRA_VECTOR_TYPES 1

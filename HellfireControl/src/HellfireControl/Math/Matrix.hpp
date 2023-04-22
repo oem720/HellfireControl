@@ -1,5 +1,8 @@
 #pragma once
 
+#include <intrin.h>
+#include <math.h>
+
 #include <HellfireControl/Core/Common.hpp>
 #include <HellfireControl/Math/Vector.hpp>
 
@@ -860,7 +863,7 @@ struct MatrixF
 
 };
 
-#if HC_ENABLE_EXTRA_VECTOR_TYPES
+#if HC_ENABLE_DOUBLE_PRECISION
 
 struct MatrixD
 {

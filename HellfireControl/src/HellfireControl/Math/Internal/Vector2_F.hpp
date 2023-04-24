@@ -86,7 +86,6 @@ struct HC_ALIGNAS(8) Vec2F
 	HC_INLINE explicit Vec2F(float _fX, float _fY) { m_fData[0] = _fX; m_fData[1] = _fY; }
 	HC_INLINE explicit Vec2F(int _iX, int _iY) { m_fData[0] = static_cast<float>(_iX); m_fData[1] = static_cast<float>(_iY); }
 	HC_INLINE explicit Vec2F(double _dX, double _dY) { m_fData[0] = static_cast<float>(_dX); m_fData[1] = static_cast<float>(_dY); }
-	HC_INLINE Vec2F(Vec2D _vVec) { m_fData[0] = static_cast<float>(_vVec.x); m_fData[1] = static_cast<float>(_vVec.y); }
 
 	[[nodiscard]] HC_INLINE float operator[](int _iNdx) const { assert(_iNdx < 2); return m_fData[_iNdx]; }
 	[[nodiscard]] HC_INLINE float& operator[](int _iNdx) { assert(_iNdx < 2); return m_fData[_iNdx]; }
@@ -119,7 +118,7 @@ HC_INLINE bool operator<(Vec2F _vLeft, Vec2F _vRight) { return _vLeft.x < _vRigh
 HC_INLINE bool operator>(Vec2F _vLeft, Vec2F _vRight) { return _vLeft.x > _vRight.x && _vLeft.y > _vRight.y; }
 HC_INLINE bool operator<=(Vec2F _vLeft, Vec2F _vRight) { return !(_vLeft > _vRight); }
 HC_INLINE bool operator>=(Vec2F _vLeft, Vec2F _vRight) { return !(_vLeft < _vRight); }
-HC_INLINE bool operator!=(Vec2F _vLeft, Vec2F _vRight) { return _vLeft.x != _vRight.x || _vLeft.y != _vRight.y; }
+HC_INLINE bool operator!=(Vec2F _vLeft, Vec2F _vRight) { return !(_vLeft == _vRight); }
 [[nodiscard]] HC_INLINE Vec2F Min(Vec2F _vLeft, Vec2F _vRight) { return Vec2F(HC_TERNARY(_vLeft.x, _vRight.x, <), HC_TERNARY(_vLeft.y, _vRight.y, <)); }
 [[nodiscard]] HC_INLINE Vec2F Max(Vec2F _vLeft, Vec2F _vRight) { return Vec2F(HC_TERNARY(_vLeft.x, _vRight.x, >), HC_TERNARY(_vLeft.y, _vRight.y, >)); }
 [[nodiscard]] HC_INLINE Vec2F Clamp(Vec2F _vVal, Vec2F _vMin, Vec2F _vMax) { return Min(Max(_vVal, _vMax), _vMin); }

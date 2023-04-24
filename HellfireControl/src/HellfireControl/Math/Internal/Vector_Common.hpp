@@ -30,4 +30,7 @@ HC_INLINE maskd_t SignBitMaskD() {
 	static maskd_t g_mMask = { 0x8000000000000000, 0x8000000000000000, 0x8000000000000000, 0x8000000000000000 };
 	return g_mMask;
 }
+#else
+//Internal macro for cleaner ternary. Not intended for use outside of math. (ONLY USED IN NON-SIMD MATH)
+#define HC_TERNARY(_val1, _val2, _sign) (_val1) _sign (_val2) ? (_val1) : (_val2)
 #endif

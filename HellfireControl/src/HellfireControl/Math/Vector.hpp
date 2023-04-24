@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <HellfireControl/Core/Common.hpp>
 
 #include <HellfireControl/Math/Internal/Vector2_F.hpp>

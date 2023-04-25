@@ -150,7 +150,7 @@ struct HC_ALIGNAS(16) Vec3F
 		};
 	};
 
-	HC_INLINE explicit Vec3F() { m_fData[0] = 0.0f; m_fData[1] = 0.0f; m_fData[2] = 0.0f; }
+	HC_INLINE Vec3F() { m_fData[0] = 0.0f; m_fData[1] = 0.0f; m_fData[2] = 0.0f; }
 	HC_INLINE explicit Vec3F(float _fVal) { m_fData[0] = _fVal; m_fData[1] = _fVal; m_fData[2] = _fVal; }
 	HC_INLINE explicit Vec3F(int _iVal) { m_fData[0] = static_cast<float>(_iVal); m_fData[1] = static_cast<float>(_iVal); m_fData[2] = static_cast<float>(_iVal); }
 	HC_INLINE explicit Vec3F(double _dVal) { m_fData[0] = static_cast<float>(_dVal); m_fData[1] = static_cast<float>(_dVal); m_fData[2] = static_cast<float>(_dVal); }

@@ -80,7 +80,7 @@ struct HC_ALIGNAS(16) Vec2D
 		};
 	};
 
-	HC_INLINE explicit Vec2D() { m_dData[0] = 0.0; m_dData[1] = 0.0; }
+	HC_INLINE Vec2D() { m_dData[0] = 0.0; m_dData[1] = 0.0; }
 	HC_INLINE explicit Vec2D(float _fVal) { m_dData[0] = static_cast<double>(_fVal); m_dData[1] = static_cast<double>(_fVal); }
 	HC_INLINE explicit Vec2D(int _iVal) { m_dData[0] = static_cast<double>(_iVal); m_dData[1] = static_cast<double>(_iVal); }
 	HC_INLINE explicit Vec2D(double _dVal) { m_dData[0] = _dVal; m_dData[1] = _dVal; }

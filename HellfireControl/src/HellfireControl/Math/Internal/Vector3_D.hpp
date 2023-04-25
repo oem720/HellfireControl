@@ -151,7 +151,7 @@ struct HC_ALIGNAS(32) Vec3D
 		};
 	};
 
-	HC_INLINE explicit Vec3D() { m_dData[0] = 0.0f; m_dData[1] = 0.0f; m_dData[2] = 0.0f; }
+	HC_INLINE Vec3D() { m_dData[0] = 0.0f; m_dData[1] = 0.0f; m_dData[2] = 0.0f; }
 	HC_INLINE explicit Vec3D(float _fVal) { m_dData[0] = static_cast<double>(_fVal); m_dData[1] = static_cast<double>(_fVal); m_dData[2] = static_cast<double>(_fVal); }
 	HC_INLINE explicit Vec3D(int _iVal) { m_dData[0] = static_cast<double>(_iVal); m_dData[1] = static_cast<double>(_iVal); m_dData[2] = static_cast<double>(_iVal); }
 	HC_INLINE explicit Vec3D(double _dVal) { m_dData[0] = _dVal; m_dData[1] = _dVal; m_dData[2] = _dVal; }

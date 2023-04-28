@@ -237,18 +237,18 @@ struct HC_ALIGNAS(32) Vec3D
 
 [[nodiscard]] HC_INLINE Vec3D operator+(Vec3D _vLeft, Vec3D _vRight) { return Vec3D(_vLeft.x + _vRight.x, _vLeft.y + _vRight.y, _vLeft.z + _vRight.z); }
 [[nodiscard]] HC_INLINE Vec3D operator-(Vec3D _vLeft, Vec3D _vRight) { return Vec3D(_vLeft.x - _vRight.x, _vLeft.y - _vRight.y, _vLeft.z - _vRight.z); }
-[[nodiscard]] HC_INLINE Vec3D operator*(Vec3D _vLeft, double _fRight) { return Vec3D(_vLeft.x * _fRight, _vLeft.y * _fRight, _vLeft.z * _fRight); }
-[[nodiscard]] HC_INLINE Vec3D operator*(double _fLeft, Vec3D _vRight) { return Vec3D(_vRight.x * _fLeft, _vRight.y * _fLeft, _vRight.z * _fLeft); }
-[[nodiscard]] HC_INLINE Vec3D operator/(Vec3D _vLeft, double _fRight) { return Vec3D(_vLeft.x / _fRight, _vLeft.y / _fRight, _vLeft.z / _fRight); }
-[[nodiscard]] HC_INLINE Vec3D operator/(double _fLeft, Vec3D _vRight) { return Vec3D(_vRight.x / _fLeft, _vRight.y / _fLeft, _vRight.z / _fLeft); }
+[[nodiscard]] HC_INLINE Vec3D operator*(Vec3D _vLeft, double _dRight) { return Vec3D(_vLeft.x * _dRight, _vLeft.y * _dRight, _vLeft.z * _dRight); }
+[[nodiscard]] HC_INLINE Vec3D operator*(double _dLeft, Vec3D _vRight) { return Vec3D(_vRight.x * _dLeft, _vRight.y * _dLeft, _vRight.z * _dLeft); }
+[[nodiscard]] HC_INLINE Vec3D operator/(Vec3D _vLeft, double _dRight) { return Vec3D(_vLeft.x / _dRight, _vLeft.y / _dRight, _vLeft.z / _dRight); }
+[[nodiscard]] HC_INLINE Vec3D operator/(double _dLeft, Vec3D _vRight) { return Vec3D(_dLeft / _vRight.x, _dLeft / _vRight.y, _dLeft / _vRight.z); }
 [[nodiscard]] HC_INLINE Vec3D operator*(Vec3D _vLeft, Vec3D _vRight) { return Vec3D(_vLeft.x * _vRight.x, _vLeft.y * _vRight.y, _vLeft.z * _vRight.z); }
 [[nodiscard]] HC_INLINE Vec3D operator/(Vec3D _vLeft, Vec3D _vRight) { return Vec3D(_vLeft.x / _vRight.x, _vLeft.y / _vRight.y, _vLeft.z / _vRight.z); }
 HC_INLINE Vec3D& operator+=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
 HC_INLINE Vec3D& operator-=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
 HC_INLINE Vec3D& operator*=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
 HC_INLINE Vec3D& operator/=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
-HC_INLINE Vec3D& operator*=(Vec3D& _vLeft, double _fRight) { _vLeft = _vLeft * _fRight; return _vLeft; }
-HC_INLINE Vec3D& operator/=(Vec3D& _vLeft, double _fRight) { _vLeft = _vLeft / _fRight; return _vLeft; }
+HC_INLINE Vec3D& operator*=(Vec3D& _vLeft, double _dRight) { _vLeft = _vLeft * _dRight; return _vLeft; }
+HC_INLINE Vec3D& operator/=(Vec3D& _vLeft, double _dRight) { _vLeft = _vLeft / _dRight; return _vLeft; }
 [[nodiscard]] HC_INLINE Vec3D operator~(Vec3D _vVector) { return Vec3D(); }
 [[nodiscard]] HC_INLINE Vec3D operator-(Vec3D _vVector) { return Vec3D(-_vVector.x, -_vVector.y, -_vVector.z); }
 HC_INLINE bool operator==(Vec3D _vLeft, Vec3D _vRight) { return HC_DOUBLE_COMPARE(_vLeft.x, _vRight.x) && HC_DOUBLE_COMPARE(_vLeft.y, _vRight.y) && HC_DOUBLE_COMPARE(_vLeft.z, _vRight.z); }
@@ -264,10 +264,10 @@ HC_INLINE bool operator!=(Vec3D _vLeft, Vec3D _vRight) { return !(_vLeft == _vRi
 [[nodiscard]] HC_INLINE double HorizontalMax(Vec3D _vVector) { _vVector = Max(_vVector, _vVector.YXZ()); return Max(_vVector, _vVector.ZXY()).x; }
 [[nodiscard]] HC_INLINE double Sum(const Vec3D _vVector) { return _vVector.x + _vVector.y + _vVector.z; }
 [[nodiscard]] HC_INLINE double Dot(Vec3D _vLeft, Vec3D _vRight) { return Sum(_vLeft * _vRight); }
-[[nodiscard]] HC_INLINE double Length(Vec3D _vVector) { return sqrtf(Dot(_vVector, _vVector)); }
+[[nodiscard]] HC_INLINE double Length(Vec3D _vVector) { return sqrt(Dot(_vVector, _vVector)); }
 [[nodiscard]] HC_INLINE double LengthSquared(Vec3D _vVector) { return Dot(_vVector, _vVector); }
-[[nodiscard]] HC_INLINE Vec3D Normalize(Vec3D _vVector) { return _vVector * (1.0f / Length(_vVector)); }
-[[nodiscard]] HC_INLINE double AngleBetween(Vec3D _vLeft, Vec3D _vRight) { return acosf(Dot(_vLeft, _vRight)); }
+[[nodiscard]] HC_INLINE Vec3D Normalize(Vec3D _vVector) { return _vVector * (1.0 / Length(_vVector)); }
+[[nodiscard]] HC_INLINE double AngleBetween(Vec3D _vLeft, Vec3D _vRight) { return acos(Dot(_vLeft, _vRight)); }
 [[nodiscard]] HC_INLINE Vec3D Cross(Vec3D _vLeft, Vec3D _vRight) { return (_vLeft.ZXY() * _vRight - _vLeft * _vRight.ZXY()).ZXY(); }
 [[nodiscard]] HC_INLINE Vec3D Abs(Vec3D _vVector) { return Vec3D(abs(_vVector.x), abs(_vVector.y), abs(_vVector.z)); }
 

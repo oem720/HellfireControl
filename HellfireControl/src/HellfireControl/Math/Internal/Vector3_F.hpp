@@ -239,7 +239,7 @@ struct HC_ALIGNAS(16) Vec3F
 [[nodiscard]] HC_INLINE Vec3F operator*(Vec3F _vLeft, float _fRight) { return Vec3F(_vLeft.x * _fRight, _vLeft.y * _fRight, _vLeft.z * _fRight); }
 [[nodiscard]] HC_INLINE Vec3F operator*(float _fLeft, Vec3F _vRight) { return Vec3F(_vRight.x * _fLeft, _vRight.y * _fLeft, _vRight.z * _fLeft); }
 [[nodiscard]] HC_INLINE Vec3F operator/(Vec3F _vLeft, float _fRight) { return Vec3F(_vLeft.x / _fRight, _vLeft.y / _fRight, _vLeft.z / _fRight); }
-[[nodiscard]] HC_INLINE Vec3F operator/(float _fLeft, Vec3F _vRight) { return Vec3F(_vRight.x / _fLeft, _vRight.y / _fLeft, _vRight.z / _fLeft); }
+[[nodiscard]] HC_INLINE Vec3F operator/(float _fLeft, Vec3F _vRight) { return Vec3F(_fLeft / _vRight.x, _fLeft / _vRight.y, _fLeft / _vRight.z); }
 [[nodiscard]] HC_INLINE Vec3F operator*(Vec3F _vLeft, Vec3F _vRight) { return Vec3F(_vLeft.x * _vRight.x, _vLeft.y * _vRight.y, _vLeft.z * _vRight.z); }
 [[nodiscard]] HC_INLINE Vec3F operator/(Vec3F _vLeft, Vec3F _vRight) { return Vec3F(_vLeft.x / _vRight.x, _vLeft.y / _vRight.y, _vLeft.z / _vRight.z); }
 HC_INLINE Vec3F& operator+=(Vec3F& _vLeft, Vec3F _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }

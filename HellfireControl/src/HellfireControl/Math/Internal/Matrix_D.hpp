@@ -428,7 +428,7 @@ HC_INLINE MatrixD HC_VECTORCALL RotateYawPitchRollGlobalRad(Vec4D _vRotation, Ma
 
 #else
 
-struct MatrixD
+struct HC_ALIGNAS(128) MatrixD
 {
 	union {
 		struct {

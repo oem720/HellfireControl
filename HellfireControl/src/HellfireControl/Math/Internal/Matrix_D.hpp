@@ -765,7 +765,7 @@ HC_INLINE MatrixD& operator/=(MatrixD& _mLeft, double _fRight) { _mLeft = _mLeft
 
 [[nodiscard]] HC_INLINE MatrixD RotationTranslationRadD(const Vec3D& _vRotation, const Vec3D& _vTranslation) {
 	MatrixD mMat = RotationYawPitchRollRadD(_vRotation);
-	mMat[3] = _vTranslation;
+	mMat[3] = Vec4D(_vTranslation, 1.0f);
 
 	return mMat;
 }

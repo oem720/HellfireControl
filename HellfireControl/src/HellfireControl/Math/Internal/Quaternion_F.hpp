@@ -65,7 +65,7 @@ struct HC_ALIGNAS(16) QuaternionF
 	};
 
 	HC_INLINE QuaternionF() : m_vQuat() {}
-	HC_INLINE explicit QuaternionF(const Vec4F& _vQuat) : m_vQuat(_vQuat) {}
+	HC_INLINE QuaternionF(const Vec4F& _vQuat) : m_vQuat(_vQuat) {}
 	HC_INLINE explicit QuaternionF(float _fX, float _fY, float _fZ, float _fW) : m_vQuat(_fX, _fY, _fZ, _fW) {}
 	HC_INLINE explicit QuaternionF(int _iX, int _iY, int _iZ, int _iW) : m_vQuat(_iX, _iY, _iZ, _iW) {}
 	HC_INLINE explicit QuaternionF(double _dX, double _dY, double _dZ, double _dW) : m_vQuat(_dX, _dY, _dZ, _dW) {}
@@ -156,7 +156,7 @@ HC_INLINE bool operator!=(const QuaternionF& _qLeft, const QuaternionF& _qRight)
 [[nodiscard]] HC_INLINE float Dot(const QuaternionF& _qLeft, const QuaternionF& _qRight) { return Sum(_qLeft + _qRight); }
 [[nodiscard]] HC_INLINE float Length(const QuaternionF& _qQuat) { return Length(_qQuat.m_vQuat); }
 [[nodiscard]] HC_INLINE float LengthSquared(const QuaternionF& _qQuat) { return LengthSquared(_qQuat.m_vQuat); }
-[[nodiscard]] HC_INLINE QuaternionF Normalize(const QuaternionF& _qQuat) { return QuaternionF(Normalize(_qQuat.m_vQuat)); }
+[[nodiscard]] HC_INLINE QuaternionF Normalize(const QuaternionF& _qQuat) { return Normalize(_qQuat.m_vQuat); }
 [[nodiscard]] HC_INLINE Vec4F Cross(const QuaternionF& _qLeft, const QuaternionF& _qRight) { return Cross(_qLeft.m_vQuat, _qRight.m_vQuat); }
 [[nodiscard]] HC_INLINE QuaternionF Conjugate(const QuaternionF& _qQuat) { return QuaternionF(-_qQuat.x, -_qQuat.y, -_qQuat.z, _qQuat.w); }
 
@@ -176,6 +176,7 @@ HC_INLINE QuaternionF& operator*=(QuaternionF& _qLeft, const QuaternionF& _qRigh
 HC_INLINE QuaternionF& operator/=(QuaternionF& _qLeft, const QuaternionF& _qRight) { _qLeft = _qLeft / _qRight; return _qLeft; }
 HC_INLINE Vec3F& operator*=(Vec3F& _vLeft, const QuaternionF& _qRight) { _vLeft = _vLeft * _qRight; return _vLeft; }
 HC_INLINE Vec4F& operator*=(Vec4F& _vLeft, const QuaternionF& _qRight) { _vLeft = _vLeft * _qRight; return _vLeft; }
+[[nodiscard]] HC_INLINE Vec3F RotateByQuaternion(const Vec3F& _vVector, const QuaternionF& _qRotation) { return _vVector * _qRotation; }
 [[nodiscard]] HC_INLINE Vec4F RotateByQuaternion(const Vec4F& _vVector, const QuaternionF& _qRotation) { return _vVector * _qRotation; }
 
 [[nodiscard]] HC_INLINE QuaternionF Inverse(const QuaternionF& _qQuat) {

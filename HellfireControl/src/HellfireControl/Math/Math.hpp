@@ -11,3 +11,6 @@
 #include <HellfireControl/Math/Quaternion.hpp>
 #endif
 
+namespace Math {
+
+}

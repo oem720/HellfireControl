@@ -3,7 +3,7 @@
 #include <HellfireControl/Math/Internal/Vector_Common.hpp>
 
 #if HC_USE_SIMD
-#define HC_SHUFFLE3F(_vec, _x, _y, _z) Vec3F(_mm_shuffle_ps((_vec).m_fVec, (_vec).m_fVec, _MM_SHUFFLE(_z, _z, _y, _x)))
+/*#define HC_SHUFFLE3F(_vec, _x, _y, _z) Vec3F(_mm_shuffle_ps((_vec).m_fVec, (_vec).m_fVec, _MM_SHUFFLE(_z, _z, _y, _x)))
 
 struct Vec3F {
 	__m128 m_fVec;
@@ -133,7 +133,7 @@ HC_INLINE float HC_VECTORCALL LengthSquared(Vec3F _vVector) { return Dot(_vVecto
 HC_INLINE Vec3F HC_VECTORCALL Normalize(Vec3F _vVector) { return _vVector * (1.0f / Length(_vVector)); }
 HC_INLINE float HC_VECTORCALL AngleBetween(Vec3F _vLeft, Vec3F _vRight) { return acosf(Dot(_vLeft, _vRight)); }
 HC_INLINE Vec3F HC_VECTORCALL Cross(Vec3F _vLeft, Vec3F _vRight) { return (_vLeft.ZXY() * _vRight - _vLeft * _vRight.ZXY()).ZXY(); }
-HC_INLINE Vec3F HC_VECTORCALL Abs(Vec3F _vVector) { _vVector.m_fVec = _mm_andnot_ps(_vVector.m_fVec, SignBitMaskF().m_fVec); return _vVector; }
+HC_INLINE Vec3F HC_VECTORCALL Abs(Vec3F _vVector) { _vVector.m_fVec = _mm_andnot_ps(_vVector.m_fVec, SignBitMaskF().m_fVec); return _vVector; }*/
 
 #else
 

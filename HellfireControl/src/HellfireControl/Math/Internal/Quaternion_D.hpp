@@ -65,7 +65,7 @@ struct HC_ALIGNAS(32) QuaternionD
 	};
 
 	HC_INLINE QuaternionD() { m_vQuat = Vec4D(); }
-	HC_INLINE explicit QuaternionD(const Vec4D& _vQuat) { m_vQuat = _vQuat; }
+	HC_INLINE QuaternionD(const Vec4D& _vQuat) { m_vQuat = _vQuat; }
 	HC_INLINE explicit QuaternionD(float _fX, float _fY, float _fZ, float _fW) { m_vQuat = Vec4D(_fX, _fY, _fZ, _fW); }
 	HC_INLINE explicit QuaternionD(int _iX, int _iY, int _iZ, int _iW) { m_vQuat = Vec4D(_iX, _iY, _iZ, _iW); }
 	HC_INLINE explicit QuaternionD(double _dX, double _dY, double _dZ, double _dW) { m_vQuat = Vec4D(_dX, _dY, _dZ, _dW); }
@@ -150,7 +150,7 @@ HC_INLINE bool operator!=(const QuaternionD& _qLeft, const QuaternionD& _qRight)
 [[nodiscard]] HC_INLINE double Dot(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return Sum(_qLeft + _qRight); }
 [[nodiscard]] HC_INLINE double Length(const QuaternionD& _qQuat) { return Length(_qQuat.m_vQuat); }
 [[nodiscard]] HC_INLINE double LengthSquared(const QuaternionD& _qQuat) { return LengthSquared(_qQuat.m_vQuat); }
-[[nodiscard]] HC_INLINE QuaternionD Normalize(const QuaternionD& _qQuat) { return QuaternionD(Normalize(_qQuat.m_vQuat)); }
+[[nodiscard]] HC_INLINE QuaternionD Normalize(const QuaternionD& _qQuat) { return Normalize(_qQuat.m_vQuat); }
 [[nodiscard]] HC_INLINE Vec4D Cross(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return Cross(_qLeft.m_vQuat, _qRight.m_vQuat); }
 [[nodiscard]] HC_INLINE QuaternionD Conjugate(const QuaternionD& _qQuat) { return QuaternionD(-_qQuat.x, -_qQuat.y, -_qQuat.z, _qQuat.w); }
 

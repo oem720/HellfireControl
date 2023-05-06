@@ -24,6 +24,7 @@ struct HC_ALIGNAS(16) RotorF {
 
 	HC_INLINE RotorF() : m_vRot(0.0f, 0.0f, 0.0f, 1.0f) {}
 	HC_INLINE RotorF(const Vec4F& _vRot) : m_vRot(_vRot) {}
+	HC_INLINE RotorF(const RotorF& _rRot) : m_vRot(_rRot.m_vRot) {}
 	HC_INLINE explicit RotorF(float _fA, const Vec3F& _vBV) : m_vRot(_vBV, _fA) {}
 	HC_INLINE explicit RotorF(float _fB01, float _fB02, float _fB12, float _fS) : m_vRot(_fB01, _fB02, _fB12, _fS) {}
 	HC_INLINE explicit RotorF(int _fB01, int _fB02, int _fB12, int _fS) : m_vRot(_fB01, _fB02, _fB12, _fS) {}
@@ -95,6 +96,7 @@ struct HC_ALIGNAS(16) RotorF {
 [[nodiscard]] HC_INLINE float Length(const RotorF& _rRot) { return Length(_rRot.m_vRot); }
 [[nodiscard]] HC_INLINE float LengthSquared(const RotorF& _rRot) { return LengthSquared(_rRot.m_vRot); }
 [[nodiscard]] HC_INLINE RotorF Normalize(const RotorF& _rRot) { return Normalize(_rRot.m_vRot); }
+[[nodiscard]] HC_INLINE float Dot(const RotorF& _rLeft, const RotorF& _rRight) { return Dot(_rLeft.m_vRot, _rRight.m_vRot); }
 
 [[nodiscard]] HC_INLINE RotorF operator*(const RotorF& _rLeft, const RotorF& _rRight) {
 	return RotorF(_rLeft.b01 * _rRight.a + _rLeft.a * _rRight.b01 + _rLeft.b12 * _rRight.b02 - _rLeft.b02 * _rRight.b12,
@@ -134,8 +136,16 @@ struct HC_ALIGNAS(16) RotorF {
 [[nodiscard]] HC_INLINE Vec3F operator*(const RotorF& _rLeft, const Vec3F& _vRight) { return RotateByRotor(_vRight, _rLeft); }
 [[nodiscard]] HC_INLINE Vec4F operator*(const Vec4F& _vLeft, const RotorF& _rRight) { return RotateByRotor(_vLeft, _rRight); }
 [[nodiscard]] HC_INLINE Vec4F operator*(const RotorF& _rLeft, const Vec4F& _vRight) { return RotateByRotor(_vRight, _rLeft); }
+[[nodiscard]] HC_INLINE RotorF operator*(const RotorF& _rLeft, float _fRight) { return RotorF(_rLeft.m_vRot * _fRight); }
+[[nodiscard]] HC_INLINE RotorF operator*(float _fLeft, const RotorF& _rRight) { return RotorF(_rRight.m_vRot * _fLeft); }
+[[nodiscard]] HC_INLINE RotorF operator-(const RotorF& _rRot) { return RotorF(-_rRot.m_vRot); }
+[[nodiscard]] HC_INLINE RotorF operator+(const RotorF& _rLeft, const RotorF& _rRight) { return RotorF(_rLeft.m_vRot + _rRight.m_vRot); }
+[[nodiscard]] HC_INLINE RotorF operator-(const RotorF& _rLeft, const RotorF& _rRight) { return RotorF(_rLeft.m_vRot - _rRight.m_vRot); }
 
 HC_INLINE RotorF& operator*=(RotorF& _rLeft, const RotorF& _rRight) { _rLeft = _rLeft * _rRight; return _rLeft; }
+HC_INLINE RotorF& operator+=(RotorF& _rLeft, const RotorF& _rRight) { _rLeft = _rLeft + _rRight; return _rLeft; }
+HC_INLINE RotorF& operator-=(RotorF& _rLeft, const RotorF& _rRight) { _rLeft = _rLeft - _rRight; return _rLeft; }
+HC_INLINE RotorF& operator*=(RotorF& _rLeft, float _fRight) { _rLeft = _rLeft * _fRight; return _rLeft; }
 HC_INLINE Vec3F& operator*=(Vec3F& _vLeft, const RotorF& _rRight) { _vLeft = _vLeft * _rRight; return _vLeft; }
 HC_INLINE Vec4F& operator*=(Vec4F& _vLeft, const RotorF& _rRight) { _vLeft = _vLeft * _rRight; return _vLeft; }
 

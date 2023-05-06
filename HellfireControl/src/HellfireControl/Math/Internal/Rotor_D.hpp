@@ -24,6 +24,7 @@ struct HC_ALIGNAS(32) RotorD {
 
 	HC_INLINE RotorD() : m_vRot(0.0f, 0.0f, 0.0f, 1.0f) {}
 	HC_INLINE RotorD(const Vec4D & _vRot) : m_vRot(_vRot) {}
+	HC_INLINE RotorD(const RotorD& _rRot) : m_vRot(_rRot.m_vRot) {}
 	HC_INLINE explicit RotorD(double _dA, const Vec3D & _vBV) : m_vRot(_vBV, _dA) {}
 	HC_INLINE explicit RotorD(float _fB01, float _fB02, float _fB12, float _fS) : m_vRot(_fB01, _fB02, _fB12, _fS) {}
 	HC_INLINE explicit RotorD(int _fB01, int _fB02, int _fB12, int _fS) : m_vRot(_fB01, _fB02, _fB12, _fS) {}
@@ -52,9 +53,9 @@ struct HC_ALIGNAS(32) RotorD {
 		double dSinYaw = sin(_vEulerAngles.z * 0.5);
 
 		m_vRot = Vec4D(-(dCosRoll * dCosPitch * dSinYaw - dSinRoll * dSinPitch * dCosYaw),
-			-(dCosRoll * dSinPitch * dCosYaw + dSinRoll * dCosPitch * dSinYaw),
-			-(dSinRoll * dCosPitch * dCosYaw - dCosRoll * dSinPitch * dSinYaw),
-			dCosRoll * dCosPitch * dCosYaw + dSinRoll * dSinPitch * dSinYaw);
+					   -(dCosRoll * dSinPitch * dCosYaw + dSinRoll * dCosPitch * dSinYaw),
+					   -(dSinRoll * dCosPitch * dCosYaw - dCosRoll * dSinPitch * dSinYaw),
+					   dCosRoll * dCosPitch * dCosYaw + dSinRoll * dSinPitch * dSinYaw);
 	}
 
 	HC_INLINE explicit RotorD(double _dAngle, const Vec3D & _vBiVector) {
@@ -95,6 +96,7 @@ struct HC_ALIGNAS(32) RotorD {
 [[nodiscard]] HC_INLINE float Length(const RotorD& _rRot) { return Length(_rRot.m_vRot); }
 [[nodiscard]] HC_INLINE float LengthSquared(const RotorD& _rRot) { return LengthSquared(_rRot.m_vRot); }
 [[nodiscard]] HC_INLINE RotorD Normalize(const RotorD& _rRot) { return Normalize(_rRot.m_vRot); }
+[[nodiscard]] HC_INLINE float Dot(const RotorD& _rLeft, const RotorD& _rRight) { return Dot(_rLeft.m_vRot, _rRight.m_vRot); }
 
 [[nodiscard]] HC_INLINE RotorD operator*(const RotorD& _rLeft, const RotorD& _rRight) {
 	return RotorD(_rLeft.b01 * _rRight.a + _rLeft.a * _rRight.b01 + _rLeft.b12 * _rRight.b02 - _rLeft.b02 * _rRight.b12,
@@ -134,8 +136,16 @@ struct HC_ALIGNAS(32) RotorD {
 [[nodiscard]] HC_INLINE Vec3D operator*(const RotorD& _rLeft, const Vec3D& _vRight) { return RotateByRotor(_vRight, _rLeft); }
 [[nodiscard]] HC_INLINE Vec4D operator*(const Vec4D& _vLeft, const RotorD& _rRight) { return RotateByRotor(_vLeft, _rRight); }
 [[nodiscard]] HC_INLINE Vec4D operator*(const RotorD& _rLeft, const Vec4D& _vRight) { return RotateByRotor(_vRight, _rLeft); }
+[[nodiscard]] HC_INLINE RotorD operator*(const RotorD& _rLeft, double _dRight) { return RotorD(_rLeft.m_vRot * _dRight); }
+[[nodiscard]] HC_INLINE RotorD operator*(double _dLeft, const RotorD& _rRight) { return RotorD(_rRight.m_vRot * _dLeft); }
+[[nodiscard]] HC_INLINE RotorD operator-(const RotorD& _rRot) { return RotorD(-_rRot.m_vRot); }
+[[nodiscard]] HC_INLINE RotorD operator+(const RotorD& _rLeft, const RotorD& _rRight) { return RotorD(_rLeft.m_vRot + _rRight.m_vRot); }
+[[nodiscard]] HC_INLINE RotorD operator-(const RotorD& _rLeft, const RotorD& _rRight) { return RotorD(_rLeft.m_vRot - _rRight.m_vRot); }
 
 HC_INLINE RotorD& operator*=(RotorD& _rLeft, const RotorD& _rRight) { _rLeft = _rLeft * _rRight; return _rLeft; }
+HC_INLINE RotorD& operator+=(RotorD& _rLeft, const RotorD& _rRight) { _rLeft = _rLeft + _rRight; return _rLeft; }
+HC_INLINE RotorD& operator-=(RotorD& _rLeft, const RotorD& _rRight) { _rLeft = _rLeft - _rRight; return _rLeft; }
+HC_INLINE RotorD& operator*=(RotorD& _rLeft, double _dRight) { _rLeft = _rLeft * _dRight; return _rLeft; }
 HC_INLINE Vec3D& operator*=(Vec3D& _vLeft, const RotorD& _rRight) { _vLeft = _vLeft * _rRight; return _vLeft; }
 HC_INLINE Vec4D& operator*=(Vec4D& _vLeft, const RotorD& _rRight) { _vLeft = _vLeft * _rRight; return _vLeft; }
 

@@ -7,7 +7,8 @@
 
 //Defines for commonly used math functions
 #define HC_PI 3.14159265358979323846f
-#define HC_EPSILON 1.19209e-07
+#define HC_EPSILON 1.19209e-07f
+#define HC_NEAR_ONE 0.99995f
 #define HC_RAD2DEG(_val) ((_val) * 180.0f / HC_PI)
 #define HC_DEG2RAD(_val) ((_val) * HC_PI / 180.0f)
 #define HC_FLOAT_COMPARE(_val1, _val2) fabsf(_val1 - _val2) < HC_EPSILON
@@ -21,4 +22,4 @@
 //Defines for engine conditionals
 #define HC_USE_SIMD 0
 #define HC_ENABLE_DOUBLE_PRECISION 1
-#define HC_USE_ROTOR 0
+#define HC_USE_ROTOR 1

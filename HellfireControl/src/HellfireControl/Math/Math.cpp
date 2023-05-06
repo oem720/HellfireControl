@@ -131,6 +131,40 @@ namespace Math {
 		return (fFrom * qStart) + (fTo * qEnd);
 	}
 
+	[[nodiscard]] HC_INLINE float WrapAround(float _fVal, float _fLowerBound, float _fUpperBound) {
+		if (_fLowerBound > _fUpperBound) return WrapAround(_fVal, _fUpperBound, _fLowerBound);
+		return (_fVal >= 0.0f ? _fLowerBound : _fUpperBound) + fmodf(_fVal, _fUpperBound - _fLowerBound);
+	}
+
+	[[nodiscard]] HC_INLINE Vec2F WrapAround(const Vec2F& _vVal, const Vec2F& _vLowerBound, const Vec2F& _vUpperBound) {
+		return Vec2F(WrapAround(_vVal.x, _vLowerBound.x, _vUpperBound.y),
+					 WrapAround(_vVal.y, _vLowerBound.y, _vUpperBound.y));
+	}
+
+	[[nodiscard]] HC_INLINE Vec3F WrapAround(const Vec3F& _vVal, const Vec3F& _vLowerBound, const Vec3F& _vUpperBound){
+		return Vec3F(WrapAround(_vVal.x, _vLowerBound.x, _vUpperBound.y),
+					 WrapAround(_vVal.y, _vLowerBound.y, _vUpperBound.y),
+					 WrapAround(_vVal.z, _vLowerBound.z, _vUpperBound.z));
+	}
+
+	[[nodiscard]] HC_INLINE Vec4F WrapAround(const Vec4F& _vVal, const Vec4F& _vLowerBound, const Vec4F& _vUpperBound) {
+		return Vec4F(WrapAround(_vVal.x, _vLowerBound.x, _vUpperBound.y),
+					 WrapAround(_vVal.y, _vLowerBound.y, _vUpperBound.y),
+					 WrapAround(_vVal.z, _vLowerBound.z, _vUpperBound.z),
+					 WrapAround(_vVal.w, _vLowerBound.w, _vUpperBound.w));
+	}
+
+	[[nodiscard]] HC_INLINE MatrixF WrapAround(const MatrixF& _mVal, const MatrixF& _mLowerBound, const MatrixF& _mUpperBound) {
+		return MatrixF(WrapAround(_mVal[0], _mLowerBound[0], _mUpperBound[0]),
+					   WrapAround(_mVal[1], _mLowerBound[1], _mUpperBound[1]), 
+					   WrapAround(_mVal[2], _mLowerBound[2], _mUpperBound[2]),
+					   WrapAround(_mVal[3], _mLowerBound[3], _mUpperBound[3]));
+	}
+
+	[[nodiscard]] HC_INLINE QuaternionF WrapAround(const QuaternionF& _qVal, const QuaternionF& _qLowerBound, const QuaternionF& _qUpperBound) {
+		return QuaternionF(WrapAround(_qVal.m_vQuat, _qLowerBound.m_vQuat, _qUpperBound.m_vQuat));
+	}
+
 #if HC_ENABLE_DOUBLE_PRECISION
 	HC_INLINE double LERP(double _dStart, double _dEnd, double _dRatio) { return (_dEnd - _dStart) * _dRatio + _dStart; }
 	HC_INLINE Vec2D LERP(const Vec2D& _vStart, const Vec2D& _vEnd, double _dRatio) { return (_vEnd - _vStart) * _dRatio + _vStart; }
@@ -260,6 +294,40 @@ namespace Math {
 
 		return (dFrom * qStart) + (dTo * qEnd);
 	}
+
+	[[nodiscard]] HC_INLINE double WrapAround(double _dVal, double _dLowerBound, double _dUpperBound) {
+		if (_dLowerBound > _dUpperBound) return WrapAround(_dVal, _dUpperBound, _dLowerBound);
+		return (_dVal >= 0.0 ? _dLowerBound : _dUpperBound) + fmod(_dVal, _dUpperBound - _dLowerBound);
+	}
+
+	[[nodiscard]] HC_INLINE Vec2D WrapAround(const Vec2D& _vVal, const Vec2D& _vLowerBound, const Vec2D& _vUpperBound) {
+		return Vec2D(WrapAround(_vVal.x, _vLowerBound.x, _vUpperBound.y),
+					 WrapAround(_vVal.y, _vLowerBound.y, _vUpperBound.y));
+	}
+
+	[[nodiscard]] HC_INLINE Vec3D WrapAround(const Vec3D& _vVal, const Vec3D& _vLowerBound, const Vec3D& _vUpperBound) {
+		return Vec3D(WrapAround(_vVal.x, _vLowerBound.x, _vUpperBound.y),
+					 WrapAround(_vVal.y, _vLowerBound.y, _vUpperBound.y),
+					 WrapAround(_vVal.z, _vLowerBound.z, _vUpperBound.z));
+	}
+
+	[[nodiscard]] HC_INLINE Vec4D WrapAround(const Vec4D& _vVal, const Vec4D& _vLowerBound, const Vec4D& _vUpperBound) {
+		return Vec4D(WrapAround(_vVal.x, _vLowerBound.x, _vUpperBound.y),
+					 WrapAround(_vVal.y, _vLowerBound.y, _vUpperBound.y),
+					 WrapAround(_vVal.z, _vLowerBound.z, _vUpperBound.z),
+					 WrapAround(_vVal.w, _vLowerBound.w, _vUpperBound.w));
+	}
+
+	[[nodiscard]] HC_INLINE MatrixD WrapAround(const MatrixD& _mVal, const MatrixD& _mLowerBound, const MatrixD& _mUpperBound) {
+		return MatrixD(WrapAround(_mVal[0], _mLowerBound[0], _mUpperBound[0]),
+					   WrapAround(_mVal[1], _mLowerBound[1], _mUpperBound[1]),
+					   WrapAround(_mVal[2], _mLowerBound[2], _mUpperBound[2]),
+					   WrapAround(_mVal[3], _mLowerBound[3], _mUpperBound[3]));
+	}
+
+	[[nodiscard]] HC_INLINE QuaternionD WrapAround(const QuaternionD& _qVal, const QuaternionD& _qLowerBound, const QuaternionD& _qUpperBound) {
+		return QuaternionD(WrapAround(_qVal.m_vQuat, _qLowerBound.m_vQuat, _qUpperBound.m_vQuat));
+	}
 #endif
 
 #if HC_USE_ROTOR
@@ -291,6 +359,10 @@ namespace Math {
 		return (fFrom * rStart) + (fTo * rEnd);
 	}
 
+	[[nodiscard]] HC_INLINE RotorF WrapAround(const RotorF& _rVal, const RotorF& _rLowerBound, const RotorF& _rUpperBound) {
+		return RotorF(WrapAround(_rVal.m_vRot, _rLowerBound.m_vRot, _rUpperBound.m_vRot));
+	}
+
 #if HC_ENABLE_DOUBLE_PRECISION
 	HC_INLINE RotorD LERP(const RotorD& _rStart, const RotorD& _rEnd, double _dRatio) { return RotorD(LERP(_rStart.m_vRot, _rEnd.m_vRot, _dRatio)); }
 
@@ -318,6 +390,10 @@ namespace Math {
 		double dFrom = sin((1.0 - _dRatio) * dTheta) / sin(dTheta);
 		double dTo = sin(_dRatio * dTheta) / sin(dTheta);
 		return (dFrom * rStart) + (dTo * rEnd);
+	}
+
+	[[nodiscard]] HC_INLINE RotorD WrapAround(const RotorD& _rVal, const RotorD& _rLowerBound, const RotorD& _rUpperBound) {
+		return RotorD(WrapAround(_rVal.m_vRot, _rLowerBound.m_vRot, _rUpperBound.m_vRot));
 	}
 #endif
 #endif

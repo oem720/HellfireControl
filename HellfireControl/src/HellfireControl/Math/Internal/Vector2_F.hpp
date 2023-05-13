@@ -121,7 +121,6 @@ HC_INLINE bool operator>=(const Vec2F& _vLeft, const Vec2F& _vRight) { return !(
 HC_INLINE bool operator!=(const Vec2F& _vLeft, const Vec2F& _vRight) { return !(_vLeft == _vRight); }
 [[nodiscard]] HC_INLINE Vec2F Min(const Vec2F& _vLeft, const Vec2F& _vRight) { return Vec2F(HC_TERNARY(_vLeft.x, _vRight.x, <), HC_TERNARY(_vLeft.y, _vRight.y, <)); }
 [[nodiscard]] HC_INLINE Vec2F Max(const Vec2F& _vLeft, const Vec2F& _vRight) { return Vec2F(HC_TERNARY(_vLeft.x, _vRight.x, >), HC_TERNARY(_vLeft.y, _vRight.y, >)); }
-[[nodiscard]] HC_INLINE Vec2F Clamp(const Vec2F& _vVal, const Vec2F& _vMin, const Vec2F& _vMax) { return Min(Max(_vVal, _vMax), _vMin); }
 [[nodiscard]] HC_INLINE float Sum(const Vec2F& _vVector) { return _vVector.x + _vVector.y; }
 [[nodiscard]] HC_INLINE float Dot(const Vec2F& _vLeft, const Vec2F& _vRight) { return Sum(_vLeft * _vRight); }
 [[nodiscard]] HC_INLINE float Length(const Vec2F& _vVector) { return sqrtf(Dot(_vVector, _vVector)); }

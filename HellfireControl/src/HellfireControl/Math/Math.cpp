@@ -2,6 +2,18 @@
 #include <HellfireControl/Math/Math.hpp>
 
 namespace Math {
+	HC_INLINE float Clamp(float _fVal, float _fMin, float _fMax) { return _fVal > _fMax ? _fMax : (_fVal < _fMin ? _fMin : _fVal); }
+	HC_INLINE Vec2F Clamp(const Vec2F& _vVal, const Vec2F& _vMin, const Vec2F& _vMax) { return Min(Max(_vVal, _vMax), _vMin); }
+	HC_INLINE Vec3F Clamp(const Vec3F& _vVector, const Vec3F& _vMin, const Vec3F& _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+	HC_INLINE Vec4F Clamp(const Vec4F& _vVector, const Vec4F& _vMin, const Vec4F& _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+	HC_INLINE QuaternionF Clamp(const QuaternionF& _qVal, const QuaternionF& _qMin, const QuaternionF& _qMax) { return Clamp(_qVal.m_vQuat, _qMin.m_vQuat, _qMax.m_vQuat); }
+	HC_INLINE MatrixF Clamp(const MatrixF& _mVal, const MatrixF& _mMin, const MatrixF& _mMax) { 
+		return MatrixF(Clamp(_mVal[0], _mMin[0], _mMax[0]),
+					   Clamp(_mVal[1], _mMin[1], _mMax[1]),
+					   Clamp(_mVal[2], _mMin[2], _mMin[2]),
+					   Clamp(_mVal[3], _mMin[3], _mMax[3]));
+	}
+
 	HC_INLINE float Lerp(float _fStart, float _fEnd, float _fRatio) { return (_fEnd - _fStart) * _fRatio + _fStart; }
 	HC_INLINE Vec2F Lerp(const Vec2F& _vStart, const Vec2F& _vEnd, float _fRatio) { return (_vEnd - _vStart) * _fRatio + _vStart; }
 	HC_INLINE Vec3F Lerp(const Vec3F& _vStart, const Vec3F& _vEnd, float _fRatio) { return (_vEnd - _vStart) * _fRatio + _vStart; }
@@ -193,103 +205,166 @@ namespace Math {
 	[[nodiscard]] HC_INLINE MatrixF Ln(const MatrixF& _mVal) { return MatrixF(Ln(_mVal[0]), Ln(_mVal[1]), Ln(_mVal[2]), Ln(_mVal[3])); }
 	[[nodiscard]] HC_INLINE QuaternionF Ln(const QuaternionF& _qVal) { return Ln(_qVal.m_vQuat); }
 
-	[[nodiscard]] HC_INLINE float Oscillate(float _fStart, float _fEnd, float _fRatio, float _fPeriod, float _fTime) {
+	[[nodiscard]] HC_INLINE float Oscillate(float _fMin, float _fMax, float _fPeriod, float _fTime) {
+		if (_fMax < _fMin) return Oscillate(_fMax, _fMin, _fPeriod, _fTime);
 
+		float fAmp = (_fMax - _fMin) * 0.5f;
+		float fPeriod = (HC_2PI / _fPeriod);
+		float fMid = (_fMin + _fMax) * 0.5f;
+
+		return fAmp * cosf(fPeriod * _fTime) + fMid;
 	}
 
-	[[nodiscard]] HC_INLINE Vec2F Oscillate(const Vec2F& _vStart, const Vec2F& _vEnd, float _fRatio, float _fPeriod, float _fTime){
-
+	[[nodiscard]] HC_INLINE Vec2F Oscillate(const Vec2F& _vMin, const Vec2F& _vMax, float _fPeriod, float _fTime){
+		return Vec2F(Oscillate(_vMin[0], _vMax[0], _fPeriod, _fTime),
+					 Oscillate(_vMin[1], _vMax[2], _fPeriod, _fTime));
 	}
 
-	[[nodiscard]] HC_INLINE Vec3F Oscillate(const Vec3F& _vStart, const Vec3F& _vEnd, float _fRatio, float _fPeriod, float _fTime){
-
+	[[nodiscard]] HC_INLINE Vec3F Oscillate(const Vec3F& _vMin, const Vec3F& _vMax, float _fPeriod, float _fTime){
+		return Vec3F(Oscillate(_vMin[0], _vMax[0], _fPeriod, _fTime),
+					 Oscillate(_vMin[1], _vMax[2], _fPeriod, _fTime),
+					 Oscillate(_vMin[2], _vMax[2], _fPeriod, _fTime));
 	}
 
-	[[nodiscard]] HC_INLINE Vec4F Oscillate(const Vec4F& _vStart, const Vec4F& _vEnd, float _fRatio, float _fPeriod, float _fTime) {
-
+	[[nodiscard]] HC_INLINE Vec4F Oscillate(const Vec4F& _vMin, const Vec4F& _vMax, float _fPeriod, float _fTime) {
+		return Vec4F(Oscillate(_vMin[0], _vMax[0], _fPeriod, _fTime),
+					 Oscillate(_vMin[1], _vMax[2], _fPeriod, _fTime),
+					 Oscillate(_vMin[2], _vMax[2], _fPeriod, _fTime),
+					 Oscillate(_vMin[3], _vMax[3], _fPeriod, _fTime));
 	}
 
-	[[nodiscard]] HC_INLINE MatrixF Oscillate(const MatrixF& _mStart, const MatrixF& _mEnd, float _fRatio, float _fPeriod, float _fTime) {
-
+	[[nodiscard]] HC_INLINE MatrixF Oscillate(const MatrixF& _mMin, const MatrixF& _mMax, float _fPeriod, float _fTime) {
+		return MatrixF(Oscillate(_mMin[0], _mMax[0], _fPeriod, _fTime),
+					   Oscillate(_mMin[1], _mMax[2], _fPeriod, _fTime),
+					   Oscillate(_mMin[2], _mMax[2], _fPeriod, _fTime),
+					   Oscillate(_mMin[3], _mMax[3], _fPeriod, _fTime));
 	}
 
-	[[nodiscard]] HC_INLINE QuaternionF Oscillate(const QuaternionF& _qStart, const QuaternionF& _qEnd, float _fRatio, float _fPeriod, float _fTime) {
-
+	[[nodiscard]] HC_INLINE QuaternionF Oscillate(const QuaternionF& _qMin, const QuaternionF& _qMax, float _fPeriod, float _fTime) {
+		return Oscillate(_qMin.m_vQuat, _qMax.m_vQuat, _fPeriod, _fTime);
 	}
 
-	[[nodiscard]] HC_INLINE float DampedOscillate(float _fStart, float _fEnd, float _fRatio, float _fPeriod, float _fTime) {
+	[[nodiscard]] HC_INLINE float DampedOscillate(float _fMin, float _fMax, float _fPeriod, float _fTime, float _fDampingFactor) {
+		if (_fMax < _fMin) return DampedOscillate(_fMax, _fMin, _fPeriod, _fTime, _fDampingFactor);
 
+		float fAmp = ((_fMax - _fMin) * 0.5f) * expf(-(_fDampingFactor) * _fTime);
+		float fPeriod = HC_2PI / _fPeriod;
+		float fMid = (_fMax + _fMin) * 0.5f;
+
+		return fAmp * cosf(fPeriod * _fTime) + fMid;
 	}
 
-	[[nodiscard]] HC_INLINE Vec2F DampedOscillate(const Vec2F& _vStart, const Vec2F& _vEnd, float _fRatio, float _fPeriod, float _fTime) {
-
+	[[nodiscard]] HC_INLINE Vec2F DampedOscillate(const Vec2F& _vMin, const Vec2F& _vMax, float _fPeriod, float _fTime, float _fDampingFactor) {
+		return Vec2F(DampedOscillate(_vMin[0], _vMax[0], _fPeriod, _fTime, _fDampingFactor),
+					 DampedOscillate(_vMin[1], _vMax[1], _fPeriod, _fTime, _fDampingFactor));
 	}
 
-	[[nodiscard]] HC_INLINE Vec3F DampedOscillate(const Vec3F& _vStart, const Vec3F& _vEnd, float _fRatio, float _fPeriod, float _fTime) {
-
+	[[nodiscard]] HC_INLINE Vec3F DampedOscillate(const Vec3F& _vMin, const Vec3F& _vMax, float _fPeriod, float _fTime, float _fDampingFactor) {
+		return Vec3F(DampedOscillate(_vMin[0], _vMax[0], _fPeriod, _fTime, _fDampingFactor),
+					 DampedOscillate(_vMin[1], _vMax[1], _fPeriod, _fTime, _fDampingFactor),
+					 DampedOscillate(_vMin[2], _vMax[2], _fPeriod, _fTime, _fDampingFactor));
 	}
 
-	[[nodiscard]] HC_INLINE Vec4F DampedOscillate(const Vec4F& _vStart, const Vec4F& _vEnd, float _fRatio, float _fPeriod, float _fTime) {
-
+	[[nodiscard]] HC_INLINE Vec4F DampedOscillate(const Vec4F& _vMin, const Vec4F& _vMax, float _fPeriod, float _fTime, float _fDampingFactor) {
+		return Vec4F(DampedOscillate(_vMin[0], _vMax[0], _fPeriod, _fTime, _fDampingFactor),
+					 DampedOscillate(_vMin[1], _vMax[1], _fPeriod, _fTime, _fDampingFactor),
+					 DampedOscillate(_vMin[2], _vMax[2], _fPeriod, _fTime, _fDampingFactor),
+					 DampedOscillate(_vMin[3], _vMax[3], _fPeriod, _fTime, _fDampingFactor));
 	}
 
-	[[nodiscard]] HC_INLINE MatrixF DampedOscillate(const MatrixF& _mStart, const MatrixF& _mEnd, float _fRatio, float _fPeriod, float _fTime) {
-
+	[[nodiscard]] HC_INLINE MatrixF DampedOscillate(const MatrixF& _mMin, const MatrixF& _mMax, float _fPeriod, float _fTime, float _fDampingFactor) {
+		return MatrixF(DampedOscillate(_mMin[0], _mMax[0], _fPeriod, _fTime, _fDampingFactor),
+					   DampedOscillate(_mMin[1], _mMax[1], _fPeriod, _fTime, _fDampingFactor),
+					   DampedOscillate(_mMin[2], _mMax[2], _fPeriod, _fTime, _fDampingFactor),
+					   DampedOscillate(_mMin[3], _mMax[3], _fPeriod, _fTime, _fDampingFactor));
 	}
 
-	[[nodiscard]] HC_INLINE QuaternionF DampedOscillate(const QuaternionF& _qStart, const QuaternionF& _qEnd, float _fRatio, float _fPeriod, float _fTime) {
-
+	[[nodiscard]] HC_INLINE QuaternionF DampedOscillate(const QuaternionF& _qMin, const QuaternionF& _qMax, float _fPeriod, float _fTime, float _fDampingFactor) {
+		return DampedOscillate(_qMin.m_vQuat, _qMax.m_vQuat, _fPeriod, _fTime, _fDampingFactor);
 	}
 
-	[[nodiscard]] HC_INLINE float SmoothStep(float _fVal, float _fStart, float _fEnd) {
-
+	[[nodiscard]] HC_INLINE float SmoothStep(float _fStart, float _fEnd, float _fRatio) {
+		_fRatio = Clamp(_fRatio);
+		_fRatio = _fRatio * _fRatio * (3.0f - (2.0f * _fRatio));
+		return _fEnd * _fRatio + _fStart * (1.0f - _fRatio);
 	}
 
-	[[nodiscard]] HC_INLINE Vec2F SmoothStep(const Vec2F& _vVal, const Vec2F& _vStart, const Vec2F& _vEnd) {
-
+	[[nodiscard]] HC_INLINE Vec2F SmoothStep(const Vec2F& _vStart, const Vec2F& _vEnd, float _fRatio) {
+		return Vec2F(SmoothStep(_vStart[0], _vEnd[0], _fRatio),
+					 SmoothStep(_vStart[1], _vEnd[1], _fRatio));
 	}
 
-	[[nodiscard]] HC_INLINE Vec3F SmoothStep(const Vec3F& _vVal, const Vec3F& _vStart, const Vec3F& _vEnd) {
-
+	[[nodiscard]] HC_INLINE Vec3F SmoothStep(const Vec3F& _vStart, const Vec3F& _vEnd, float _fRatio) {
+		return Vec3F(SmoothStep(_vStart[0], _vEnd[0], _fRatio),
+					 SmoothStep(_vStart[1], _vEnd[1], _fRatio),
+					 SmoothStep(_vStart[2], _vEnd[2], _fRatio));
 	}
 
-	[[nodiscard]] HC_INLINE Vec4F SmoothStep(const Vec4F& _vVal, const Vec4F& _vStart, const Vec4F& _vEnd) {
-
+	[[nodiscard]] HC_INLINE Vec4F SmoothStep(const Vec4F& _vStart, const Vec4F& _vEnd, float _fRatio) {
+		return Vec4F(SmoothStep(_vStart[0], _vEnd[0], _fRatio),
+					 SmoothStep(_vStart[1], _vEnd[1], _fRatio),
+					 SmoothStep(_vStart[2], _vEnd[2], _fRatio),
+					 SmoothStep(_vStart[3], _vEnd[3], _fRatio));
 	}
 
-	[[nodiscard]] HC_INLINE MatrixF SmoothStep(const MatrixF& _mVal, const MatrixF& _mStart, const MatrixF& _mEnd) {
-
+	[[nodiscard]] HC_INLINE MatrixF SmoothStep(const MatrixF& _mStart, const MatrixF& _mEnd, float _fRatio) {
+		return MatrixF(SmoothStep(_mStart[0], _mEnd[0], _fRatio),
+					   SmoothStep(_mStart[1], _mEnd[1], _fRatio),
+					   SmoothStep(_mStart[2], _mEnd[2], _fRatio),
+					   SmoothStep(_mStart[3], _mEnd[3], _fRatio));
 	}
 
-	[[nodiscard]] HC_INLINE QuaternionF SmoothStep(const QuaternionF& _qVal, const QuaternionF& _qStart, const QuaternionF& _qEnd) {
-
+	[[nodiscard]] HC_INLINE QuaternionF SmoothStep(const QuaternionF& _qStart, const QuaternionF& _qEnd, float _fRatio) {
+		return SmoothStep(_qStart.m_vQuat, _qEnd.m_vQuat, _fRatio);
 	}
 
-	[[nodiscard]] HC_INLINE float DampedSmoothStep(float _fVal, float _fStart, float _fEnd) {
-
+	[[nodiscard]] HC_INLINE float InverseSmoothStep(float _fVal) {
+		_fVal = Clamp(_fVal);
+		return 0.5f - sinf(asinf(1.0f - 2.0f * _fVal) / 3.0f);
 	}
 
-	[[nodiscard]] HC_INLINE Vec2F DampedSmoothStep(const Vec2F& _vVal, const Vec2F& _vStart, const Vec2F& _vEnd) {
-
+	[[nodiscard]] HC_INLINE Vec2F InverseSmoothStep(const Vec2F& _vVal) {
+		return Vec2F(InverseSmoothStep(_vVal[0]),
+					 InverseSmoothStep(_vVal[1]));
 	}
 
-	[[nodiscard]] HC_INLINE Vec3F DampedSmoothStep(const Vec3F& _vVal, const Vec3F& _vStart, const Vec3F& _vEnd) {
-
+	[[nodiscard]] HC_INLINE Vec3F InverseSmoothStep(const Vec3F& _vVal) {
+		return Vec3F(InverseSmoothStep(_vVal[0]),
+					 InverseSmoothStep(_vVal[1]),
+					 InverseSmoothStep(_vVal[2]));
 	}
 
-	[[nodiscard]] HC_INLINE Vec4F DampedSmoothStep(const Vec4F& _vVal, const Vec4F& _vStart, const Vec4F& _vEnd) {
-
+	[[nodiscard]] HC_INLINE Vec4F InverseSmoothStep(const Vec4F& _vVal) {
+		return Vec4F(InverseSmoothStep(_vVal[0]),
+					 InverseSmoothStep(_vVal[1]),
+					 InverseSmoothStep(_vVal[2]),
+					 InverseSmoothStep(_vVal[3]));
 	}
 
-	[[nodiscard]] HC_INLINE MatrixF DampedSmoothStep(const MatrixF& _mVal, const MatrixF& _mStart, const MatrixF& _mEnd) {
-
+	[[nodiscard]] HC_INLINE MatrixF InverseSmoothStep(const MatrixF& _mVal) {
+		return MatrixF(InverseSmoothStep(_mVal[0]),
+					   InverseSmoothStep(_mVal[1]),
+					   InverseSmoothStep(_mVal[2]),
+					   InverseSmoothStep(_mVal[3]));
 	}
 
-	[[nodiscard]] HC_INLINE QuaternionF DampedSmoothStep(const QuaternionF& _qVal, const QuaternionF& _qStart, const QuaternionF& _qEnd) {
-
+	[[nodiscard]] HC_INLINE QuaternionF InverseSmoothStep(const QuaternionF& _qVal) {
+		return InverseSmoothStep(_qVal.m_vQuat);
 	}
 
 #if HC_ENABLE_DOUBLE_PRECISION
+	HC_INLINE double Clamp(double _dVal, double _dMin, double _dMax) { return _dVal > _dMax ? _dMax : (_dVal < _dMin ? _dMin : _dVal); }
+	HC_INLINE Vec2D Clamp(const Vec2D& _vVal, const Vec2D& _vMin, const Vec2D& _vMax) { return Min(Max(_vVal, _vMax), _vMin); }
+	HC_INLINE Vec3D Clamp(const Vec3D& _vVector, const Vec3D& _vMin, const Vec3D& _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+	HC_INLINE Vec4D Clamp(const Vec4D& _vVector, const Vec4D& _vMin, const Vec4D& _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+	HC_INLINE QuaternionD Clamp(const QuaternionD& _qVal, const QuaternionD& _qMin, const QuaternionD& _qMax) { return Clamp(_qVal.m_vQuat, _qMin.m_vQuat, _qMax.m_vQuat); }
+	HC_INLINE MatrixD Clamp(const MatrixD& _mVal, const MatrixD& _mMin, const MatrixD& _mMax) {
+		return MatrixD(Clamp(_mVal[0], _mMin[0], _mMax[0]),
+					   Clamp(_mVal[1], _mMin[1], _mMax[1]),
+					   Clamp(_mVal[2], _mMin[2], _mMin[2]),
+					   Clamp(_mVal[3], _mMin[3], _mMax[3]));
+	}
+
 	HC_INLINE double Lerp(double _dStart, double _dEnd, double _dRatio) { return (_dEnd - _dStart) * _dRatio + _dStart; }
 	HC_INLINE Vec2D Lerp(const Vec2D& _vStart, const Vec2D& _vEnd, double _dRatio) { return (_vEnd - _vStart) * _dRatio + _vStart; }
 	HC_INLINE Vec3D Lerp(const Vec3D& _vStart, const Vec3D& _vEnd, double _dRatio) { return (_vEnd - _vStart) * _dRatio + _vStart; }
@@ -481,104 +556,157 @@ namespace Math {
 	[[nodiscard]] HC_INLINE MatrixD Ln(const MatrixD& _mVal) { return MatrixD(Ln(_mVal[0]), Ln(_mVal[1]), Ln(_mVal[2]), Ln(_mVal[3])); }
 	[[nodiscard]] HC_INLINE QuaternionD Ln(const QuaternionD& _qVal) { return Ln(_qVal.m_vQuat); }
 
-	[[nodiscard]] HC_INLINE double Oscillate(double _dStart, double _dEnd, double _dRatio, double _dPeriod, double _dTime) {
+	[[nodiscard]] HC_INLINE double Oscillate(double _dMin, double _dMax, double _dPeriod, double _dTime) {
+		if (_dMax < _dMin) return Oscillate(_dMax, _dMin, _dPeriod, _dTime);
 
+		double dAmp = (_dMax - _dMin) * 0.5;
+		double dPeriod = (HC_2PI / _dPeriod);
+		double dMid = (_dMin + _dMax) * 0.5;
+
+		return dAmp * cos(dPeriod * _dTime) + dMid;
 	}
 
-	[[nodiscard]] HC_INLINE Vec2D Oscillate(const Vec2D& _vStart, const Vec2D& _vEnd, double _dRatio, double _dPeriod, double _dTime) {
-
+	[[nodiscard]] HC_INLINE Vec2D Oscillate(const Vec2D& _vMin, const Vec2D& _vMax, double _dPeriod, double _dTime) {
+		return Vec2D(Oscillate(_vMin[0], _vMax[0], _dPeriod, _dTime),
+					 Oscillate(_vMin[1], _vMax[2], _dPeriod, _dTime));
 	}
 
-	[[nodiscard]] HC_INLINE Vec3D Oscillate(const Vec3D& _vStart, const Vec3D& _vEnd, double _dRatio, double _dPeriod, double _dTime) {
-
+	[[nodiscard]] HC_INLINE Vec3D Oscillate(const Vec3D& _vMin, const Vec3D& _vMax, double _dPeriod, double _dTime) {
+		return Vec3D(Oscillate(_vMin[0], _vMax[0], _dPeriod, _dTime),
+					 Oscillate(_vMin[1], _vMax[2], _dPeriod, _dTime),
+					 Oscillate(_vMin[2], _vMax[2], _dPeriod, _dTime));
 	}
 
-	[[nodiscard]] HC_INLINE Vec4D Oscillate(const Vec4D& _vStart, const Vec4D& _vEnd, double _dRatio, double _dPeriod, double _dTime) {
-
+	[[nodiscard]] HC_INLINE Vec4D Oscillate(const Vec4D& _vMin, const Vec4D& _vMax, double _dPeriod, double _dTime) {
+		return Vec4D(Oscillate(_vMin[0], _vMax[0], _dPeriod, _dTime),
+					 Oscillate(_vMin[1], _vMax[2], _dPeriod, _dTime),
+					 Oscillate(_vMin[2], _vMax[2], _dPeriod, _dTime),
+					 Oscillate(_vMin[3], _vMax[3], _dPeriod, _dTime));
 	}
 
-	[[nodiscard]] HC_INLINE MatrixD Oscillate(const MatrixD& _mStart, const MatrixD& _mEnd, double _dRatio, double _dPeriod, double _dTime) {
-
+	[[nodiscard]] HC_INLINE MatrixD Oscillate(const MatrixD& _mMin, const MatrixD& _mMax, double _dPeriod, double _dTime) {
+		return MatrixD(Oscillate(_mMin[0], _mMax[0], _dPeriod, _dTime),
+					   Oscillate(_mMin[1], _mMax[2], _dPeriod, _dTime),
+					   Oscillate(_mMin[2], _mMax[2], _dPeriod, _dTime),
+					   Oscillate(_mMin[3], _mMax[3], _dPeriod, _dTime));
 	}
 
-	[[nodiscard]] HC_INLINE QuaternionD Oscillate(const QuaternionD& _qStart, const QuaternionD& _qEnd, double _dRatio, double _dPeriod, double _dTime) {
-
+	[[nodiscard]] HC_INLINE QuaternionD Oscillate(const QuaternionD& _qMin, const QuaternionD& _qMax, double _dPeriod, double _dTime) {
+		return Oscillate(_qMin.m_vQuat, _qMax.m_vQuat, _dPeriod, _dTime);
 	}
 
-	[[nodiscard]] HC_INLINE double DampedOscillate(double _dStart, double _dEnd, double _dRatio, double _dPeriod, double _dTime) {
+	[[nodiscard]] HC_INLINE double DampedOscillate(double _dMin, double _dMax, double _dPeriod, double _dTime, double _dDampingFactor) {
+		if (_dMax < _dMin) return DampedOscillate(_dMax, _dMin, _dPeriod, _dTime, _dDampingFactor);
 
+		double dAmp = ((_dMax - _dMin) * 0.5) * exp(-(_dDampingFactor) * _dTime);
+		double dPeriod = HC_2PI / _dPeriod;
+		double dMid = (_dMax + _dMin) * 0.5;
+
+		return dAmp * cos(dPeriod * _dTime) + dMid;
 	}
 
-	[[nodiscard]] HC_INLINE Vec2D DampedOscillate(const Vec2D& _vStart, const Vec2D& _vEnd, double _dRatio, double _dPeriod, double _dTime) {
-
+	[[nodiscard]] HC_INLINE Vec2D DampedOscillate(const Vec2D& _vMin, const Vec2D& _vMax, double _dPeriod, double _dTime, double _dDampingFactor) {
+		return Vec2D(DampedOscillate(_vMin[0], _vMax[0], _dPeriod, _dTime, _dDampingFactor),
+					 DampedOscillate(_vMin[1], _vMax[1], _dPeriod, _dTime, _dDampingFactor));
 	}
 
-	[[nodiscard]] HC_INLINE Vec3D DampedOscillate(const Vec3D& _vStart, const Vec3D& _vEnd, double _dRatio, double _dPeriod, double _dTime) {
-
+	[[nodiscard]] HC_INLINE Vec3D DampedOscillate(const Vec3D& _vMin, const Vec3D& _vMax, double _dPeriod, double _dTime, double _dDampingFactor) {
+		return Vec3D(DampedOscillate(_vMin[0], _vMax[0], _dPeriod, _dTime, _dDampingFactor),
+					 DampedOscillate(_vMin[1], _vMax[1], _dPeriod, _dTime, _dDampingFactor),
+					 DampedOscillate(_vMin[2], _vMin[2], _dPeriod, _dTime, _dDampingFactor));
 	}
 
-	[[nodiscard]] HC_INLINE Vec4D DampedOscillate(const Vec4D& _vStart, const Vec4D& _vEnd, double _dRatio, double _dPeriod, double _dTime) {
-
+	[[nodiscard]] HC_INLINE Vec4D DampedOscillate(const Vec4D& _vMin, const Vec4D& _vMax, double _dPeriod, double _dTime, double _dDampingFactor) {
+		return Vec4D(DampedOscillate(_vMin[0], _vMax[0], _dPeriod, _dTime, _dDampingFactor),
+					 DampedOscillate(_vMin[1], _vMax[1], _dPeriod, _dTime, _dDampingFactor),
+					 DampedOscillate(_vMin[2], _vMin[2], _dPeriod, _dTime, _dDampingFactor),
+					 DampedOscillate(_vMin[3], _vMin[3], _dPeriod, _dTime, _dDampingFactor));
 	}
 
-	[[nodiscard]] HC_INLINE MatrixD DampedOscillate(const MatrixD& _mStart, const MatrixD& _mEnd, double _dRatio, double _dPeriod, double _dTime) {
-
+	[[nodiscard]] HC_INLINE MatrixD DampedOscillate(const MatrixD& _mMin, const MatrixD& _mMax, double _dPeriod, double _dTime, double _dDampingFactor) {
+		return MatrixD(DampedOscillate(_mMin[0], _mMax[0], _dPeriod, _dTime, _dDampingFactor),
+					   DampedOscillate(_mMin[1], _mMax[1], _dPeriod, _dTime, _dDampingFactor),
+					   DampedOscillate(_mMin[2], _mMin[2], _dPeriod, _dTime, _dDampingFactor),
+					   DampedOscillate(_mMin[3], _mMin[3], _dPeriod, _dTime, _dDampingFactor));
 	}
 
-	[[nodiscard]] HC_INLINE QuaternionD DampedOscillate(const QuaternionD& _qStart, const QuaternionD& _qEnd, double _dRatio, double _dPeriod, double _dTime) {
-
+	[[nodiscard]] HC_INLINE QuaternionD DampedOscillate(const QuaternionD& _qMin, const QuaternionD& _qMax, double _dPeriod, double _dTime, double _dDampingFactor) {
+		return DampedOscillate(_qMin.m_vQuat, _qMax.m_vQuat, _dPeriod, _dTime, _dDampingFactor);
 	}
 
-	[[nodiscard]] HC_INLINE double SmoothStep(double _dVal, double _dStart, double _dEnd) {
-
+	[[nodiscard]] HC_INLINE double SmoothStep(double _dStart, double _dEnd, double _dRatio) {
+		_dRatio = Clamp(_dRatio);
+		_dRatio = _dRatio * _dRatio * (3.0 - (2.0 * _dRatio));
+		return _dEnd * _dRatio + _dStart * (1.0 - _dRatio);
 	}
 
-	[[nodiscard]] HC_INLINE Vec2D SmoothStep(const Vec2D& _vVal, const Vec2D& _vStart, const Vec2D& _vEnd) {
-
+	[[nodiscard]] HC_INLINE Vec2D SmoothStep(const Vec2D& _vStart, const Vec2D& _vEnd, double _dRatio) {
+		return Vec2D(SmoothStep(_vStart[0], _vEnd[0], _dRatio),
+					 SmoothStep(_vStart[1], _vEnd[1], _dRatio));
 	}
 
-	[[nodiscard]] HC_INLINE Vec3D SmoothStep(const Vec3D& _vVal, const Vec3D& _vStart, const Vec3D& _vEnd) {
-
+	[[nodiscard]] HC_INLINE Vec3D SmoothStep(const Vec3D& _vStart, const Vec3D& _vEnd, double _dRatio) {
+		return Vec3D(SmoothStep(_vStart[0], _vEnd[0], _dRatio),
+					 SmoothStep(_vStart[1], _vEnd[1], _dRatio),
+					 SmoothStep(_vStart[2], _vEnd[2], _dRatio));
 	}
 
-	[[nodiscard]] HC_INLINE Vec4D SmoothStep(const Vec4D& _vVal, const Vec4D& _vStart, const Vec4D& _vEnd) {
-
+	[[nodiscard]] HC_INLINE Vec4D SmoothStep(const Vec4D& _vStart, const Vec4D& _vEnd, double _dRatio) {
+		return Vec4D(SmoothStep(_vStart[0], _vEnd[0], _dRatio),
+					 SmoothStep(_vStart[1], _vEnd[1], _dRatio),
+					 SmoothStep(_vStart[2], _vEnd[2], _dRatio),
+					 SmoothStep(_vStart[3], _vEnd[3], _dRatio));
 	}
 
-	[[nodiscard]] HC_INLINE MatrixD SmoothStep(const MatrixD& _mVal, const MatrixD& _mStart, const MatrixD& _mEnd) {
-
+	[[nodiscard]] HC_INLINE MatrixD SmoothStep(const MatrixD& _mStart, const MatrixD& _mEnd, double _dRatio) {
+		return MatrixD(SmoothStep(_mStart[0], _mEnd[0], _dRatio),
+					   SmoothStep(_mStart[1], _mEnd[1], _dRatio),
+					   SmoothStep(_mStart[2], _mEnd[2], _dRatio),
+					   SmoothStep(_mStart[3], _mEnd[3], _dRatio));
 	}
 
-	[[nodiscard]] HC_INLINE QuaternionD SmoothStep(const QuaternionD& _qVal, const QuaternionD& _qStart, const QuaternionD& _qEnd) {
-
+	[[nodiscard]] HC_INLINE QuaternionD SmoothStep(const QuaternionD& _qStart, const QuaternionD& _qEnd, double _dRatio) {
+		return SmoothStep(_qStart.m_vQuat, _qEnd.m_vQuat, _dRatio);
 	}
 
-	[[nodiscard]] HC_INLINE double DampedSmoothStep(double _dVal, double _dStart, double _dEnd) {
-
+	[[nodiscard]] HC_INLINE double InverseSmoothStep(double _dVal) {
+		_dVal = Clamp(_dVal);
+		return 0.5 - sin(asin(1.0 - 2.0 * _dVal) / 3.0);
 	}
 
-	[[nodiscard]] HC_INLINE Vec2D DampedSmoothStep(const Vec2D& _vVal, const Vec2D& _vStart, const Vec2D& _vEnd) {
-
+	[[nodiscard]] HC_INLINE Vec2D InverseSmoothStep(const Vec2D& _vVal) {
+		return Vec2D(InverseSmoothStep(_vVal[0]),
+					 InverseSmoothStep(_vVal[1]));
 	}
 
-	[[nodiscard]] HC_INLINE Vec3D DampedSmoothStep(const Vec3D& _vVal, const Vec3D& _vStart, const Vec3D& _vEnd) {
-
+	[[nodiscard]] HC_INLINE Vec3D InverseSmoothStep(const Vec3D& _vVal) {
+		return Vec3D(InverseSmoothStep(_vVal[0]),
+					 InverseSmoothStep(_vVal[1]),
+					 InverseSmoothStep(_vVal[2]));
 	}
 
-	[[nodiscard]] HC_INLINE Vec4D DampedSmoothStep(const Vec4D& _vVal, const Vec4D& _vStart, const Vec4D& _vEnd) {
-
+	[[nodiscard]] HC_INLINE Vec4D InverseSmoothStep(const Vec4D& _vVal) {
+		return Vec4D(InverseSmoothStep(_vVal[0]),
+					 InverseSmoothStep(_vVal[1]),
+					 InverseSmoothStep(_vVal[2]),
+					 InverseSmoothStep(_vVal[3]));
 	}
 
-	[[nodiscard]] HC_INLINE MatrixD DampedSmoothStep(const MatrixD& _mVal, const MatrixD& _mStart, const MatrixD& _mEnd) {
-
+	[[nodiscard]] HC_INLINE MatrixD InverseSmoothStep(const MatrixD& _mVal) {
+		return MatrixD(InverseSmoothStep(_mVal[0]),
+					   InverseSmoothStep(_mVal[1]),
+					   InverseSmoothStep(_mVal[2]),
+					   InverseSmoothStep(_mVal[3]));
 	}
 
-	[[nodiscard]] HC_INLINE QuaternionD DampedSmoothStep(const QuaternionD& _qVal, const QuaternionD& _qStart, const QuaternionD& _qEnd) {
-
+	[[nodiscard]] HC_INLINE QuaternionD InverseSmoothStep(const QuaternionD& _qVal) {
+		return InverseSmoothStep(_qVal.m_vQuat);
 	}
 #endif
 
 #if HC_USE_ROTOR
+	HC_INLINE RotorF Clamp(const RotorF& _rVal, const RotorF& _rMin, const RotorF& _rMax) { return Clamp(_rVal.m_vRot, _rMin.m_vRot, _rMax.m_vRot); }
+
 	HC_INLINE RotorF Lerp(const RotorF& _rStart, const RotorF& _rEnd, float _fRatio) { return RotorF(Lerp(_rStart.m_vRot, _rEnd.m_vRot, _fRatio)); }
 
 	HC_INLINE RotorF NLerp(const RotorF& _rStart, const RotorF& _rEnd, float _fRatio) {
@@ -619,23 +747,25 @@ namespace Math {
 
 	[[nodiscard]] HC_INLINE RotorF Ln(const RotorF& _rVal) { return Ln(_rVal.m_vRot); }
 
-	[[nodiscard]] HC_INLINE RotorF Oscillate(const RotorF& _rStart, const RotorF& _rEnd, float _fRatio, float _fPeriod, float _fTime) {
-
+	[[nodiscard]] HC_INLINE RotorF Oscillate(const RotorF& _rMin, const RotorF& _rMax, float _fPeriod, float _fTime) {
+		return Oscillate(_rMin.m_vRot, _rMax.m_vRot, _fPeriod, _fTime);
 	}
 
-	[[nodiscard]] HC_INLINE RotorF DampedOscillate(const RotorF& _rStart, const RotorF& _rEnd, float _fRatio, float _fPeriod, float _fTime) {
-
+	[[nodiscard]] HC_INLINE RotorF DampedOscillate(const RotorF& _rMin, const RotorF& _rMax, float _fPeriod, float _fTime, float _fDampingRatio) {
+		return DampedOscillate(_rMin.m_vRot, _rMax.m_vRot, _fPeriod, _fTime, _fDampingRatio);
 	}
 
-	[[nodiscard]] HC_INLINE RotorF SmoothStep(const RotorF& _rVal, const RotorF& _rStart, const RotorF& _rEnd) {
-
+	[[nodiscard]] HC_INLINE RotorF SmoothStep(const RotorF& _rStart, const RotorF& _rEnd, float _fRatio) {
+		return SmoothStep(_rStart.m_vRot, _rEnd.m_vRot, _fRatio);
 	}
 
-	[[nodiscard]] HC_INLINE RotorF DampedSmoothStep(const RotorF& _rVal, const RotorF& _rStart, const RotorF& _rEnd) {
-
+	[[nodiscard]] HC_INLINE RotorF InverseSmoothStep(const RotorF& _rVal) {
+		return InverseSmoothStep(_rVal.m_vRot);
 	}
 
 #if HC_ENABLE_DOUBLE_PRECISION
+	HC_INLINE RotorD Clamp(const RotorD& _rVal, const RotorD& _rMin, const RotorD& _rMax) { return Clamp(_rVal.m_vRot, _rMin.m_vRot, _rMax.m_vRot); }
+
 	HC_INLINE RotorD Lerp(const RotorD& _rStart, const RotorD& _rEnd, double _dRatio) { return RotorD(Lerp(_rStart.m_vRot, _rEnd.m_vRot, _dRatio)); }
 
 	HC_INLINE RotorD NLerp(const RotorD& _rStart, const RotorD& _rEnd, double _dRatio) {
@@ -676,20 +806,20 @@ namespace Math {
 
 	[[nodiscard]] HC_INLINE RotorD Ln(const RotorD& _rVal) { return Ln(_rVal); }
 
-	[[nodiscard]] HC_INLINE RotorD Oscillate(const RotorD& _rStart, const RotorD& _rEnd, double _dRatio, double _dPeriod, double _dTime) {
-
+	[[nodiscard]] HC_INLINE RotorD Oscillate(const RotorD& _rMin, const RotorD& _rMax, double _dPeriod, double _dTime) {
+		return Oscillate(_rMin.m_vRot, _rMax.m_vRot, _dPeriod, _dTime);
 	}
 
-	[[nodiscard]] HC_INLINE RotorD DampedOscillate(const RotorD& _rStart, const RotorD& _rEnd, double _dRatio, double _dPeriod, double _dTime) {
-
+	[[nodiscard]] HC_INLINE RotorD DampedOscillate(const RotorD& _rMin, const RotorD& _rMax, double _dPeriod, double _dTime, double _dDampingRatio) {
+		return DampedOscillate(_rMin, _rMax, _dPeriod, _dTime, _dDampingRatio);
 	}
 
-	[[nodiscard]] HC_INLINE RotorD SmoothStep(const RotorD& _rVal, const RotorD& _rStart, const RotorD& _rEnd) {
-
+	[[nodiscard]] HC_INLINE RotorD SmoothStep(const RotorD& _rStart, const RotorD& _rEnd, double _dRatio) {
+		return SmoothStep(_rStart.m_vRot, _rEnd.m_vRot, _dRatio);
 	}
 
-	[[nodiscard]] HC_INLINE RotorD DampedSmoothStep(const RotorD& _rVal, const RotorD& _rStart, const RotorD& _rEnd) {
-
+	[[nodiscard]] HC_INLINE RotorD InverseSmoothStep(const RotorD& _rVal) {
+		return InverseSmoothStep(_rVal.m_vRot);
 	}
 #endif
 #endif

@@ -7,6 +7,8 @@
 
 //Defines for commonly used math functions
 #define HC_PI 3.14159265358979323846f
+#define HC_2PI 6.28318530717958647693f
+#define HC_PI_HALF 1.57079632679489661923f
 #define HC_EPSILON 1.19209e-07f
 #define HC_NEAR_ONE 0.99995f
 #define HC_RAD2DEG(_val) ((_val) * 180.0f / HC_PI)

@@ -122,7 +122,6 @@ HC_INLINE bool operator>=(const Vec2D& _vLeft, const Vec2D& _vRight) { return !(
 HC_INLINE bool operator!=(const Vec2D& _vLeft, const Vec2D& _vRight) { return !(_vLeft == _vRight); }
 [[nodiscard]] HC_INLINE Vec2D Min(const Vec2D& _vLeft, const Vec2D& _vRight) { return Vec2D(HC_TERNARY(_vLeft.x, _vRight.x, < ), HC_TERNARY(_vLeft.y, _vRight.y, < )); }
 [[nodiscard]] HC_INLINE Vec2D Max(const Vec2D& _vLeft, const Vec2D& _vRight) { return Vec2D(HC_TERNARY(_vLeft.x, _vRight.x, > ), HC_TERNARY(_vLeft.y, _vRight.y, > )); }
-[[nodiscard]] HC_INLINE Vec2D Clamp(const Vec2D& _vVal, const Vec2D& _vMin, const Vec2D& _vMax) { return Min(Max(_vVal, _vMax), _vMin); }
 [[nodiscard]] HC_INLINE double Sum(const Vec2D& _vVector) { return _vVector.x + _vVector.y; }
 [[nodiscard]] HC_INLINE double Dot(const Vec2D& _vLeft, const Vec2D& _vRight) { return Sum(_vLeft * _vRight); }
 [[nodiscard]] HC_INLINE double Length(const Vec2D& _vVector) { return sqrt(Dot(_vVector, _vVector)); }

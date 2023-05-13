@@ -1467,7 +1467,6 @@ HC_INLINE bool operator>=(const Vec4D& _vLeft, const Vec4D& _vRight) { return !(
 HC_INLINE bool operator!=(const Vec4D& _vLeft, const Vec4D& _vRight) { return !(_vLeft == _vRight); }
 [[nodiscard]] HC_INLINE Vec4D Min(const Vec4D& _vLeft, const Vec4D& _vRight) { return Vec4D(HC_TERNARY(_vLeft.x, _vRight.x, < ), HC_TERNARY(_vLeft.y, _vRight.y, < ), HC_TERNARY(_vLeft.z, _vRight.z, < ), HC_TERNARY(_vLeft.w, _vRight.w, < )); }
 [[nodiscard]] HC_INLINE Vec4D Max(const Vec4D& _vLeft, const Vec4D& _vRight) { return Vec4D(HC_TERNARY(_vLeft.x, _vRight.x, > ), HC_TERNARY(_vLeft.y, _vRight.y, > ), HC_TERNARY(_vLeft.z, _vRight.z, > ), HC_TERNARY(_vLeft.w, _vRight.w, > )); }
-[[nodiscard]] HC_INLINE Vec4D Clamp(const Vec4D& _vVector, const Vec4D& _vMin, const Vec4D& _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
 [[nodiscard]] HC_INLINE double Sum(const Vec4D& _vVector) { return _vVector.x + _vVector.y + _vVector.z + _vVector.w; }
 [[nodiscard]] HC_INLINE double Dot(const Vec4D& _vLeft, const Vec4D& _vRight) { return Sum((_vLeft * _vRight).XYZ()); }
 [[nodiscard]] HC_INLINE double Length(const Vec4D& _vVector) { return sqrt(Dot(_vVector, _vVector)); }

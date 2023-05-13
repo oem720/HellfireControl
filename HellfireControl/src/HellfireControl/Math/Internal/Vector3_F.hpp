@@ -260,7 +260,6 @@ HC_INLINE bool operator>=(const Vec3F& _vLeft, const Vec3F& _vRight) { return !(
 HC_INLINE bool operator!=(const Vec3F& _vLeft, const Vec3F& _vRight) { return !(_vLeft == _vRight); }
 [[nodiscard]] HC_INLINE Vec3F Min(const Vec3F& _vLeft, const Vec3F& _vRight) { return Vec3F(HC_TERNARY(_vLeft.x, _vRight.x, <), HC_TERNARY(_vLeft.y, _vRight.y, <), HC_TERNARY(_vLeft.z, _vRight.z, <)); }
 [[nodiscard]] HC_INLINE Vec3F Max(const Vec3F& _vLeft, const Vec3F& _vRight) { return Vec3F(HC_TERNARY(_vLeft.x, _vRight.x, >), HC_TERNARY(_vLeft.y, _vRight.y, >), HC_TERNARY(_vLeft.z, _vRight.z, >)); }
-[[nodiscard]] HC_INLINE Vec3F Clamp(const Vec3F& _vVector, const Vec3F& _vMin, const Vec3F& _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
 [[nodiscard]] HC_INLINE float HorizontalMin(const Vec3F& _vVector) { return Min(Min(_vVector, _vVector.YXZ()), _vVector.ZXY()).x; }
 [[nodiscard]] HC_INLINE float HorizontalMax(const Vec3F& _vVector) { return Max(Max(_vVector, _vVector.YXZ()), _vVector.ZXY()).x; }
 [[nodiscard]] HC_INLINE float Sum(const Vec3F& _vVector) { return _vVector.x + _vVector.y + _vVector.z; }

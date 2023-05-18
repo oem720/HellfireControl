@@ -445,6 +445,7 @@ struct HC_ALIGNAS(128) MatrixD
 
 	HC_INLINE MatrixD() { m_vRows[0] = Vec4D(); m_vRows[1] = Vec4D(); m_vRows[2] = Vec4D(); m_vRows[3] = Vec4D(); }
 	HC_INLINE explicit MatrixD(const Vec4D& _vRow0, const Vec4D& _vRow1, const Vec4D& _vRow2, const Vec4D& _vRow3) { m_vRows[0] = _vRow0; m_vRows[1] = _vRow1; m_vRows[2] = _vRow2; m_vRows[3] = _vRow3; }
+	HC_INLINE explicit MatrixD(double _dVal) { m_vRows[0] = Vec4D(_dVal); m_vRows[1] = Vec4D(_dVal); m_vRows[2] = Vec4D(_dVal); m_vRows[3] = Vec4D(_dVal); }
 	HC_INLINE Vec4D operator[](int _iNdx) const { assert(_iNdx < 4); return m_vRows[_iNdx]; }
 	HC_INLINE Vec4D& operator[](int _iNdx) { assert(_iNdx < 4); return m_vRows[_iNdx]; }
 };

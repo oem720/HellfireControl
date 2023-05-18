@@ -445,6 +445,7 @@ struct HC_ALIGNAS(64) MatrixF
 
 	HC_INLINE MatrixF() { m_vRows[0] = Vec4F(); m_vRows[1] = Vec4F(); m_vRows[2] = Vec4F(); m_vRows[3] = Vec4F(); }
 	HC_INLINE explicit MatrixF(const Vec4F& _vRow0, const Vec4F& _vRow1, const Vec4F& _vRow2, const Vec4F& _vRow3) { m_vRows[0] = _vRow0; m_vRows[1] = _vRow1; m_vRows[2] = _vRow2; m_vRows[3] = _vRow3; }
+	HC_INLINE explicit MatrixF(float _fVal) { m_vRows[0] = Vec4F(_fVal); m_vRows[1] = Vec4F(_fVal); m_vRows[2] = Vec4F(_fVal); m_vRows[3] = Vec4F(_fVal); }
 	[[nodiscard]] HC_INLINE Vec4F operator[](int _iNdx) const { assert(_iNdx < 4); return m_vRows[_iNdx]; }
 	[[nodiscard]] HC_INLINE Vec4F& operator[](int _iNdx) { assert(_iNdx < 4); return m_vRows[_iNdx]; }
 };

@@ -58,7 +58,7 @@ struct HC_ALIGNAS(16) RotorF {
 					   fCosRoll * fCosPitch * fCosYaw + fSinRoll * fSinPitch * fSinYaw);
 	}
 
-	HC_INLINE explicit RotorF(float _fAngle, const Vec3F& _vBiVector) {
+	HC_INLINE explicit RotorF(const Vec3F& _vBiVector, float _fAngle) {
 		Vec3F vVec = Normalize(_vBiVector);
 
 		float fSin = sinf(_fAngle * 0.5f);

@@ -58,7 +58,7 @@ struct HC_ALIGNAS(32) RotorD {
 					   dCosRoll * dCosPitch * dCosYaw + dSinRoll * dSinPitch * dSinYaw);
 	}
 
-	HC_INLINE explicit RotorD(double _dAngle, const Vec3D & _vBiVector) {
+	HC_INLINE explicit RotorD(const Vec3D& _vBiVector, double _dAngle) {
 		Vec3D vVec = Normalize(_vBiVector);
 
 		double dSin = sin(_dAngle * 0.5);

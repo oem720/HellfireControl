@@ -1,6 +1,6 @@
 #pragma once
 
-#include <HellfireControl/Math/Internal/Vector_Common.hpp>
+#include <HellfireControl/Math/Internal/Vector/Vector_Common.hpp>
 
 #if HC_USE_SIMD
 #define HC_SHUFFLE3D(_vec, _x, _y, _z) Vec3D(_mm256_shuffle_pd((_vec).m_dVec, (_vec).m_dVec, _MM_SHUFFLE(_z, _z, _y, _x)))

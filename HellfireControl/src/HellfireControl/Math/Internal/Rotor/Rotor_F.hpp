@@ -1,6 +1,6 @@
 #pragma once
 
-#include <HellfireControl/Math/Internal/Rotor_Common.hpp>
+#include <HellfireControl/Math/Internal/Rotor/Rotor_Common.hpp>
 
 #if HC_USE_SIMD
 

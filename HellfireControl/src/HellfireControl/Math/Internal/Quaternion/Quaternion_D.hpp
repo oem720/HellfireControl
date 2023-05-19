@@ -1,6 +1,6 @@
 #pragma once
 
-#include <HellfireControl/Math/Internal/Quaternion_Common.hpp>
+#include <HellfireControl/Math/Internal/Quaternion/Quaternion_Common.hpp>
 
 #if HC_USE_SIMD
 

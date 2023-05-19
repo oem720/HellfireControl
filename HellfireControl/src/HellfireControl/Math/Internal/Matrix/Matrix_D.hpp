@@ -1,6 +1,6 @@
 #pragma once
 
-#include <HellfireControl/Math/Internal/Matrix_Common.hpp>
+#include <HellfireControl/Math/Internal/Matrix/Matrix_Common.hpp>
 
 #if HC_USE_SIMD
 

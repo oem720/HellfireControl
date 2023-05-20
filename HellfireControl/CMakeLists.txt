@@ -23,4 +23,19 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio")
     endforeach()
 endif()
 
+if(CMAKE_GENERATOR MATCHES "Xcode")
+    # Generator matches Xcode, set compiler macro
+    add_definitions(-DXCODE_BUILD)
+    # Use `#if(n)def XCODE_BUILD` in areas where Xcode specific code should be used
+
+    # Compiler macros depending on CPU architecture for edge cases
+    if (APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|i386)")
+        # Use `#if(n)def APPLE_X86` when targeting a Mac with Intel CPU
+        add_definitions(-DAPPLE_X86)
+    elseif (APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64)")
+        # Use `#if(n)def APPLE_ARM64` when targeting an Apple Silicon Mac
+        add_definitions(-DAPPLE_ARM64)
+    endif()
+endif()
+
 target_include_directories(HellfireCore PUBLIC src)

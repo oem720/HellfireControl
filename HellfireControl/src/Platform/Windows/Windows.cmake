@@ -1,0 +1,21 @@
+BLOCK()
+set(PLATFORM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Windows)
+
+if(CMAKE_GENERATOR MATCHES "Visual Studio")
+    foreach(_source IN ITEMS ${HELLFIRE_SOURCE_FILES})
+        if (IS_ABSOLUTE "${_source}")
+            file(RELATIVE_PATH _source_rel "${CMAKE_CURRENT_SOURCE_DIR}" "${_source}")
+        else()
+            set(_source_rel "${_source}")
+        endif()
+        get_filename_component(_source_path "${_source_rel}" PATH)
+	string(REPLACE "src" "" _source_path_msvc "${_source_path}")
+	string(REPLACE "HellfireControl" "" _source_path_msvc "${_source_path_msvc}")
+        string(REPLACE "/" "\\" _source_path_msvc "${_source_path_msvc}")
+        source_group("${_source_path_msvc}" FILES "${_source}")
+    endforeach()
+
+    set_target_properties(HellfireCore PROPERTIES VS_COPYRIGHT ${HC_COPYRIGHT})
+endif()
+
+ENDBLOCK()

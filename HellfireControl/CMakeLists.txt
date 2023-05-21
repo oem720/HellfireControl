@@ -35,3 +35,5 @@ include(src/Platform/Vulkan/Vulkan.cmake)
 include(src/Platform/OpenGL/OpenGL.cmake)
 
 target_include_directories(HellfireCore PUBLIC src)
+
+target_precompile_headers(HellfireCore PRIVATE src/HellfireControl/Core/Common.hpp)

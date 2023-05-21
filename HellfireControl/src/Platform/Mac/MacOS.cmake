@@ -12,6 +12,7 @@ if(CMAKE_GENERATOR MATCHES "Xcode")
         XCODE_ATTRIBUTE_INFOPLIST_FILE ${PLIST}
     )
     set_source_files_properties(${PLATFORM_DIR}/Resources/macOS.xcassets PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    set_source_files_properties(${PLATFORM_DIR}/Resources/Main.storyboard PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif()
 
 # Copyright

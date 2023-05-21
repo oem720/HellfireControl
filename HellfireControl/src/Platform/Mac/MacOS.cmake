@@ -24,6 +24,14 @@ if(APPLE)
         RESULT_VARIABLE COMMAND_RESULT
     )
 endif()
+
+# Compile Swift sources
+if(APPLE AND CMAKE_GENERATOR MATCHES "Ninja")
+    add_executable(hc_launcher ${PLATFORM_DIR}/App.swift)
+    set_target_properties(hc_launcher PROPERTIES Swift_LANGUAGE_VERSION 4.2)
+    target_compile_options(hc_launcher PUBLIC -parse-as-library)
+endif()
+
 ENDBLOCK() # PLATFORM_DIR, PLIST, COMMAND_OUTPUT, COMMAND_RESULT discarded
 
 # Compiler macros depending on CPU architecture for edge cases

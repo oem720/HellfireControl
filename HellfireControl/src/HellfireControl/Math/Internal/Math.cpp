@@ -199,7 +199,7 @@ namespace Math {
 #pragma endregion
 
 #pragma region Vec3
-	HC_INLINE Vec3F Clamp(const Vec3F& _vVector, const Vec3F& _vMin, const Vec3F& _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+	HC_INLINE Vec3F Clamp(const Vec3F& _vVal, const Vec3F& _vMin, const Vec3F& _vMax) { return Min(Max(_vVal, _vMax), _vMin); }
 
 	HC_INLINE Vec3F ClampMagnitude(const Vec3F& _vVal, float _fMin, float _fMax) {
 		float fMag = LengthSquared(_vVal);
@@ -317,7 +317,7 @@ namespace Math {
 #pragma endregion
 
 #pragma region Vec4
-	HC_INLINE Vec4F Clamp(const Vec4F& _vVector, const Vec4F& _vMin, const Vec4F& _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
+	HC_INLINE Vec4F Clamp(const Vec4F& _vVal, const Vec4F& _vMin, const Vec4F& _vMax) { return Min(Max(_vVal, _vMax), _vMin); }
 
 	HC_INLINE Vec4F ClampMagnitude(const Vec4F& _vVal, float _fMin, float _fMax) {
 		float fMag = LengthSquared(_vVal);
@@ -481,6 +481,8 @@ namespace Math {
 	HC_INLINE MatrixF Log10(const MatrixF& _mVal) { return MatrixF(Log10(_mVal[0]), Log10(_mVal[1]), Log10(_mVal[2]), Log10(_mVal[3])); }
 
 	HC_INLINE MatrixF Log2(const MatrixF& _mVal) { return MatrixF(Log2(_mVal[0]), Log2(_mVal[1]), Log2(_mVal[2]), Log2(_mVal[3])); }
+
+	HC_INLINE MatrixF Ln(const MatrixF& _mVal) { return MatrixF(Ln(_mVal[0]), Ln(_mVal[1]), Ln(_mVal[2]), Ln(_mVal[3])); }
 
 	HC_INLINE MatrixF Exp(const MatrixF& _mVal) { return MatrixF(Exp(_mVal[0]), Exp(_mVal[1]), Exp(_mVal[2]), Exp(_mVal[3])); }
 

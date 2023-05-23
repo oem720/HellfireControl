@@ -56,14 +56,14 @@ HC_INLINE bool HC_VECTORCALL operator!=(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_
 HC_INLINE Vec2F HC_VECTORCALL Min(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_min_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
 HC_INLINE Vec2F HC_VECTORCALL Max(Vec2F _vLeft, Vec2F _vRight) { _vLeft.m_fVec = _mm_max_ps(_vLeft.m_fVec, _vRight.m_fVec); return _vLeft; }
 HC_INLINE Vec2F HC_VECTORCALL Clamp(Vec2F _vVector, Vec2F _vMin, Vec2F _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
-HC_INLINE float HC_VECTORCALL Sum(const Vec2F _vVector) { return _vVector.X() + _vVector.Y(); }
-HC_INLINE float HC_VECTORCALL Dot(Vec2F _vLeft, Vec2F _vRight) { return Sum(_vLeft * _vRight); }
-HC_INLINE float HC_VECTORCALL Length(Vec2F _vVector) { return sqrtf(Dot(_vVector, _vVector)); }
-HC_INLINE float HC_VECTORCALL LengthSquared(Vec2F _vVector) { return Dot(_vVector, _vVector); }
-HC_INLINE Vec2F HC_VECTORCALL Normalize(Vec2F _vVector) { return _vVector * (1.0f / Length(_vVector)); }
-HC_INLINE float HC_VECTORCALL AngleBetween(Vec2F _vLeft, Vec2F _vRight) { return acosf(Dot(_vLeft, _vRight)); }
-HC_INLINE float HC_VECTORCALL Cross(Vec2F _vLeft, Vec2F _vRight) { return _vLeft.X() * _vRight.Y() - _vLeft.Y() * _vRight.X(); }
-HC_INLINE Vec2F HC_VECTORCALL Abs(Vec2F _vVector) { _vVector.m_fVec = _mm_andnot_ps(_vVector.m_fVec, SignBitMaskF().m_fVec); return _vVector; }
+HC_INLINE float HC_VECTORCALL Sum(const Vec2F& _vVector) { return _vVector.X() + _vVector.Y(); }
+HC_INLINE float HC_VECTORCALL Dot(const Vec2F& _vLeft, const Vec2F& _vRight) { return Sum(_vLeft * _vRight); }
+HC_INLINE float HC_VECTORCALL Length(const Vec2F& _vVector) { return sqrtf(Dot(_vVector, _vVector)); }
+HC_INLINE float HC_VECTORCALL LengthSquared(const Vec2F& _vVector) { return Dot(_vVector, _vVector); }
+HC_INLINE Vec2F HC_VECTORCALL Normalize(const Vec2F& _vVector) { return _vVector * (1.0f / Length(_vVector)); }
+HC_INLINE float HC_VECTORCALL AngleBetween(const Vec2F& _vLeft, const Vec2F& _vRight) { return acosf(Dot(_vLeft, _vRight)); }
+HC_INLINE float HC_VECTORCALL Cross(const Vec2F& _vLeft, const Vec2F& _vRight) { return _vLeft.X() * _vRight.Y() - _vLeft.Y() * _vRight.X(); }
+HC_INLINE Vec2F HC_VECTORCALL Abs(const Vec2F& _vVector) { _vVector.m_fVec = _mm_andnot_ps(_vVector.m_fVec, SignBitMaskF().m_fVec); return _vVector; }
 
 #else
 

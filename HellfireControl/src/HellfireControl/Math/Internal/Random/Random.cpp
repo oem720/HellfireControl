@@ -3,7 +3,21 @@
 #include <HellfireControl/Math/Random.hpp>
 #include <HellfireControl/Math/Internal/Random/Random_Common.hpp>
 
-explicit Random::Random(uint32_t _uSeed = 7200) {
+Random::Random() {
+	m_uSeed = (uint32_t)time(NULL);
+
+	m_uState[0] = m_uSeed;
+
+	for (int i = 1; i < s_iStateSize; i++) {
+		m_uState[i] = 1812433253UL * (m_uState[i - 1] ^ (m_uState[i - 1] >> 30)) + i;
+	}
+
+	Regenerate();
+}
+
+Random::Random(uint32_t _uSeed) {
+	m_uSeed = _uSeed;
+
 	m_uState[0] = _uSeed;
 
 	for (int i = 1; i < s_iStateSize; i++) {
@@ -52,7 +66,7 @@ uint32_t Random::GenerateUnsignedInt(uint32_t _uMin = 0, uint32_t _uMax = UINT_M
 long Random::GenerateLong(long _lMin = LONG_MIN, long _lMax = LONG_MAX) {
 	if (_lMax < _lMin) return GenerateLong(_lMax, _lMin);
 
-	long lVal = (static_cast<long>(GetNextVal()) << 32) | static_cast<long>(GetNextVal()); //Fuse two generated numbers
+	long lVal = static_cast<long>((static_cast<uint64_t>(GetNextVal()) << 32) | GetNextVal()); //Fuse two generated numbers
 	long lRange = _lMax - _lMin + 1;
 
 	return lVal % lRange + _lMin;
@@ -61,7 +75,7 @@ long Random::GenerateLong(long _lMin = LONG_MIN, long _lMax = LONG_MAX) {
 float Random::GenerateFloat(float _fMin = 0.0f, float _fMax = 1.0f) {
 	if (_fMax < _fMin) return GenerateFloat(_fMax, _fMin);
 
-	float fVal = static_cast<float>(GetNextVal());
+	float fVal = static_cast<float>(GenerateInt());
 	float fScale = static_cast<float>(INT_MAX) / (_fMax - _fMin);
 
 	return (fVal / fScale) + _fMin;
@@ -77,6 +91,8 @@ double Random::GenerateDouble(double _dMin = 0.0f, double _dMax = 1.0f) {
 }
 
 void Random::SetSeed(uint32_t _uSeed) {
+	m_iNext = 0;
+
 	m_uState[0] = _uSeed;
 
 	for (int i = 1; i < s_iStateSize; i++) {
@@ -88,6 +104,7 @@ void Random::SetSeed(uint32_t _uSeed) {
 
 uint32_t Random::GetNextVal() {
 	if (m_iNext >= s_iStateSize) {
+		m_iNext = 0;
 		Regenerate();
 	}
 
@@ -118,6 +135,4 @@ void Random::Regenerate() {
 
 	uBits = (m_uState[iNdx] & 0x80000000) | (m_uState[0] & 0x7fffffff);
 	m_uState[iNdx] = m_uState[iM - 1] ^ (uBits >> 1) ^ ((uBits & 1) * 0x9908b0df);
-
-	m_iNext = 0;
 }

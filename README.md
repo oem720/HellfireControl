@@ -9,6 +9,6 @@ Presently, the engine is set up within Visual Studio 2019, although it doesn't h
 ## Contributors
 Owen Meyers (Email: owenmeyers.sc@gmail.com)
 
-Robert Sale
+Robert Sale (Email: robert.sale@outlook.com)
 ## Contributing
 Presently, the current settings require a review of your code before it can be merged in (as per usual for open-source projects). There are not, however, any features listed to be worked on. Presently, I am still working on designing the engine in my spare time, and as such, it will take some time before it is ready to utilize properly. If you would like to contribute to the design of the engine, or in general help out as a collaborator, email me at ``owenmeyers.sc@gmail.com`` and put ``[HCE]`` in the subject line. I will respond as soon as I can. Thanks :) 

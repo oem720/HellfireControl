@@ -1,6 +1,6 @@
 #pragma once
 
-#include <HellfireControl/Math/Internal/Vector_Common.hpp>
+#include <HellfireControl/Math/Internal/Vector/Vector_Common.hpp>
 
 #if HC_USE_SIMD
 #define HC_SHUFFLE3D(_vec, _x, _y, _z) Vec3D(_mm256_shuffle_pd((_vec).m_dVec, (_vec).m_dVec, _MM_SHUFFLE(_z, _z, _y, _x)))
@@ -158,8 +158,8 @@ struct HC_ALIGNAS(32) Vec3D
 	HC_INLINE explicit Vec3D(float _fX, float _fY, float _fZ) { m_dData[0] = static_cast<double>(_fX); m_dData[1] = static_cast<double>(_fY); m_dData[2] = static_cast<double>(_fZ); }
 	HC_INLINE explicit Vec3D(int _iX, int _iY, int _iZ) { m_dData[0] = static_cast<double>(_iX); m_dData[1] = static_cast<double>(_iY); m_dData[2] = static_cast<double>(_iZ); }
 	HC_INLINE explicit Vec3D(double _dX, double _dY, double _dZ) { m_dData[0] = _dX; m_dData[1] = _dY; m_dData[2] = _dZ; }
-	HC_INLINE explicit Vec3D(Vec2D _vXY, double _fZ) { m_dData[0] = _vXY.x; m_dData[1] = _vXY.y; m_dData[2] = _fZ; }
-	HC_INLINE explicit Vec3D(double _fX, Vec2D _vYZ) { m_dData[0] = _fX; m_dData[1] = _vYZ.x; m_dData[2] = _vYZ.y; }
+	HC_INLINE explicit Vec3D(const Vec2D& _vXY, double _fZ) { m_dData[0] = _vXY.x; m_dData[1] = _vXY.y; m_dData[2] = _fZ; }
+	HC_INLINE explicit Vec3D(double _fX, const Vec2D& _vYZ) { m_dData[0] = _fX; m_dData[1] = _vYZ.x; m_dData[2] = _vYZ.y; }
 
 	[[nodiscard]] HC_INLINE double operator[](int _iNdx) const { assert(_iNdx < 3); return m_dData[_iNdx]; }
 	[[nodiscard]] HC_INLINE double& operator[](int _iNdx) { assert(_iNdx < 3); return m_dData[_iNdx]; }
@@ -235,40 +235,41 @@ struct HC_ALIGNAS(32) Vec3D
 	[[nodiscard]] HC_INLINE Vec3D BBB() const { return Vec3D(z, z, z); }
 };
 
-[[nodiscard]] HC_INLINE Vec3D operator+(Vec3D _vLeft, Vec3D _vRight) { return Vec3D(_vLeft.x + _vRight.x, _vLeft.y + _vRight.y, _vLeft.z + _vRight.z); }
-[[nodiscard]] HC_INLINE Vec3D operator-(Vec3D _vLeft, Vec3D _vRight) { return Vec3D(_vLeft.x - _vRight.x, _vLeft.y - _vRight.y, _vLeft.z - _vRight.z); }
-[[nodiscard]] HC_INLINE Vec3D operator*(Vec3D _vLeft, double _dRight) { return Vec3D(_vLeft.x * _dRight, _vLeft.y * _dRight, _vLeft.z * _dRight); }
-[[nodiscard]] HC_INLINE Vec3D operator*(double _dLeft, Vec3D _vRight) { return Vec3D(_vRight.x * _dLeft, _vRight.y * _dLeft, _vRight.z * _dLeft); }
-[[nodiscard]] HC_INLINE Vec3D operator/(Vec3D _vLeft, double _dRight) { return Vec3D(_vLeft.x / _dRight, _vLeft.y / _dRight, _vLeft.z / _dRight); }
-[[nodiscard]] HC_INLINE Vec3D operator/(double _dLeft, Vec3D _vRight) { return Vec3D(_dLeft / _vRight.x, _dLeft / _vRight.y, _dLeft / _vRight.z); }
-[[nodiscard]] HC_INLINE Vec3D operator*(Vec3D _vLeft, Vec3D _vRight) { return Vec3D(_vLeft.x * _vRight.x, _vLeft.y * _vRight.y, _vLeft.z * _vRight.z); }
-[[nodiscard]] HC_INLINE Vec3D operator/(Vec3D _vLeft, Vec3D _vRight) { return Vec3D(_vLeft.x / _vRight.x, _vLeft.y / _vRight.y, _vLeft.z / _vRight.z); }
-HC_INLINE Vec3D& operator+=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
-HC_INLINE Vec3D& operator-=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
-HC_INLINE Vec3D& operator*=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
-HC_INLINE Vec3D& operator/=(Vec3D& _vLeft, Vec3D _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
+[[nodiscard]] HC_INLINE Vec3D operator+(const Vec3D& _vLeft, const Vec3D& _vRight) { return Vec3D(_vLeft.x + _vRight.x, _vLeft.y + _vRight.y, _vLeft.z + _vRight.z); }
+[[nodiscard]] HC_INLINE Vec3D operator-(const Vec3D& _vLeft, const Vec3D& _vRight) { return Vec3D(_vLeft.x - _vRight.x, _vLeft.y - _vRight.y, _vLeft.z - _vRight.z); }
+[[nodiscard]] HC_INLINE Vec3D operator*(const Vec3D& _vLeft, double _dRight) { return Vec3D(_vLeft.x * _dRight, _vLeft.y * _dRight, _vLeft.z * _dRight); }
+[[nodiscard]] HC_INLINE Vec3D operator*(double _dLeft, const Vec3D& _vRight) { return Vec3D(_vRight.x * _dLeft, _vRight.y * _dLeft, _vRight.z * _dLeft); }
+[[nodiscard]] HC_INLINE Vec3D operator/(const Vec3D& _vLeft, double _dRight) { return Vec3D(_vLeft.x / _dRight, _vLeft.y / _dRight, _vLeft.z / _dRight); }
+[[nodiscard]] HC_INLINE Vec3D operator/(double _dLeft, const Vec3D& _vRight) { return Vec3D(_dLeft / _vRight.x, _dLeft / _vRight.y, _dLeft / _vRight.z); }
+[[nodiscard]] HC_INLINE Vec3D operator*(const Vec3D& _vLeft, const Vec3D& _vRight) { return Vec3D(_vLeft.x * _vRight.x, _vLeft.y * _vRight.y, _vLeft.z * _vRight.z); }
+[[nodiscard]] HC_INLINE Vec3D operator/(const Vec3D& _vLeft, const Vec3D& _vRight) { return Vec3D(_vLeft.x / _vRight.x, _vLeft.y / _vRight.y, _vLeft.z / _vRight.z); }
+[[nodiscard]] HC_INLINE Vec3D operator^(const Vec3D& _vLeft, const Vec3D& _vRight) { return Vec3D(_vLeft[0] * _vRight[1] - _vLeft[1] * _vRight[0], _vLeft[0] * _vRight[2] - _vLeft[2] * _vRight[0], _vLeft[1] * _vRight[2] - _vLeft[2] * _vRight[1]); }
+HC_INLINE Vec3D& operator+=(Vec3D& _vLeft, const Vec3D& _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
+HC_INLINE Vec3D& operator-=(Vec3D& _vLeft, const Vec3D& _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
+HC_INLINE Vec3D& operator*=(Vec3D& _vLeft, const Vec3D& _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
+HC_INLINE Vec3D& operator/=(Vec3D& _vLeft, const Vec3D& _vRight) { _vLeft = _vLeft / _vRight; return _vLeft; }
 HC_INLINE Vec3D& operator*=(Vec3D& _vLeft, double _dRight) { _vLeft = _vLeft * _dRight; return _vLeft; }
 HC_INLINE Vec3D& operator/=(Vec3D& _vLeft, double _dRight) { _vLeft = _vLeft / _dRight; return _vLeft; }
-[[nodiscard]] HC_INLINE Vec3D operator~(Vec3D _vVector) { return Vec3D(); }
-[[nodiscard]] HC_INLINE Vec3D operator-(Vec3D _vVector) { return Vec3D(-_vVector.x, -_vVector.y, -_vVector.z); }
-HC_INLINE bool operator==(Vec3D _vLeft, Vec3D _vRight) { return HC_DOUBLE_COMPARE(_vLeft.x, _vRight.x) && HC_DOUBLE_COMPARE(_vLeft.y, _vRight.y) && HC_DOUBLE_COMPARE(_vLeft.z, _vRight.z); }
-HC_INLINE bool operator<(Vec3D _vLeft, Vec3D _vRight) { return _vLeft.x < _vRight.x && _vLeft.y < _vRight.y && _vLeft.z < _vRight.z; }
-HC_INLINE bool operator>(Vec3D _vLeft, Vec3D _vRight) { return _vLeft.x > _vRight.x && _vLeft.y > _vRight.y && _vLeft.z > _vRight.z; }
-HC_INLINE bool operator<=(Vec3D _vLeft, Vec3D _vRight) { return !(_vLeft > _vRight); }
-HC_INLINE bool operator>=(Vec3D _vLeft, Vec3D _vRight) { return !(_vLeft < _vRight); }
-HC_INLINE bool operator!=(Vec3D _vLeft, Vec3D _vRight) { return !(_vLeft == _vRight); }
-[[nodiscard]] HC_INLINE Vec3D Min(Vec3D _vLeft, Vec3D _vRight) { return Vec3D(HC_TERNARY(_vLeft.x, _vRight.x, < ), HC_TERNARY(_vLeft.y, _vRight.y, < ), HC_TERNARY(_vLeft.z, _vRight.z, < )); }
-[[nodiscard]] HC_INLINE Vec3D Max(Vec3D _vLeft, Vec3D _vRight) { return Vec3D(HC_TERNARY(_vLeft.x, _vRight.x, > ), HC_TERNARY(_vLeft.y, _vRight.y, > ), HC_TERNARY(_vLeft.z, _vRight.z, > )); }
-[[nodiscard]] HC_INLINE Vec3D Clamp(Vec3D _vVector, Vec3D _vMin, Vec3D _vMax) { return Min(Max(_vVector, _vMax), _vMin); }
-[[nodiscard]] HC_INLINE double HorizontalMin(Vec3D _vVector) { _vVector = Min(_vVector, _vVector.YXZ()); return Min(_vVector, _vVector.ZXY()).x; }
-[[nodiscard]] HC_INLINE double HorizontalMax(Vec3D _vVector) { _vVector = Max(_vVector, _vVector.YXZ()); return Max(_vVector, _vVector.ZXY()).x; }
-[[nodiscard]] HC_INLINE double Sum(const Vec3D _vVector) { return _vVector.x + _vVector.y + _vVector.z; }
-[[nodiscard]] HC_INLINE double Dot(Vec3D _vLeft, Vec3D _vRight) { return Sum(_vLeft * _vRight); }
-[[nodiscard]] HC_INLINE double Length(Vec3D _vVector) { return sqrt(Dot(_vVector, _vVector)); }
-[[nodiscard]] HC_INLINE double LengthSquared(Vec3D _vVector) { return Dot(_vVector, _vVector); }
-[[nodiscard]] HC_INLINE Vec3D Normalize(Vec3D _vVector) { return _vVector * (1.0 / Length(_vVector)); }
-[[nodiscard]] HC_INLINE double AngleBetween(Vec3D _vLeft, Vec3D _vRight) { return acos(Dot(_vLeft, _vRight)); }
-[[nodiscard]] HC_INLINE Vec3D Cross(Vec3D _vLeft, Vec3D _vRight) { return (_vLeft.ZXY() * _vRight - _vLeft * _vRight.ZXY()).ZXY(); }
-[[nodiscard]] HC_INLINE Vec3D Abs(Vec3D _vVector) { return Vec3D(abs(_vVector.x), abs(_vVector.y), abs(_vVector.z)); }
+HC_INLINE Vec3D& operator^=(Vec3D& _vLeft, const Vec3D& _vRight) { _vLeft = _vLeft ^ _vRight; return _vLeft; }
+[[nodiscard]] HC_INLINE Vec3D operator~(const Vec3D& _vVector) { return Vec3D(); }
+[[nodiscard]] HC_INLINE Vec3D operator-(const Vec3D& _vVector) { return Vec3D(-_vVector.x, -_vVector.y, -_vVector.z); }
+HC_INLINE bool operator==(const Vec3D& _vLeft, const Vec3D& _vRight) { return HC_DOUBLE_COMPARE(_vLeft.x, _vRight.x) && HC_DOUBLE_COMPARE(_vLeft.y, _vRight.y) && HC_DOUBLE_COMPARE(_vLeft.z, _vRight.z); }
+HC_INLINE bool operator<(const Vec3D& _vLeft, const Vec3D& _vRight) { return _vLeft.x < _vRight.x && _vLeft.y < _vRight.y && _vLeft.z < _vRight.z; }
+HC_INLINE bool operator>(const Vec3D& _vLeft, const Vec3D& _vRight) { return _vLeft.x > _vRight.x && _vLeft.y > _vRight.y && _vLeft.z > _vRight.z; }
+HC_INLINE bool operator<=(const Vec3D& _vLeft, const Vec3D& _vRight) { return !(_vLeft > _vRight); }
+HC_INLINE bool operator>=(const Vec3D& _vLeft, const Vec3D& _vRight) { return !(_vLeft < _vRight); }
+HC_INLINE bool operator!=(const Vec3D& _vLeft, const Vec3D& _vRight) { return !(_vLeft == _vRight); }
+[[nodiscard]] HC_INLINE Vec3D Min(const Vec3D& _vLeft, const Vec3D& _vRight) { return Vec3D(HC_TERNARY(_vLeft.x, _vRight.x, < ), HC_TERNARY(_vLeft.y, _vRight.y, < ), HC_TERNARY(_vLeft.z, _vRight.z, < )); }
+[[nodiscard]] HC_INLINE Vec3D Max(const Vec3D& _vLeft, const Vec3D& _vRight) { return Vec3D(HC_TERNARY(_vLeft.x, _vRight.x, > ), HC_TERNARY(_vLeft.y, _vRight.y, > ), HC_TERNARY(_vLeft.z, _vRight.z, > )); }
+[[nodiscard]] HC_INLINE double HorizontalMin(const Vec3D& _vVector) { return Min(Min(_vVector, _vVector.YXZ()), _vVector.ZXY()).x; }
+[[nodiscard]] HC_INLINE double HorizontalMax(const Vec3D& _vVector) { return Max(Max(_vVector, _vVector.YXZ()), _vVector.ZXY()).x; }
+[[nodiscard]] HC_INLINE double Sum(const Vec3D& _vVector) { return _vVector.x + _vVector.y + _vVector.z; }
+[[nodiscard]] HC_INLINE double Dot(const Vec3D& _vLeft, const Vec3D& _vRight) { return Sum(_vLeft * _vRight); }
+[[nodiscard]] HC_INLINE double Length(const Vec3D& _vVector) { return sqrt(Dot(_vVector, _vVector)); }
+[[nodiscard]] HC_INLINE double LengthSquared(const Vec3D& _vVector) { return Dot(_vVector, _vVector); }
+[[nodiscard]] HC_INLINE Vec3D Normalize(const Vec3D& _vVector) { return _vVector * (1.0 / Length(_vVector)); }
+[[nodiscard]] HC_INLINE double AngleBetween(const Vec3D& _vLeft, const Vec3D& _vRight) { return acos(Dot(_vLeft, _vRight)); }
+[[nodiscard]] HC_INLINE Vec3D Cross(const Vec3D& _vLeft, const Vec3D& _vRight) { return (_vLeft.ZXY() * _vRight - _vLeft * _vRight.ZXY()).ZXY(); }
+[[nodiscard]] HC_INLINE Vec3D Abs(const Vec3D& _vVector) { return Vec3D(abs(_vVector.x), abs(_vVector.y), abs(_vVector.z)); }
 
 #endif

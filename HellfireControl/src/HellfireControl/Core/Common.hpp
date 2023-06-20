@@ -17,7 +17,7 @@
 #define HC_DOUBLE_COMPARE(_val1, _val2) fabs(_val1 - _val2) < HC_EPSILON
 
 //Defines for standardized declarations
-#define HC_INLINE __forceinline
+#define HC_INLINE inline
 #define HC_VECTORCALL __vectorcall
 #define HC_ALIGNAS(_val) alignas((_val))
 

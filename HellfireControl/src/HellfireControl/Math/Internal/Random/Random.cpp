@@ -1,5 +1,7 @@
 #pragma once
 
+#pragma warning(disable : 6201)
+
 #include <HellfireControl/Math/Random.hpp>
 #include <HellfireControl/Math/Internal/Random/Random_Common.hpp>
 

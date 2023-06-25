@@ -25,3 +25,5 @@ endif()
 
 target_include_directories(Athena PUBLIC src)
 target_include_directories(Athena PUBLIC ../HellfireControl/src)
+
+target_link_libraries(Athena PUBLIC HellfireCore)

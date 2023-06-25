@@ -25,3 +25,10 @@
 #define HC_USE_SIMD 0
 #define HC_ENABLE_DOUBLE_PRECISION 1
 #define HC_USE_ROTOR 1
+
+//Includes for STL library that will be replaced with custom implementations in the future
+#include <string>
+#include <vector>
+#include <list>
+#include <map>
+#include <unordered_map>

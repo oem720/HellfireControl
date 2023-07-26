@@ -1,6 +1,8 @@
 
 #include <HellfireControl/Core/Console.hpp>
 
+#define HC_INCLUDE_CONSOLE //Enable console include
+
 #include <Platform/OSInclude.hpp>
 
 namespace Console {

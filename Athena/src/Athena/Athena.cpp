@@ -1,15 +1,13 @@
 
-#include <Athena/Core/Util.hpp>
+#include <iostream>
 
-#include <Athena/Tests/TestMath.hpp>
+#include <Athena/Core/UnitTesterApplication.hpp>
 
 int main() {
-	Console::Print("Hello World!\n");
-	Console::Print("Hello World!\n", Console::BLACK);
-	Console::Print("Hello World!\n", Console::GREEN);
-	Console::Print("Hello World!\n", Console::MAGENTA);
-	Console::Print("Hello World!\n", Console::YELLOW);
-	Console::Print("Hello World!\n", Console::RED);
+	UnitTesterApplication appAthena;
+	appAthena.Start();
+	appAthena.Run();
+	appAthena.End();
 
 	return 0;
 }

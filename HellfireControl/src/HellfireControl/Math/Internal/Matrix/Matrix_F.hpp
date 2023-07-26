@@ -432,10 +432,10 @@ struct HC_ALIGNAS(64) MatrixF
 {
 	union {
 		struct {
-			Vec4F m_vRow0;
-			Vec4F m_vRow1;
-			Vec4F m_vRow2;
-			Vec4F m_vRow3;
+			Vec4F m_vRow0; //X Rotation
+			Vec4F m_vRow1; //Y Rotation
+			Vec4F m_vRow2; //Z Rotation
+			Vec4F m_vRow3; //Position
 		};
 
 		Vec4F m_vRows[4];

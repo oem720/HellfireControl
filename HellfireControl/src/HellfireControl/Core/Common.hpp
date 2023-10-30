@@ -5,6 +5,9 @@
 #include <utility>
 #include <cassert>
 
+//Required Includes (will not be replaced)
+#include <thread>
+
 //Defines for commonly used math functions
 #define HC_PI 3.14159265358979323846f
 #define HC_2PI 6.28318530717958647693f

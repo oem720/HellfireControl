@@ -32,6 +32,11 @@ void UnitTesterApplication::Run() {
 		}
 		
 		DisplayProfiledResults(); //Display profiled results from math
+
+		//Pause for 2 seconds before continuing testing. May replace with waiting for confirmation from user. Do this if and only if we aren't on the last block.
+		if (ndx < m_vTestBlocks.size() - 1) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+		}
 	}
 
 	//Average the total execution time

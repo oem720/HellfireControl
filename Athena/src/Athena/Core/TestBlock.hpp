@@ -25,6 +25,8 @@ public:
 	void ExecuteTests();
 
 	void ClearResults();
+
+	void ClearBlock();
 	
 	[[nodiscard]] HC_INLINE float GetAverageExecutionTimeNanoseconds() const { return m_fAverageExecutionTimeNs; }
 	[[nodiscard]] HC_INLINE float GetAverageExecutionTimeMilliseconds() const { return m_fAverageExecutionTimeNs / 1.0E6f; }

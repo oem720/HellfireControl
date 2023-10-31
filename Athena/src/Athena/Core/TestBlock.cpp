@@ -1,7 +1,6 @@
 
 #include <Athena/Core/TestBlock.hpp>
-
-#include <HellfireControl/Core/Console.hpp>
+#include <Athena/Core/Util.hpp>
 
 void TestBlock::AddTest(const TestCase& _tcUnitTest) {
 	m_vTests.push_back(_tcUnitTest);
@@ -31,6 +30,11 @@ void TestBlock::ExecuteTests() {
 		if (m_vTests[ndx].Passed()) {
 			++m_u32SuccessfulTests;
 		}
+
+		//Pause between each test for .1 seconds
+		if (ndx < m_vTests.size() - 1) {
+			Util::Wait(100);
+		}
 	}
 
 	m_fAverageExecutionTimeNs /= static_cast<float>(m_vTests.size()); //Average the execution time
@@ -54,4 +58,8 @@ void TestBlock::ExecuteTests() {
 void TestBlock::ClearResults() {
 	m_fAverageExecutionTimeNs = 0.0f;
 	m_u32SuccessfulTests = 0u;
+}
+
+void TestBlock::ClearBlock() {
+	m_vTests.clear();
 }

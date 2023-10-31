@@ -7,10 +7,8 @@
 void UnitTesterApplication::Start() {
 	this->Application::Start();
 
-	//TODO: Whenever a new module needs to be added, create a header file with an init tests function that matches this signature.
-	//Generate your tests and then add the new test block to the list passed in. Ensure to use a new namespace name to differentiate.
-
-	Math::InitTests(m_vTestBlocks); //Math
+	//Call the overarching Init function
+	Tests::InitTests(m_vTestBlocks);
 }
 
 void UnitTesterApplication::Run() {
@@ -33,9 +31,12 @@ void UnitTesterApplication::Run() {
 		
 		DisplayProfiledResults(); //Display profiled results from math
 
-		//Pause for 2 seconds before continuing testing. May replace with waiting for confirmation from user. Do this if and only if we aren't on the last block.
+		m_vTestBlocks[ndx].ClearBlock(); //Free Test Memory
+
+		//Pause for 1 second before continuing testing. May replace with waiting for confirmation from user. Do this if and only if we aren't on the last block.
 		if (ndx < m_vTestBlocks.size() - 1) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+			Util::Wait(1000);
+			//Util::PauseForUserConfirmation();
 		}
 	}
 

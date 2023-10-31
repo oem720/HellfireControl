@@ -2,6 +2,6 @@
 
 #include <Athena/Core/TestBlock.hpp>
 
-namespace Math {
+namespace Tests {
 	void InitTests(std::vector<TestBlock>& _vBlockList);
 }

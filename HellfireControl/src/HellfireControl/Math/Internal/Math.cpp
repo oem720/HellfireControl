@@ -1,7 +1,7 @@
 
 #include <HellfireControl/Math/Math.hpp>
 
-namespace Math {
+namespace Tests {
 #pragma region Scalar
 	HC_INLINE float Clamp(float _fVal, float _fMin, float _fMax) { return _fVal > _fMax ? _fMax : (_fVal < _fMin ? _fMin : _fVal); }
 

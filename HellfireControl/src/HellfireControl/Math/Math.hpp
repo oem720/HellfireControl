@@ -10,7 +10,7 @@
 #include <HellfireControl/Math/Rotor.hpp>
 #endif
 
-namespace Math {
+namespace Tests {
 #pragma region Scalar
 	/// <summary>
 	/// Clamps the floating point _fVal to the range [_fMin, _fMax]. Defaults to between 0 and 1.

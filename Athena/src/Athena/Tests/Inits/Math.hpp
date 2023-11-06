@@ -2878,7 +2878,7 @@ namespace Math {
 
 		//Vec4F/D
 #pragma region Vec4
-		TestBlock tbBlock("Math Library - Vec4F");
+		tbBlock = TestBlock("Math Library - Vec4F");
 		
 		//Comparison Operators
 		{

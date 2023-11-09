@@ -30,11 +30,6 @@ void TestBlock::ExecuteTests() {
 		if (m_vTests[ndx].Passed()) {
 			++m_u32SuccessfulTests;
 		}
-
-		//Pause between each test for .1 seconds
-		if (ndx < m_vTests.size() - 1) {
-			Util::Wait(100);
-		}
 	}
 
 	m_fAverageExecutionTimeNs /= static_cast<float>(m_vTests.size()); //Average the execution time

@@ -1448,9 +1448,10 @@ struct HC_ALIGNAS(32) Vec4D
 [[nodiscard]] HC_INLINE Vec4D operator*(const Vec4D& _vLeft, double _dRight) { return Vec4D(_vLeft.x * _dRight, _vLeft.y * _dRight, _vLeft.z * _dRight, _vLeft.w * _dRight); }
 [[nodiscard]] HC_INLINE Vec4D operator*(double _dLeft, const Vec4D& _vRight) { return Vec4D(_vRight.x * _dLeft, _vRight.y * _dLeft, _vRight.z * _dLeft, _vRight.w * _dLeft); }
 [[nodiscard]] HC_INLINE Vec4D operator/(const Vec4D& _vLeft, double _dRight) { return Vec4D(_vLeft.x / _dRight, _vLeft.y / _dRight, _vLeft.z / _dRight, _vLeft.w / _dRight); }
-[[nodiscard]] HC_INLINE Vec4D operator/(double _dLeft, const Vec4D& _vRight) { return Vec4D(_dLeft / _vRight.x, _dLeft / _vRight.y, _dLeft / _vRight.z, _dLeft / _vRight.w); }
+[[nodiscard]] HC_INLINE Vec4D operator/(double _dLeft, const Vec4D& _vRight) { return Vec4D(_vRight.x / _dLeft, _vRight.y / _dLeft, _vRight.z / _dLeft, _vRight.w / _dLeft); }
 [[nodiscard]] HC_INLINE Vec4D operator*(const Vec4D& _vLeft, const Vec4D& _vRight) { return Vec4D(_vLeft.x * _vRight.x, _vLeft.y * _vRight.y, _vLeft.z * _vRight.z, _vLeft.w * _vRight.w); }
 [[nodiscard]] HC_INLINE Vec4D operator/(const Vec4D& _vLeft, const Vec4D& _vRight) { return Vec4D(_vLeft.x / _vRight.x, _vLeft.y / _vRight.y, _vLeft.z / _vRight.z, _vLeft.w / _vRight.w); }
+[[nodiscard]] HC_INLINE Vec4D operator^(const Vec4D& _vLeft, const Vec4D& _vRight) { return Vec4D((_vLeft.ZXY() * _vRight.XYZ() - _vLeft.XYZ() * _vRight.ZXY()).ZXY(), _vLeft.w); }
 HC_INLINE Vec4D& operator+=(Vec4D& _vLeft, const Vec4D& _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
 HC_INLINE Vec4D& operator-=(Vec4D& _vLeft, const Vec4D& _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
 HC_INLINE Vec4D& operator*=(Vec4D& _vLeft, const Vec4D& _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
@@ -1468,7 +1469,7 @@ HC_INLINE bool operator!=(const Vec4D& _vLeft, const Vec4D& _vRight) { return !(
 [[nodiscard]] HC_INLINE Vec4D Min(const Vec4D& _vLeft, const Vec4D& _vRight) { return Vec4D(HC_TERNARY(_vLeft.x, _vRight.x, < ), HC_TERNARY(_vLeft.y, _vRight.y, < ), HC_TERNARY(_vLeft.z, _vRight.z, < ), HC_TERNARY(_vLeft.w, _vRight.w, < )); }
 [[nodiscard]] HC_INLINE Vec4D Max(const Vec4D& _vLeft, const Vec4D& _vRight) { return Vec4D(HC_TERNARY(_vLeft.x, _vRight.x, > ), HC_TERNARY(_vLeft.y, _vRight.y, > ), HC_TERNARY(_vLeft.z, _vRight.z, > ), HC_TERNARY(_vLeft.w, _vRight.w, > )); }
 [[nodiscard]] HC_INLINE double Sum(const Vec4D& _vVector) { return _vVector.x + _vVector.y + _vVector.z + _vVector.w; }
-[[nodiscard]] HC_INLINE double Dot(const Vec4D& _vLeft, const Vec4D& _vRight) { return Sum((_vLeft * _vRight).XYZ()); }
+[[nodiscard]] HC_INLINE double Dot(const Vec4D& _vLeft, const Vec4D& _vRight) { return Sum(_vLeft * _vRight); }
 [[nodiscard]] HC_INLINE double Length(const Vec4D& _vVector) { return sqrt(Dot(_vVector, _vVector)); }
 [[nodiscard]] HC_INLINE double LengthSquared(const Vec4D& _vVector) { return Dot(_vVector, _vVector); }
 [[nodiscard]] HC_INLINE Vec4D Normalize(const Vec4D& _vVector) { return _vVector * (1.0 / Length(_vVector)); }

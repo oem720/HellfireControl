@@ -36,4 +36,5 @@ public:
 	[[nodiscard]] HC_INLINE TestCase* GetSlowestTestCase() { return m_vTests.size() > 0 ? &m_vTests[m_sSlowestFuncNdx] : nullptr; }
 
 	[[nodiscard]] HC_INLINE uint32_t GetSuccessfulTestCount() const { return m_u32SuccessfulTests; }
+	[[nodiscard]] HC_INLINE uint32_t GetTestCount() const { return m_vTests.size(); }
 };

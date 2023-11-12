@@ -12,6 +12,9 @@ void UnitTesterApplication::Start() {
 }
 
 void UnitTesterApplication::Run() {
+	uint32_t u32Successes = 0;
+	uint32_t u32TotalTests = 0;
+
 	for (int ndx = 0; ndx < m_vTestBlocks.size(); ++ndx) {
 		m_vTestBlocks[ndx].ExecuteTests(); //Run tests
 
@@ -29,6 +32,9 @@ void UnitTesterApplication::Run() {
 			m_strSlowestFuncName = tcTest->GetFunctionName();
 		}
 		
+		u32Successes += m_vTestBlocks[ndx].GetSuccessfulTestCount();
+		u32TotalTests += m_vTestBlocks[ndx].GetTestCount();
+
 		DisplayProfiledResults(); //Display profiled results from math
 
 		m_vTestBlocks[ndx].ClearBlock(); //Free Test Memory
@@ -42,6 +48,17 @@ void UnitTesterApplication::Run() {
 
 	//Average the total execution time
 	m_fAverageExecutionTimeMs /= static_cast<float>(m_vTestBlocks.size());
+
+	//Display the overall succeeded tests, overall test count, overall average speed, fastest function/time, slowest function/time
+	Console::Print("\n\nOverall Results\n---------------\n");
+
+	Console::Print("Successful tests: ");
+	Console::Print(std::to_string(u32Successes), u32Successes == u32TotalTests ? Console::GREEN : Console::RED);
+	Console::Print(" out of " + std::to_string(u32TotalTests) + "\n");
+
+	Console::Print("Overall Average Speed: ");
+	Console::Print(std::to_string(m_fAverageExecutionTimeMs), Console::YELLOW);
+	Console::Print(" ms\n");
 }
 
 void UnitTesterApplication::End() {

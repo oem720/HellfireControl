@@ -4431,6 +4431,60 @@ namespace Math {
 			return lRes >= -64 && lRes < 32;
 		});
 
+		tbBlock.AddTest("Random Generate Float 1", [](float& _fDelta) -> const bool {
+			Random rand;
+			float fRes;
+
+			HC_TIME_EXECUTION(fRes = rand.GenerateFloat(-32.0f, 64.0f), _fDelta);
+
+			return fRes >= -32.0f && fRes < 64.0f;
+		});
+
+		tbBlock.AddTest("Random Generate Float 2", [](float& _fDelta) -> const bool {
+			Random rand;
+			float fRes;
+
+			HC_TIME_EXECUTION(fRes = rand.GenerateFloat(0.0f, 64.0f), _fDelta);
+
+			return fRes >= 0.0f && fRes < 64.0f;
+		});
+
+		tbBlock.AddTest("Random Generate Float 3", [](float& _fDelta) -> const bool {
+			Random rand;
+			float fRes;
+
+			HC_TIME_EXECUTION(fRes = rand.GenerateFloat(-64.0f, 32.0f), _fDelta);
+
+			return fRes >= -64.0f && fRes < 32.0f;
+		});
+
+		tbBlock.AddTest("Random Generate Double 1", [](float& _fDelta) -> const bool {
+			Random rand;
+			double dRes;
+
+			HC_TIME_EXECUTION(dRes = rand.GenerateDouble(-32.0, 64.0), _fDelta);
+
+			return dRes >= -32.0 && dRes < 64.0;
+		});
+
+		tbBlock.AddTest("Random Generate Double 2", [](float& _fDelta) -> const bool {
+			Random rand;
+			double dRes;
+
+			HC_TIME_EXECUTION(dRes = rand.GenerateDouble(0.0, 64.0), _fDelta);
+
+			return dRes >= 0.0 && dRes < 64.0;
+		});
+
+		tbBlock.AddTest("Random Generate Double 3", [](float& _fDelta) -> const bool {
+			Random rand;
+			double dRes;
+
+			HC_TIME_EXECUTION(dRes = rand.GenerateDouble(-64.0, 32.0), _fDelta);
+
+			return dRes >= -64.0 && dRes < 32.0;
+		});
+
 		_vBlockList.push_back(tbBlock);
 #pragma endregion
 

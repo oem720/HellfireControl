@@ -29,7 +29,7 @@ Random::Random(uint32_t _uSeed) {
 	Regenerate();
 }
 
-char Random::GenerateChar(char _cMin = CHAR_MIN, char _cMax = CHAR_MAX) {
+char Random::GenerateChar(char _cMin = 0, char _cMax = CHAR_MAX) {
 	if (_cMax < _cMin) return GenerateChar(_cMax, _cMin);
 
 	uint32_t u32Range = static_cast<uint32_t>(_cMax - _cMin + 1);
@@ -37,7 +37,7 @@ char Random::GenerateChar(char _cMin = CHAR_MIN, char _cMax = CHAR_MAX) {
 	return static_cast<char>(GetNextVal() % u32Range) + _cMin;
 }
 
-short Random::GenerateShort(short _sMin = SHRT_MIN, short _sMax = SHRT_MAX) {
+short Random::GenerateShort(short _sMin = 0, short _sMax = SHRT_MAX) {
 	if (_sMax < _sMin) return GenerateShort(_sMax, _sMin);
 
 	uint32_t u32Range = static_cast<uint32_t>(_sMax - _sMin + 1);
@@ -45,7 +45,7 @@ short Random::GenerateShort(short _sMin = SHRT_MIN, short _sMax = SHRT_MAX) {
 	return static_cast<short>(GetNextVal() % u32Range) + _sMin;
 }
 
-int Random::GenerateInt(int _iMin = INT_MIN, int _iMax = INT_MAX) {
+int Random::GenerateInt(int _iMin = 0, int _iMax = INT_MAX) {
 	if (_iMax < _iMin) return GenerateInt(_iMax, _iMin);
 
 	uint32_t u32Range = static_cast<uint32_t>(_iMax - _iMin + 1);
@@ -56,18 +56,18 @@ int Random::GenerateInt(int _iMin = INT_MIN, int _iMax = INT_MAX) {
 uint32_t Random::GenerateUnsignedInt(uint32_t _uMin = 0, uint32_t _uMax = UINT_MAX) {
 	if (_uMax < _uMin) return GenerateUnsignedInt(_uMax, _uMin);
 
-	uint32_t u32Range = _uMax - _uMin + 1;
+	uint32_t u32Range = _uMax - _uMin;
 	
 	return (GetNextVal() % u32Range) + _uMin;
 }
 
-long Random::GenerateLong(long _lMin = LONG_MIN, long _lMax = LONG_MAX) {
+int64_t Random::GenerateLong(int64_t _lMin = 0, int64_t _lMax = LLONG_MAX) {
 	if (_lMax < _lMin) return GenerateLong(_lMax, _lMin);
 
 	uint64_t u64Val = static_cast<uint64_t>((static_cast<uint64_t>(GetNextVal()) << 32) | GetNextVal()); //Fuse two generated numbers
 	uint64_t u64Range = static_cast<uint64_t>(_lMax - _lMin + 1);
 
-	return static_cast<long>(u64Val % u64Range) + _lMin;
+	return static_cast<int64_t>(u64Val % u64Range) + _lMin;
 }
 
 float Random::GenerateFloat(float _fMin = 0.0f, float _fMax = 1.0f) {
@@ -81,7 +81,7 @@ float Random::GenerateFloat(float _fMin = 0.0f, float _fMax = 1.0f) {
 double Random::GenerateDouble(double _dMin = 0.0f, double _dMax = 1.0f) {
 	if (_dMax < _dMin) return GenerateDouble(_dMax, _dMin);
 
-	double dScale = static_cast<double>(LONG_MAX) / (_dMax - _dMin);
+	double dScale = static_cast<double>(LLONG_MAX) / (_dMax - _dMin);
 
 	return (static_cast<double>(GenerateLong()) / dScale) + _dMin;
 }

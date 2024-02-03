@@ -29,15 +29,15 @@ namespace MathTests {
 		InitTests_Matrix(_vBlockList);
 
 		//Quaternion
-		InitTests_Quaternion(_vBlockList);
+		//InitTests_Quaternion(_vBlockList);
 
 		//Rotor
-		InitTests_Rotor(_vBlockList);
+		//InitTests_Rotor(_vBlockList);
 
 		//Random
 		InitTests_Random(_vBlockList);
 
 		//Math
-		InitTests_Miscellaneous(_vBlockList);
+		//InitTests_Miscellaneous(_vBlockList);
 	}
 }

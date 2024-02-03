@@ -10,6 +10,6 @@
 
 namespace Tests {
 	void InitTests(std::vector<TestBlock>& _vBlockList) {
-		Math::InitTests(_vBlockList);
+		MathTests::InitTests(_vBlockList);
 	}
 }

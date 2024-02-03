@@ -503,7 +503,7 @@ struct HC_ALIGNAS(64) MatrixF
 	//DetM
 	float detM = ((detA * detD) + (detB * detC)) - Sum(AB * DC.XZYW());
 	//No inverse, return 0
-	if (detM == 0.0f) { return MatrixF(); }
+	if (HC_FLOAT_COMPARE(detM, 0.0f)) { return MatrixF(); }
 	//Reciprocal
 	Vec4F vDet = Vec4F(1.0f, -1.0f, -1.0f, 1.0f) / detM;
 
@@ -516,12 +516,10 @@ struct HC_ALIGNAS(64) MatrixF
 	//Z Row
 	Vec4F Z = ((B * detC) - ((A * DC.WXWX()) - (A.YXWZ() * DC.ZYZY()))) * vDet;
 
-	_mMat[0] = Vec4F(X.WY(), Y.WY());
-	_mMat[1] = Vec4F(X.ZX(), Y.ZX());
-	_mMat[2] = Vec4F(Z.WY(), W.WY());
-	_mMat[3] = Vec4F(Z.ZX(), W.ZX());
+	//Combine calculated values above
+	MatrixF mRet(Vec4F(X.WY(), Y.WY()), Vec4F(X.ZX(), Y.ZX()), Vec4F(Z.WY(), W.WY()), Vec4F(Z.ZX(), W.ZX()));
 
-	return _mMat;
+	return mRet;
 }
 
 [[nodiscard]] HC_INLINE MatrixF IdentityF() {
@@ -554,12 +552,16 @@ struct HC_ALIGNAS(64) MatrixF
 	return mMat;
 }
 
-[[nodiscard]] HC_INLINE MatrixF LookAtLH(const Vec4F& _vEye, const Vec4F& _vAt, const Vec4F& _vUp) {
-	Vec4F vZAxis = Normalize(_vAt - _vEye);
-	Vec4F vXAxis = Normalize(Cross(_vUp, vZAxis));
-	Vec4F vYAxis = Normalize(Cross(vZAxis, vXAxis));
+[[nodiscard]] HC_INLINE MatrixF LookAtLH(const Vec3F& _vEye, const Vec3F& _vAt, const Vec3F& _vUp) {
+	if (_vEye == Vec3F() && _vAt == Vec3F()) {
+		return IdentityF(); //Return identity if an unchanged matrix
+	}
 
-	return MatrixF(vXAxis, vYAxis, vZAxis, _vAt);
+	Vec3F vZAxis = Normalize(_vAt - _vEye);
+	Vec3F vXAxis = Normalize(Cross(_vUp, vZAxis));
+	Vec3F vYAxis = Normalize(Cross(vZAxis, vXAxis));
+
+	return MatrixF(Vec4F(vXAxis, 0.0f), Vec4F(vYAxis, 0.0f), Vec4F(vZAxis, 0.0f), Vec4F(_vEye, 1.0f));
 }
 
 [[nodiscard]] HC_INLINE MatrixF operator+(const MatrixF& _mLeft, const MatrixF& _mRight) {

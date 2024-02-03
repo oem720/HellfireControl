@@ -380,6 +380,140 @@ namespace MathTests {
 			});
 		}
 
+		//Misc Funcs
+		{			
+			tbBlock.AddTest("MatrixF Determinant 1", [](float& _fDelta) -> const bool {
+				MatrixF mat(Vec4F(4.0f, 3.0f, 2.0f, 2.0f),
+							Vec4F(0.0f, 1.0f, -3.0f, 3.0f),
+							Vec4F(0.0f, -1.0f, 3.0f, 3.0f),
+							Vec4F(0.0f, 3.0f, 1.0f, 1.0f));
+				float fRes;
+
+				HC_TIME_EXECUTION(fRes = Determinant(mat), _fDelta);
+
+				return HC_FLOAT_COMPARE(fRes, -240.0f);
+			});
+
+			tbBlock.AddTest("MatrixF Determinant 2", [](float& _fDelta) -> const bool {
+				MatrixF mat(Vec4F(1.0f, 2.0f, 3.0f, 4.0f),
+							Vec4F(2.0f, 5.0f, 7.0f, 3.0f),
+							Vec4F(4.0f, 10.0f, 14.0f, 6.0f),
+							Vec4F(3.0f, 4.0f, 2.0f, 7.0f));
+				float fRes;
+
+				HC_TIME_EXECUTION(fRes = Determinant(mat), _fDelta);
+
+				return HC_FLOAT_COMPARE(fRes, 0.0f);
+			});
+
+			tbBlock.AddTest("MatrixF Determinant 3", [](float& _fDelta) -> const bool {
+				MatrixF mat(Vec4F(2.0f, 3.0f, 3.0f, 1.0f),
+							Vec4F(0.0f, 2.0f, 1.0f, 3.0f),
+							Vec4F(0.0f, 0.0f, 2.0f, 5.0f),
+							Vec4F(0.0f, 0.0f, 0.0f, 5.0f));
+				float fRes;
+
+				HC_TIME_EXECUTION(fRes = Determinant(mat), _fDelta);
+
+				return HC_FLOAT_COMPARE(fRes, 40.0f);
+			});
+
+			tbBlock.AddTest("MatrixF Inverse 1", [](float& _fDelta) -> const bool {
+				MatrixF mat(Vec4F(4.0f, 3.0f, 2.0f, 2.0f),
+							Vec4F(0.0f, 1.0f, -3.0f, 3.0f),
+							Vec4F(0.0f, -1.0f, 3.0f, 3.0f),
+							Vec4F(0.0f, 3.0f, 1.0f, 1.0f));
+				MatrixF matRes;
+
+				HC_TIME_EXECUTION(matRes = Inverse(mat), _fDelta);
+
+				return matRes.m_vRow0 == Vec4F(0.25f, 0.0f, -0.075f, -0.275f) &&
+					   matRes.m_vRow1 == Vec4F(0.0f, 0.0f, -0.1f, 0.3f) &&
+					   matRes.m_vRow2 == Vec4F(0.0f, -0.16666667f, 0.13333334f, 0.1f) &&
+					   matRes.m_vRow3 == Vec4F(0.0f, 0.16666667f, 0.16666667f, 0.0f);
+			});
+
+			tbBlock.AddTest("MatrixF Inverse 2", [](float& _fDelta) -> const bool {
+				MatrixF mat(Vec4F(1.0f, 2.0f, 3.0f, 4.0f),
+							Vec4F(2.0f, 5.0f, 7.0f, 3.0f),
+							Vec4F(4.0f, 10.0f, 14.0f, 6.0f),
+							Vec4F(3.0f, 4.0f, 2.0f, 7.0f));
+				MatrixF matRes;
+
+				HC_TIME_EXECUTION(matRes = Inverse(mat), _fDelta);
+
+				return matRes.m_vRow0 == Vec4F() &&
+					   matRes.m_vRow1 == Vec4F() &&
+					   matRes.m_vRow2 == Vec4F() &&
+					   matRes.m_vRow3 == Vec4F();
+			});
+
+			tbBlock.AddTest("MatrixF Inverse 3", [](float& _fDelta) -> const bool {
+				MatrixF mat(Vec4F(2.0f, 3.0f, 3.0f, 1.0f),
+							Vec4F(0.0f, 2.0f, 1.0f, 3.0f),
+							Vec4F(0.0f, 0.0f, 2.0f, 5.0f),
+							Vec4F(0.0f, 0.0f, 0.0f, 5.0f));
+				MatrixF matRes;
+
+				HC_TIME_EXECUTION(matRes = Inverse(mat), _fDelta);
+
+				return matRes.m_vRow0 == Vec4F(0.5f, -0.75f, -0.375f, 0.725f) &&
+					   matRes.m_vRow1 == Vec4F(0.0f, 0.5f, -0.25f, -0.05f) &&
+					   matRes.m_vRow2 == Vec4F(0.0f, 0.0f, 0.5f, -0.5f) &&
+					   matRes.m_vRow3 == Vec4F(0.0f, 0.0f, 0.0f, 0.2f);
+			});
+
+			tbBlock.AddTest("MatrixF LookAtLH 1", [](float& _fDelta) -> const bool {
+				Vec3F vecEye(0.0f, 0.0f, 0.0f);
+				Vec3F vecAt(0.0f, 0.0f, 0.0f);
+				Vec3F vecUp(0.0f, 1.0f, 0.0f);
+				MatrixF matRes;
+
+				HC_TIME_EXECUTION(matRes = LookAtLH(vecEye, vecAt, vecUp), _fDelta);
+
+				return matRes.m_vRow0 == Vec4F(1.0f, 0.0f, 0.0f, 0.0f) &&
+					   matRes.m_vRow1 == Vec4F(0.0f, 1.0f, 0.0f, 0.0f) &&
+					   matRes.m_vRow2 == Vec4F(0.0f, 0.0f, 1.0f, 0.0f) &&
+					   matRes.m_vRow3 == Vec4F(vecEye, 1.0f);
+			});
+
+			tbBlock.AddTest("MatrixF LookAtLH 2", [](float& _fDelta) -> const bool {
+				Vec3F vecEye(2.0f, 2.0f, 3.0f);
+				Vec3F vecAt(3.0f, 4.0f, 2.0f);
+				Vec3F vecUp(0.0f, 1.0f, 0.0f);
+				MatrixF matRes;
+
+				HC_TIME_EXECUTION(matRes = LookAtLH(vecEye, vecAt, vecUp), _fDelta);
+
+				Vec3F zAxis = Normalize(vecAt - vecEye);
+				Vec3F xAxis = Normalize(Cross(vecUp, zAxis));
+				Vec3F yAxis = Normalize(Cross(zAxis, xAxis));
+
+				return matRes.m_vRow0 == Vec4F(xAxis, 0.0f) &&
+					   matRes.m_vRow1 == Vec4F(yAxis, 0.0f) &&
+					   matRes.m_vRow2 == Vec4F(zAxis, 0.0f) &&
+					   matRes.m_vRow3 == Vec4F(vecEye, 1.0f);
+			});
+
+			tbBlock.AddTest("MatrixF LookAtLH 3", [](float& _fDelta) -> const bool {
+				Vec3F vecEye(2.0f, 3.0f, 1.0f);
+				Vec3F vecAt(3.0f, 4.0f, 2.0f);
+				Vec3F vecUp(1.0f, 0.0f, 0.0f);
+				MatrixF matRes;
+
+				HC_TIME_EXECUTION(matRes = LookAtLH(vecEye, vecAt, vecUp), _fDelta);
+
+				Vec3F zAxis = Normalize(vecAt - vecEye);
+				Vec3F xAxis = Normalize(Cross(vecUp, zAxis));
+				Vec3F yAxis = Normalize(Cross(zAxis, xAxis));
+
+				return matRes.m_vRow0 == Vec4F(xAxis, 0.0f) &&
+					   matRes.m_vRow1 == Vec4F(yAxis, 0.0f) &&
+					   matRes.m_vRow2 == Vec4F(zAxis, 0.0f) &&
+					   matRes.m_vRow3 == Vec4F(vecEye, 1.0f);
+			});
+		}
+
 		_vBlockList.push_back(tbBlock);
 
 		tbBlock = TestBlock("Math Library - MatrixD");
@@ -758,6 +892,140 @@ namespace MathTests {
 					   matRes.m_vRow1 == matComp.m_vRow1 &&
 					   matRes.m_vRow2 == matComp.m_vRow2 &&
 					   matRes.m_vRow3 == matComp.m_vRow3;
+			});
+		}
+
+		//Misc Funcs
+		{
+			tbBlock.AddTest("MatrixD Determinant 1", [](float& _fDelta) -> const bool {
+				MatrixD mat(Vec4D(4.0, 3.0, 2.0, 2.0),
+							Vec4D(0.0, 1.0, -3.0, 3.0),
+							Vec4D(0.0, -1.0, 3.0, 3.0),
+							Vec4D(0.0, 3.0, 1.0, 1.0));
+				double dRes;
+
+				HC_TIME_EXECUTION(dRes = Determinant(mat), _fDelta);
+
+				return HC_DOUBLE_COMPARE(dRes, -240.0);
+			});
+
+			tbBlock.AddTest("MatrixD Determinant 2", [](float& _fDelta) -> const bool {
+				MatrixD mat(Vec4D(1.0, 2.0, 3.0, 4.0),
+							Vec4D(2.0, 5.0, 7.0, 3.0),
+							Vec4D(4.0, 10.0, 14.0, 6.0),
+							Vec4D(3.0, 4.0, 2.0, 7.0));
+				double dRes;
+
+				HC_TIME_EXECUTION(dRes = Determinant(mat), _fDelta);
+
+				return HC_DOUBLE_COMPARE(dRes, 0.0);
+			});
+
+			tbBlock.AddTest("MatrixD Determinant 3", [](float& _fDelta) -> const bool {
+				MatrixD mat(Vec4D(2.0, 3.0, 3.0, 1.0),
+							Vec4D(0.0, 2.0, 1.0, 3.0),
+							Vec4D(0.0, 0.0, 2.0, 5.0),
+							Vec4D(0.0, 0.0, 0.0, 5.0));
+				double dRes;
+
+				HC_TIME_EXECUTION(dRes = Determinant(mat), _fDelta);
+
+				return HC_DOUBLE_COMPARE(dRes, 40.0);
+			});
+
+			tbBlock.AddTest("MatrixD Inverse 1", [](float& _fDelta) -> const bool {
+				MatrixD mat(Vec4D(4.0, 3.0, 2.0, 2.0),
+							Vec4D(0.0, 1.0, -3.0, 3.0),
+							Vec4D(0.0, -1.0, 3.0, 3.0),
+							Vec4D(0.0, 3.0, 1.0, 1.0));
+				MatrixD matRes;
+
+				HC_TIME_EXECUTION(matRes = Inverse(mat), _fDelta);
+
+				return matRes.m_vRow0 == Vec4D(0.25, 0.0, -0.075, -0.275) &&
+					   matRes.m_vRow1 == Vec4D(0.0, 0.0, -0.1, 0.3) &&
+					   matRes.m_vRow2 == Vec4D(0.0, -0.16666667, 0.13333334, 0.1) &&
+					   matRes.m_vRow3 == Vec4D(0.0, 0.16666667, 0.16666667, 0.0);
+			});
+
+			tbBlock.AddTest("MatrixF Inverse 2", [](float& _fDelta) -> const bool {
+				MatrixD mat(Vec4D(1.0, 2.0, 3.0, 4.0),
+							Vec4D(2.0, 5.0, 7.0, 3.0),
+							Vec4D(4.0, 10.0, 14.0, 6.0),
+							Vec4D(3.0, 4.0, 2.0, 7.0));
+				MatrixD matRes;
+
+				HC_TIME_EXECUTION(matRes = Inverse(mat), _fDelta);
+
+				return matRes.m_vRow0 == Vec4D() &&
+					   matRes.m_vRow1 == Vec4D() &&
+					   matRes.m_vRow2 == Vec4D() &&
+					   matRes.m_vRow3 == Vec4D();
+			});
+
+			tbBlock.AddTest("MatrixF Inverse 3", [](float& _fDelta) -> const bool {
+				MatrixD mat(Vec4D(2.0, 3.0, 3.0, 1.0),
+							Vec4D(0.0, 2.0, 1.0, 3.0),
+							Vec4D(0.0, 0.0, 2.0, 5.0),
+							Vec4D(0.0, 0.0, 0.0, 5.0));
+				MatrixD matRes;
+
+				HC_TIME_EXECUTION(matRes = Inverse(mat), _fDelta);
+
+				return matRes.m_vRow0 == Vec4D(0.5, -0.75, -0.375, 0.725) &&
+					   matRes.m_vRow1 == Vec4D(0.0, 0.5, -0.25, -0.05) &&
+					   matRes.m_vRow2 == Vec4D(0.0, 0.0, 0.5, -0.5) &&
+					   matRes.m_vRow3 == Vec4D(0.0, 0.0, 0.0, 0.2);
+			});
+
+			tbBlock.AddTest("MatrixD LookAtLH 1", [](float& _fDelta) -> const bool {
+				Vec3D vecEye(0.0, 0.0, 0.0);
+				Vec3D vecAt(0.0, 0.0, 0.0);
+				Vec3D vecUp(0.0, 1.0, 0.0);
+				MatrixD matRes;
+
+				HC_TIME_EXECUTION(matRes = LookAtLH(vecEye, vecAt, vecUp), _fDelta);
+
+				return matRes.m_vRow0 == Vec4D(1.0, 0.0, 0.0, 0.0) &&
+					   matRes.m_vRow1 == Vec4D(0.0, 1.0, 0.0, 0.0) &&
+					   matRes.m_vRow2 == Vec4D(0.0, 0.0, 1.0, 0.0) &&
+					   matRes.m_vRow3 == Vec4D(vecEye, 1.0);
+			});
+
+			tbBlock.AddTest("MatrixD LookAtLH 2", [](float& _fDelta) -> const bool {
+				Vec3D vecEye(2.0, 2.0, 3.0);
+				Vec3D vecAt(3.0, 4.0, 2.0);
+				Vec3D vecUp(0.0, 1.0, 0.0);
+				MatrixD matRes;
+
+				HC_TIME_EXECUTION(matRes = LookAtLH(vecEye, vecAt, vecUp), _fDelta);
+
+				Vec3D zAxis = Normalize(vecAt - vecEye);
+				Vec3D xAxis = Normalize(Cross(vecUp, zAxis));
+				Vec3D yAxis = Normalize(Cross(zAxis, xAxis));
+
+				return matRes.m_vRow0 == Vec4D(xAxis, 0.0) &&
+					   matRes.m_vRow1 == Vec4D(yAxis, 0.0) &&
+					   matRes.m_vRow2 == Vec4D(zAxis, 0.0) &&
+					   matRes.m_vRow3 == Vec4D(vecEye, 1.0);
+			});
+
+			tbBlock.AddTest("MatrixD LookAtLH 3", [](float& _fDelta) -> const bool {
+				Vec3D vecEye(2.0, 3.0, 1.0);
+				Vec3D vecAt(3.0, 4.0, 2.0);
+				Vec3D vecUp(1.0, 0.0, 0.0);
+				MatrixD matRes;
+
+				HC_TIME_EXECUTION(matRes = LookAtLH(vecEye, vecAt, vecUp), _fDelta);
+
+				Vec3D zAxis = Normalize(vecAt - vecEye);
+				Vec3D xAxis = Normalize(Cross(vecUp, zAxis));
+				Vec3D yAxis = Normalize(Cross(zAxis, xAxis));
+
+				return matRes.m_vRow0 == Vec4D(xAxis, 0.0) &&
+					   matRes.m_vRow1 == Vec4D(yAxis, 0.0) &&
+					   matRes.m_vRow2 == Vec4D(zAxis, 0.0) &&
+					   matRes.m_vRow3 == Vec4D(vecEye, 1.0);
 			});
 		}
 

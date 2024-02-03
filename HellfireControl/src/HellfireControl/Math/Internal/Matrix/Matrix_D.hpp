@@ -516,12 +516,10 @@ struct HC_ALIGNAS(128) MatrixD
 	//Z Row
 	Vec4D Z = ((B * detC) - ((A * DC.WXWX()) - (A.YXWZ() * DC.ZYZY()))) * vDet;
 
-	_mMat[0] = Vec4D(X.WY(), Y.WY());
-	_mMat[1] = Vec4D(X.ZX(), Y.ZX());
-	_mMat[2] = Vec4D(Z.WY(), W.WY());
-	_mMat[3] = Vec4D(Z.ZX(), W.ZX());
+	//Combine calculated values above
+	MatrixD mRet(Vec4D(X.WY(), Y.WY()), Vec4D(X.ZX(), Y.ZX()), Vec4D(Z.WY(), W.WY()), Vec4D(Z.ZX(), W.ZX()));
 
-	return _mMat;
+	return mRet;
 }
 
 [[nodiscard]] HC_INLINE MatrixD IdentityD() {
@@ -554,12 +552,16 @@ struct HC_ALIGNAS(128) MatrixD
 	return mMat;
 }
 
-[[nodiscard]] HC_INLINE MatrixD LookAtLH(const Vec4D& _vEye, const Vec4D& _vAt, const Vec4D& _vUp) {
-	Vec4D vZAxis = Normalize(_vAt - _vEye);
-	Vec4D vXAxis = Normalize(Cross(_vUp, vZAxis));
-	Vec4D vYAxis = Normalize(Cross(vZAxis, vXAxis));
+[[nodiscard]] HC_INLINE MatrixD LookAtLH(const Vec3D& _vEye, const Vec3D& _vAt, const Vec3D& _vUp) {
+	if (_vEye == Vec3D() && _vAt == Vec3D()) {
+		return IdentityD(); //Return identity if an unchanged matrix
+	}
 
-	return MatrixD(vXAxis, vYAxis, vZAxis, _vAt);
+	Vec3D vZAxis = Normalize(_vAt - _vEye);
+	Vec3D vXAxis = Normalize(Cross(_vUp, vZAxis));
+	Vec3D vYAxis = Normalize(Cross(vZAxis, vXAxis));
+
+	return MatrixD(Vec4D(vXAxis, 0.0), Vec4D(vYAxis, 0.0), Vec4D(vZAxis, 0.0), Vec4D(_vEye, 1.0));
 }
 
 [[nodiscard]] HC_INLINE MatrixD operator+(const MatrixD& _mLeft, const MatrixD& _mRight) {

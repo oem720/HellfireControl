@@ -32,6 +32,7 @@ public:
 	/// with initialization, even if not required).
 	/// </summary>
 	/// <param name="_strName: The name of the application"></param>
+	///  <param name="_atType: The type of the application"></param>
 	explicit Application(const std::string& _strName, AppType _atType) : m_strApplicationName(_strName), m_atType(_atType) {}
 
 	/// <summary>

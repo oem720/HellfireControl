@@ -52,17 +52,17 @@ private:
 	/// <summary>
 	/// Helper function to request only the up-to-date window size from OS.
 	/// </summary>
-	void UpdateWindowSize() const;
+	void UpdateWindowSize();
 
 	/// <summary>
 	/// Helper function to request only the up-to-date window location from OS.
 	/// </summary>
-	void UpdateWindowLocation() const;
+	void UpdateWindowLocation();
 
 	/// <summary>
 	/// Helper function to request only the up-to-date window type from OS (only useful in windowed, non-borderless modes).
 	/// </summary>
-	void UpdateWindowType() const;
+	void UpdateWindowType();
 public:
 	/// <summary>
 	/// By default, this inits the window to have the name Hellfire Control Engine and the type of Windowed.
@@ -96,9 +96,9 @@ public:
 	}
 
 	/// <summary>
-	/// Destructor for the window. Automatically cleans all data requested from the OS.
+	/// Cleans all OS Memory and destroys current window.
 	/// </summary>
-	~Window();
+	void CleanupWindow();
 
 	/// <summary>
 	/// Set the name of the window.
@@ -107,7 +107,7 @@ public:
 	/// <returns>
 	/// bool: Confirmation of successful name change
 	/// </returns>
-	bool SetWindowName(std::string _strName);
+	bool SetWindowName(const std::string& _strName);
 
 	/// <summary>
 	/// Set the type of the window.
@@ -150,7 +150,7 @@ public:
 	/// <returns>
 	/// WindowType: The current window type
 	/// </returns>
-	[[nodiscard]] HC_INLINE WindowType GetWindowType() const {
+	[[nodiscard]] HC_INLINE WindowType GetWindowType() {
 		if (m_wtType == WindowType::WINDOWED || m_wtType == WindowType::WINDOWED_FULLSCREEN) {
 			UpdateWindowType();
 		}
@@ -164,7 +164,7 @@ public:
 	/// <returns>
 	/// Vec2F: The current window size
 	/// </returns>
-	[[nodiscard]] HC_INLINE Vec2F GetWindowSize() const {
+	[[nodiscard]] HC_INLINE Vec2F GetWindowSize() {
 		if (m_wtType == WindowType::WINDOWED || m_wtType == WindowType::WINDOWED_FULLSCREEN) {
 			UpdateWindowSize();
 		}
@@ -178,7 +178,7 @@ public:
 	/// <returns>
 	/// Vec2F: The current window location
 	/// </returns>
-	[[nodiscard]] HC_INLINE Vec2F GetWindowLocation() const {
+	[[nodiscard]] HC_INLINE Vec2F GetWindowLocation() {
 		if (m_wtType == WindowType::WINDOWED || m_wtType == WindowType::WINDOWED_FULLSCREEN) {
 			UpdateWindowLocation();
 		}

@@ -3,7 +3,7 @@
 
 #include <HellfireControl/Util/Util.hpp>
 
-#define HC_WINDOW_CLASS "HCE"
+#define HC_WINDOW_CLASS L"HCE"
 
 namespace PlatformWindow {
 	struct Win32WindowData {
@@ -15,32 +15,82 @@ namespace PlatformWindow {
 	};
 
 	struct Win32Globals {
-		bool g_bWindowClassRegistered = false;
-		std::map<HWND, Win32WindowData> g_mapWindowData;
 		HINSTANCE g_hiInstance;
+
+		bool g_bWindowClassRegistered = false;
+		bool g_bFullscreen = false;
+
+		std::map<HWND, Win32WindowData> g_mapWindowData;
 	};
 
 	static Win32Globals g_LocalData = {};
 
-	LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-		switch (uMsg) {
-		case WM_SIZE: {
-			int iWidth = LOWORD(lParam);
-			int iHeight = HIWORD(lParam);
+	LONG TranslateWindowStyle(uint8_t _u8Style) {
+		LONG lVal = 0;
 
-			g_LocalData.g_mapWindowData[hwnd].m_iWidth = iWidth;
-			g_LocalData.g_mapWindowData[hwnd].m_iHeight = iHeight;
+		switch (_u8Style) {
+		case 0: { //Windowed
+			lVal = WS_OVERLAPPEDWINDOW;
 		} break;
-		case WM_MOVE: {
-			int iX = LOWORD(lParam);
-			int iY = HIWORD(lParam);
-
-			g_LocalData.g_mapWindowData[hwnd].m_iX = iX;
-			g_LocalData.g_mapWindowData[hwnd].m_iY = iY;
+		case 1: { //Windowed_Fullscreen
+			lVal = WS_OVERLAPPED | WS_MAXIMIZE;
+		} break;
+		case 2: { //Borderless
+			lVal = WS_POPUP | WS_MAXIMIZE;
+		} break;
+		case 3: { //Fullscreen
+			lVal = WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 		} break;
 		}
 
-		return DefWindowProc(hwnd, uMsg, wParam, lParam);
+		return lVal;
+	}
+
+	void EnterFullscreen(int _iWidth, int _iHeight) {
+		DEVMODE dmSettings = {};
+
+		if (!EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmSettings)) {
+			assert(!"ERROR: Failed to enumerate settings!");
+		}
+
+		dmSettings.dmPelsWidth = _iWidth;
+		dmSettings.dmPelsHeight = _iHeight;
+		dmSettings.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
+
+		if (ChangeDisplaySettings(&dmSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL) {
+			assert(!"ERROR: Display resolution incompatible!");
+		}
+
+		g_LocalData.g_bFullscreen = true;
+	}
+
+	void ExitFullscreen() {
+		ChangeDisplaySettings(NULL, 0);
+
+		g_LocalData.g_bFullscreen = false;
+	}
+
+	LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+		switch (uMsg) {
+		case WM_WINDOWPOSCHANGED: {
+			WINDOWPOS* pWindowPos = reinterpret_cast<WINDOWPOS*>(lParam);
+
+			g_LocalData.g_mapWindowData[hwnd].m_iX = pWindowPos->x;
+			g_LocalData.g_mapWindowData[hwnd].m_iY = pWindowPos->y;
+			g_LocalData.g_mapWindowData[hwnd].m_iWidth = pWindowPos->cx;
+			g_LocalData.g_mapWindowData[hwnd].m_iHeight = pWindowPos->cy;
+
+			return 0;
+		} break;
+		case WM_CLOSE: {
+			CleanupWindow(reinterpret_cast<uint64_t>(hwnd));
+
+			return 0;
+		} break;
+		default: {
+			return DefWindowProc(hwnd, uMsg, wParam, lParam);
+		}
+		}
 	}
 
 	void InitWindowClass() {
@@ -72,18 +122,18 @@ namespace PlatformWindow {
 		g_LocalData.g_bWindowClassRegistered = false;
 	}
 
-	void InitWindow(uint64_t& _u64Handle, uint8_t _u8Type, const std::string& _strName, const Vec2F& _v2Size, const Vec2F& _v2Loc){
+	void InitWindow(uint64_t& _u64Handle, uint8_t _u8Type, const std::string& _strName, const Vec2F& _v2Size, const Vec2F& _v2Loc) {
 		if (!g_LocalData.g_bWindowClassRegistered) {
 			InitWindowClass();
 		}
 
 		HWND hwndWindowHandle = CreateWindowEx(
 			0,
-			HC_WINDOW_CLASS, //Class
-			_strName.c_str(), //Name
-			WS_OVERLAPPEDWINDOW, //TODO Add window style translation here
+			HC_WINDOW_CLASS,							//Class
+			Util::ConvertToWString(_strName).c_str(),	//Name
+			TranslateWindowStyle(_u8Type),
 
-			static_cast<int>(_v2Loc.x), static_cast<int>(_v2Loc.y), 
+			static_cast<int>(_v2Loc.x), static_cast<int>(_v2Loc.y),
 			static_cast<int>(_v2Size.x), static_cast<int>(_v2Size.y),
 
 			NULL,
@@ -96,7 +146,11 @@ namespace PlatformWindow {
 			assert(!"ERROR: Window failed to create!");
 		}
 
-		ShowWindow(hwndWindowHandle, 1);
+		ShowWindow(hwndWindowHandle, _u8Type == 1 ? 3 : 1); //Only on the Windowed_Fullscreen type do we start fullscreen
+
+		if (_u8Type == 3) { //If in fullscreen mode, call the fullscreen function
+			EnterFullscreen(static_cast<int>(_v2Size.x), static_cast<int>(_v2Size.y));
+		}
 
 		_u64Handle = reinterpret_cast<uint64_t>(hwndWindowHandle); //Assign to our generic handle pointer
 
@@ -111,19 +165,81 @@ namespace PlatformWindow {
 	}
 
 	bool SetWindowName(uint64_t _u64Handle, const std::string& _strName) {
-		return false;
+		return SetWindowText(reinterpret_cast<HWND>(_u64Handle), Util::ConvertToWString(_strName).c_str());
 	}
 
 	bool SetWindowStyleParameters(uint64_t _u64Handle, uint8_t _u8Type) {
-		return false;
+		HWND hwnd = reinterpret_cast<HWND>(_u64Handle);
+
+		bool bSucceeded = SetWindowLongPtr(
+			hwnd,							//Handle
+			GWL_STYLE,						//We're setting the style here, so use GWL_STYLE
+			TranslateWindowStyle(_u8Type)	//The changed value
+		);
+
+		bSucceeded = bSucceeded && SetWindowPos(
+			hwnd,														//Handle
+			NULL,														//Unused
+			0,															//Unused
+			0,															//Unused
+			0,															//Unused
+			0,															//Unused
+			SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED	//We are resetting the window, therefore, only FRAMECHANGED is needed, all others must be blocked.
+		);
+
+		if (_u8Type == 1) {
+			ShowWindow(hwnd, 3); //If and only if we are working with a Windowed_Fullscreen window, reshow the window as maximized
+		}
+
+		if (g_LocalData.g_bFullscreen && _u8Type != 3) {
+			ExitFullscreen(); //If and only if we are exiting fullscreen
+		}
+
+		g_LocalData.g_mapWindowData[hwnd].m_u8Style = _u8Type;
+
+		return bSucceeded; //Returns true if and only if both SetWindowLongPtr and SetWindowPos return true
 	}
 
 	bool SetWindowSize(uint64_t _u64Handle, const Vec2F& _v2Size) {
-		return false;
+		HWND hwnd = reinterpret_cast<HWND>(_u64Handle);
+
+		bool bSucceeded = SetWindowPos(
+			hwnd,								//Handle
+			NULL,								//Unused
+			0,									//Unused
+			0,									//Unused
+			static_cast<int>(_v2Size.x),		//New Width
+			static_cast<int>(_v2Size.y),		//New Height
+			SWP_NOMOVE | SWP_FRAMECHANGED		//Mark for no location changes and to repaint the screen
+		);
+
+		if (bSucceeded) {
+			g_LocalData.g_mapWindowData[hwnd].m_iWidth = static_cast<int>(_v2Size.x);
+			g_LocalData.g_mapWindowData[hwnd].m_iHeight = static_cast<int>(_v2Size.y);
+		}
+
+		return bSucceeded;
 	}
 
 	bool SetWindowLocation(uint64_t _u64Handle, const Vec2F& _v2Loc) {
-		return false;
+		HWND hwnd = reinterpret_cast<HWND>(_u64Handle);
+
+		bool bSucceeded = SetWindowPos(
+			hwnd,								//Handle
+			NULL,								//Unused
+			static_cast<int>(_v2Loc.x),			//Unused
+			static_cast<int>(_v2Loc.y),			//Unused
+			0,									//Unused
+			0,									//Unused
+			SWP_NOSIZE | SWP_FRAMECHANGED		//Mark for no size changes and to repaint the screen
+		);
+
+		if (bSucceeded) {
+			g_LocalData.g_mapWindowData[hwnd].m_iX = static_cast<int>(_v2Loc.x);
+			g_LocalData.g_mapWindowData[hwnd].m_iY = static_cast<int>(_v2Loc.y);
+		}
+
+		return bSucceeded;
 	}
 
 	Vec2F GetWindowSize(uint64_t _u64Handle) {
@@ -143,9 +259,17 @@ namespace PlatformWindow {
 	}
 
 	void CleanupWindow(uint64_t _u64Handle) {
-		//TODO Proper cleanup procedure
+		HWND hwnd = reinterpret_cast<HWND>(_u64Handle);
 
-		g_LocalData.g_mapWindowData.erase(reinterpret_cast<HWND>(_u64Handle)); //Delete local data for this window instance.
+		if (g_LocalData.g_bFullscreen) {
+			ExitFullscreen(); //Exit fullscreen and reset the user's resolution.
+		}
+
+		if (!DestroyWindow(hwnd)) {
+			assert(!"ERROR: Window failed to destroy!");
+		}
+
+		g_LocalData.g_mapWindowData.erase(hwnd); //Delete local data for this window instance.
 
 		if (g_LocalData.g_mapWindowData.empty()) {
 			DeregisterWindowClass(); //Deregister the window class, as we have no windows currently using it. Any new windows will need to recreate the class.

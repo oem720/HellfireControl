@@ -9,20 +9,28 @@ void Window::CleanupWindow() {
 	PlatformWindow::CleanupWindow(m_whgHandle);
 }
 
-bool Window::SetWindowName(const std::string& _strName) {
-	return PlatformWindow::SetWindowName(m_whgHandle, _strName);
+void Window::SetWindowName(const std::string& _strName) {
+	if (!PlatformWindow::SetWindowName(m_whgHandle, _strName)) {
+		assert(!"ERROR: Window name failed to change!");
+	}
 }
 
-bool Window::SetWindowType(WindowType _wtType) {
-	return PlatformWindow::SetWindowStyleParameters(m_whgHandle, _wtType);
+void Window::SetWindowType(WindowType _wtType) {
+	if (!PlatformWindow::SetWindowStyleParameters(m_whgHandle, _wtType)) {
+		assert(!"ERROR: Window type failed to change!");
+	}
 }
 
-bool Window::SetWindowSize(const Vec2F& _v2Size) {
-	return PlatformWindow::SetWindowSize(m_whgHandle, _v2Size);
+void Window::SetWindowSize(const Vec2F& _v2Size) {
+	if (!PlatformWindow::SetWindowSize(m_whgHandle, _v2Size)) {
+		assert(!"ERROR: Window size failed to change!");
+	}
 }
 
-bool Window::SetWindowLocation(const Vec2F& _v2Loc) {
-	return PlatformWindow::SetWindowLocation(m_whgHandle, _v2Loc);
+void Window::SetWindowLocation(const Vec2F& _v2Loc) {
+	if (!PlatformWindow::SetWindowLocation(m_whgHandle, _v2Loc)) {
+		assert(!"ERROR: Window location failed to change!");
+	}
 }
 
 void Window::InitWindow() {

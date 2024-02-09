@@ -104,37 +104,25 @@ public:
 	/// Set the name of the window.
 	/// </summary>
 	/// <param name="_strName: New name for the window"></param>
-	/// <returns>
-	/// bool: Confirmation of successful name change
-	/// </returns>
-	bool SetWindowName(const std::string& _strName);
+	void SetWindowName(const std::string& _strName);
 
 	/// <summary>
 	/// Set the type of the window.
 	/// </summary>
 	/// <param name="_wtType: New type for the window"></param>
-	/// <returns>
-	/// bool: Confirmation of successful type change
-	/// </returns>
-	bool SetWindowType(WindowType _wtType);
+	void SetWindowType(WindowType _wtType);
 
 	/// <summary>
 	/// Set the size of the window.
 	/// </summary>
 	/// <param name="_v2Size: New size for the window"></param>
-	/// <returns>
-	/// bool: Confirmation of successful size change
-	/// </returns>
-	bool SetWindowSize(const Vec2F& _v2Size);
+	void SetWindowSize(const Vec2F& _v2Size);
 
 	/// <summary>
 	/// Set the location for the window.
 	/// </summary>
 	/// <param name="_v2Loc: New location for the window"></param>
-	/// <returns>
-	/// bool: Confirmation of successful location change
-	/// </returns>
-	bool SetWindowLocation(const Vec2F& _v2Loc);
+	void SetWindowLocation(const Vec2F& _v2Loc);
 
 	/// <summary>
 	/// Get the window's current name.

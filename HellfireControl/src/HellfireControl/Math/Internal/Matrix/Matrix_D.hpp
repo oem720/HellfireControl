@@ -1,6 +1,6 @@
 #pragma once
 
-#include <HellfireControl/Math/Internal/Matrix_Common.hpp>
+#include <HellfireControl/Math/Internal/Matrix/Matrix_Common.hpp>
 
 #if HC_USE_SIMD
 
@@ -22,7 +22,7 @@ struct MatrixD {
 	HC_INLINE void HC_VECTORCALL SetRow4(Vec4D _vRow) { m_vRows[3] = _vRow; }
 };
 
-HC_INLINE MatrixD HC_VECTORCALL Transpose(MatrixD _mMat) {
+HC_INLINE MatrixD HC_VECTORCALL Transpose(const MatrixD& _mMat) {
 	__m256d temp0 = _mm256_unpacklo_pd(_mMat[0].m_dVec, _mMat[2].m_dVec);
 	__m256d temp1 = _mm256_unpacklo_pd(_mMat[1].m_dVec, _mMat[3].m_dVec);
 	__m256d temp2 = _mm256_unpackhi_pd(_mMat[0].m_dVec, _mMat[2].m_dVec);
@@ -35,7 +35,7 @@ HC_INLINE MatrixD HC_VECTORCALL Transpose(MatrixD _mMat) {
 
 	return _mMat;
 }
-HC_INLINE double HC_VECTORCALL Determinant(MatrixD _mMat) {
+HC_INLINE double HC_VECTORCALL Determinant(const MatrixD& _mMat) {
 	//Sub matrices
 	Vec4D A = Vec4D(_mMat[0][0], _mMat[0][1], _mMat[1][0], _mMat[1][1]);
 	Vec4D B = Vec4D(_mMat[0][2], _mMat[0][3], _mMat[1][2], _mMat[1][3]);
@@ -126,14 +126,14 @@ HC_INLINE MatrixD HC_VECTORCALL ProjectionDReversedInf(double _fAspectRatio, dou
 
 	return mMat;
 }
-HC_INLINE MatrixD HC_VECTORCALL LookAtLH(Vec4D _vEye, Vec4D _vAt, Vec4D _vUp) {
+HC_INLINE MatrixD HC_VECTORCALL LookAtLH(const Vec4D& _vEye, const Vec4D& _vAt, const Vec4D& _vUp) {
 	Vec4D vZAxis = Normalize(_vAt - _vEye);
 	Vec4D vXAxis = Normalize(Cross(_vUp, vZAxis));
 	Vec4D vYAxis = Normalize(Cross(vZAxis, vXAxis));
 
 	return MatrixD(vXAxis, vYAxis, vZAxis, _vAt);
 }
-HC_INLINE MatrixD HC_VECTORCALL operator+(MatrixD _mLeft, MatrixD _mRight) {
+HC_INLINE MatrixD HC_VECTORCALL operator+(const MatrixD& _mLeft, const MatrixD& _mRight) {
 	_mLeft[0] = _mLeft[0] + _mRight[0];
 	_mLeft[1] = _mLeft[1] + _mRight[1];
 	_mLeft[2] = _mLeft[2] + _mRight[2];
@@ -141,7 +141,7 @@ HC_INLINE MatrixD HC_VECTORCALL operator+(MatrixD _mLeft, MatrixD _mRight) {
 
 	return _mLeft;
 }
-HC_INLINE MatrixD HC_VECTORCALL operator-(MatrixD _mLeft, MatrixD _mRight) {
+HC_INLINE MatrixD HC_VECTORCALL operator-(const MatrixD& _mLeft, const MatrixD& _mRight) {
 	_mLeft[0] = _mLeft[0] - _mRight[0];
 	_mLeft[1] = _mLeft[1] - _mRight[1];
 	_mLeft[2] = _mLeft[2] - _mRight[2];
@@ -149,7 +149,7 @@ HC_INLINE MatrixD HC_VECTORCALL operator-(MatrixD _mLeft, MatrixD _mRight) {
 
 	return _mLeft;
 }
-HC_INLINE MatrixD HC_VECTORCALL operator*(MatrixD _mLeft, double _fRight) {
+HC_INLINE MatrixD HC_VECTORCALL operator*(const MatrixD& _mLeft, double _fRight) {
 	_mLeft[0] *= _fRight;
 	_mLeft[1] *= _fRight;
 	_mLeft[2] *= _fRight;
@@ -157,7 +157,7 @@ HC_INLINE MatrixD HC_VECTORCALL operator*(MatrixD _mLeft, double _fRight) {
 
 	return _mLeft;
 }
-HC_INLINE MatrixD HC_VECTORCALL operator*(double _fLeft, MatrixD _mRight) {
+HC_INLINE MatrixD HC_VECTORCALL operator*(double _fLeft, const MatrixD& _mRight) {
 	_mRight[0] *= _fLeft;
 	_mRight[1] *= _fLeft;
 	_mRight[2] *= _fLeft;
@@ -165,7 +165,7 @@ HC_INLINE MatrixD HC_VECTORCALL operator*(double _fLeft, MatrixD _mRight) {
 
 	return _mRight;
 }
-HC_INLINE MatrixD HC_VECTORCALL operator*(MatrixD _mLeft, MatrixD _mRight) {
+HC_INLINE MatrixD HC_VECTORCALL operator*(const MatrixD& _mLeft, const MatrixD& _mRight) {
 	_mRight = Transpose(_mRight);
 
 	for (int iNdx = 0; iNdx < 4; ++iNdx) {
@@ -177,7 +177,7 @@ HC_INLINE MatrixD HC_VECTORCALL operator*(MatrixD _mLeft, MatrixD _mRight) {
 
 	return _mLeft;
 }
-HC_INLINE Vec4D HC_VECTORCALL operator*(MatrixD _mLeft, Vec4D _vRight) {
+HC_INLINE Vec4D HC_VECTORCALL operator*(const MatrixD& _mLeft, const Vec4D& _vRight) {
 	_vRight = Vec4D(Dot(_mLeft[0], _vRight),
 		Dot(_mLeft[1], _vRight),
 		Dot(_mLeft[2], _vRight),
@@ -185,7 +185,7 @@ HC_INLINE Vec4D HC_VECTORCALL operator*(MatrixD _mLeft, Vec4D _vRight) {
 
 	return _vRight;
 }
-HC_INLINE Vec4D HC_VECTORCALL operator*(Vec4D _vLeft, MatrixD _mRight) {
+HC_INLINE Vec4D HC_VECTORCALL operator*(const Vec4D& _vLeft, const MatrixD& _mRight) {
 	_vLeft = Vec4D(Dot(_vLeft, _mRight[0]),
 		Dot(_vLeft, _mRight[1]),
 		Dot(_vLeft, _mRight[2]),
@@ -193,7 +193,7 @@ HC_INLINE Vec4D HC_VECTORCALL operator*(Vec4D _vLeft, MatrixD _mRight) {
 
 	return _vLeft;
 }
-HC_INLINE MatrixD HC_VECTORCALL operator/(MatrixD _mLeft, double _fRight) {
+HC_INLINE MatrixD HC_VECTORCALL operator/(const MatrixD& _mLeft, double _fRight) {
 	_mLeft[0] /= _fRight;
 	_mLeft[1] /= _fRight;
 	_mLeft[2] /= _fRight;
@@ -201,7 +201,7 @@ HC_INLINE MatrixD HC_VECTORCALL operator/(MatrixD _mLeft, double _fRight) {
 
 	return _mLeft;
 }
-HC_INLINE MatrixD HC_VECTORCALL operator/(double _fLeft, MatrixD _mRight) {
+HC_INLINE MatrixD HC_VECTORCALL operator/(double _fLeft, const MatrixD& _mRight) {
 	_mRight[0] /= _fLeft;
 	_mRight[1] /= _fLeft;
 	_mRight[2] /= _fLeft;
@@ -209,14 +209,14 @@ HC_INLINE MatrixD HC_VECTORCALL operator/(double _fLeft, MatrixD _mRight) {
 
 	return _mRight;
 }
-HC_INLINE MatrixD& HC_VECTORCALL operator+=(MatrixD& _mLeft, MatrixD _mRight) { _mLeft = _mLeft + _mRight; return _mLeft; }
-HC_INLINE MatrixD& HC_VECTORCALL operator-=(MatrixD& _mLeft, MatrixD _mRight) { _mLeft = _mLeft - _mRight; return _mLeft; }
+HC_INLINE MatrixD& HC_VECTORCALL operator+=(MatrixD& _mLeft, const MatrixD& _mRight) { _mLeft = _mLeft + _mRight; return _mLeft; }
+HC_INLINE MatrixD& HC_VECTORCALL operator-=(MatrixD& _mLeft, const MatrixD& _mRight) { _mLeft = _mLeft - _mRight; return _mLeft; }
 HC_INLINE MatrixD& HC_VECTORCALL operator*=(MatrixD& _mLeft, double _fRight) { _mLeft = _mLeft * _fRight; return _mLeft; }
-HC_INLINE MatrixD& HC_VECTORCALL operator*=(MatrixD& _mLeft, MatrixD _mRight) { _mLeft = _mLeft * _mRight; return _mLeft; }
-HC_INLINE Vec4D& HC_VECTORCALL operator*=(Vec4D& _vLeft, MatrixD _mRight) { _vLeft = _vLeft * _mRight; return _vLeft; }
+HC_INLINE MatrixD& HC_VECTORCALL operator*=(MatrixD& _mLeft, const MatrixD& _mRight) { _mLeft = _mLeft * _mRight; return _mLeft; }
+HC_INLINE Vec4D& HC_VECTORCALL operator*=(Vec4D& _vLeft, const MatrixD& _mRight) { _vLeft = _vLeft * _mRight; return _vLeft; }
 HC_INLINE MatrixD& HC_VECTORCALL operator/=(MatrixD& _mLeft, double _fRight) { _mLeft = _mLeft / _fRight; return _mLeft; }
-HC_INLINE MatrixD HC_VECTORCALL operator~(MatrixD _mMat) { return MatrixD(); }
-HC_INLINE MatrixD HC_VECTORCALL operator-(MatrixD _mMat) { return MatrixD() - _mMat; }
+HC_INLINE MatrixD HC_VECTORCALL operator~(const MatrixD& _mMat) { return MatrixD(); }
+HC_INLINE MatrixD HC_VECTORCALL operator-(const MatrixD& _mMat) { return MatrixD() - _mMat; }
 HC_INLINE MatrixD HC_VECTORCALL RotationXDegD(double _fDeg) {
 	_fDeg = HC_DEG2RAD(_fDeg);
 
@@ -428,7 +428,7 @@ HC_INLINE MatrixD HC_VECTORCALL RotateYawPitchRollGlobalRad(Vec4D _vRotation, Ma
 
 #else
 
-struct MatrixD
+struct HC_ALIGNAS(128) MatrixD
 {
 	union {
 		struct {
@@ -444,19 +444,20 @@ struct MatrixD
 	};
 
 	HC_INLINE MatrixD() { m_vRows[0] = Vec4D(); m_vRows[1] = Vec4D(); m_vRows[2] = Vec4D(); m_vRows[3] = Vec4D(); }
-	HC_INLINE explicit MatrixD(Vec4D _vRow0, Vec4D _vRow1, Vec4D _vRow2, Vec4D _vRow3) { m_vRows[0] = _vRow0; m_vRows[1] = _vRow1; m_vRows[2] = _vRow2; m_vRows[3] = _vRow3; }
+	HC_INLINE explicit MatrixD(const Vec4D& _vRow0, const Vec4D& _vRow1, const Vec4D& _vRow2, const Vec4D& _vRow3) { m_vRows[0] = _vRow0; m_vRows[1] = _vRow1; m_vRows[2] = _vRow2; m_vRows[3] = _vRow3; }
+	HC_INLINE explicit MatrixD(double _dVal) { m_vRows[0] = Vec4D(_dVal); m_vRows[1] = Vec4D(_dVal); m_vRows[2] = Vec4D(_dVal); m_vRows[3] = Vec4D(_dVal); }
 	HC_INLINE Vec4D operator[](int _iNdx) const { assert(_iNdx < 4); return m_vRows[_iNdx]; }
 	HC_INLINE Vec4D& operator[](int _iNdx) { assert(_iNdx < 4); return m_vRows[_iNdx]; }
 };
 
-[[nodiscard]] HC_INLINE MatrixD Transpose(MatrixD _mMat) {
+[[nodiscard]] HC_INLINE MatrixD Transpose(const MatrixD& _mMat) {
 	return MatrixD(Vec4D(_mMat[0][0], _mMat[1][0], _mMat[2][0], _mMat[3][0]),
-		Vec4D(_mMat[0][1], _mMat[1][1], _mMat[2][1], _mMat[3][1]),
-		Vec4D(_mMat[0][2], _mMat[1][2], _mMat[2][2], _mMat[3][2]),
-		Vec4D(_mMat[0][3], _mMat[1][3], _mMat[2][3], _mMat[3][3]));
+				   Vec4D(_mMat[0][1], _mMat[1][1], _mMat[2][1], _mMat[3][1]),
+				   Vec4D(_mMat[0][2], _mMat[1][2], _mMat[2][2], _mMat[3][2]),
+				   Vec4D(_mMat[0][3], _mMat[1][3], _mMat[2][3], _mMat[3][3]));
 }
 
-[[nodiscard]] HC_INLINE double Determinant(MatrixD _mMat) {
+[[nodiscard]] HC_INLINE double Determinant(const MatrixD& _mMat) {
 	//Sub matrices
 	Vec4D A = Vec4D(_mMat[0].XY(), _mMat[1].XY());
 	Vec4D B = Vec4D(_mMat[0].ZW(), _mMat[1].ZW());
@@ -479,7 +480,7 @@ struct MatrixD
 	return ((detA * detD) + (detB * detC)) - Sum(AB * DC.XZYW());
 }
 
-[[nodiscard]] HC_INLINE MatrixD Inverse(MatrixD _mMat) {
+[[nodiscard]] HC_INLINE MatrixD Inverse(const MatrixD& _mMat) {
 
 	//Sub matrices
 	Vec4D A = Vec4D(_mMat[0].XY(), _mMat[1].XY());
@@ -515,12 +516,10 @@ struct MatrixD
 	//Z Row
 	Vec4D Z = ((B * detC) - ((A * DC.WXWX()) - (A.YXWZ() * DC.ZYZY()))) * vDet;
 
-	_mMat[0] = Vec4D(X.WY(), Y.WY());
-	_mMat[1] = Vec4D(X.ZX(), Y.ZX());
-	_mMat[2] = Vec4D(Z.WY(), W.WY());
-	_mMat[3] = Vec4D(Z.ZX(), W.ZX());
+	//Combine calculated values above
+	MatrixD mRet(Vec4D(X.WY(), Y.WY()), Vec4D(X.ZX(), Y.ZX()), Vec4D(Z.WY(), W.WY()), Vec4D(Z.ZX(), W.ZX()));
 
-	return _mMat;
+	return mRet;
 }
 
 [[nodiscard]] HC_INLINE MatrixD IdentityD() {
@@ -553,107 +552,78 @@ struct MatrixD
 	return mMat;
 }
 
-[[nodiscard]] HC_INLINE MatrixD LookAtLH(Vec4D _vEye, Vec4D _vAt, Vec4D _vUp) {
-	Vec4D vZAxis = Normalize(_vAt - _vEye);
-	Vec4D vXAxis = Normalize(Cross(_vUp, vZAxis));
-	Vec4D vYAxis = Normalize(Cross(vZAxis, vXAxis));
-
-	return MatrixD(vXAxis, vYAxis, vZAxis, _vAt);
-}
-
-[[nodiscard]] HC_INLINE MatrixD operator+(MatrixD _mLeft, MatrixD _mRight) {
-	_mLeft[0] = _mLeft[0] + _mRight[0];
-	_mLeft[1] = _mLeft[1] + _mRight[1];
-	_mLeft[2] = _mLeft[2] + _mRight[2];
-	_mLeft[3] = _mLeft[3] + _mRight[3];
-
-	return _mLeft;
-}
-
-[[nodiscard]] HC_INLINE MatrixD operator-(MatrixD _mLeft, MatrixD _mRight) {
-	_mLeft[0] = _mLeft[0] - _mRight[0];
-	_mLeft[1] = _mLeft[1] - _mRight[1];
-	_mLeft[2] = _mLeft[2] - _mRight[2];
-	_mLeft[3] = _mLeft[3] - _mRight[3];
-
-	return _mLeft;
-}
-
-[[nodiscard]] HC_INLINE MatrixD operator*(MatrixD _mLeft, double _fRight) {
-	_mLeft[0] *= _fRight;
-	_mLeft[1] *= _fRight;
-	_mLeft[2] *= _fRight;
-	_mLeft[3] *= _fRight;
-
-	return _mLeft;
-}
-
-[[nodiscard]] HC_INLINE MatrixD operator*(double _fLeft, MatrixD _mRight) {
-	_mRight[0] *= _fLeft;
-	_mRight[1] *= _fLeft;
-	_mRight[2] *= _fLeft;
-	_mRight[3] *= _fLeft;
-
-	return _mRight;
-}
-
-[[nodiscard]] HC_INLINE MatrixD operator*(MatrixD _mLeft, MatrixD _mRight) {
-	_mRight = Transpose(_mRight);
-
-	for (int iNdx = 0; iNdx < 4; ++iNdx) {
-		_mLeft[iNdx] = Vec4D(Dot(_mLeft[iNdx], _mRight[0]),
-			Dot(_mLeft[iNdx], _mRight[1]),
-			Dot(_mLeft[iNdx], _mRight[2]),
-			Dot(_mLeft[iNdx], _mRight[3]));
+[[nodiscard]] HC_INLINE MatrixD LookAtLH(const Vec3D& _vEye, const Vec3D& _vAt, const Vec3D& _vUp) {
+	if (_vEye == Vec3D() && _vAt == Vec3D()) {
+		return IdentityD(); //Return identity if an unchanged matrix
 	}
 
-	return _mLeft;
+	Vec3D vZAxis = Normalize(_vAt - _vEye);
+	Vec3D vXAxis = Normalize(Cross(_vUp, vZAxis));
+	Vec3D vYAxis = Normalize(Cross(vZAxis, vXAxis));
+
+	return MatrixD(Vec4D(vXAxis, 0.0), Vec4D(vYAxis, 0.0), Vec4D(vZAxis, 0.0), Vec4D(_vEye, 1.0));
 }
 
-[[nodiscard]] HC_INLINE Vec4D operator*(MatrixD _mLeft, Vec4D _vRight) {
-	_vRight = Vec4D(Dot(_mLeft[0], _vRight),
-		Dot(_mLeft[1], _vRight),
-		Dot(_mLeft[2], _vRight),
-		Dot(_mLeft[3], _vRight));
-
-	return _vRight;
+[[nodiscard]] HC_INLINE MatrixD operator+(const MatrixD& _mLeft, const MatrixD& _mRight) {
+	return MatrixD(_mLeft[0] + _mRight[0], _mLeft[1] + _mRight[1], _mLeft[2] + _mRight[2], _mLeft[3] + _mRight[3]);
 }
 
-[[nodiscard]] HC_INLINE Vec4D operator*(Vec4D _vLeft, MatrixD _mRight) {
-	_vLeft = Vec4D(Dot(_vLeft, _mRight[0]),
-		Dot(_vLeft, _mRight[1]),
-		Dot(_vLeft, _mRight[2]),
-		Dot(_vLeft, _mRight[3]));
-
-	return _vLeft;
+[[nodiscard]] HC_INLINE MatrixD operator-(const MatrixD& _mLeft, const MatrixD& _mRight) {
+	return MatrixD(_mLeft[0] - _mRight[0], _mLeft[1] - _mRight[1], _mLeft[2] - _mRight[2], _mLeft[3] - _mRight[3]);
 }
 
-[[nodiscard]] HC_INLINE MatrixD operator/(MatrixD _mLeft, double _fRight) {
-	_mLeft[0] /= _fRight;
-	_mLeft[1] /= _fRight;
-	_mLeft[2] /= _fRight;
-	_mLeft[3] /= _fRight;
-
-	return _mLeft;
+[[nodiscard]] HC_INLINE MatrixD operator*(const MatrixD& _mLeft, double _fRight) {
+	return MatrixD(_mLeft[0] * _fRight, _mLeft[1] * _fRight, _mLeft[2] * _fRight, _mLeft[3] * _fRight);
 }
 
-[[nodiscard]] HC_INLINE MatrixD operator/(double _fLeft, MatrixD _mRight) {
-	_mRight[0] /= _fLeft;
-	_mRight[1] /= _fLeft;
-	_mRight[2] /= _fLeft;
-	_mRight[3] /= _fLeft;
-
-	return _mRight;
+[[nodiscard]] HC_INLINE MatrixD operator*(double _fLeft, const MatrixD& _mRight) {
+	return MatrixD(_mRight[0] * _fLeft, _mRight[1] * _fLeft, _mRight[2] * _fLeft, _mRight[3] * _fLeft);
 }
 
-HC_INLINE MatrixD& operator+=(MatrixD& _mLeft, MatrixD _mRight) { _mLeft = _mLeft + _mRight; return _mLeft; }
-HC_INLINE MatrixD& operator-=(MatrixD& _mLeft, MatrixD _mRight) { _mLeft = _mLeft - _mRight; return _mLeft; }
+[[nodiscard]] HC_INLINE MatrixD operator*(const MatrixD& _mLeft, const MatrixD& _mRight) {
+	MatrixD t = Transpose(_mRight);
+
+	MatrixD res;
+	for (int iNdx = 0; iNdx < 4; ++iNdx) {
+		res[iNdx] = Vec4D(Dot(_mLeft[iNdx], t[0]),
+						  Dot(_mLeft[iNdx], t[1]),
+						  Dot(_mLeft[iNdx], t[2]),
+						  Dot(_mLeft[iNdx], t[3]));
+	}
+
+	return res;
+}
+
+[[nodiscard]] HC_INLINE Vec4D operator*(const MatrixD& _mLeft, const Vec4D& _vRight) {
+	return Vec4D(Dot(_mLeft[0], _vRight),
+				 Dot(_mLeft[1], _vRight),
+				 Dot(_mLeft[2], _vRight),
+				 Dot(_mLeft[3], _vRight));
+}
+
+[[nodiscard]] HC_INLINE Vec4D operator*(const Vec4D& _vLeft, const MatrixD& _mRight) {
+	return Vec4D(Dot(_vLeft, _mRight[0]),
+				 Dot(_vLeft, _mRight[1]),
+				 Dot(_vLeft, _mRight[2]),
+				 Dot(_vLeft, _mRight[3]));
+}
+
+[[nodiscard]] HC_INLINE MatrixD operator/(const MatrixD& _mLeft, double _fRight) {
+	return MatrixD(_mLeft[0] / _fRight, _mLeft[1] / _fRight, _mLeft[2] / _fRight, _mLeft[3] / _fRight);
+}
+
+[[nodiscard]] HC_INLINE MatrixD operator/(double _fLeft, const MatrixD& _mRight) {
+	return MatrixD(_mRight[0] / _fLeft, _mRight[1] / _fLeft, _mRight[2] / _fLeft, _mRight[3] / _fLeft);
+}
+
+HC_INLINE MatrixD& operator+=(MatrixD& _mLeft, const MatrixD& _mRight) { _mLeft = _mLeft + _mRight; return _mLeft; }
+HC_INLINE MatrixD& operator-=(MatrixD& _mLeft, const MatrixD& _mRight) { _mLeft = _mLeft - _mRight; return _mLeft; }
 HC_INLINE MatrixD& operator*=(MatrixD& _mLeft, double _fRight) { _mLeft = _mLeft * _fRight; return _mLeft; }
-HC_INLINE MatrixD& operator*=(MatrixD& _mLeft, MatrixD _mRight) { _mLeft = _mLeft * _mRight; return _mLeft; }
-HC_INLINE Vec4D& operator*=(Vec4D& _vLeft, MatrixD _mRight) { _vLeft = _vLeft * _mRight; return _vLeft; }
+HC_INLINE MatrixD& operator*=(MatrixD& _mLeft, const MatrixD& _mRight) { _mLeft = _mLeft * _mRight; return _mLeft; }
+HC_INLINE Vec4D& operator*=(Vec4D& _vLeft, const MatrixD& _mRight) { _vLeft = _vLeft * _mRight; return _vLeft; }
 HC_INLINE MatrixD& operator/=(MatrixD& _mLeft, double _fRight) { _mLeft = _mLeft / _fRight; return _mLeft; }
-[[nodiscard]] HC_INLINE MatrixD operator~(MatrixD _mMat) { return MatrixD(); }
-[[nodiscard]] HC_INLINE MatrixD operator-(MatrixD _mMat) { return MatrixD(-_mMat[0], -_mMat[1], -_mMat[2], -_mMat[3]); }
+[[nodiscard]] HC_INLINE MatrixD operator~(const MatrixD& _mMat) { return MatrixD(); }
+[[nodiscard]] HC_INLINE MatrixD operator-(const MatrixD& _mMat) { return MatrixD(-_mMat[0], -_mMat[1], -_mMat[2], -_mMat[3]); }
 
 [[nodiscard]] HC_INLINE MatrixD RotationXDegD(double _dDeg) {
 	_dDeg = HC_DEG2RAD(_dDeg);
@@ -721,7 +691,7 @@ HC_INLINE MatrixD& operator/=(MatrixD& _mLeft, double _fRight) { _mLeft = _mLeft
 	return mMat;
 }
 
-[[nodiscard]] HC_INLINE MatrixD RotationYawPitchRollDegD(Vec4D _vRotation) {
+[[nodiscard]] HC_INLINE MatrixD RotationYawPitchRollDegD(const Vec3D& _vRotation) {
 	double dYaw = HC_DEG2RAD(_vRotation.x);
 	double dPitch = HC_DEG2RAD(_vRotation.y);
 	double dRoll = HC_DEG2RAD(_vRotation.z);
@@ -735,7 +705,7 @@ HC_INLINE MatrixD& operator/=(MatrixD& _mLeft, double _fRight) { _mLeft = _mLeft
 	return mMat;
 }
 
-[[nodiscard]] HC_INLINE MatrixD RotationYawPitchRollRadD(Vec4D _vRotation) {
+[[nodiscard]] HC_INLINE MatrixD RotationYawPitchRollRadD(const Vec3D& _vRotation) {
 	double dYaw = _vRotation.x;
 	double dPitch = _vRotation.y;
 	double dRoll = _vRotation.z;
@@ -779,26 +749,26 @@ HC_INLINE MatrixD& operator/=(MatrixD& _mLeft, double _fRight) { _mLeft = _mLeft
 	return mMat;
 }
 
-[[nodiscard]] HC_INLINE MatrixD TranslationD(Vec4D _vTranslation) {
+[[nodiscard]] HC_INLINE MatrixD TranslationD(const Vec3D& _vTranslation) {
 	MatrixD mMat;
 	mMat[0] = Vec4D(1.0, 0.0, 0.0, 0.0);
 	mMat[1] = Vec4D(0.0, 1.0, 0.0, 0.0);
 	mMat[2] = Vec4D(0.0, 0.0, 1.0, 0.0);
-	mMat[3] = _vTranslation;
+	mMat[3] = Vec4D(_vTranslation, 1.0f);
 
 	return mMat;
 }
 
-[[nodiscard]] HC_INLINE MatrixD RotationTranslationDegD(Vec4D _vRotation, Vec4D _vTranslation) {
+[[nodiscard]] HC_INLINE MatrixD RotationTranslationDegD(const Vec3D& _vRotation, const Vec3D& _vTranslation) {
 	MatrixD mMat = RotationYawPitchRollDegD(_vRotation);
-	mMat[3] = _vTranslation;
+	mMat[3] = Vec4D(_vTranslation, 1.0f);
 
 	return mMat;
 }
 
-[[nodiscard]] HC_INLINE MatrixD RotationTranslationRadD(Vec4D _vRotation, Vec4D _vTranslation) {
+[[nodiscard]] HC_INLINE MatrixD RotationTranslationRadD(const Vec3D& _vRotation, const Vec3D& _vTranslation) {
 	MatrixD mMat = RotationYawPitchRollRadD(_vRotation);
-	mMat[3] = _vTranslation;
+	mMat[3] = Vec4D(_vTranslation, 1.0f);
 
 	return mMat;
 }
@@ -833,7 +803,7 @@ HC_INLINE MatrixD& operator/=(MatrixD& _mLeft, double _fRight) { _mLeft = _mLeft
 	return mMat;
 }
 
-[[nodiscard]] HC_INLINE MatrixD ScaleXYZD(Vec4D _vScale) {
+[[nodiscard]] HC_INLINE MatrixD ScaleXYZD(const Vec3D& _vScale) {
 	MatrixD mMat;
 	mMat[0] = Vec4D(_vScale.x, 0.0, 0.0, 0.0);
 	mMat[1] = Vec4D(0.0, _vScale.y, 0.0, 0.0);
@@ -843,45 +813,45 @@ HC_INLINE MatrixD& operator/=(MatrixD& _mLeft, double _fRight) { _mLeft = _mLeft
 	return mMat;
 }
 
-[[nodiscard]] HC_INLINE MatrixD RotationTranslationScaleDegF(Vec4D _vRotation, Vec4D _vTranslation, Vec4D _vScale) {
+[[nodiscard]] HC_INLINE MatrixD RotationTranslationScaleDegF(const Vec3D& _vRotation, const Vec3D& _vTranslation, const Vec3D& _vScale) {
 	MatrixD mMat = RotationYawPitchRollDegD(_vRotation);
-	mMat[3] = _vTranslation;
+	mMat[3] = Vec4D(_vTranslation, 1.0f);
 	mMat *= ScaleXYZD(_vScale);
 
 	return mMat;
 }
 
-[[nodiscard]] HC_INLINE MatrixD RotationTranslationScaleRadF(Vec4D _vRotation, Vec4D _vTranslation, Vec4D _vScale) {
+[[nodiscard]] HC_INLINE MatrixD RotationTranslationScaleRadF(const Vec3D& _vRotation, const Vec3D& _vTranslation, const Vec3D& _vScale) {
 	MatrixD mMat = RotationYawPitchRollRadD(_vRotation);
-	mMat[3] = _vTranslation;
+	mMat[3] = Vec4D(_vTranslation, 1.0f);
 	mMat *= ScaleXYZD(_vScale);
 
 	return mMat;
 }
 
-[[nodiscard]] HC_INLINE MatrixD TranslateXLocal(double _dDist, MatrixD _mMat) { return _mMat * TranslationXD(_dDist); }
-[[nodiscard]] HC_INLINE MatrixD TranslateXGlobal(double _dDist, MatrixD _mMat) { return TranslationXD(_dDist) * _mMat; }
-[[nodiscard]] HC_INLINE MatrixD TranslateYLocal(double _dDist, MatrixD _mMat) { return _mMat * TranslationYD(_dDist); }
-[[nodiscard]] HC_INLINE MatrixD TranslateYGlobal(double _dDist, MatrixD _mMat) { return TranslationYD(_dDist) * _mMat; }
-[[nodiscard]] HC_INLINE MatrixD TranslateZLocal(double _dDist, MatrixD _mMat) { return _mMat * TranslationZD(_dDist); }
-[[nodiscard]] HC_INLINE MatrixD TranslateZGlobal(double _dDist, MatrixD _mMat) { return TranslationZD(_dDist) * _mMat; }
-[[nodiscard]] HC_INLINE MatrixD TranslateLocal(Vec4D _vTranslation, MatrixD _mMat) { return _mMat * TranslationD(_vTranslation); }
-[[nodiscard]] HC_INLINE MatrixD TranslateGlobal(Vec4D _vTranslation, MatrixD _mMat) { return TranslationD(_vTranslation) * _mMat; }
-[[nodiscard]] HC_INLINE MatrixD RotateXLocalDeg(double _dDeg, MatrixD _mMat) { return _mMat * RotationXDegD(_dDeg); }
-[[nodiscard]] HC_INLINE MatrixD RotateXLocalRad(double _dRad, MatrixD _mMat) { return _mMat * RotationXRadD(_dRad); }
-[[nodiscard]] HC_INLINE MatrixD RotateXGlobalDeg(double _dDeg, MatrixD _mMat) { return RotationXDegD(_dDeg) * _mMat; }
-[[nodiscard]] HC_INLINE MatrixD RotateXGlobalRad(double _dDeg, MatrixD _mMat) { return RotationXRadD(_dDeg) * _mMat; }
-[[nodiscard]] HC_INLINE MatrixD RotateYLocalDeg(double _dDeg, MatrixD _mMat) { return _mMat * RotationYDegD(_dDeg); }
-[[nodiscard]] HC_INLINE MatrixD RotateYLocalRad(double _dRad, MatrixD _mMat) { return _mMat * RotationYRadD(_dRad); }
-[[nodiscard]] HC_INLINE MatrixD RotateYGlobalDeg(double _dDeg, MatrixD _mMat) { return RotationYDegD(_dDeg) * _mMat; }
-[[nodiscard]] HC_INLINE MatrixD RotateYGlobalRad(double _dDeg, MatrixD _mMat) { return RotationYDegD(_dDeg) * _mMat; }
-[[nodiscard]] HC_INLINE MatrixD RotateZLocalDeg(double _dDeg, MatrixD _mMat) { return _mMat * RotationZDegD(_dDeg); }
-[[nodiscard]] HC_INLINE MatrixD RotateZLocalRad(double _dRad, MatrixD _mMat) { return _mMat * RotationZRadD(_dRad); }
-[[nodiscard]] HC_INLINE MatrixD RotateZGlobalDeg(double _dDeg, MatrixD _mMat) { return RotationZDegD(_dDeg) * _mMat; }
-[[nodiscard]] HC_INLINE MatrixD RotateZGlobalRad(double _dRad, MatrixD _mMat) { return RotationZRadD(_dRad) * _mMat; }
-[[nodiscard]] HC_INLINE MatrixD RotateYawPitchRollLocalDeg(Vec4D _vRotation, MatrixD _mMat) { return _mMat * RotationYawPitchRollDegD(_vRotation); }
-[[nodiscard]] HC_INLINE MatrixD RotateYawPitchRollLocalRad(Vec4D _vRotation, MatrixD _mMat) { return _mMat * RotationYawPitchRollRadD(_vRotation); }
-[[nodiscard]] HC_INLINE MatrixD RotateYawPitchRollGlobalDeg(Vec4D _vRotation, MatrixD _mMat) { return RotationYawPitchRollDegD(_vRotation) * _mMat; }
-[[nodiscard]] HC_INLINE MatrixD RotateYawPitchRollGlobalRad(Vec4D _vRotation, MatrixD _mMat) { return RotationYawPitchRollRadD(_vRotation) * _mMat; }
+[[nodiscard]] HC_INLINE MatrixD TranslateXLocal(double _dDist, const MatrixD& _mMat) { return _mMat * TranslationXD(_dDist); }
+[[nodiscard]] HC_INLINE MatrixD TranslateXGlobal(double _dDist, const MatrixD& _mMat) { return TranslationXD(_dDist) * _mMat; }
+[[nodiscard]] HC_INLINE MatrixD TranslateYLocal(double _dDist, const MatrixD& _mMat) { return _mMat * TranslationYD(_dDist); }
+[[nodiscard]] HC_INLINE MatrixD TranslateYGlobal(double _dDist, const MatrixD& _mMat) { return TranslationYD(_dDist) * _mMat; }
+[[nodiscard]] HC_INLINE MatrixD TranslateZLocal(double _dDist, const MatrixD& _mMat) { return _mMat * TranslationZD(_dDist); }
+[[nodiscard]] HC_INLINE MatrixD TranslateZGlobal(double _dDist, const MatrixD& _mMat) { return TranslationZD(_dDist) * _mMat; }
+[[nodiscard]] HC_INLINE MatrixD TranslateLocal(const Vec3D& _vTranslation, const MatrixD& _mMat) { return _mMat * TranslationD(_vTranslation); }
+[[nodiscard]] HC_INLINE MatrixD TranslateGlobal(const Vec3D& _vTranslation, const MatrixD& _mMat) { return TranslationD(_vTranslation) * _mMat; }
+[[nodiscard]] HC_INLINE MatrixD RotateXLocalDeg(double _dDeg, const MatrixD& _mMat) { return _mMat * RotationXDegD(_dDeg); }
+[[nodiscard]] HC_INLINE MatrixD RotateXLocalRad(double _dRad, const MatrixD& _mMat) { return _mMat * RotationXRadD(_dRad); }
+[[nodiscard]] HC_INLINE MatrixD RotateXGlobalDeg(double _dDeg, const MatrixD& _mMat) { return RotationXDegD(_dDeg) * _mMat; }
+[[nodiscard]] HC_INLINE MatrixD RotateXGlobalRad(double _dDeg, const MatrixD& _mMat) { return RotationXRadD(_dDeg) * _mMat; }
+[[nodiscard]] HC_INLINE MatrixD RotateYLocalDeg(double _dDeg, const MatrixD& _mMat) { return _mMat * RotationYDegD(_dDeg); }
+[[nodiscard]] HC_INLINE MatrixD RotateYLocalRad(double _dRad, const MatrixD& _mMat) { return _mMat * RotationYRadD(_dRad); }
+[[nodiscard]] HC_INLINE MatrixD RotateYGlobalDeg(double _dDeg, const MatrixD& _mMat) { return RotationYDegD(_dDeg) * _mMat; }
+[[nodiscard]] HC_INLINE MatrixD RotateYGlobalRad(double _dDeg, const MatrixD& _mMat) { return RotationYDegD(_dDeg) * _mMat; }
+[[nodiscard]] HC_INLINE MatrixD RotateZLocalDeg(double _dDeg, const MatrixD& _mMat) { return _mMat * RotationZDegD(_dDeg); }
+[[nodiscard]] HC_INLINE MatrixD RotateZLocalRad(double _dRad, const MatrixD& _mMat) { return _mMat * RotationZRadD(_dRad); }
+[[nodiscard]] HC_INLINE MatrixD RotateZGlobalDeg(double _dDeg, const MatrixD& _mMat) { return RotationZDegD(_dDeg) * _mMat; }
+[[nodiscard]] HC_INLINE MatrixD RotateZGlobalRad(double _dRad, const MatrixD& _mMat) { return RotationZRadD(_dRad) * _mMat; }
+[[nodiscard]] HC_INLINE MatrixD RotateYawPitchRollLocalDeg(const Vec3D& _vRotation, const MatrixD& _mMat) { return _mMat * RotationYawPitchRollDegD(_vRotation); }
+[[nodiscard]] HC_INLINE MatrixD RotateYawPitchRollLocalRad(const Vec3D& _vRotation, const MatrixD& _mMat) { return _mMat * RotationYawPitchRollRadD(_vRotation); }
+[[nodiscard]] HC_INLINE MatrixD RotateYawPitchRollGlobalDeg(const Vec3D& _vRotation, const MatrixD& _mMat) { return RotationYawPitchRollDegD(_vRotation) * _mMat; }
+[[nodiscard]] HC_INLINE MatrixD RotateYawPitchRollGlobalRad(const Vec3D& _vRotation, const MatrixD& _mMat) { return RotationYawPitchRollRadD(_vRotation) * _mMat; }
 
 #endif

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <HellfireControl/Math/Internal/Quaternion_Common.hpp>
+#include <HellfireControl/Math/Internal/Quaternion/Quaternion_Common.hpp>
 
 #if HC_USE_SIMD
 
@@ -51,7 +51,7 @@ struct QuaternionD {
 
 #else
 
-struct QuaternionD
+struct HC_ALIGNAS(32) QuaternionD
 {
 	union {
 		Vec4D m_vQuat;
@@ -65,7 +65,7 @@ struct QuaternionD
 	};
 
 	HC_INLINE QuaternionD() { m_vQuat = Vec4D(); }
-	HC_INLINE explicit QuaternionD(Vec4D _vQuat) { m_vQuat = _vQuat; }
+	HC_INLINE QuaternionD(const Vec4D& _vQuat) { m_vQuat = _vQuat; }
 	HC_INLINE explicit QuaternionD(float _fX, float _fY, float _fZ, float _fW) { m_vQuat = Vec4D(_fX, _fY, _fZ, _fW); }
 	HC_INLINE explicit QuaternionD(int _iX, int _iY, int _iZ, int _iW) { m_vQuat = Vec4D(_iX, _iY, _iZ, _iW); }
 	HC_INLINE explicit QuaternionD(double _dX, double _dY, double _dZ, double _dW) { m_vQuat = Vec4D(_dX, _dY, _dZ, _dW); }
@@ -84,7 +84,7 @@ struct QuaternionD
 						dCosRoll * dCosPitch * dCosYaw + dSinRoll * dSinPitch * dSinYaw);
 	}
 
-	HC_INLINE explicit QuaternionD(Vec3D _vEulerAngles) {
+	HC_INLINE explicit QuaternionD(const Vec3D& _vEulerAngles) {
 		double dCosRoll = cos(_vEulerAngles.x * 0.5);
 		double dSinRoll = sin(_vEulerAngles.x * 0.5);
 		double dCosPitch = cos(_vEulerAngles.y * 0.5);
@@ -98,7 +98,7 @@ struct QuaternionD
 						dCosRoll * dCosPitch * dCosYaw + dSinRoll * dSinPitch * dSinYaw);
 	}
 
-	HC_INLINE explicit QuaternionD(MatrixD _mRotation) {
+	HC_INLINE explicit QuaternionD(const MatrixD& _mRotation) {
 		double dSum = 0.0;
 		if (_mRotation[2][2] < 0.0) {
 			if (_mRotation[0][0] > _mRotation[1][1]) {
@@ -128,51 +128,51 @@ struct QuaternionD
 	[[nodiscard]] HC_INLINE double& operator[](int _iNdx) { return m_vQuat[_iNdx]; }
 };
 
-[[nodiscard]] HC_INLINE QuaternionD operator+(QuaternionD _qLeft, QuaternionD _qRight) { return QuaternionD(_qLeft.m_vQuat + _qRight.m_vQuat); }
-[[nodiscard]] HC_INLINE QuaternionD operator-(QuaternionD _qLeft, QuaternionD _qRight) { return QuaternionD(_qLeft.m_vQuat - _qRight.m_vQuat); }
-[[nodiscard]] HC_INLINE QuaternionD operator*(QuaternionD _qLeft, double _dRight) { return QuaternionD(_qLeft.m_vQuat * _dRight); }
-[[nodiscard]] HC_INLINE QuaternionD operator*(double _dLeft, QuaternionD _qRight) { return QuaternionD(_qRight.m_vQuat * _dLeft); }
-[[nodiscard]] HC_INLINE QuaternionD operator/(QuaternionD _qLeft, double _dRight) { return QuaternionD(_qLeft.m_vQuat / _dRight); }
-[[nodiscard]] HC_INLINE QuaternionD operator/(double _dLeft, QuaternionD _qRight) { return QuaternionD(_dLeft / _qRight.m_vQuat); }
-HC_INLINE QuaternionD& operator+=(QuaternionD& _qLeft, QuaternionD _qRight) { _qLeft = _qLeft + _qRight; return _qLeft; }
-HC_INLINE QuaternionD& operator-=(QuaternionD& _qLeft, QuaternionD _qRight) { _qLeft = _qLeft - _qRight; return _qLeft; }
+[[nodiscard]] HC_INLINE QuaternionD operator+(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return QuaternionD(_qLeft.m_vQuat + _qRight.m_vQuat); }
+[[nodiscard]] HC_INLINE QuaternionD operator-(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return QuaternionD(_qLeft.m_vQuat - _qRight.m_vQuat); }
+[[nodiscard]] HC_INLINE QuaternionD operator*(const QuaternionD& _qLeft, double _dRight) { return QuaternionD(_qLeft.m_vQuat * _dRight); }
+[[nodiscard]] HC_INLINE QuaternionD operator*(double _dLeft, const QuaternionD& _qRight) { return QuaternionD(_qRight.m_vQuat * _dLeft); }
+[[nodiscard]] HC_INLINE QuaternionD operator/(const QuaternionD& _qLeft, double _dRight) { return QuaternionD(_qLeft.m_vQuat / _dRight); }
+[[nodiscard]] HC_INLINE QuaternionD operator/(double _dLeft, const QuaternionD& _qRight) { return QuaternionD(_dLeft / _qRight.m_vQuat); }
+HC_INLINE QuaternionD& operator+=(QuaternionD& _qLeft, const QuaternionD& _qRight) { _qLeft = _qLeft + _qRight; return _qLeft; }
+HC_INLINE QuaternionD& operator-=(QuaternionD& _qLeft, const QuaternionD& _qRight) { _qLeft = _qLeft - _qRight; return _qLeft; }
 HC_INLINE QuaternionD& operator*=(QuaternionD& _qLeft, double _dRight) { _qLeft = _qLeft * _dRight; return _qLeft; }
 HC_INLINE QuaternionD& operator/=(QuaternionD& _qLeft, double _dRight) { _qLeft = _qLeft / _dRight; return _qLeft; }
-[[nodiscard]] HC_INLINE QuaternionD operator~(QuaternionD _qQuat) { return QuaternionD(); }
-[[nodiscard]] HC_INLINE QuaternionD operator-(QuaternionD _qQuat) { return QuaternionD(-_qQuat.x, -_qQuat.y, -_qQuat.z, -_qQuat.w); }
-HC_INLINE bool operator==(QuaternionD _qLeft, QuaternionD _qRight) { return _qLeft.m_vQuat == _qRight.m_vQuat; }
-HC_INLINE bool operator<(QuaternionD _qLeft, QuaternionD _qRight) { return _qLeft.m_vQuat < _qRight.m_vQuat; }
-HC_INLINE bool operator>(QuaternionD _qLeft, QuaternionD _qRight) { return _qLeft.m_vQuat > _qRight.m_vQuat; }
-HC_INLINE bool operator<=(QuaternionD _qLeft, QuaternionD _qRight) { return _qLeft.m_vQuat <= _qRight.m_vQuat; }
-HC_INLINE bool operator>=(QuaternionD _qLeft, QuaternionD _qRight) { return _qLeft.m_vQuat >= _qRight.m_vQuat; }
-HC_INLINE bool operator!=(QuaternionD _qLeft, QuaternionD _qRight) { return _qLeft.m_vQuat != _qRight.m_vQuat; }
-[[nodiscard]] HC_INLINE double Sum(const QuaternionD _qQuat) { return _qQuat.x + _qQuat.y + _qQuat.z + _qQuat.w; }
-[[nodiscard]] HC_INLINE double Dot(QuaternionD _qLeft, QuaternionD _qRight) { return Sum(_qLeft + _qRight); }
-[[nodiscard]] HC_INLINE double Length(QuaternionD _qQuat) { return Length(_qQuat.m_vQuat); }
-[[nodiscard]] HC_INLINE double LengthSquared(QuaternionD _qQuat) { return LengthSquared(_qQuat.m_vQuat); }
-[[nodiscard]] HC_INLINE QuaternionD Normalize(QuaternionD _qQuat) { return QuaternionD(Normalize(_qQuat.m_vQuat)); }
-[[nodiscard]] HC_INLINE Vec4D Cross(QuaternionD _qLeft, QuaternionD _qRight) { return Cross(_qLeft.m_vQuat, _qRight.m_vQuat); }
-[[nodiscard]] HC_INLINE QuaternionD Conjugate(QuaternionD _qQuat) { return QuaternionD(-_qQuat.x, -_qQuat.y, -_qQuat.z, _qQuat.w); }
+[[nodiscard]] HC_INLINE QuaternionD operator~(const QuaternionD& _qQuat) { return QuaternionD(); }
+[[nodiscard]] HC_INLINE QuaternionD operator-(const QuaternionD& _qQuat) { return QuaternionD(-_qQuat.x, -_qQuat.y, -_qQuat.z, -_qQuat.w); }
+HC_INLINE bool operator==(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return _qLeft.m_vQuat == _qRight.m_vQuat; }
+HC_INLINE bool operator<(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return _qLeft.m_vQuat < _qRight.m_vQuat; }
+HC_INLINE bool operator>(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return _qLeft.m_vQuat > _qRight.m_vQuat; }
+HC_INLINE bool operator<=(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return _qLeft.m_vQuat <= _qRight.m_vQuat; }
+HC_INLINE bool operator>=(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return _qLeft.m_vQuat >= _qRight.m_vQuat; }
+HC_INLINE bool operator!=(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return _qLeft.m_vQuat != _qRight.m_vQuat; }
+[[nodiscard]] HC_INLINE double Sum(const QuaternionD& _qQuat) { return _qQuat.x + _qQuat.y + _qQuat.z + _qQuat.w; }
+[[nodiscard]] HC_INLINE double Dot(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return Sum(_qLeft + _qRight); }
+[[nodiscard]] HC_INLINE double Length(const QuaternionD& _qQuat) { return Length(_qQuat.m_vQuat); }
+[[nodiscard]] HC_INLINE double LengthSquared(const QuaternionD& _qQuat) { return LengthSquared(_qQuat.m_vQuat); }
+[[nodiscard]] HC_INLINE QuaternionD Normalize(const QuaternionD& _qQuat) { return Normalize(_qQuat.m_vQuat); }
+[[nodiscard]] HC_INLINE QuaternionD Cross(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return Cross(_qLeft.m_vQuat, _qRight.m_vQuat); }
+[[nodiscard]] HC_INLINE QuaternionD Conjugate(const QuaternionD& _qQuat) { return QuaternionD(-_qQuat.x, -_qQuat.y, -_qQuat.z, _qQuat.w); }
 
-[[nodiscard]] HC_INLINE QuaternionD operator*(QuaternionD _qLeft, QuaternionD _qRight) {
+[[nodiscard]] HC_INLINE QuaternionD operator*(const QuaternionD& _qLeft, const QuaternionD& _qRight) {
 	return QuaternionD(_qLeft.w * _qRight.x + _qLeft.x * _qRight.w + _qLeft.y * _qRight.z - _qLeft.z * _qRight.y,
 		_qLeft.w * _qRight.y - _qLeft.x * _qRight.z + _qLeft.y * _qRight.w + _qLeft.z * _qRight.x,
 		_qLeft.w * _qRight.z + _qLeft.x * _qRight.y - _qLeft.y * _qRight.x + _qLeft.z * _qRight.w,
 		_qLeft.w * _qRight.w - _qLeft.x * _qRight.x - _qLeft.y * _qRight.y - _qLeft.z * _qRight.z);
 }
 
-[[nodiscard]] HC_INLINE QuaternionD operator/(QuaternionD _qLeft, QuaternionD _qRight) { return _qLeft * (1.0f / _qRight); }
-[[nodiscard]] HC_INLINE Vec3D operator*(QuaternionD _qLeft, Vec3D _vRight) { return (_qLeft * QuaternionD(Vec4D(_vRight, 0.0f)) * Conjugate(_qLeft)).m_vQuat.XYZ(); }
-[[nodiscard]] HC_INLINE Vec3D operator*(Vec3D _vLeft, QuaternionD _qRight) { return (_qRight * QuaternionD(Vec4D(_vLeft, 0.0f)) * Conjugate(_qRight)).m_vQuat.XYZ(); }
-[[nodiscard]] HC_INLINE Vec4D operator*(QuaternionD _qLeft, Vec4D _vRight) { return Vec4D(_qLeft * _vRight.XYZ(), _vRight.w); }
-[[nodiscard]] HC_INLINE Vec4D operator*(Vec4D _vLeft, QuaternionD _qRight) { return Vec4D(_qRight * _vLeft.XYZ(), _vLeft.w); }
-HC_INLINE QuaternionD& operator*=(QuaternionD& _qLeft, QuaternionD _qRight) { _qLeft = _qLeft * _qRight; return _qLeft; }
-HC_INLINE QuaternionD& operator/=(QuaternionD& _qLeft, QuaternionD _qRight) { _qLeft = _qLeft / _qRight; return _qLeft; }
-HC_INLINE Vec3D& operator*=(Vec3D& _vLeft, QuaternionD _qRight) { _vLeft = _vLeft * _qRight; return _vLeft; }
-HC_INLINE Vec4D& operator*=(Vec4D& _vLeft, QuaternionD _qRight) { _vLeft = _vLeft * _qRight; return _vLeft; }
-[[nodiscard]] HC_INLINE Vec4D RotateByQuaternion(Vec4D _vVector, QuaternionD _qRotation) { return _vVector * _qRotation; }
+[[nodiscard]] HC_INLINE QuaternionD operator/(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return _qLeft * (1.0f / _qRight); }
+[[nodiscard]] HC_INLINE Vec3D operator*(const QuaternionD& _qLeft, const Vec3D& _vRight) { return (_qLeft * QuaternionD(Vec4D(_vRight, 0.0f)) * Conjugate(_qLeft)).m_vQuat.XYZ(); }
+[[nodiscard]] HC_INLINE Vec3D operator*(const Vec3D& _vLeft, const QuaternionD& _qRight) { return (_qRight * QuaternionD(Vec4D(_vLeft, 0.0f)) * Conjugate(_qRight)).m_vQuat.XYZ(); }
+[[nodiscard]] HC_INLINE Vec4D operator*(const QuaternionD& _qLeft, const Vec4D& _vRight) { return Vec4D(_qLeft * _vRight.XYZ(), _vRight.w); }
+[[nodiscard]] HC_INLINE Vec4D operator*(const Vec4D& _vLeft, const QuaternionD& _qRight) { return Vec4D(_qRight * _vLeft.XYZ(), _vLeft.w); }
+HC_INLINE QuaternionD& operator*=(QuaternionD& _qLeft, const QuaternionD& _qRight) { _qLeft = _qLeft * _qRight; return _qLeft; }
+HC_INLINE QuaternionD& operator/=(QuaternionD& _qLeft, const QuaternionD& _qRight) { _qLeft = _qLeft / _qRight; return _qLeft; }
+HC_INLINE Vec3D& operator*=(Vec3D& _vLeft, const QuaternionD& _qRight) { _vLeft = _vLeft * _qRight; return _vLeft; }
+HC_INLINE Vec4D& operator*=(Vec4D& _vLeft, const QuaternionD& _qRight) { _vLeft = _vLeft * _qRight; return _vLeft; }
+[[nodiscard]] HC_INLINE Vec4D RotateByQuaternion(Vec4D _vVector, const QuaternionD& _qRotation) { return _vVector * _qRotation; }
 
-[[nodiscard]] HC_INLINE QuaternionD Inverse(QuaternionD _qQuat) {
+[[nodiscard]] HC_INLINE QuaternionD Inverse(const QuaternionD& _qQuat) {
 	QuaternionD qConj = Conjugate(_qQuat);
 
 	double dLen = Length(_qQuat);
@@ -186,7 +186,7 @@ HC_INLINE Vec4D& operator*=(Vec4D& _vLeft, QuaternionD _qRight) { _vLeft = _vLef
 	return QuaternionD(qConj.x / dLen, qConj.y / dLen, qConj.z / dLen, qConj.w);
 }
 
-[[nodiscard]] HC_INLINE MatrixD ExtractMatrix(QuaternionD _qQuat) {
+[[nodiscard]] HC_INLINE MatrixD ExtractMatrix(const QuaternionD& _qQuat) {
 	MatrixD mRotationMat;
 
 	mRotationMat[0] = Vec4D(1.0 - 2.0 * (_qQuat.y * _qQuat.y) - 2.0 * (_qQuat.z * _qQuat.z),
@@ -203,7 +203,7 @@ HC_INLINE Vec4D& operator*=(Vec4D& _vLeft, QuaternionD _qRight) { _vLeft = _vLef
 	return mRotationMat;
 }
 
-[[nodiscard]] HC_INLINE Vec3D ExtractEulerAngles(QuaternionD _qQuat) {
+[[nodiscard]] HC_INLINE Vec3D ExtractEulerAngles(const QuaternionD& _qQuat) {
 	Vec3D vEulerAngles;
 	double dSin, dCos;
 

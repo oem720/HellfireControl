@@ -5,6 +5,9 @@ else()
 	project(HellfireControl LANGUAGES C CXX)
 endif()
 
+ADD_DEFINITIONS(-DUNICODE)
+ADD_DEFINITIONS(-D_UNICODE)
+
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -21,4 +24,5 @@ set(HC_PROJECT_DIR ${PROJECT_SOURCE_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMake)
 
 add_subdirectory(HellfireControl)
-#add_subdirectory(Hephaestus)
+add_subdirectory(Athena)
+add_subdirectory(Hephaestus)

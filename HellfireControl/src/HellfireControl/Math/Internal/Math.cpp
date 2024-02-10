@@ -1,4 +1,4 @@
-
+#include <cfloat>
 #include <HellfireControl/Math/Math.hpp>
 
 namespace Math {

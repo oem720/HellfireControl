@@ -44,7 +44,7 @@ public:
 	/// <summary>
 	/// Calls all init functions for test initialization.
 	/// </summary>
-	virtual void Start() override;
+	void Start();
 
 	/// <summary>
 	/// Executes all unit tests and displays results.
@@ -54,7 +54,7 @@ public:
 	/// <summary>
 	/// Finishes output of data to the profiler file and gracefully exits.
 	/// </summary>
-	virtual void End() override;
+	void End();
 
 private:
 	/// <summary>

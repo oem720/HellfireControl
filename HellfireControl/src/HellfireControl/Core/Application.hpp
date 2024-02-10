@@ -2,7 +2,7 @@
 
 #include <HellfireControl/Core/Common.hpp>
 
-#include <Hellfirecontrol/Core/Window.hpp>
+#include <HellfireControl/Core/Window.hpp>
 
 enum class AppType {
 	CONSOLE,

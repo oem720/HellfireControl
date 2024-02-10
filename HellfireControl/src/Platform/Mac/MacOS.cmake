@@ -30,17 +30,16 @@ endif()
 
 # Compile Swift sources
 if(APPLE AND CMAKE_GENERATOR MATCHES "Ninja")
-
     target_compile_options(HellfireCore PRIVATE -enable-experimental-cxx-interop)
-    target_compile_options(HellfireCore PUBLIC -parse-as-library)
     target_compile_options(HellfireCore PUBLIC -I ${CMAKE_CURRENT_SOURCE_DIR}/src/HellfireControl)
     target_include_directories(HellfireCore PUBLIC src/HellfireControl)
     set_target_properties(HellfireCore PROPERTIES
             Swift_LANGUAGE_VERSION 5
             Swift_MODULE_DEPENDS HellfireControl)
     target_include_directories(HellfireCore PRIVATE ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
-    target_link_libraries(HellfireCore PRIVATE stdc++)
-    target_link_libraries(HellfireCore PUBLIC HellfireControl)
+    find_library(COCOA_LIBRARY Cocoa)
+    find_library(COREFOUNDATION_LIBRARY CoreFoundation)
+    target_link_libraries(HellfireCore PRIVATE ${COCOA_LIBRARY} ${COREFOUNDATION_LIBRARY})
 #    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -v)
 endif()
 

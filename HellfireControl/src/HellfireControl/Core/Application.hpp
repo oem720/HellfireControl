@@ -2,15 +2,21 @@
 
 #include <HellfireControl/Core/Common.hpp>
 
+#include <Hellfirecontrol/Core/Window.hpp>
+
 enum class AppType {
 	CONSOLE,
 	WINDOWED
 };
 
 class Application {
-private:
+protected:
 	//TODO: When the memory manager is active, add it here.
-	//TODO: When the windowing solution is complete, add it here.
+	
+	/// <summary>
+	/// The window for the application.
+	/// </summary>
+	Window m_wWindow;
 
 	/// <summary>
 	/// The name of the app
@@ -39,7 +45,7 @@ public:
 	/// The start of the app. Should always perform initialization actions. Base implementation required, as it includes the startup
 	/// of the memory and windowing systems.
 	/// </summary>
-	virtual void Start();
+	virtual void Start() = 0;
 
 	/// <summary>
 	/// The main application system. This is based entirely around the app being built, and as such is left pure virtual.
@@ -50,5 +56,5 @@ public:
 	/// Final cleanup. Should always ensure that no leaks are left over and everything gracefully exits. Base implementation required,
 	/// as it performs the shut down procedure for memory and windowing.
 	/// </summary>
-	virtual void End();
+	virtual void End() = 0;
 };

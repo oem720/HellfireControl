@@ -5,8 +5,6 @@
 #include <Athena/Tests/Tests.hpp>
 
 void UnitTesterApplication::Start() {
-	this->Application::Start();
-
 	//Call the overarching Init function
 	Tests::InitTests(m_vTestBlocks);
 }
@@ -62,8 +60,6 @@ void UnitTesterApplication::Run() {
 }
 
 void UnitTesterApplication::End() {
-	this->Application::End();
-
 	//TODO: Final cleanup and closing profiler file
 }
 

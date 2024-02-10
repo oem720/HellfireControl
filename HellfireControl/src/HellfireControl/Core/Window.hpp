@@ -65,14 +65,9 @@ private:
 	void UpdateWindowType();
 public:
 	/// <summary>
-	/// By default, this inits the window to have the name Hellfire Control Engine and the type of Windowed.
-	/// Location and size are defaulted to 0, 0 and 800x400 respectively
-	/// Name could be omitted and left to cascade down from Application, however, leaving the ability to
-	/// set window name at any time is useful for special in-game effects.
+	/// Default constructor is deleted.
 	/// </summary>
-	Window() : m_strWindowName("Hellfire Control Engine"), m_wtType(WindowType::WINDOWED), m_v2WindowSize(800, 400), m_v2WindowLocation(0, 0) {
-		InitWindow();
-	}
+	Window() : m_strWindowName("DEFAULT"), m_wtType(WINDOWED), m_v2WindowSize(0, 0), m_v2WindowLocation(0, 0) {}
 
 	/// <summary>
 	/// Generate a window of a giving name and given type.
@@ -81,7 +76,7 @@ public:
 	/// <param name="_wtType: The type of the window"></param>
 	/// <param name="_v2Size: The size of the window (Default: 800x400)"></param>
 	/// <param name="_v2Loc: The location of the window (Default: [0, 0])"></param>
-	explicit Window(std::string _strName, WindowType _wtType, const Vec2F& _v2Size, const Vec2F& _v2Loc) : m_strWindowName(_strName), m_wtType(_wtType),
+	explicit Window(const std::string& _strName, WindowType _wtType, const Vec2F& _v2Size, const Vec2F& _v2Loc) : m_strWindowName(_strName), m_wtType(_wtType),
 	m_v2WindowSize(_v2Size), m_v2WindowLocation(_v2Loc) {
 		InitWindow();
 	}

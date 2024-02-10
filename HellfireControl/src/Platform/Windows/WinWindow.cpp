@@ -30,7 +30,7 @@ namespace PlatformWindow {
 
 		switch (_u8Style) {
 		case 0: { //Windowed
-			lVal = WS_OVERLAPPEDWINDOW;
+			lVal = WS_OVERLAPPED;
 		} break;
 		case 1: { //Windowed_Fullscreen
 			lVal = WS_OVERLAPPED | WS_MAXIMIZE;
@@ -104,7 +104,7 @@ namespace PlatformWindow {
 			.hInstance = g_LocalData.g_hiInstance,
 			.hIcon = NULL, //TODO Add ability to set icon, inititally with a default icon value
 			.hCursor = NULL, //TODO Add ability to set cursor, initially with a default cursor value
-			.hbrBackground = NULL,
+			.hbrBackground = CreateSolidBrush(RGB(255, 255, 255)),
 			.lpszMenuName = NULL,
 			.lpszClassName = HC_WINDOW_CLASS
 		};
@@ -146,11 +146,12 @@ namespace PlatformWindow {
 			assert(!"ERROR: Window failed to create!");
 		}
 
-		ShowWindow(hwndWindowHandle, _u8Type == 1 ? 3 : 1); //Only on the Windowed_Fullscreen type do we start fullscreen
-
 		if (_u8Type == 3) { //If in fullscreen mode, call the fullscreen function
 			EnterFullscreen(static_cast<int>(_v2Size.x), static_cast<int>(_v2Size.y));
 		}
+
+		ShowWindow(hwndWindowHandle, _u8Type == 1 ? 3 : 1); //Only on the Windowed_Fullscreen type do we start fullscreen
+
 
 		_u64Handle = reinterpret_cast<uint64_t>(hwndWindowHandle); //Assign to our generic handle pointer
 

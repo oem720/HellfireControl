@@ -21,4 +21,4 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMake)
 
 add_subdirectory(HellfireControl)
 add_subdirectory(Athena)
-#add_subdirectory(Hephaestus)
+add_subdirectory(Hephaestus)

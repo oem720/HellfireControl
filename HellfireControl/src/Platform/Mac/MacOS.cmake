@@ -23,13 +23,25 @@ if(APPLE)
         OUTPUT_VARIABLE COMMAND_OUTPUT
         RESULT_VARIABLE COMMAND_RESULT
     )
+    execute_process(
+        COMMAND ${PLATFORM_DIR}/create_module_map.sh ${CMAKE_CURRENT_SOURCE_DIR}
+    )
 endif()
 
 # Compile Swift sources
 if(APPLE AND CMAKE_GENERATOR MATCHES "Ninja")
     add_executable(hc_launcher ${PLATFORM_DIR}/App.swift)
-    set_target_properties(hc_launcher PROPERTIES Swift_LANGUAGE_VERSION 4.2)
+    target_compile_options(hc_launcher PRIVATE -enable-experimental-cxx-interop)
     target_compile_options(hc_launcher PUBLIC -parse-as-library)
+    target_compile_options(hc_launcher PUBLIC -I ${CMAKE_CURRENT_SOURCE_DIR}/src/HellfireControl)
+    target_include_directories(hc_launcher PUBLIC src/HellfireControl)
+    set_target_properties(hc_launcher PROPERTIES
+            Swift_LANGUAGE_VERSION 5
+            Swift_MODULE_DEPENDS HellfireControl)
+    target_include_directories(hc_launcher PRIVATE ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+    target_link_libraries(hc_launcher PRIVATE stdc++)
+    target_link_libraries(hc_launcher PUBLIC HellfireControl)
+#    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -v)
 endif()
 
 ENDBLOCK() # PLATFORM_DIR, PLIST, COMMAND_OUTPUT, COMMAND_RESULT discarded

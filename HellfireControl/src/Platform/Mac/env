@@ -1,0 +1,61 @@
+
+hc-get-cpu-cores () {
+    # Get CPU Cores
+    local NUM_OF_CPU_CORES="$(sysctl -n hw.ncpu)"
+    # Use all but 2 cores
+    NUM_OF_CPU_CORES="$((NUM_OF_CPU_CORES - 2))"
+    # Use at least 1 core
+    if [[ NUM_OF_CPU_CORES -lt 1 ]]
+    then
+        NUM_OF_CPU_CORES=1
+    fi
+    return $NUM_OF_CPU_CORES
+}
+
+hc-init () {
+    if [[ "$(basename $PWD)" =~ "HellfireControl" && -d "$PWD"/HellfireControl ]]
+    then
+        export HC_ROOT="$PWD"
+    else
+        echo "[ERROR]: HC_ROOT not set."
+        echo "         Re-run this command in the root directory of the project."
+        return 1
+    fi
+}
+
+hc-build () {
+    if [ -z "$HC_ROOT" ]
+    then
+        echo "[ERROR]: HC_ROOT not set."
+        echo "         Change to the root directory of this project and run hc-init"
+    fi
+    local USAGE="USAGE: hc-build [type] [generator] [architecture]
+    TYPES:
+        Debug [default]
+        Release
+    GENERATORS:
+        Ninja - available on all platforms [default]
+        Xcode - macOS specific Xcode generator
+"
+    local TYPE=$1
+    local GENERATOR=$2
+    local TOOLKIT=""
+    case "$GENERATOR" in
+        Xcode)
+            TOOLKIT=xcodebuild
+            ;;
+        *)
+            TOOLKIT=ninja
+            ;;
+    esac
+
+    hc-get-cpu-cores
+    local CORES="$?"
+    if [ ! -d "$HC_ROOT"/cmake-build-"$GENERATOR" ]
+    then
+        mkdir "$HC_ROOT"/cmake-build-"$GENERATOR"
+    fi
+    pushd "$HC_ROOT"/cmake-build-"$GENERATOR"
+    cmake -G "$GENERATOR" ..
+
+}

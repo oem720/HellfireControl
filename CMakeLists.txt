@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 if(APPLE)
-	project(HellfireControl LANGUAGES C CXX Swift)
+	project(HellfireControl LANGUAGES C CXX Swift OBJC OBJCXX)
 else()
 	project(HellfireControl LANGUAGES C CXX)
 endif()

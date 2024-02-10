@@ -1,4 +1,5 @@
 import SwiftUI
+import HellfireControl
 
 @main
 struct HCLauncher: App {

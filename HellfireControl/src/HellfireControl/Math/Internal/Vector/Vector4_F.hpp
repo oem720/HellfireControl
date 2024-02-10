@@ -1447,9 +1447,10 @@ struct HC_ALIGNAS(16) Vec4F
 [[nodiscard]] HC_INLINE Vec4F operator*(const Vec4F& _vLeft, float _fRight) { return Vec4F(_vLeft.x * _fRight, _vLeft.y * _fRight, _vLeft.z * _fRight, _vLeft.w * _fRight); }
 [[nodiscard]] HC_INLINE Vec4F operator*(float _fLeft, const Vec4F& _vRight) { return Vec4F(_vRight.x * _fLeft, _vRight.y * _fLeft, _vRight.z * _fLeft, _vRight.w * _fLeft); }
 [[nodiscard]] HC_INLINE Vec4F operator/(const Vec4F& _vLeft, float _fRight) { return Vec4F(_vLeft.x / _fRight, _vLeft.y / _fRight, _vLeft.z / _fRight, _vLeft.w / _fRight); }
-[[nodiscard]] HC_INLINE Vec4F operator/(float _fLeft, const Vec4F& _vRight) { return Vec4F(_fLeft / _vRight.x, _fLeft / _vRight.y, _fLeft / _vRight.z, _fLeft / _vRight.w); }
+[[nodiscard]] HC_INLINE Vec4F operator/(float _fLeft, const Vec4F& _vRight) { return Vec4F(_vRight.x / _fLeft, _vRight.y / _fLeft, _vRight.z / _fLeft, _vRight.w / _fLeft); }
 [[nodiscard]] HC_INLINE Vec4F operator*(const Vec4F& _vLeft, const Vec4F& _vRight) { return Vec4F(_vLeft.x * _vRight.x, _vLeft.y * _vRight.y, _vLeft.z * _vRight.z, _vLeft.w * _vRight.w); }
 [[nodiscard]] HC_INLINE Vec4F operator/(const Vec4F& _vLeft, const Vec4F& _vRight) { return Vec4F(_vLeft.x / _vRight.x, _vLeft.y / _vRight.y, _vLeft.z / _vRight.z, _vLeft.w / _vRight.w); }
+[[nodiscard]] HC_INLINE Vec4F operator^(const Vec4F& _vLeft, const Vec4F& _vRight) { return Vec4F((_vLeft.ZXY() * _vRight.XYZ() - _vLeft.XYZ() * _vRight.ZXY()).ZXY(), _vLeft.w); }
 HC_INLINE Vec4F& operator+=(Vec4F& _vLeft, const Vec4F& _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
 HC_INLINE Vec4F& operator-=(Vec4F& _vLeft, const Vec4F& _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
 HC_INLINE Vec4F& operator*=(Vec4F& _vLeft, const Vec4F& _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }
@@ -1467,7 +1468,7 @@ HC_INLINE bool operator!=(const Vec4F& _vLeft, const Vec4F& _vRight) { return !(
 [[nodiscard]] HC_INLINE Vec4F Min(const Vec4F& _vLeft, const Vec4F& _vRight) { return Vec4F(HC_TERNARY(_vLeft.x, _vRight.x, <), HC_TERNARY(_vLeft.y, _vRight.y, <), HC_TERNARY(_vLeft.z, _vRight.z, <), HC_TERNARY(_vLeft.w, _vRight.w, <)); }
 [[nodiscard]] HC_INLINE Vec4F Max(const Vec4F& _vLeft, const Vec4F& _vRight) { return Vec4F(HC_TERNARY(_vLeft.x, _vRight.x, >), HC_TERNARY(_vLeft.y, _vRight.y, >), HC_TERNARY(_vLeft.z, _vRight.z, >), HC_TERNARY(_vLeft.w, _vRight.w, >)); }
 [[nodiscard]] HC_INLINE float Sum(const Vec4F& _vVector) { return _vVector.x + _vVector.y + _vVector.z + _vVector.w; }
-[[nodiscard]] HC_INLINE float Dot(const Vec4F& _vLeft, const Vec4F& _vRight) { return Sum((_vLeft * _vRight)); }
+[[nodiscard]] HC_INLINE float Dot(const Vec4F& _vLeft, const Vec4F& _vRight) { return Sum(_vLeft * _vRight); }
 [[nodiscard]] HC_INLINE float Length(const Vec4F& _vVector) { return sqrtf(Dot(_vVector, _vVector)); }
 [[nodiscard]] HC_INLINE float LengthSquared(const Vec4F& _vVector) { return Dot(_vVector, _vVector); }
 [[nodiscard]] HC_INLINE Vec4F Normalize(const Vec4F& _vVector) { return _vVector * (1.0f / Length(_vVector)); }

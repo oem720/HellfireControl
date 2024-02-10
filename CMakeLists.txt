@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.23)
 project(HellfireControl)
 
+ADD_DEFINITIONS(-DUNICODE)
+ADD_DEFINITIONS(-D_UNICODE)
+
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -17,4 +20,5 @@ set(HC_PROJECT_DIR ${PROJECT_SOURCE_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMake)
 
 add_subdirectory(HellfireControl)
-#add_subdirectory(Hephaestus)
+add_subdirectory(Athena)
+add_subdirectory(Hephaestus)

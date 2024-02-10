@@ -151,7 +151,7 @@ HC_INLINE bool operator!=(const QuaternionD& _qLeft, const QuaternionD& _qRight)
 [[nodiscard]] HC_INLINE double Length(const QuaternionD& _qQuat) { return Length(_qQuat.m_vQuat); }
 [[nodiscard]] HC_INLINE double LengthSquared(const QuaternionD& _qQuat) { return LengthSquared(_qQuat.m_vQuat); }
 [[nodiscard]] HC_INLINE QuaternionD Normalize(const QuaternionD& _qQuat) { return Normalize(_qQuat.m_vQuat); }
-[[nodiscard]] HC_INLINE Vec4D Cross(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return Cross(_qLeft.m_vQuat, _qRight.m_vQuat); }
+[[nodiscard]] HC_INLINE QuaternionD Cross(const QuaternionD& _qLeft, const QuaternionD& _qRight) { return Cross(_qLeft.m_vQuat, _qRight.m_vQuat); }
 [[nodiscard]] HC_INLINE QuaternionD Conjugate(const QuaternionD& _qQuat) { return QuaternionD(-_qQuat.x, -_qQuat.y, -_qQuat.z, _qQuat.w); }
 
 [[nodiscard]] HC_INLINE QuaternionD operator*(const QuaternionD& _qLeft, const QuaternionD& _qRight) {

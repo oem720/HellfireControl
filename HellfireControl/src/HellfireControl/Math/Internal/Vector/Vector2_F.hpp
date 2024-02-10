@@ -102,9 +102,9 @@ struct HC_ALIGNAS(8) Vec2F
 [[nodiscard]] HC_INLINE Vec2F operator*(const Vec2F& _vLeft, float _fRight) { return Vec2F(_vLeft.x * _fRight, _vLeft.y * _fRight); }
 [[nodiscard]] HC_INLINE Vec2F operator*(float _fLeft, const Vec2F& _vRight) { return Vec2F(_vRight.x * _fLeft, _vRight.y * _fLeft); }
 [[nodiscard]] HC_INLINE Vec2F operator/(const Vec2F& _vLeft, float _fRight) { return Vec2F(_vLeft.x / _fRight, _vLeft.y / _fRight); }
-[[nodiscard]] HC_INLINE Vec2F operator/(float _fLeft, const Vec2F& _vRight) { return Vec2F(_fLeft / _vRight.x, _fLeft / _vRight.y); }
+[[nodiscard]] HC_INLINE Vec2F operator/(float _fLeft, const Vec2F& _vRight) { return Vec2F(_vRight.x / _fLeft, _vRight.y / _fLeft); }
 [[nodiscard]] HC_INLINE Vec2F operator*(const Vec2F& _vLeft, const Vec2F& _vRight) { return Vec2F(_vLeft.x * _vRight.x, _vLeft.y * _vRight.y); }
-[[nodiscard]] HC_INLINE Vec2F operator/(const Vec2F& _vLeft, const Vec2F& _vRight) { return Vec2F(_vLeft.x / _vRight.x, _vLeft.y * _vRight.y); }
+[[nodiscard]] HC_INLINE Vec2F operator/(const Vec2F& _vLeft, const Vec2F& _vRight) { return Vec2F(_vLeft.x / _vRight.x, _vLeft.y / _vRight.y); }
 HC_INLINE Vec2F& operator+=(Vec2F& _vLeft, const Vec2F& _vRight) { _vLeft = _vLeft + _vRight; return _vLeft; }
 HC_INLINE Vec2F& operator-=(Vec2F& _vLeft, const Vec2F& _vRight) { _vLeft = _vLeft - _vRight; return _vLeft; }
 HC_INLINE Vec2F& operator*=(Vec2F& _vLeft, const Vec2F& _vRight) { _vLeft = _vLeft * _vRight; return _vLeft; }

@@ -1,5 +1,7 @@
 #pragma once
 
+#pragma warning(disable : 6201)
+
 #include <HellfireControl/Math/Random.hpp>
 #include <HellfireControl/Math/Internal/Random/Random_Common.hpp>
 
@@ -27,67 +29,61 @@ Random::Random(uint32_t _uSeed) {
 	Regenerate();
 }
 
-char Random::GenerateChar(char _cMin = CHAR_MIN, char _cMax = CHAR_MAX) {
+char Random::GenerateChar(char _cMin = 0, char _cMax = CHAR_MAX) {
 	if (_cMax < _cMin) return GenerateChar(_cMax, _cMin);
 
-	char cVal = static_cast<char>(GetNextVal() >> 24); //Grab higher order bits
-	char cRange = _cMax - _cMin + 1;
+	uint32_t u32Range = static_cast<uint32_t>(_cMax - _cMin + 1);
 
-	return cVal % cRange + _cMin;
+	return static_cast<char>(GetNextVal() % u32Range) + _cMin;
 }
 
-short Random::GenerateShort(short _sMin = SHRT_MIN, short _sMax = SHRT_MAX) {
+short Random::GenerateShort(short _sMin = 0, short _sMax = SHRT_MAX) {
 	if (_sMax < _sMin) return GenerateShort(_sMax, _sMin);
 
-	short sVal = static_cast<short>(GetNextVal() >> 16); //Grab higher order bits
-	short sRange = _sMax - _sMin + 1;
+	uint32_t u32Range = static_cast<uint32_t>(_sMax - _sMin + 1);
 
-	return sVal & sRange + _sMin;
+	return static_cast<short>(GetNextVal() % u32Range) + _sMin;
 }
 
-int Random::GenerateInt(int _iMin = INT_MIN, int _iMax = INT_MAX) {
+int Random::GenerateInt(int _iMin = 0, int _iMax = INT_MAX) {
 	if (_iMax < _iMin) return GenerateInt(_iMax, _iMin);
 
-	int iVal = static_cast<int>(GetNextVal());
-	int iRange = _iMax - _iMin + 1;
+	uint32_t u32Range = static_cast<uint32_t>(_iMax - _iMin + 1);
 
-	return iVal % iRange + _iMin;
+	return static_cast<int>(GetNextVal() % u32Range) + _iMin;
 }
 
 uint32_t Random::GenerateUnsignedInt(uint32_t _uMin = 0, uint32_t _uMax = UINT_MAX) {
 	if (_uMax < _uMin) return GenerateUnsignedInt(_uMax, _uMin);
 
-	uint32_t uVal = GetNextVal();
-	uint32_t uRange = _uMax - _uMin + 1;
+	uint32_t u32Range = _uMax - _uMin;
 	
-	return uVal % uRange + _uMin;
+	return (GetNextVal() % u32Range) + _uMin;
 }
 
-long Random::GenerateLong(long _lMin = LONG_MIN, long _lMax = LONG_MAX) {
+int64_t Random::GenerateLong(int64_t _lMin = 0, int64_t _lMax = LLONG_MAX) {
 	if (_lMax < _lMin) return GenerateLong(_lMax, _lMin);
 
-	long lVal = static_cast<long>((static_cast<uint64_t>(GetNextVal()) << 32) | GetNextVal()); //Fuse two generated numbers
-	long lRange = _lMax - _lMin + 1;
+	uint64_t u64Val = static_cast<uint64_t>((static_cast<uint64_t>(GetNextVal()) << 32) | GetNextVal()); //Fuse two generated numbers
+	uint64_t u64Range = static_cast<uint64_t>(_lMax - _lMin + 1);
 
-	return lVal % lRange + _lMin;
+	return static_cast<int64_t>(u64Val % u64Range) + _lMin;
 }
 
 float Random::GenerateFloat(float _fMin = 0.0f, float _fMax = 1.0f) {
 	if (_fMax < _fMin) return GenerateFloat(_fMax, _fMin);
 
-	float fVal = static_cast<float>(GenerateInt());
 	float fScale = static_cast<float>(INT_MAX) / (_fMax - _fMin);
 
-	return (fVal / fScale) + _fMin;
+	return (static_cast<float>(GenerateInt()) / fScale) + _fMin;
 }
 
 double Random::GenerateDouble(double _dMin = 0.0f, double _dMax = 1.0f) {
 	if (_dMax < _dMin) return GenerateDouble(_dMax, _dMin);
 
-	double dVal = static_cast<double>(GenerateLong());
-	double dScale = static_cast<double>(LONG_MAX) / (_dMax - _dMin);
+	double dScale = static_cast<double>(LLONG_MAX) / (_dMax - _dMin);
 
-	return (dVal / dScale) + _dMin;
+	return (static_cast<double>(GenerateLong()) / dScale) + _dMin;
 }
 
 void Random::SetSeed(uint32_t _uSeed) {

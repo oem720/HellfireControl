@@ -87,7 +87,7 @@ public:
 	/// <returns>
 	/// long: Randomly generated long
 	/// </returns>
-	[[nodiscard]] long GenerateLong(long _lMin, long _lMax);
+	[[nodiscard]] int64_t GenerateLong(int64_t _lMin, int64_t _lMax);
 
 	/// <summary>
 	/// Generates a random float between _fMin and _fMax. Defaults to between 0 and 1.

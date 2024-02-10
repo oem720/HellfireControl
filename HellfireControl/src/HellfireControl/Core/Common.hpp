@@ -5,6 +5,9 @@
 #include <utility>
 #include <cassert>
 
+//Required Includes (will not be replaced)
+#include <thread>
+
 //Defines for commonly used math functions
 #define HC_PI 3.14159265358979323846f
 #define HC_2PI 6.28318530717958647693f
@@ -25,3 +28,10 @@
 #define HC_USE_SIMD 0
 #define HC_ENABLE_DOUBLE_PRECISION 1
 #define HC_USE_ROTOR 1
+
+//Includes for STL library that will be replaced with custom implementations in the future
+#include <string>
+#include <vector>
+#include <list>
+#include <map>
+#include <unordered_map>

@@ -86,5 +86,5 @@ namespace PlatformWindow {
     /// Cleans up the window represented by the given handle
     /// </summary>
     /// <param name="_u64Handle: An unsigned 64 bit integer representing the window handle"></param>
-    [[nodiscard]] void CleanupWindow(uint64_t _u64Handle);
+    void CleanupWindow(uint64_t _u64Handle);
 }

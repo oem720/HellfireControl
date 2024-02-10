@@ -31,19 +31,19 @@ void PlatformWindow::InitWindow(uint64_t& _u64Handle, uint8_t _u8Type, const std
 
 [[nodiscard]] bool PlatformWindow::SetWindowName(uint64_t _u64Handle, const std::string &_strName) {
     NSString *name = [NSString stringWithUTF8String:_strName.c_str()];
-    NSWindow *window = reinterpret_cast<NSWindow*>(_u64Handle);
+    auto *window = reinterpret_cast<NSWindow*>(_u64Handle);
     [window setTitle:name];
     return true;
 }
 
 [[nodiscard]] Vec2F PlatformWindow::GetWindowSize(uint64_t _u64Handle) {
-    NSWindow *window = reinterpret_cast<NSWindow *>(_u64Handle);
+    auto *window = reinterpret_cast<NSWindow *>(_u64Handle);
     NSRect frame = [window frame];
     return Vec2F(frame.size.width, frame.size.height);
 }
 
 [[nodiscard]] bool PlatformWindow::SetWindowSize(uint64_t _u64Handle, const Vec2F &_v2Size) {
-    NSWindow *window = reinterpret_cast<NSWindow*>(_u64Handle);
+    auto *window = reinterpret_cast<NSWindow*>(_u64Handle);
     NSRect frame = [window frame];
     frame.size = NSMakeSize(_v2Size.x, _v2Size.y);
     [window setFrame:frame display:YES];
@@ -51,33 +51,34 @@ void PlatformWindow::InitWindow(uint64_t& _u64Handle, uint8_t _u8Type, const std
 }
 
 [[nodiscard]] Vec2F PlatformWindow::GetWindowLocation(uint64_t _u64Handle) {
-    NSWindow *window = reinterpret_cast<NSWindow*>(_u64Handle);
+    auto *window = reinterpret_cast<NSWindow*>(_u64Handle);
     NSRect frame = [window frame];
     return Vec2F(frame.origin.x, frame.origin.y);
 }
 
 [[nodiscard]] bool PlatformWindow::SetWindowLocation(uint64_t _u64Handle, const Vec2F &_v2Loc) {
-    NSWindow *window = reinterpret_cast<NSWindow*>(_u64Handle);
+    auto *window = reinterpret_cast<NSWindow*>(_u64Handle);
     NSRect frame = [window frame];
     frame.origin = NSMakePoint(_v2Loc.x, _v2Loc.y);
     [window setFrame:frame display:YES];
+    return true;
 }
 
-[[nodiscard]] void PlatformWindow::CleanupWindow(uint64_t _u64Handle) {
-    NSWindow *window = reinterpret_cast<NSWindow *>(_u64Handle);
+void PlatformWindow::CleanupWindow(uint64_t _u64Handle) {
+    auto *window = reinterpret_cast<NSWindow *>(_u64Handle);
     [window close];
     CFRelease(window);
 }
 
 [[nodiscard]] uint8_t PlatformWindow::GetWindowParameters(uint64_t _u64Handle) {
-    NSWindow *window = reinterpret_cast<NSWindow*>(_u64Handle);
-    NSWindowStyleMask styleMask = [window styleMask];
-    return static_cast<uint8_t>(whatWindowMode(styleMask));
+    auto *window = reinterpret_cast<NSWindow*>(_u64Handle);
+    NSWindowStyleMask mask = [window styleMask];
+    return static_cast<uint8_t>(whatWindowMode(mask));
 }
 
 [[nodiscard]] bool PlatformWindow::SetWindowStyleParameters(uint64_t _u64Handle, uint8_t _u8Type) {
-    NSWindow *window = reinterpret_cast<NSWindow*>(_u64Handle);
-    NSWindowStyleMask newStyleMask = styleMask[_u8Type];
-    [window setStyleMask:newStyleMask];
+    auto *window = reinterpret_cast<NSWindow*>(_u64Handle);
+    NSWindowStyleMask mask = styleMask[_u8Type];
+    [window setStyleMask:mask];
     return true;
 }

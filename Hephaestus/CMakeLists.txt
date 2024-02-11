@@ -1,8 +1,11 @@
 project(HellfireControl)
 
 file(GLOB_RECURSE TORCHLIGHT_SOURCE_FILES src/Torchlight/*.hpp src/Torchlight/*.h src/Torchlight/*.cpp)
-
-add_executable(Torchlight ${TORCHLIGHT_SOURCE_FILES})
+if (APPLE)
+    add_executable(Torchlight MACOSX_BUNDLE ${TORCHLIGHT_SOURCE_FILES})
+else()
+    add_executable(Torchlight ${TORCHLIGHT_SOURCE_FILES})
+endif()
 
 target_compile_definitions(Torchlight PUBLIC _CRT_SECURE_NO_WARNINGS)
 target_compile_definitions(Torchlight PUBLIC NOMINMAX)
@@ -25,6 +28,10 @@ endif()
 
 target_include_directories(Torchlight PUBLIC src)
 target_include_directories(Torchlight PUBLIC ../HellfireControl/src)
-
+if (APPLE)
+    find_library(COCOA_LIBRARY Cocoa)
+    find_library(APPKIT_LIBRARY AppKit)
+    target_link_libraries(Torchlight PUBLIC ${COCOA_LIBRARY} ${APPKIT_LIBRARY})
+endif()
 target_link_libraries(Torchlight PUBLIC HellfireCore)
 

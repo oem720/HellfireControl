@@ -23,4 +23,9 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio")
     endforeach()
 endif()
 
+if(WIN32)
+	target_include_directories(HellfireCore PUBLIC $ENV{VULKAN_SDK}/Include/)
+	target_link_directories(HellfireCore PUBLIC $ENV{VULKAN_SDK}/Lib/)
+endif(WIN32)
+
 target_include_directories(HellfireCore PUBLIC src)

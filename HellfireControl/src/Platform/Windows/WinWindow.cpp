@@ -30,10 +30,10 @@ namespace PlatformWindow {
 
 		switch (_u8Style) {
 		case 0: { //Windowed
-			lVal = WS_OVERLAPPED;
+			lVal = WS_OVERLAPPEDWINDOW;
 		} break;
 		case 1: { //Windowed_Fullscreen
-			lVal = WS_OVERLAPPED | WS_MAXIMIZE;
+			lVal = WS_OVERLAPPEDWINDOW | WS_MAXIMIZE;
 		} break;
 		case 2: { //Borderless
 			lVal = WS_POPUP | WS_MAXIMIZE;

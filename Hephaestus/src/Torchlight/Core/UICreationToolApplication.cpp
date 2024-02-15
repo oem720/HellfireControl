@@ -2,7 +2,7 @@
 #include <Torchlight/Core/UICreationToolApplication.hpp>
 
 void UICreationToolApplication::Start() {
-	m_wWindow = Window(m_strApplicationName, WINDOWED, Vec2F(800, 1200), Vec2F(0, 0));
+	m_wWindow = Window(m_strApplicationName, WINDOWED_FULLSCREEN, Vec2F(800, 1200), Vec2F(0, 0));
 }
 
 void UICreationToolApplication::Run() {

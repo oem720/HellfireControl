@@ -3,6 +3,8 @@
 
 #include <HellfireControl/Util/Util.hpp>
 
+#include <stdexcept>
+
 #define HC_WINDOW_CLASS L"HCE"
 
 namespace PlatformWindow {
@@ -50,7 +52,7 @@ namespace PlatformWindow {
 		DEVMODE dmSettings = {};
 
 		if (!EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmSettings)) {
-			assert(!"ERROR: Failed to enumerate settings!");
+			throw std::runtime_error("ERROR: Failed to enumerate settings!");
 		}
 
 		dmSettings.dmPelsWidth = _iWidth;
@@ -58,7 +60,7 @@ namespace PlatformWindow {
 		dmSettings.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
 
 		if (ChangeDisplaySettings(&dmSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL) {
-			assert(!"ERROR: Display resolution incompatible!");
+			throw std::runtime_error("ERROR: Display resolution incompatible!");
 		}
 
 		g_LocalData.g_bFullscreen = true;
@@ -110,7 +112,7 @@ namespace PlatformWindow {
 		};
 
 		if (!RegisterClass(&wcClass)) {
-			assert(!"ERROR: [Windows Only] Window Class could not be initialized!");
+			throw std::runtime_error("ERROR: [Windows Only] Window Class could not be initialized!");
 		}
 
 		g_LocalData.g_bWindowClassRegistered = true;
@@ -143,7 +145,7 @@ namespace PlatformWindow {
 		);
 
 		if (hwndWindowHandle == NULL) {
-			assert(!"ERROR: Window failed to create!");
+			throw std::runtime_error("ERROR: Window failed to create!");
 		}
 
 		if (_u8Type == 3) { //If in fullscreen mode, call the fullscreen function
@@ -267,7 +269,7 @@ namespace PlatformWindow {
 		}
 
 		if (!DestroyWindow(hwnd)) {
-			assert(!"ERROR: Window failed to destroy!");
+			throw std::runtime_error("ERROR: Window failed to destroy!");
 		}
 
 		g_LocalData.g_mapWindowData.erase(hwnd); //Delete local data for this window instance.

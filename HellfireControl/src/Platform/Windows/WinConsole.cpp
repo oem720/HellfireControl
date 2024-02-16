@@ -1,6 +1,8 @@
 
 #include <Platform/Windows/WinConsole.hpp>
 
+#include <stdexcept>
+
 namespace PlatformConsole {
 	static bool g_bInit = false; //Used to determine if the console has been formatted properly
 
@@ -43,7 +45,7 @@ namespace PlatformConsole {
 	void Print(const std::string& _strMessage, uint8_t _u8Color) {
 		if (!g_bInit) {
 			if (!InitConsole()) {
-				assert(!"ERROR: Console failed to initialize!");
+				throw std::runtime_error("ERROR: Console failed to initialize!");
 				return;
 			}
 		}

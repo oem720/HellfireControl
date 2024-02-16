@@ -10,6 +10,8 @@ void UnitTesterApplication::Start() {
 }
 
 void UnitTesterApplication::Run() {
+	this->Start();
+
 	uint32_t u32Successes = 0;
 	uint32_t u32TotalTests = 0;
 
@@ -57,6 +59,8 @@ void UnitTesterApplication::Run() {
 	Console::Print("Overall Average Speed: ");
 	Console::Print(std::to_string(m_fAverageExecutionTimeMs), Console::YELLOW);
 	Console::Print(" ms\n");
+
+	this->End();
 }
 
 void UnitTesterApplication::End() {

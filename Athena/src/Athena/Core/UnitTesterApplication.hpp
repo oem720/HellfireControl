@@ -35,11 +35,6 @@ private:
 	/// The unit test blocks to be executed
 	/// </summary>
 	std::vector<TestBlock> m_vTestBlocks;
-public:
-	/// <summary>
-	/// Default constructor
-	/// </summary>
-	UnitTesterApplication() : Application("Athena Unit Tester", AppType::CONSOLE), m_vTestBlocks() {}
 
 	/// <summary>
 	/// Calls all init functions for test initialization.
@@ -47,18 +42,22 @@ public:
 	void Start();
 
 	/// <summary>
-	/// Executes all unit tests and displays results.
-	/// </summary>
-	void Run();
-
-	/// <summary>
 	/// Finishes output of data to the profiler file and gracefully exits.
 	/// </summary>
 	void End();
 
-private:
 	/// <summary>
 	/// Helper function to easily display to the console the profiled data.
 	/// </summary>
 	void DisplayProfiledResults();
+public:
+	/// <summary>
+	/// Default constructor
+	/// </summary>
+	UnitTesterApplication() : Application("Athena Unit Tester", AppType::CONSOLE), m_vTestBlocks() {}
+
+	/// <summary>
+	/// Executes all unit tests and displays results.
+	/// </summary>
+	void Run();
 };

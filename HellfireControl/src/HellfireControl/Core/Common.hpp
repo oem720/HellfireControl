@@ -8,6 +8,11 @@
 //Required Includes (will not be replaced)
 #include <thread>
 
+//Borrowed from Vulkan docs
+#define HC_CONVERT_TO_VERSION_NO(_variant, _major, _minor, _patch)  ((((uint32_t)(_variant)) << 29U) | (((uint32_t)(_major)) << 22U) | (((uint32_t)(_minor)) << 12U) | ((uint32_t)(_patch)))
+//Engine Version No.
+#define HC_ENGINE_VERSION HC_CONVERT_TO_VERSION_NO(1, 1, 0, 0)
+
 //Defines for commonly used math functions
 #define HC_PI 3.14159265358979323846f
 #define HC_2PI 6.28318530717958647693f
@@ -28,6 +33,9 @@
 #define HC_USE_SIMD 0
 #define HC_ENABLE_DOUBLE_PRECISION 1
 #define HC_USE_ROTOR 1
+
+#define HC_USE_VULKAN 1
+#define HC_USE_OPENGL 0
 
 //Includes for STL library that will be replaced with custom implementations in the future
 #include <string>

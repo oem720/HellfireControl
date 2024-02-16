@@ -1,8 +1,10 @@
 #pragma once
 
+#include <HellfireControl/Core/Common.hpp>
+
 #if HC_USE_VULKAN && !HC_USE_OPENGL
 
-#include <Platform/Vulkan/VkInit.hpp>
+#include <vulkan/vulkan.h>
 
 #elif HC_USE_OPENGL && !HC_USE_VULKAN
 

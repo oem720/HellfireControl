@@ -10,6 +10,10 @@
 #include <Platform/Windows/WinWindow.hpp>
 #endif
 
+#ifdef HC_INCLUDE_SURFACE_VK
+#include <Platform/Windows/WinVkSurface.hpp>
+#endif
+
 #else
 
 #endif

@@ -207,32 +207,6 @@ struct HC_ALIGNAS(32) Vec3D
 	[[nodiscard]] HC_INLINE Vec3D ZZX() const { return Vec3D(z, z, x); }
 	[[nodiscard]] HC_INLINE Vec3D ZZY() const { return Vec3D(z, z, y); }
 	[[nodiscard]] HC_INLINE Vec3D ZZZ() const { return Vec3D(z, z, z); }
-	[[nodiscard]] HC_INLINE Vec3D RRR() const { return Vec3D(x, x, x); }
-	[[nodiscard]] HC_INLINE Vec3D RRG() const { return Vec3D(x, x, y); }
-	[[nodiscard]] HC_INLINE Vec3D RRB() const { return Vec3D(x, x, z); }
-	[[nodiscard]] HC_INLINE Vec3D RGR() const { return Vec3D(x, y, x); }
-	[[nodiscard]] HC_INLINE Vec3D RGG() const { return Vec3D(x, y, y); }
-	[[nodiscard]] HC_INLINE Vec3D RBR() const { return Vec3D(x, z, x); }
-	[[nodiscard]] HC_INLINE Vec3D RBG() const { return Vec3D(x, z, y); }
-	[[nodiscard]] HC_INLINE Vec3D RBB() const { return Vec3D(x, z, z); }
-	[[nodiscard]] HC_INLINE Vec3D GRR() const { return Vec3D(y, x, x); }
-	[[nodiscard]] HC_INLINE Vec3D GRG() const { return Vec3D(y, x, y); }
-	[[nodiscard]] HC_INLINE Vec3D GRB() const { return Vec3D(y, x, z); }
-	[[nodiscard]] HC_INLINE Vec3D GGR() const { return Vec3D(y, y, x); }
-	[[nodiscard]] HC_INLINE Vec3D GGG() const { return Vec3D(y, y, y); }
-	[[nodiscard]] HC_INLINE Vec3D GGB() const { return Vec3D(y, y, z); }
-	[[nodiscard]] HC_INLINE Vec3D GBR() const { return Vec3D(y, z, x); }
-	[[nodiscard]] HC_INLINE Vec3D GBG() const { return Vec3D(y, z, y); }
-	[[nodiscard]] HC_INLINE Vec3D GBB() const { return Vec3D(y, z, z); }
-	[[nodiscard]] HC_INLINE Vec3D BRR() const { return Vec3D(z, x, x); }
-	[[nodiscard]] HC_INLINE Vec3D BRG() const { return Vec3D(z, x, y); }
-	[[nodiscard]] HC_INLINE Vec3D BRB() const { return Vec3D(z, x, z); }
-	[[nodiscard]] HC_INLINE Vec3D BGR() const { return Vec3D(z, y, x); }
-	[[nodiscard]] HC_INLINE Vec3D BGG() const { return Vec3D(z, y, y); }
-	[[nodiscard]] HC_INLINE Vec3D BGB() const { return Vec3D(z, y, z); }
-	[[nodiscard]] HC_INLINE Vec3D BBR() const { return Vec3D(z, z, x); }
-	[[nodiscard]] HC_INLINE Vec3D BBG() const { return Vec3D(z, z, y); }
-	[[nodiscard]] HC_INLINE Vec3D BBB() const { return Vec3D(z, z, z); }
 };
 
 [[nodiscard]] HC_INLINE Vec3D operator+(const Vec3D& _vLeft, const Vec3D& _vRight) { return Vec3D(_vLeft.x + _vRight.x, _vLeft.y + _vRight.y, _vLeft.z + _vRight.z); }

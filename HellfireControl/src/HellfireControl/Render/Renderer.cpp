@@ -13,9 +13,9 @@ RenderingSubsystem* RenderingSubsystem::GetInstance() {
 	return m_prsInstancePtr;
 }
 
-void RenderingSubsystem::Init(const std::string& _strAppName) {
+void RenderingSubsystem::Init(const std::string& _strAppName, uint64_t _u64WindowHandle) {
 	//TODO Add ability to store end app version data to replace the engine version. For now, they'll be identical.
-	PlatformRenderer::InitRenderer(_strAppName, HC_ENGINE_VERSION);
+	PlatformRenderer::InitRenderer(_strAppName, HC_ENGINE_VERSION, _u64WindowHandle);
 }
 
 void RenderingSubsystem::Cleanup() {

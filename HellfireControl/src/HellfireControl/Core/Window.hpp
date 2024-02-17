@@ -168,4 +168,12 @@ public:
 
 		return m_v2WindowLocation;
 	}
+
+	/// <summary>
+	/// Returns the native window handle.
+	/// </summary>
+	/// <returns>
+	/// WindowHandleGeneric: The current window handle
+	/// </returns>
+	[[nodiscard]] HC_INLINE WindowHandleGeneric GetNativeWindowHandle() { return m_whgHandle; }
 };

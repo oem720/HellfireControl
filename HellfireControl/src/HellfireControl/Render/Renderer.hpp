@@ -10,7 +10,7 @@ private:
 public:
 	static RenderingSubsystem* GetInstance();
 
-	void Init(const std::string& _strAppName);
+	void Init(const std::string& _strAppName, uint64_t _u64WindowHandle);
 
 	void Cleanup();
 };

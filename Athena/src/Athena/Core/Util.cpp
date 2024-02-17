@@ -6,7 +6,7 @@ namespace Util {
 
 	}
 
-	void Wait(uint32_t _u32Time) {
+	void Wait(uint64_t _u32Time) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(_u32Time));
 	}
 }

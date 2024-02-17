@@ -92,9 +92,6 @@ struct HC_ALIGNAS(8) Vec2F
 	[[nodiscard]] HC_INLINE Vec2F XX() const { return Vec2F(x, x); }
 	[[nodiscard]] HC_INLINE Vec2F YY() const { return Vec2F(y, y); }
 	[[nodiscard]] HC_INLINE Vec2F YX() const { return Vec2F(y, x); }
-	[[nodiscard]] HC_INLINE Vec2F RR() const { return Vec2F(x, x); }
-	[[nodiscard]] HC_INLINE Vec2F GG() const { return Vec2F(y, y); }
-	[[nodiscard]] HC_INLINE Vec2F GR() const { return Vec2F(y, x); }
 };
 
 [[nodiscard]] HC_INLINE Vec2F operator+(const Vec2F& _vLeft, const Vec2F& _vRight) { return Vec2F(_vLeft.x + _vRight.x, _vLeft.y + _vRight.y); }

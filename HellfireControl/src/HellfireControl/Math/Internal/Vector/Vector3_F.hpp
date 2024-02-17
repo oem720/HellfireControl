@@ -171,15 +171,6 @@ struct HC_ALIGNAS(16) Vec3F
 	[[nodiscard]] HC_INLINE Vec2F YZ() const { return Vec2F(y, z); }
 	[[nodiscard]] HC_INLINE Vec2F ZX() const { return Vec2F(z, x); }
 	[[nodiscard]] HC_INLINE Vec2F ZY() const { return Vec2F(z, y); }
-	[[nodiscard]] HC_INLINE Vec2F RR() const { return Vec2F(x, x); }
-	[[nodiscard]] HC_INLINE Vec2F GG() const { return Vec2F(y, y); }
-	[[nodiscard]] HC_INLINE Vec2F BB() const { return Vec2F(z, z); }
-	[[nodiscard]] HC_INLINE Vec2F RG() const { return Vec2F(x, y); }
-	[[nodiscard]] HC_INLINE Vec2F RB() const { return Vec2F(x, z); }
-	[[nodiscard]] HC_INLINE Vec2F GR() const { return Vec2F(y, x); }
-	[[nodiscard]] HC_INLINE Vec2F GB() const { return Vec2F(y, z); }
-	[[nodiscard]] HC_INLINE Vec2F BR() const { return Vec2F(z, x); }
-	[[nodiscard]] HC_INLINE Vec2F BG() const { return Vec2F(z, y); }
 	[[nodiscard]] HC_INLINE Vec3F XXX() const { return Vec3F(x, x, x); }
 	[[nodiscard]] HC_INLINE Vec3F XXY() const { return Vec3F(x, x, y); }
 	[[nodiscard]] HC_INLINE Vec3F XXZ() const { return Vec3F(x, x, z); }
@@ -206,32 +197,6 @@ struct HC_ALIGNAS(16) Vec3F
 	[[nodiscard]] HC_INLINE Vec3F ZZX() const { return Vec3F(z, z, x); }
 	[[nodiscard]] HC_INLINE Vec3F ZZY() const { return Vec3F(z, z, y); }
 	[[nodiscard]] HC_INLINE Vec3F ZZZ() const { return Vec3F(z, z, z); }
-	[[nodiscard]] HC_INLINE Vec3F RRR() const { return Vec3F(x, x, x); }
-	[[nodiscard]] HC_INLINE Vec3F RRG() const { return Vec3F(x, x, y); }
-	[[nodiscard]] HC_INLINE Vec3F RRB() const { return Vec3F(x, x, z); }
-	[[nodiscard]] HC_INLINE Vec3F RGR() const { return Vec3F(x, y, x); }
-	[[nodiscard]] HC_INLINE Vec3F RGG() const { return Vec3F(x, y, y); }
-	[[nodiscard]] HC_INLINE Vec3F RBR() const { return Vec3F(x, z, x); }
-	[[nodiscard]] HC_INLINE Vec3F RBG() const { return Vec3F(x, z, y); }
-	[[nodiscard]] HC_INLINE Vec3F RBB() const { return Vec3F(x, z, z); }
-	[[nodiscard]] HC_INLINE Vec3F GRR() const { return Vec3F(y, x, x); }
-	[[nodiscard]] HC_INLINE Vec3F GRG() const { return Vec3F(y, x, y); }
-	[[nodiscard]] HC_INLINE Vec3F GRB() const { return Vec3F(y, x, z); }
-	[[nodiscard]] HC_INLINE Vec3F GGR() const { return Vec3F(y, y, x); }
-	[[nodiscard]] HC_INLINE Vec3F GGG() const { return Vec3F(y, y, y); }
-	[[nodiscard]] HC_INLINE Vec3F GGB() const { return Vec3F(y, y, z); }
-	[[nodiscard]] HC_INLINE Vec3F GBR() const { return Vec3F(y, z, x); }
-	[[nodiscard]] HC_INLINE Vec3F GBG() const { return Vec3F(y, z, y); }
-	[[nodiscard]] HC_INLINE Vec3F GBB() const { return Vec3F(y, z, z); }
-	[[nodiscard]] HC_INLINE Vec3F BRR() const { return Vec3F(z, x, x); }
-	[[nodiscard]] HC_INLINE Vec3F BRG() const { return Vec3F(z, x, y); }
-	[[nodiscard]] HC_INLINE Vec3F BRB() const { return Vec3F(z, x, z); }
-	[[nodiscard]] HC_INLINE Vec3F BGR() const { return Vec3F(z, y, x); }
-	[[nodiscard]] HC_INLINE Vec3F BGG() const { return Vec3F(z, y, y); }
-	[[nodiscard]] HC_INLINE Vec3F BGB() const { return Vec3F(z, y, z); }
-	[[nodiscard]] HC_INLINE Vec3F BBR() const { return Vec3F(z, z, x); }
-	[[nodiscard]] HC_INLINE Vec3F BBG() const { return Vec3F(z, z, y); }
-	[[nodiscard]] HC_INLINE Vec3F BBB() const { return Vec3F(z, z, z); }
 };
 
 [[nodiscard]] HC_INLINE Vec3F operator+(const Vec3F& _vLeft, const Vec3F& _vRight) { return Vec3F(_vLeft.x + _vRight.x, _vLeft.y + _vRight.y, _vLeft.z + _vRight.z); }

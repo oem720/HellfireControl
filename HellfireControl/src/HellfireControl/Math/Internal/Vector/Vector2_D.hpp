@@ -93,9 +93,6 @@ struct HC_ALIGNAS(16) Vec2D
 	[[nodiscard]] HC_INLINE Vec2D XX() const { return Vec2D(x, x); }
 	[[nodiscard]] HC_INLINE Vec2D YY() const { return Vec2D(y, y); }
 	[[nodiscard]] HC_INLINE Vec2D YX() const { return Vec2D(y, x); }
-	[[nodiscard]] HC_INLINE Vec2D RR() const { return Vec2D(x, x); }
-	[[nodiscard]] HC_INLINE Vec2D GG() const { return Vec2D(y, y); }
-	[[nodiscard]] HC_INLINE Vec2D GR() const { return Vec2D(y, x); }
 };
 
 [[nodiscard]] HC_INLINE Vec2D operator+(const Vec2D& _vLeft, const Vec2D& _vRight) { return Vec2D(_vLeft.x + _vRight.x, _vLeft.y + _vRight.y); }

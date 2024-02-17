@@ -1,5 +1,6 @@
 
 #include <Torchlight/Core/UICreationToolApplication.hpp>
+
 #include <HellfireControl/Render/Renderer.hpp>
 
 void UICreationToolApplication::Start() {
@@ -7,7 +8,7 @@ void UICreationToolApplication::Start() {
 
 	m_prsRenderHandle = RenderingSubsystem::GetInstance();
 
-	m_prsRenderHandle->Init(m_strApplicationName);
+	m_prsRenderHandle->Init(m_strApplicationName, m_wWindow.GetNativeWindowHandle());
 }
 
 void UICreationToolApplication::Run() {

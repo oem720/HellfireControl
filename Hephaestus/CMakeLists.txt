@@ -26,5 +26,10 @@ endif()
 target_include_directories(Torchlight PUBLIC src)
 target_include_directories(Torchlight PUBLIC ../HellfireControl/src)
 
-target_link_libraries(Torchlight PUBLIC HellfireCore)
+if(WIN32)
+	target_include_directories(Torchlight PUBLIC $ENV{VULKAN_SDK}/Include/)
+	target_link_directories(Torchlight PUBLIC $ENV{VULKAN_SDK}/Lib/)
+	target_link_libraries(Torchlight PUBLIC vulkan-1.lib)
+endif(WIN32)
 
+target_link_libraries(Torchlight PUBLIC HellfireCore)

@@ -97,7 +97,7 @@ namespace MathTests {
 
 		tbBlock.AddTest("Random Generate Unsigned Int 1", [](float& _fDelta) -> const bool {
 			Random rand;
-			uint32_t u32Res;
+			uint64_t u32Res;
 
 			HC_TIME_EXECUTION(u32Res = rand.GenerateUnsignedInt(32, 64), _fDelta);
 
@@ -106,7 +106,7 @@ namespace MathTests {
 
 		tbBlock.AddTest("Random Generate Unsigned Int 2", [](float& _fDelta) -> const bool {
 			Random rand;
-			uint32_t u32Res;
+			uint64_t u32Res;
 
 			HC_TIME_EXECUTION(u32Res = rand.GenerateUnsignedInt(0, 64), _fDelta);
 
@@ -115,7 +115,7 @@ namespace MathTests {
 
 		tbBlock.AddTest("Random Generate Unsigned Int 3", [](float& _fDelta) -> const bool {
 			Random rand;
-			uint32_t u32Res;
+			uint64_t u32Res;
 
 			HC_TIME_EXECUTION(u32Res = rand.GenerateUnsignedInt(16, 32), _fDelta);
 

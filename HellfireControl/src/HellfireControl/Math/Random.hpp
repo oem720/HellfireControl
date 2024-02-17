@@ -10,7 +10,7 @@ private:
 	/// <summary>
 	/// The current seed that was utilized to generate the state
 	/// </summary>
-	uint32_t m_uSeed;
+	uint64_t m_uSeed;
 
 	/// <summary>
 	/// The size of the state of the machine. 624 by default for 32 bit MT
@@ -20,7 +20,7 @@ private:
 	/// <summary>
 	/// The state of the machine. Generated every time the seed updates or the end is reached.
 	/// </summary>
-	uint32_t m_uState[s_iStateSize];
+	uint64_t m_uState[s_iStateSize];
 
 	/// <summary>
 	/// The next value that will be used for number generation. Increments with every use.
@@ -37,7 +37,7 @@ public:
 	/// Seeds the new generator with the input seed _uSeed. Value must be unsigned.
 	/// </summary>
 	/// <param name="_uSeed: The seed for the new generator"></param>
-	explicit Random(uint32_t _uSeed);
+	explicit Random(uint64_t _uSeed);
 
 	/// <summary>
 	/// Generates a random char between _cMin and _cMax. Defaults to the full range of char.
@@ -77,7 +77,7 @@ public:
 	/// <returns>
 	/// uint32_t: Randomly generated 32-bit integer
 	/// </returns>
-	[[nodiscard]] uint32_t GenerateUnsignedInt(uint32_t _uMin, uint32_t _uMax);
+	[[nodiscard]] uint64_t GenerateUnsignedInt(uint64_t _uMin, uint64_t _uMax);
 
 	/// <summary>
 	/// Generates a random long between _lMin and _lMax. Defaults to the full range of long.
@@ -115,13 +115,13 @@ public:
 	/// <returns>
 	/// uint32_t: The seed used in generating the current state.
 	/// </returns>
-	[[nodiscard]] HC_INLINE uint32_t GetSeed() const { return m_uSeed; }
+	[[nodiscard]] HC_INLINE uint64_t GetSeed() const { return m_uSeed; }
 
 	/// <summary>
 	/// Sets the seed and regenerates the random number generator.
 	/// </summary>
 	/// <param name="_uSeed: The new seed to utilize"></param>
-	void SetSeed(uint32_t _uSeed);
+	void SetSeed(uint64_t _uSeed);
 
 private:
 	/// <summary>
@@ -130,7 +130,7 @@ private:
 	/// <returns>
 	/// uint32_t: The newly generated value.
 	/// </returns>
-	[[nodiscard]] uint32_t GetNextVal();
+	[[nodiscard]] uint64_t GetNextVal();
 
 	/// <summary>
 	/// Resets the machine and regenerates the state register.

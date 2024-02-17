@@ -8,9 +8,10 @@
 #include <HellfireControl/Core/Window.hpp>
 #include <HellfireControl/Math/Internal/Vector/Vector2_F.hpp>
 
-
 #define HC_INCLUDE_SURFACE_VK
 #include <Platform/OSInclude.hpp>
+
+#include <fstream> //TEMPORARY
 
 #define HC_CLAMP(_val, _min, _max) _val > _max ? _max : (_val < _min ? _min : _val)
 
@@ -37,6 +38,24 @@ namespace LayersAndExtensions {
 	const std::vector<const char*> g_vDeviceExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
+}
+
+//TEMPORARY FUNCTION!!!!!
+static std::vector<char> ReadFile(const std::string& _strFilename) {
+	std::ifstream fFile(_strFilename, std::ios::ate | std::ios::binary);
+
+	if (!fFile.is_open()) {
+		throw std::runtime_error("ERROR: Failed to open file!");
+	}
+
+	size_t sFileSize = static_cast<size_t>(fFile.tellg());
+	std::vector<char> vBuffer(sFileSize);
+
+	fFile.seekg(0);
+	fFile.read(vBuffer.data(), sFileSize);
+	fFile.close();
+
+	return vBuffer;
 }
 
 using namespace LayersAndExtensions;
@@ -67,6 +86,15 @@ namespace PlatformRenderer {
 		VkQueue g_qPresentQueue = VK_NULL_HANDLE;
 		VkSurfaceKHR g_sSurface = VK_NULL_HANDLE;
 		VkSwapchainKHR g_scSwapChain = VK_NULL_HANDLE;
+		VkRenderPass g_rpRenderPass = VK_NULL_HANDLE;
+		VkPipelineLayout g_plPipelineLayout = VK_NULL_HANDLE; //TEMPORARY ! ! !
+		VkPipeline g_pPipeline = VK_NULL_HANDLE;
+
+		VkFormat g_fFormat = {};
+		VkExtent2D g_eExtent = {};
+
+		std::vector<VkImage> g_vImages;
+		std::vector<VkImageView> g_vImageViews;
 	};
 
 	static VkVars g_vVars = {};
@@ -76,6 +104,10 @@ namespace PlatformRenderer {
 	void SelectPhysicalDevice();
 	void CreateLogicalDevice();
 	void CreateSwapChain();
+	void CreateImageViews();
+	void CreateRenderPass();
+	void CreateGraphicsPipeline();
+
 	void ValidateSupportedLayers();
 	bool ValidateSupportedDeviceExtensions(VkPhysicalDevice _pdDevice);
 	bool CheckDeviceSuitability(VkPhysicalDevice _pdDevice);
@@ -84,6 +116,7 @@ namespace PlatformRenderer {
 	VkSurfaceFormatKHR SelectSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& _vAvailableFormats);
 	VkPresentModeKHR SelectSwapPresentMode(const std::vector<VkPresentModeKHR>& _vAvailablePresentModes);
 	VkExtent2D SelectSwapExtent(const VkSurfaceCapabilitiesKHR& _scCapabilities);
+	VkShaderModule CreateShaderModule(const std::vector<char>& _vCode);
 
 	void InitRenderer(const std::string& _strAppName, uint32_t _u32AppVersion, uint64_t _u64WindowHandle) {
 		g_vVars.g_u64WindowHandle = _u64WindowHandle;
@@ -97,6 +130,12 @@ namespace PlatformRenderer {
 		CreateLogicalDevice();
 
 		CreateSwapChain();
+
+		CreateImageViews();
+
+		CreateRenderPass();
+
+		CreateGraphicsPipeline();
 	}
 
 	void CreateInstance(const std::string& _strAppName, uint32_t _u32AppVersion) {
@@ -263,8 +302,267 @@ namespace PlatformRenderer {
 		if (vkCreateSwapchainKHR(g_vVars.g_dDeviceHandle, &scciSwapChainInfo, nullptr, &g_vVars.g_scSwapChain) != VK_SUCCESS) {
 			throw std::runtime_error("ERROR: Failed to create swapchain!");
 		}
+
+		vkGetSwapchainImagesKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, &u32ImageCount, nullptr);
+		g_vVars.g_vImages.resize(u32ImageCount);
+		vkGetSwapchainImagesKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, &u32ImageCount, g_vVars.g_vImages.data());
+
+		g_vVars.g_fFormat = sfFormat.format;
+		g_vVars.g_eExtent = eExtent;
 	}
 
+	void CreateImageViews() {
+		g_vVars.g_vImageViews.resize(g_vVars.g_vImages.size());
+
+		for (int ndx = 0; ndx < g_vVars.g_vImages.size(); ++ndx) {
+			VkComponentMapping cmMapping = {
+				.r = VK_COMPONENT_SWIZZLE_IDENTITY,
+				.g = VK_COMPONENT_SWIZZLE_IDENTITY,
+				.b = VK_COMPONENT_SWIZZLE_IDENTITY,
+				.a = VK_COMPONENT_SWIZZLE_IDENTITY
+			};
+
+			VkImageSubresourceRange isrRange = {
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.baseMipLevel = 0,
+				.levelCount = 1,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			};
+
+			VkImageViewCreateInfo ivciImageViewInfo = {
+				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+				.pNext = nullptr,
+				.flags = 0,
+				.image = g_vVars.g_vImages[ndx],
+				.viewType = VK_IMAGE_VIEW_TYPE_2D,
+				.format = g_vVars.g_fFormat,
+				.components = cmMapping,
+				.subresourceRange = isrRange
+			};
+
+			if (vkCreateImageView(g_vVars.g_dDeviceHandle, &ivciImageViewInfo, nullptr, &g_vVars.g_vImageViews[ndx]) != VK_SUCCESS) {
+				throw std::runtime_error("ERROR: Failed to initialize image views!");
+			}
+		}
+	}
+
+	void CreateRenderPass() {
+		VkAttachmentDescription adAttachmentDesc = {
+			.flags = 0,
+			.format = g_vVars.g_fFormat,
+			.samples = VK_SAMPLE_COUNT_1_BIT,
+			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+			.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+			.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+			.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+		};
+
+		VkAttachmentReference arAttachmentRef = {
+			.attachment = 0,
+			.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+		};
+
+		VkSubpassDescription sdSubpassDesc = {
+			.flags = 0,
+			.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+			.inputAttachmentCount = 0,
+			.pInputAttachments = nullptr,
+			.colorAttachmentCount = 1,
+			.pColorAttachments = &arAttachmentRef,
+			.pResolveAttachments = 0,
+			.pDepthStencilAttachment = nullptr,
+			.preserveAttachmentCount = 0,
+			.pPreserveAttachments = nullptr
+		};
+
+		VkRenderPassCreateInfo rpciRenderPassInfo = {
+			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.attachmentCount = 1,
+			.pAttachments = &adAttachmentDesc,
+			.subpassCount = 1,
+			.pSubpasses = &sdSubpassDesc,
+			.dependencyCount = 0,
+			.pDependencies = nullptr
+		};
+
+		if (vkCreateRenderPass(g_vVars.g_dDeviceHandle, &rpciRenderPassInfo, nullptr, &g_vVars.g_rpRenderPass) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to create render pass!");
+		}
+	}
+
+	void CreateGraphicsPipeline() {
+		auto aVertShader = ReadFile("../../Assets/Shaders/Vulkan/vert.spv"); //TEMPORARY ! ! !
+		auto aFragShader = ReadFile("../../Assets/Shaders/Vulkan/frag.spv");
+
+		VkShaderModule smVert = CreateShaderModule(aVertShader);
+		VkShaderModule smFrag = CreateShaderModule(aFragShader);
+
+		VkPipelineShaderStageCreateInfo pssciVertShaderInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.stage = VK_SHADER_STAGE_VERTEX_BIT,
+			.module = smVert,
+			.pName = "main",
+			.pSpecializationInfo = nullptr
+		};
+
+		VkPipelineShaderStageCreateInfo pssciFragShaderInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+			.module = smFrag,
+			.pName = "main",
+			.pSpecializationInfo = nullptr
+		};
+
+		VkPipelineShaderStageCreateInfo pssciShaderStages[] = { pssciVertShaderInfo, pssciFragShaderInfo };
+
+		VkPipelineVertexInputStateCreateInfo pvisciVertexInputInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.vertexBindingDescriptionCount = 0, //TEMPORARY ! ! ! 
+			.pVertexBindingDescriptions = nullptr,
+			.vertexAttributeDescriptionCount = 0,
+			.pVertexAttributeDescriptions = nullptr
+		};
+
+		VkPipelineInputAssemblyStateCreateInfo piasciInputAssemblyInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+			.primitiveRestartEnable = VK_FALSE
+		};
+
+		VkViewport vViewport = {
+			.x = 0.0f,
+			.y = 0.0f,
+			.width = static_cast<float>(g_vVars.g_eExtent.width),
+			.height = static_cast<float>(g_vVars.g_eExtent.height),
+			.minDepth = 0.0f,
+			.maxDepth = 1.0f
+		};
+
+		VkRect2D rScissor = {
+			.offset = {0, 0},
+			.extent = g_vVars.g_eExtent
+		};
+
+		VkPipelineViewportStateCreateInfo pvsciViewportStateInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.viewportCount = 1,
+			.pViewports = &vViewport,
+			.scissorCount = 1,
+			.pScissors = &rScissor
+		};
+
+		VkPipelineRasterizationStateCreateInfo prsciRasterizerInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.depthClampEnable = VK_FALSE,
+			.rasterizerDiscardEnable = VK_FALSE,
+			.polygonMode = VK_POLYGON_MODE_FILL,
+			.cullMode = VK_CULL_MODE_BACK_BIT,
+			.frontFace = VK_FRONT_FACE_CLOCKWISE,
+			.depthBiasEnable = VK_FALSE,
+			.depthBiasConstantFactor = 0.0f,
+			.depthBiasClamp = 0.0f,
+			.depthBiasSlopeFactor = 0.0f,
+			.lineWidth = 1.0f
+		};
+
+		VkPipelineMultisampleStateCreateInfo pmsciMultisampleStateInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
+			.sampleShadingEnable = VK_FALSE,
+			.minSampleShading = 1.0f,
+			.pSampleMask = nullptr,
+			.alphaToCoverageEnable = VK_FALSE,
+			.alphaToOneEnable = VK_FALSE
+		};
+
+		//DEPTH BUFFER GOES HERE
+
+		VkPipelineColorBlendAttachmentState pcbasColorBlendState = {
+			.blendEnable = VK_FALSE,
+			.srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
+			.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,
+			.colorBlendOp = VK_BLEND_OP_ADD,
+			.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
+			.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+			.alphaBlendOp = VK_BLEND_OP_ADD,
+			.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
+		};
+
+		VkPipelineColorBlendStateCreateInfo pcbsciColorBlendStateInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.logicOpEnable = VK_FALSE,
+			.logicOp = VK_LOGIC_OP_COPY,
+			.attachmentCount = 1,
+			.pAttachments = &pcbasColorBlendState,
+			.blendConstants = { 0.0f, 0.0f, 0.0f, 0.0f }
+		};
+
+		VkPipelineLayoutCreateInfo plciLayoutInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.setLayoutCount = 0,
+			.pSetLayouts = nullptr,
+			.pushConstantRangeCount = 0, //PUSH CONSTANTS HERE
+			.pPushConstantRanges = nullptr
+		};
+
+		if (vkCreatePipelineLayout(g_vVars.g_dDeviceHandle, &plciLayoutInfo, nullptr, &g_vVars.g_plPipelineLayout) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to create pipeline layout!");
+		}
+
+		VkGraphicsPipelineCreateInfo gpciGraphicsPipelineInfo = {
+			.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.stageCount = 2,
+			.pStages = pssciShaderStages,
+			.pVertexInputState = &pvisciVertexInputInfo,
+			.pInputAssemblyState = &piasciInputAssemblyInfo,
+			.pTessellationState = nullptr,
+			.pViewportState = &pvsciViewportStateInfo,
+			.pRasterizationState = &prsciRasterizerInfo,
+			.pMultisampleState = &pmsciMultisampleStateInfo,
+			.pDepthStencilState = nullptr,
+			.pColorBlendState = &pcbsciColorBlendStateInfo,
+			.pDynamicState = nullptr,
+			.layout = g_vVars.g_plPipelineLayout,
+			.renderPass = g_vVars.g_rpRenderPass,
+			.subpass = 0,
+			.basePipelineHandle = VK_NULL_HANDLE,
+			.basePipelineIndex = -1
+		};
+
+		if (vkCreateGraphicsPipelines(g_vVars.g_dDeviceHandle, VK_NULL_HANDLE, 1, &gpciGraphicsPipelineInfo, nullptr, &g_vVars.g_pPipeline) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to create the graphics pipeline!");
+		}
+
+		vkDestroyShaderModule(g_vVars.g_dDeviceHandle, smVert, nullptr); //TEMPORARY ! ! !
+		vkDestroyShaderModule(g_vVars.g_dDeviceHandle, smFrag, nullptr);
+	}
+
+#pragma region HelperFunctions
 	void ValidateSupportedLayers() {
 		uint32_t u32LayerCount = 0;		
 		vkEnumerateInstanceLayerProperties(&u32LayerCount, nullptr);
@@ -416,10 +714,42 @@ namespace PlatformRenderer {
 		}
 	}
 
+	VkShaderModule CreateShaderModule(const std::vector<char>& _vCode) {
+		VkShaderModule smShader = VK_NULL_HANDLE;
+
+		VkShaderModuleCreateInfo smciShaderInfo = {
+			.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.codeSize = _vCode.size(),
+			.pCode = reinterpret_cast<const uint32_t*>(_vCode.data())
+		};
+
+		if (vkCreateShaderModule(g_vVars.g_dDeviceHandle, &smciShaderInfo, nullptr, &smShader)) {
+			throw std::runtime_error("ERROR: Could not create shader module!");
+		}
+
+		return smShader;
+	}
+#pragma endregion
+
 	void CleanupRenderer() {
+		vkDestroyPipeline(g_vVars.g_dDeviceHandle, g_vVars.g_pPipeline, nullptr);
+
+		vkDestroyPipelineLayout(g_vVars.g_dDeviceHandle, g_vVars.g_plPipelineLayout, nullptr);
+
+		vkDestroyRenderPass(g_vVars.g_dDeviceHandle, g_vVars.g_rpRenderPass, nullptr);
+
+		for (auto aView : g_vVars.g_vImageViews) {
+			vkDestroyImageView(g_vVars.g_dDeviceHandle, aView, nullptr);
+		}
+
 		vkDestroySwapchainKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, nullptr);
+
 		vkDestroyDevice(g_vVars.g_dDeviceHandle, nullptr);
+
 		vkDestroySurfaceKHR(g_vVars.g_iInstance, g_vVars.g_sSurface, nullptr);
+
 		vkDestroyInstance(g_vVars.g_iInstance, nullptr);
 	}
 }

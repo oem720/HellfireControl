@@ -1,12 +1,7 @@
-#include <stdexcept>
-#include <optional>
-#include <set>
-#include <limits>
 
-#include <Platform/Vulkan/VkInit.hpp>
+#include <Platform/Vulkan/VkCore.hpp>
 
 #include <HellfireControl/Core/Window.hpp>
-#include <HellfireControl/Math/Internal/Vector/Vector2_F.hpp>
 
 #define HC_INCLUDE_SURFACE_VK
 #include <Platform/OSInclude.hpp>
@@ -61,44 +56,6 @@ static std::vector<char> ReadFile(const std::string& _strFilename) {
 using namespace LayersAndExtensions;
 
 namespace PlatformRenderer {
-	struct VkQueueFamilyIndices {
-		std::optional<uint32_t> m_u32GraphicsFamily;
-		std::optional<uint32_t> m_u32PresentFamily;
-
-		HC_INLINE bool IsComplete() {
-			return m_u32GraphicsFamily.has_value() && m_u32PresentFamily.has_value();
-		}
-	};
-
-	struct VkSwapChainSupportDetails {
-		VkSurfaceCapabilitiesKHR m_scCapabilities = {};
-		std::vector<VkSurfaceFormatKHR> m_vFormats;
-		std::vector<VkPresentModeKHR> m_vPresentModes;
-	};
-
-	struct VkVars {
-		uint64_t g_u64WindowHandle;
-
-		VkInstance g_iInstance = VK_NULL_HANDLE;
-		VkPhysicalDevice g_pdPhysicalDevice = VK_NULL_HANDLE;
-		VkDevice g_dDeviceHandle = VK_NULL_HANDLE;
-		VkQueue g_qGraphicsQueue = VK_NULL_HANDLE;
-		VkQueue g_qPresentQueue = VK_NULL_HANDLE;
-		VkSurfaceKHR g_sSurface = VK_NULL_HANDLE;
-		VkSwapchainKHR g_scSwapChain = VK_NULL_HANDLE;
-		VkRenderPass g_rpRenderPass = VK_NULL_HANDLE;
-		VkPipelineLayout g_plPipelineLayout = VK_NULL_HANDLE; //TEMPORARY ! ! !
-		VkPipeline g_pPipeline = VK_NULL_HANDLE;
-
-		VkFormat g_fFormat = {};
-		VkExtent2D g_eExtent = {};
-
-		std::vector<VkImage> g_vImages;
-		std::vector<VkImageView> g_vImageViews;
-	};
-
-	static VkVars g_vVars = {};
-
 	void CreateInstance(const std::string& _strAppName, uint32_t _u32Version);
 	void CreateSurface(uint64_t _u64WindowHandle);
 	void SelectPhysicalDevice();
@@ -107,6 +64,12 @@ namespace PlatformRenderer {
 	void CreateImageViews();
 	void CreateRenderPass();
 	void CreateGraphicsPipeline();
+	void CreateFramebuffers();
+	void CreateCommandPool();
+	void CreateCommandBuffer();
+	void CreateSyncObjects();
+
+	void RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex);
 
 	void ValidateSupportedLayers();
 	bool ValidateSupportedDeviceExtensions(VkPhysicalDevice _pdDevice);
@@ -118,8 +81,10 @@ namespace PlatformRenderer {
 	VkExtent2D SelectSwapExtent(const VkSurfaceCapabilitiesKHR& _scCapabilities);
 	VkShaderModule CreateShaderModule(const std::vector<char>& _vCode);
 
-	void InitRenderer(const std::string& _strAppName, uint32_t _u32AppVersion, uint64_t _u64WindowHandle) {
+	void InitRenderer(const std::string& _strAppName, uint32_t _u32AppVersion, uint64_t _u64WindowHandle, const Vec4F& _v4ClearColor) {
 		g_vVars.g_u64WindowHandle = _u64WindowHandle;
+
+		g_vVars.g_cvClearColor.color = { _v4ClearColor.x, _v4ClearColor.y, _v4ClearColor.z, _v4ClearColor.w };
 
 		CreateInstance(_strAppName, _u32AppVersion);
 
@@ -136,6 +101,14 @@ namespace PlatformRenderer {
 		CreateRenderPass();
 
 		CreateGraphicsPipeline();
+
+		CreateFramebuffers();
+
+		CreateCommandPool();
+
+		CreateCommandBuffer();
+
+		CreateSyncObjects();
 	}
 
 	void CreateInstance(const std::string& _strAppName, uint32_t _u32AppVersion) {
@@ -378,6 +351,16 @@ namespace PlatformRenderer {
 			.pPreserveAttachments = nullptr
 		};
 
+		VkSubpassDependency sdSubpassDependency = {
+			.srcSubpass = VK_SUBPASS_EXTERNAL,
+			.dstSubpass = 0,
+			.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			.srcAccessMask = 0,
+			.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+			.dependencyFlags = 0
+		};
+
 		VkRenderPassCreateInfo rpciRenderPassInfo = {
 			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
 			.pNext = nullptr,
@@ -386,8 +369,8 @@ namespace PlatformRenderer {
 			.pAttachments = &adAttachmentDesc,
 			.subpassCount = 1,
 			.pSubpasses = &sdSubpassDesc,
-			.dependencyCount = 0,
-			.pDependencies = nullptr
+			.dependencyCount = 1,
+			.pDependencies = &sdSubpassDependency
 		};
 
 		if (vkCreateRenderPass(g_vVars.g_dDeviceHandle, &rpciRenderPassInfo, nullptr, &g_vVars.g_rpRenderPass) != VK_SUCCESS) {
@@ -442,18 +425,17 @@ namespace PlatformRenderer {
 			.primitiveRestartEnable = VK_FALSE
 		};
 
-		VkViewport vViewport = {
-			.x = 0.0f,
-			.y = 0.0f,
-			.width = static_cast<float>(g_vVars.g_eExtent.width),
-			.height = static_cast<float>(g_vVars.g_eExtent.height),
-			.minDepth = 0.0f,
-			.maxDepth = 1.0f
+		std::vector<VkDynamicState> vDynamicStates = {
+			VK_DYNAMIC_STATE_VIEWPORT,
+			VK_DYNAMIC_STATE_SCISSOR
 		};
 
-		VkRect2D rScissor = {
-			.offset = {0, 0},
-			.extent = g_vVars.g_eExtent
+		VkPipelineDynamicStateCreateInfo pdsciDynamicStateInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.dynamicStateCount = static_cast<uint32_t>(vDynamicStates.size()),
+			.pDynamicStates = vDynamicStates.data(),
 		};
 
 		VkPipelineViewportStateCreateInfo pvsciViewportStateInfo = {
@@ -461,9 +443,9 @@ namespace PlatformRenderer {
 			.pNext = nullptr,
 			.flags = 0,
 			.viewportCount = 1,
-			.pViewports = &vViewport,
+			.pViewports = nullptr,
 			.scissorCount = 1,
-			.pScissors = &rScissor
+			.pScissors = nullptr
 		};
 
 		VkPipelineRasterizationStateCreateInfo prsciRasterizerInfo = {
@@ -546,7 +528,7 @@ namespace PlatformRenderer {
 			.pMultisampleState = &pmsciMultisampleStateInfo,
 			.pDepthStencilState = nullptr,
 			.pColorBlendState = &pcbsciColorBlendStateInfo,
-			.pDynamicState = nullptr,
+			.pDynamicState = &pdsciDynamicStateInfo,
 			.layout = g_vVars.g_plPipelineLayout,
 			.renderPass = g_vVars.g_rpRenderPass,
 			.subpass = 0,
@@ -560,6 +542,132 @@ namespace PlatformRenderer {
 
 		vkDestroyShaderModule(g_vVars.g_dDeviceHandle, smVert, nullptr); //TEMPORARY ! ! !
 		vkDestroyShaderModule(g_vVars.g_dDeviceHandle, smFrag, nullptr);
+	}
+
+	void CreateFramebuffers() {
+		g_vVars.g_vFramebuffers.resize(g_vVars.g_vImageViews.size());
+
+		for (int ndx = 0; ndx < g_vVars.g_vImageViews.size(); ++ndx) {
+			VkFramebufferCreateInfo fciFramebufferInfo = {
+				.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+				.pNext = nullptr,
+				.flags = 0,
+				.renderPass = g_vVars.g_rpRenderPass,
+				.attachmentCount = 1,
+				.pAttachments = &g_vVars.g_vImageViews[ndx],
+				.width = g_vVars.g_eExtent.width,
+				.height = g_vVars.g_eExtent.height,
+				.layers = 1
+			};
+
+			if (vkCreateFramebuffer(g_vVars.g_dDeviceHandle, &fciFramebufferInfo, nullptr, &g_vVars.g_vFramebuffers[ndx]) != VK_SUCCESS) {
+				throw std::runtime_error("ERROR: Failed to create framebuffers!");
+			}
+		}
+	}
+
+	void CreateCommandPool() {
+		VkQueueFamilyIndices qfiIndices = GetQueueFamilies(g_vVars.g_pdPhysicalDevice);
+
+		VkCommandPoolCreateInfo cpciPoolCreateInfo = {
+			.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+			.queueFamilyIndex = qfiIndices.m_u32GraphicsFamily.value()
+		};
+
+		if (vkCreateCommandPool(g_vVars.g_dDeviceHandle, &cpciPoolCreateInfo, nullptr, &g_vVars.g_cpCommandPool) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to create command pool!");
+		}
+	}
+
+	void CreateCommandBuffer() {
+		VkCommandBufferAllocateInfo cbaiBufferAllocateInfo = {
+			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+			.pNext = nullptr,
+			.commandPool = g_vVars.g_cpCommandPool,
+			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+			.commandBufferCount = 1
+		};
+
+		if (vkAllocateCommandBuffers(g_vVars.g_dDeviceHandle, &cbaiBufferAllocateInfo, &g_vVars.g_cbCommandBuffer) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to allocate command buffers!");
+		}
+	}
+
+	void CreateSyncObjects() {
+		VkSemaphoreCreateInfo sciSemaphoreInfo = {
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0
+		};
+
+		VkFenceCreateInfo fciFenceInfo = {
+			.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = VK_FENCE_CREATE_SIGNALED_BIT
+		};
+
+		if (vkCreateSemaphore(g_vVars.g_dDeviceHandle, &sciSemaphoreInfo, nullptr, &g_vVars.g_sImageAvailableSemaphore) != VK_SUCCESS ||
+			vkCreateSemaphore(g_vVars.g_dDeviceHandle, &sciSemaphoreInfo, nullptr, &g_vVars.g_sRenderFinishedSemaphore) != VK_SUCCESS ||
+			vkCreateFence(g_vVars.g_dDeviceHandle, &fciFenceInfo, nullptr, &g_vVars.g_fInFlightFence) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to create sync objects!");
+		}
+	}
+
+	void RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex) {
+		VkCommandBufferBeginInfo cbbiBeginInfo = {
+			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.pInheritanceInfo = nullptr
+		};
+
+		if (vkBeginCommandBuffer(_cbBuffer, &cbbiBeginInfo) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to being recording a command buffer!");
+		}
+		
+		//TEMPORARY ! ! ! MOVE TO MORE GENERIC FUNCTIONS ! ! !
+
+		VkRenderPassBeginInfo rpbiBeginInfo = {
+			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+			.pNext = nullptr,
+			.renderPass = g_vVars.g_rpRenderPass,
+			.framebuffer = g_vVars.g_vFramebuffers[_u32ImageIndex],
+			.renderArea = { { 0, 0 }, g_vVars.g_eExtent},
+			.clearValueCount = 1,
+			.pClearValues = &g_vVars.g_cvClearColor
+		};
+
+		vkCmdBeginRenderPass(_cbBuffer, &rpbiBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		vkCmdBindPipeline(_cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_vVars.g_pPipeline);
+
+		VkViewport vViewport = {
+			.x = 0.0f,
+			.y = 0.0f,
+			.width = static_cast<float>(g_vVars.g_eExtent.width),
+			.height = static_cast<float>(g_vVars.g_eExtent.height),
+			.minDepth = 0.0f,
+			.maxDepth = 1.0f
+		};
+
+		vkCmdSetViewport(_cbBuffer, 0, 1, &vViewport);
+
+		VkRect2D rScissor = {
+			.offset = { 0, 0 },
+			.extent = g_vVars.g_eExtent
+		};
+
+		vkCmdSetScissor(_cbBuffer, 0, 1, &rScissor);
+
+		vkCmdDraw(_cbBuffer, 3, 1, 0, 0); //SERIOUSLY ! ! ! THIS SHIT IS TEMPORARY ! ! !
+
+		vkCmdEndRenderPass(_cbBuffer);
+
+		if (vkEndCommandBuffer(_cbBuffer) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to record command buffer!");
+		}
 	}
 
 #pragma region HelperFunctions
@@ -733,7 +841,67 @@ namespace PlatformRenderer {
 	}
 #pragma endregion
 
+	void RenderFrame() {
+		vkWaitForFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_fInFlightFence, VK_TRUE, UINT64_MAX);
+
+		vkResetFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_fInFlightFence);
+
+		uint32_t u32ImageIndex = 0;
+		vkAcquireNextImageKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, UINT64_MAX, g_vVars.g_sImageAvailableSemaphore, VK_NULL_HANDLE, &u32ImageIndex);
+
+		vkResetCommandBuffer(g_vVars.g_cbCommandBuffer, 0);
+
+		RecordCommandBuffer(g_vVars.g_cbCommandBuffer, u32ImageIndex);
+
+		VkPipelineStageFlags psfStageFlags[] = {
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+		};
+
+		VkSubmitInfo siSubmitInfo = {
+			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+			.pNext = nullptr,
+			.waitSemaphoreCount = 1,
+			.pWaitSemaphores = &g_vVars.g_sImageAvailableSemaphore,
+			.pWaitDstStageMask = psfStageFlags,
+			.commandBufferCount = 1,
+			.pCommandBuffers = &g_vVars.g_cbCommandBuffer,
+			.signalSemaphoreCount = 1,
+			.pSignalSemaphores = &g_vVars.g_sRenderFinishedSemaphore
+		};
+
+		if (vkQueueSubmit(g_vVars.g_qGraphicsQueue, 1, &siSubmitInfo, g_vVars.g_fInFlightFence) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to submit draw command buffer!");
+		}
+
+		VkPresentInfoKHR piPresentInfo = {
+			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+			.pNext = nullptr,
+			.waitSemaphoreCount = 1,
+			.pWaitSemaphores = &g_vVars.g_sRenderFinishedSemaphore,
+			.swapchainCount = 1,
+			.pSwapchains = &g_vVars.g_scSwapChain,
+			.pImageIndices = &u32ImageIndex,
+			.pResults = nullptr
+		};
+
+		vkQueuePresentKHR(g_vVars.g_qPresentQueue, &piPresentInfo);
+	}
+
 	void CleanupRenderer() {
+		vkDeviceWaitIdle(g_vVars.g_dDeviceHandle);
+
+		vkDestroySemaphore(g_vVars.g_dDeviceHandle, g_vVars.g_sImageAvailableSemaphore, nullptr);
+
+		vkDestroySemaphore(g_vVars.g_dDeviceHandle, g_vVars.g_sRenderFinishedSemaphore, nullptr);
+
+		vkDestroyFence(g_vVars.g_dDeviceHandle, g_vVars.g_fInFlightFence, nullptr);
+
+		vkDestroyCommandPool(g_vVars.g_dDeviceHandle, g_vVars.g_cpCommandPool, nullptr);
+
+		for (auto aFramebuffer : g_vVars.g_vFramebuffers) {
+			vkDestroyFramebuffer(g_vVars.g_dDeviceHandle, aFramebuffer, nullptr);
+		}
+
 		vkDestroyPipeline(g_vVars.g_dDeviceHandle, g_vVars.g_pPipeline, nullptr);
 
 		vkDestroyPipelineLayout(g_vVars.g_dDeviceHandle, g_vVars.g_plPipelineLayout, nullptr);

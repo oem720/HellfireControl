@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <utility>
 #include <cassert>
+#include <stdexcept>
 
 //Required Includes (will not be replaced)
 #include <thread>
@@ -43,3 +44,6 @@
 #include <list>
 #include <map>
 #include <unordered_map>
+#include <optional>
+#include <set>
+#include <limits>

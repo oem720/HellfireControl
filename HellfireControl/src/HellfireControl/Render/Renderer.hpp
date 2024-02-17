@@ -12,5 +12,7 @@ public:
 
 	void Init(const std::string& _strAppName, uint64_t _u64WindowHandle);
 
+	void RenderFrame();
+
 	void Cleanup();
 };

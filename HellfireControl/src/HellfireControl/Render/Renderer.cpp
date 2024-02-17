@@ -18,6 +18,10 @@ void RenderingSubsystem::Init(const std::string& _strAppName, uint64_t _u64Windo
 	PlatformRenderer::InitRenderer(_strAppName, HC_ENGINE_VERSION, _u64WindowHandle);
 }
 
+void RenderingSubsystem::RenderFrame() {
+	PlatformRenderer::RenderFrame();
+}
+
 void RenderingSubsystem::Cleanup() {
 	PlatformRenderer::CleanupRenderer();
 

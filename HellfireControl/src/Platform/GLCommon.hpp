@@ -8,7 +8,11 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #endif
 
+#define HC_MAX_FRAMES_IN_FLIGHT 2
+
 #include <vulkan/vulkan.h>
+
+//TODO HANDLE WINDOW MODIFICATION
 
 struct VkQueueFamilyIndices {
 	std::optional<uint32_t> m_u32GraphicsFamily;
@@ -26,7 +30,8 @@ struct VkSwapChainSupportDetails {
 };
 
 struct VkVars {
-	uint64_t g_u64WindowHandle;
+	uint64_t g_u64WindowHandle = 0;
+	uint32_t g_u32CurrentFrame = 0;
 
 	VkInstance g_iInstance = VK_NULL_HANDLE;
 	VkPhysicalDevice g_pdPhysicalDevice = VK_NULL_HANDLE;
@@ -39,15 +44,15 @@ struct VkVars {
 	VkPipelineLayout g_plPipelineLayout = VK_NULL_HANDLE; //TEMPORARY ! ! !
 	VkPipeline g_pPipeline = VK_NULL_HANDLE;
 	VkCommandPool g_cpCommandPool = VK_NULL_HANDLE;
-	VkCommandBuffer g_cbCommandBuffer = VK_NULL_HANDLE;
-	VkSemaphore g_sImageAvailableSemaphore = VK_NULL_HANDLE;
-	VkSemaphore g_sRenderFinishedSemaphore = VK_NULL_HANDLE;
-	VkFence g_fInFlightFence = VK_NULL_HANDLE;
 
 	VkFormat g_fFormat = {};
 	VkExtent2D g_eExtent = {};
 	VkClearValue g_cvClearColor = {};
 
+	std::vector<VkCommandBuffer> g_vCommandBuffers;
+	std::vector<VkSemaphore> g_vImageAvailableSemaphores;
+	std::vector<VkSemaphore> g_vRenderFinishedSemaphores;
+	std::vector<VkFence> g_vInFlightFences;
 	std::vector<VkImage> g_vImages;
 	std::vector<VkImageView> g_vImageViews;
 	std::vector<VkFramebuffer> g_vFramebuffers;

@@ -1,14 +1,10 @@
 
 #include <Platform/Vulkan/VkCore.hpp>
 
-#include <HellfireControl/Core/Window.hpp>
-
 #define HC_INCLUDE_SURFACE_VK
 #include <Platform/OSInclude.hpp>
 
-#include <fstream> //TEMPORARY
-
-#define HC_CLAMP(_val, _min, _max) _val > _max ? _max : (_val < _min ? _min : _val)
+#include <HellfireControl/Core/Window.hpp>
 
 namespace LayersAndExtensions {
 	std::vector<const char*> g_vValidationLayers = {
@@ -70,6 +66,8 @@ namespace PlatformRenderer {
 	void CreateSyncObjects();
 
 	void RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex);
+	void CleanupSwapchain();
+	void RecreateSwapchain();
 
 	void ValidateSupportedLayers();
 	bool ValidateSupportedDeviceExtensions(VkPhysicalDevice _pdDevice);
@@ -533,7 +531,7 @@ namespace PlatformRenderer {
 			.renderPass = g_vVars.g_rpRenderPass,
 			.subpass = 0,
 			.basePipelineHandle = VK_NULL_HANDLE,
-			.basePipelineIndex = -1
+			.basePipelineIndex = 0
 		};
 
 		if (vkCreateGraphicsPipelines(g_vVars.g_dDeviceHandle, VK_NULL_HANDLE, 1, &gpciGraphicsPipelineInfo, nullptr, &g_vVars.g_pPipeline) != VK_SUCCESS) {
@@ -582,20 +580,26 @@ namespace PlatformRenderer {
 	}
 
 	void CreateCommandBuffer() {
+		g_vVars.g_vCommandBuffers.resize(HC_MAX_FRAMES_IN_FLIGHT);
+
 		VkCommandBufferAllocateInfo cbaiBufferAllocateInfo = {
 			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 			.pNext = nullptr,
 			.commandPool = g_vVars.g_cpCommandPool,
 			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-			.commandBufferCount = 1
+			.commandBufferCount = static_cast<uint32_t>(g_vVars.g_vCommandBuffers.size())
 		};
 
-		if (vkAllocateCommandBuffers(g_vVars.g_dDeviceHandle, &cbaiBufferAllocateInfo, &g_vVars.g_cbCommandBuffer) != VK_SUCCESS) {
+		if (vkAllocateCommandBuffers(g_vVars.g_dDeviceHandle, &cbaiBufferAllocateInfo, g_vVars.g_vCommandBuffers.data()) != VK_SUCCESS) {
 			throw std::runtime_error("ERROR: Failed to allocate command buffers!");
 		}
 	}
 
 	void CreateSyncObjects() {
+		g_vVars.g_vImageAvailableSemaphores.resize(HC_MAX_FRAMES_IN_FLIGHT);
+		g_vVars.g_vRenderFinishedSemaphores.resize(HC_MAX_FRAMES_IN_FLIGHT);
+		g_vVars.g_vInFlightFences.resize(HC_MAX_FRAMES_IN_FLIGHT);
+
 		VkSemaphoreCreateInfo sciSemaphoreInfo = {
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
 			.pNext = nullptr,
@@ -608,10 +612,12 @@ namespace PlatformRenderer {
 			.flags = VK_FENCE_CREATE_SIGNALED_BIT
 		};
 
-		if (vkCreateSemaphore(g_vVars.g_dDeviceHandle, &sciSemaphoreInfo, nullptr, &g_vVars.g_sImageAvailableSemaphore) != VK_SUCCESS ||
-			vkCreateSemaphore(g_vVars.g_dDeviceHandle, &sciSemaphoreInfo, nullptr, &g_vVars.g_sRenderFinishedSemaphore) != VK_SUCCESS ||
-			vkCreateFence(g_vVars.g_dDeviceHandle, &fciFenceInfo, nullptr, &g_vVars.g_fInFlightFence) != VK_SUCCESS) {
-			throw std::runtime_error("ERROR: Failed to create sync objects!");
+		for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
+			if (vkCreateSemaphore(g_vVars.g_dDeviceHandle, &sciSemaphoreInfo, nullptr, &g_vVars.g_vImageAvailableSemaphores[ndx]) != VK_SUCCESS ||
+				vkCreateSemaphore(g_vVars.g_dDeviceHandle, &sciSemaphoreInfo, nullptr, &g_vVars.g_vRenderFinishedSemaphores[ndx]) != VK_SUCCESS ||
+				vkCreateFence(g_vVars.g_dDeviceHandle, &fciFenceInfo, nullptr, &g_vVars.g_vInFlightFences[ndx]) != VK_SUCCESS) {
+				throw std::runtime_error("ERROR: Failed to create sync objects!");
+			}
 		}
 	}
 
@@ -668,6 +674,28 @@ namespace PlatformRenderer {
 		if (vkEndCommandBuffer(_cbBuffer) != VK_SUCCESS) {
 			throw std::runtime_error("ERROR: Failed to record command buffer!");
 		}
+	}
+
+	void CleanupSwapchain() {
+		for (auto aFramebuffer : g_vVars.g_vFramebuffers) {
+			vkDestroyFramebuffer(g_vVars.g_dDeviceHandle, aFramebuffer, nullptr);
+		}
+
+		for (auto aView : g_vVars.g_vImageViews) {
+			vkDestroyImageView(g_vVars.g_dDeviceHandle, aView, nullptr);
+		}
+
+		vkDestroySwapchainKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, nullptr);
+	}
+
+	void RecreateSwapchain() {
+		vkDeviceWaitIdle(g_vVars.g_dDeviceHandle);
+
+		CreateSwapChain();
+
+		CreateImageViews();
+
+		CreateFramebuffers();
 	}
 
 #pragma region HelperFunctions
@@ -815,8 +843,10 @@ namespace PlatformRenderer {
 				.height = static_cast<uint32_t>(v2Size.y)
 			};
 
-			eViewportSize.width = HC_CLAMP(eViewportSize.width, _scCapabilities.minImageExtent.width, _scCapabilities.maxImageExtent.width);
-			eViewportSize.height = HC_CLAMP(eViewportSize.height, _scCapabilities.minImageExtent.height, _scCapabilities.maxImageExtent.height);
+			eViewportSize.width = eViewportSize.width > _scCapabilities.maxImageExtent.width ? _scCapabilities.maxImageExtent.width :
+								 (eViewportSize.width < _scCapabilities.minImageExtent.width ? _scCapabilities.minImageExtent.width : eViewportSize.width);
+			eViewportSize.height = eViewportSize.height > _scCapabilities.maxImageExtent.height ? _scCapabilities.maxImageExtent.height :
+								  (eViewportSize.height < _scCapabilities.minImageExtent.height ? _scCapabilities.minImageExtent.height : eViewportSize.height);
 
 			return eViewportSize;
 		}
@@ -842,16 +872,26 @@ namespace PlatformRenderer {
 #pragma endregion
 
 	void RenderFrame() {
-		vkWaitForFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_fInFlightFence, VK_TRUE, UINT64_MAX);
+		vkWaitForFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame], VK_TRUE, UINT64_MAX);
 
-		vkResetFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_fInFlightFence);
+		vkResetFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame]);
 
 		uint32_t u32ImageIndex = 0;
-		vkAcquireNextImageKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, UINT64_MAX, g_vVars.g_sImageAvailableSemaphore, VK_NULL_HANDLE, &u32ImageIndex);
+		VkResult rRes = vkAcquireNextImageKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, UINT64_MAX, g_vVars.g_vImageAvailableSemaphores[g_vVars.g_u32CurrentFrame], VK_NULL_HANDLE, &u32ImageIndex);
 
-		vkResetCommandBuffer(g_vVars.g_cbCommandBuffer, 0);
+		if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes != VK_SUBOPTIMAL_KHR) {
+			RecreateSwapchain();
+			return;
+		}
+		else if (rRes != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to acquire swapchain image!");
+		}
 
-		RecordCommandBuffer(g_vVars.g_cbCommandBuffer, u32ImageIndex);
+		vkResetFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame]);
+
+		vkResetCommandBuffer(g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame], 0);
+
+		RecordCommandBuffer(g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame], u32ImageIndex);
 
 		VkPipelineStageFlags psfStageFlags[] = {
 			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
@@ -861,15 +901,15 @@ namespace PlatformRenderer {
 			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
 			.pNext = nullptr,
 			.waitSemaphoreCount = 1,
-			.pWaitSemaphores = &g_vVars.g_sImageAvailableSemaphore,
+			.pWaitSemaphores = &g_vVars.g_vImageAvailableSemaphores[g_vVars.g_u32CurrentFrame],
 			.pWaitDstStageMask = psfStageFlags,
 			.commandBufferCount = 1,
-			.pCommandBuffers = &g_vVars.g_cbCommandBuffer,
+			.pCommandBuffers = &g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame],
 			.signalSemaphoreCount = 1,
-			.pSignalSemaphores = &g_vVars.g_sRenderFinishedSemaphore
+			.pSignalSemaphores = &g_vVars.g_vRenderFinishedSemaphores[g_vVars.g_u32CurrentFrame]
 		};
 
-		if (vkQueueSubmit(g_vVars.g_qGraphicsQueue, 1, &siSubmitInfo, g_vVars.g_fInFlightFence) != VK_SUCCESS) {
+		if (vkQueueSubmit(g_vVars.g_qGraphicsQueue, 1, &siSubmitInfo, g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame]) != VK_SUCCESS) {
 			throw std::runtime_error("ERROR: Failed to submit draw command buffer!");
 		}
 
@@ -877,42 +917,44 @@ namespace PlatformRenderer {
 			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
 			.pNext = nullptr,
 			.waitSemaphoreCount = 1,
-			.pWaitSemaphores = &g_vVars.g_sRenderFinishedSemaphore,
+			.pWaitSemaphores = &g_vVars.g_vRenderFinishedSemaphores[g_vVars.g_u32CurrentFrame],
 			.swapchainCount = 1,
 			.pSwapchains = &g_vVars.g_scSwapChain,
 			.pImageIndices = &u32ImageIndex,
 			.pResults = nullptr
 		};
 
-		vkQueuePresentKHR(g_vVars.g_qPresentQueue, &piPresentInfo);
+		rRes = vkQueuePresentKHR(g_vVars.g_qPresentQueue, &piPresentInfo);
+
+		if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes != VK_SUBOPTIMAL_KHR) {
+			RecreateSwapchain();
+			return;
+		}
+		else if (rRes != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to present swapchain image!");
+		}
+
+		g_vVars.g_u32CurrentFrame = (g_vVars.g_u32CurrentFrame + 1) % HC_MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void CleanupRenderer() {
 		vkDeviceWaitIdle(g_vVars.g_dDeviceHandle);
 
-		vkDestroySemaphore(g_vVars.g_dDeviceHandle, g_vVars.g_sImageAvailableSemaphore, nullptr);
+		CleanupSwapchain();
 
-		vkDestroySemaphore(g_vVars.g_dDeviceHandle, g_vVars.g_sRenderFinishedSemaphore, nullptr);
-
-		vkDestroyFence(g_vVars.g_dDeviceHandle, g_vVars.g_fInFlightFence, nullptr);
+		for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
+			vkDestroySemaphore(g_vVars.g_dDeviceHandle, g_vVars.g_vImageAvailableSemaphores[ndx], nullptr);
+			vkDestroySemaphore(g_vVars.g_dDeviceHandle, g_vVars.g_vRenderFinishedSemaphores[ndx], nullptr);
+			vkDestroyFence(g_vVars.g_dDeviceHandle, g_vVars.g_vInFlightFences[ndx], nullptr);
+		}
 
 		vkDestroyCommandPool(g_vVars.g_dDeviceHandle, g_vVars.g_cpCommandPool, nullptr);
-
-		for (auto aFramebuffer : g_vVars.g_vFramebuffers) {
-			vkDestroyFramebuffer(g_vVars.g_dDeviceHandle, aFramebuffer, nullptr);
-		}
 
 		vkDestroyPipeline(g_vVars.g_dDeviceHandle, g_vVars.g_pPipeline, nullptr);
 
 		vkDestroyPipelineLayout(g_vVars.g_dDeviceHandle, g_vVars.g_plPipelineLayout, nullptr);
 
 		vkDestroyRenderPass(g_vVars.g_dDeviceHandle, g_vVars.g_rpRenderPass, nullptr);
-
-		for (auto aView : g_vVars.g_vImageViews) {
-			vkDestroyImageView(g_vVars.g_dDeviceHandle, aView, nullptr);
-		}
-
-		vkDestroySwapchainKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, nullptr);
 
 		vkDestroyDevice(g_vVars.g_dDeviceHandle, nullptr);
 

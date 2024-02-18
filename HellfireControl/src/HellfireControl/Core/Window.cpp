@@ -5,6 +5,22 @@
 
 #include <Platform/OSInclude.hpp>
 
+bool Window::CloseRequested() {
+	return PlatformWindow::CloseRequested(m_whgHandle);
+}
+
+void Window::PollEvents() {
+	PlatformWindow::PollEventQueue(m_whgHandle);
+}
+
+void Window::RegisterEventCallback(const WindowCallback& _funcCallback) {
+	m_pWindowEventCallbacks->push_back(_funcCallback);
+}
+
+void Window::WaitEvents() {
+	PlatformWindow::WaitEvents(m_whgHandle);
+}
+
 void Window::CleanupWindow() {
 	PlatformWindow::CleanupWindow(m_whgHandle);
 }
@@ -33,14 +49,26 @@ void Window::SetWindowLocation(const Vec2F& _v2Loc) {
 	}
 }
 
+void Window::SetWindowFocus() {
+	PlatformWindow::SetWindowFocus(m_whgHandle);
+}
+
+HC_INLINE bool Window::GetWindowFocus() {
+	return PlatformWindow::GetWindowFocus(m_whgHandle);
+}
+
 void Window::InitWindow() {
 	PlatformWindow::InitWindow(m_whgHandle, m_wtType, m_strWindowName, m_v2WindowSize, m_v2WindowLocation);
+
+	PlatformWindow::RegisterWindowCallbacks(m_whgHandle, m_pWindowEventCallbacks);
 }
 
 void Window::UpdateWindowData() {
 	m_v2WindowSize = PlatformWindow::GetWindowSize(m_whgHandle);
 	m_v2WindowLocation = PlatformWindow::GetWindowLocation(m_whgHandle);
 	m_wtType = static_cast<WindowType>(PlatformWindow::GetWindowParameters(m_whgHandle));
+	
+	PlatformWindow::RegisterWindowCallbacks(m_whgHandle, m_pWindowEventCallbacks);
 }
 
 void Window::UpdateWindowSize() {

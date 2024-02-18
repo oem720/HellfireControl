@@ -689,7 +689,18 @@ namespace PlatformRenderer {
 	}
 
 	void RecreateSwapchain() {
+		Window wWindow(g_vVars.g_u64WindowHandle);
+
+		Vec2F v2WindowSize = wWindow.GetWindowSize();
+
+		while (v2WindowSize == Vec2F(0, 0)) { //Wait here to recreate the swapchain until after the window has been pulled out of minimization
+			v2WindowSize = wWindow.GetWindowSize();
+			wWindow.WaitEvents();
+		}
+
 		vkDeviceWaitIdle(g_vVars.g_dDeviceHandle);
+
+		CleanupSwapchain();
 
 		CreateSwapChain();
 
@@ -871,6 +882,10 @@ namespace PlatformRenderer {
 	}
 #pragma endregion
 
+	void MarkFramebufferUpdated() {
+		g_vVars.g_bFramebufferResized = true;
+	}
+
 	void RenderFrame() {
 		vkWaitForFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame], VK_TRUE, UINT64_MAX);
 
@@ -879,7 +894,7 @@ namespace PlatformRenderer {
 		uint32_t u32ImageIndex = 0;
 		VkResult rRes = vkAcquireNextImageKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, UINT64_MAX, g_vVars.g_vImageAvailableSemaphores[g_vVars.g_u32CurrentFrame], VK_NULL_HANDLE, &u32ImageIndex);
 
-		if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes != VK_SUBOPTIMAL_KHR) {
+		if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes == VK_SUBOPTIMAL_KHR) {
 			RecreateSwapchain();
 			return;
 		}
@@ -926,7 +941,8 @@ namespace PlatformRenderer {
 
 		rRes = vkQueuePresentKHR(g_vVars.g_qPresentQueue, &piPresentInfo);
 
-		if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes != VK_SUBOPTIMAL_KHR) {
+		if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes == VK_SUBOPTIMAL_KHR || g_vVars.g_bFramebufferResized) {
+			g_vVars.g_bFramebufferResized = false;
 			RecreateSwapchain();
 			return;
 		}

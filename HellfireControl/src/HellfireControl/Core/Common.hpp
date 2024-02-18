@@ -4,10 +4,11 @@
 #include <stdint.h>
 #include <utility>
 #include <cassert>
-#include <stdexcept>
 
 //Required Includes (will not be replaced)
 #include <thread>
+#include <fstream>
+#include <stdexcept>
 
 //Borrowed from Vulkan docs
 #define HC_CONVERT_TO_VERSION_NO(_variant, _major, _minor, _patch)  ((((uint64_t)(_variant)) << 29U) | (((uint64_t)(_major)) << 22U) | (((uint64_t)(_minor)) << 12U) | ((uint64_t)(_patch)))

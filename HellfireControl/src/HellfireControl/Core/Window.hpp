@@ -12,6 +12,33 @@ enum WindowType : uint8_t {
 	FULLSCREEN
 };
 
+enum WindowCallbackEventType : uint8_t {
+	WINDOW_NONE = 0,
+	WINDOW_RESIZE = 1,
+	WINDOW_MOVE = 2,
+	WINDOW_MAXIMIZE = 4,
+	WINDOW_MINIMIZE = 8,
+	WINDOW_FOCUSED = 16,
+	WINDOW_UNFOCUSED = 32,
+	WINDOW_CLOSE = 64,
+	WINDOW_MAX = 255
+};
+
+struct WindowCallbackMessage {
+	/// <summary>
+	/// Determines the type of the event message being sent. Changes how the parameters are processed.
+	/// </summary>
+	WindowCallbackEventType m_wcetType = WINDOW_NONE;
+
+	/// <summary>
+	/// Can contain any data for the message that was sent. Determined by the event callback type.
+	/// </summary>
+	long long m_llUpperParam = 0;
+	long long m_llLowerParam = 0;
+};
+
+typedef std::function<void(WindowHandleGeneric, const WindowCallbackMessage&)> WindowCallback;
+
 class Window {
 private:
 	/// <summary>
@@ -38,6 +65,11 @@ private:
 	/// Location of the window on screen.
 	/// </summary>
 	Vec2F m_v2WindowLocation;
+
+	/// <summary>
+	/// List of the callbacks stored within the window.
+	/// </summary>
+	std::vector<WindowCallback>* m_pWindowEventCallbacks = nullptr;
 
 	/// <summary>
 	/// Helper function to initialize the window.
@@ -91,6 +123,30 @@ public:
 	}
 
 	/// <summary>
+	/// Returns if the user has requested that the close message be sent.
+	/// </summary>
+	/// <returns>
+	/// bool: True if the window must close, false otherwise
+	/// </returns>
+	[[nodiscard]] bool CloseRequested();
+
+	/// <summary>
+	/// Polls events stored in the window.
+	/// </summary>
+	void PollEvents();
+
+	/// <summary>
+	/// Registers the event callback given with the window. Any message that gets processed will be sent to the callback.
+	/// </summary>
+	/// <param name="_funcCallback: The event callback to be registered"></param>
+	void RegisterEventCallback(const WindowCallback& _funcCallback);
+
+	/// <summary>
+	/// Waits until a new event comes through the window to update the program again.
+	/// </summary>
+	void WaitEvents();
+
+	/// <summary>
 	/// Cleans all OS Memory and destroys current window.
 	/// </summary>
 	void CleanupWindow();
@@ -118,6 +174,11 @@ public:
 	/// </summary>
 	/// <param name="_v2Loc: New location for the window"></param>
 	void SetWindowLocation(const Vec2F& _v2Loc);
+
+	/// <summary>
+	/// Set window as the focus for the user's desktop.
+	/// </summary>
+	void SetWindowFocus();
 
 	/// <summary>
 	/// Get the window's current name.
@@ -176,4 +237,10 @@ public:
 	/// WindowHandleGeneric: The current window handle
 	/// </returns>
 	[[nodiscard]] HC_INLINE WindowHandleGeneric GetNativeWindowHandle() { return m_whgHandle; }
+	
+	/// <summary>
+	/// Determines if the window is the current focus.
+	/// </summary>
+	/// <returns></returns>
+	[[nodiscard]] HC_INLINE bool GetWindowFocus();
 };

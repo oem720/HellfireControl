@@ -1,6 +1,7 @@
 #pragma once
 
 #include <HellfireControl/Core/Common.hpp>
+#include <HellfireControl/Math/Vector.hpp>
 
 #if HC_USE_VULKAN && !HC_USE_OPENGL
 
@@ -32,6 +33,7 @@ struct VkSwapChainSupportDetails {
 struct VkVars {
 	uint64_t g_u64WindowHandle = 0;
 	uint32_t g_u32CurrentFrame = 0;
+	bool g_bFramebufferResized = false;
 
 	VkInstance g_iInstance = VK_NULL_HANDLE;
 	VkPhysicalDevice g_pdPhysicalDevice = VK_NULL_HANDLE;

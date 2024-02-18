@@ -14,10 +14,10 @@ void UICreationToolApplication::Start() {
 void UICreationToolApplication::Run() {
 	this->Start();
 
-	//SERIOUSLY TEMPORARY TEST CODE ! ! !
-	for (int i = 0; i < 5; ++i) {
+	while (!m_wWindow.CloseRequested()) {
+		m_wWindow.PollEvents();
+
 		m_prsRenderHandle->RenderFrame();
-		std::this_thread::sleep_for(std::chrono::seconds(1)); 
 	}
 
 	this->End();

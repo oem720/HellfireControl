@@ -9,6 +9,8 @@ Presently, the engine is set up within Visual Studio 2019, although it doesn't h
 ## Contributors
 Owen Meyers (Email: owenmeyers.sc@gmail.com)
 
+Cameron Taylor (Email: cameron@ada-protek.com)
+
 Robert Sale (Email: robert.sale@outlook.com)
 
 Brenna Pavlinchak (Email: ravenmobiledesign@icloud.com)

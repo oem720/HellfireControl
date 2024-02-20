@@ -43,6 +43,7 @@
 //Includes for STL library that will be replaced with custom implementations in the future
 #include <string>
 #include <vector>
+#include <array>
 #include <list>
 #include <map>
 #include <unordered_map>

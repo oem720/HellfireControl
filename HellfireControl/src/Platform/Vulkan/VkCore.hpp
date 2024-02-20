@@ -4,6 +4,40 @@
 
 #include <HellfireControl/Math/Vector.hpp>
 
+struct VertexSimple {
+	Vec2F m_v2Position;
+	Vec3F m_v3Color;
+
+	static VkVertexInputBindingDescription GetBindingDescription() {
+		VkVertexInputBindingDescription vibdVertexBindingDesc = {
+			.binding = 0,
+			.stride = sizeof(VertexSimple),
+			.inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+		};
+
+		return vibdVertexBindingDesc;
+	}
+
+	static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions() {
+		std::array<VkVertexInputAttributeDescription, 2> arrAttributes = {
+			VkVertexInputAttributeDescription {
+				.location = 0,
+				.binding = 0,
+				.format = VK_FORMAT_R32G32_SFLOAT,
+				.offset = offsetof(VertexSimple, m_v2Position)
+			},
+			VkVertexInputAttributeDescription {
+				.location = 1,
+				.binding = 0,
+				.format = VK_FORMAT_R32G32B32_SFLOAT,
+				.offset = offsetof(VertexSimple, m_v3Color)
+			}
+		};
+
+		return arrAttributes;
+	}
+};
+
 namespace PlatformRenderer {
 	/// <summary>
 	/// Initializes the renderer using the given parameters

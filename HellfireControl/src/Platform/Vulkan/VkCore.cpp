@@ -6,6 +6,34 @@
 
 #include <HellfireControl/Core/Window.hpp>
 
+namespace PlatformRenderer {
+	void CreateInstance(const std::string& _strAppName, uint32_t _u32Version);
+	void CreateSurface(uint64_t _u64WindowHandle);
+	void SelectPhysicalDevice();
+	void CreateLogicalDevice();
+	void CreateSwapChain();
+	void CreateImageViews();
+	void CreateRenderPass();
+	void CreateGraphicsPipeline();
+	void CreateFramebuffers();
+	void CreateCommandPool();
+	void CreateCommandBuffer();
+	void CreateSyncObjects();
+	void RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex);
+	void CleanupSwapchain();
+	void RecreateSwapchain();
+	void ValidateSupportedLayers();
+	bool ValidateSupportedDeviceExtensions(VkPhysicalDevice _pdDevice);
+	bool CheckDeviceSuitability(VkPhysicalDevice _pdDevice);
+	VkQueueFamilyIndices GetQueueFamilies(VkPhysicalDevice _pdDevice);
+	VkSwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice _pdDevice);
+	VkSurfaceFormatKHR SelectSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& _vAvailableFormats);
+	VkPresentModeKHR SelectSwapPresentMode(const std::vector<VkPresentModeKHR>& _vAvailablePresentModes);
+	VkExtent2D SelectSwapExtent(const VkSurfaceCapabilitiesKHR& _scCapabilities);
+	VkShaderModule CreateShaderModule(const std::vector<char>& _vCode);
+	void CheckWindowMinimized();
+}
+
 namespace LayersAndExtensions {
 	std::vector<const char*> g_vValidationLayers = {
 			"VK_LAYER_KHRONOS_validation"
@@ -31,6 +59,8 @@ namespace LayersAndExtensions {
 	};
 }
 
+using namespace LayersAndExtensions;
+
 //TEMPORARY FUNCTION!!!!!
 static std::vector<char> ReadFile(const std::string& _strFilename) {
 	std::ifstream fFile(_strFilename, std::ios::ate | std::ios::binary);
@@ -49,36 +79,7 @@ static std::vector<char> ReadFile(const std::string& _strFilename) {
 	return vBuffer;
 }
 
-using namespace LayersAndExtensions;
-
 namespace PlatformRenderer {
-	void CreateInstance(const std::string& _strAppName, uint32_t _u32Version);
-	void CreateSurface(uint64_t _u64WindowHandle);
-	void SelectPhysicalDevice();
-	void CreateLogicalDevice();
-	void CreateSwapChain();
-	void CreateImageViews();
-	void CreateRenderPass();
-	void CreateGraphicsPipeline();
-	void CreateFramebuffers();
-	void CreateCommandPool();
-	void CreateCommandBuffer();
-	void CreateSyncObjects();
-
-	void RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex);
-	void CleanupSwapchain();
-	void RecreateSwapchain();
-
-	void ValidateSupportedLayers();
-	bool ValidateSupportedDeviceExtensions(VkPhysicalDevice _pdDevice);
-	bool CheckDeviceSuitability(VkPhysicalDevice _pdDevice);
-	VkQueueFamilyIndices GetQueueFamilies(VkPhysicalDevice _pdDevice);
-	VkSwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice _pdDevice);
-	VkSurfaceFormatKHR SelectSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& _vAvailableFormats);
-	VkPresentModeKHR SelectSwapPresentMode(const std::vector<VkPresentModeKHR>& _vAvailablePresentModes);
-	VkExtent2D SelectSwapExtent(const VkSurfaceCapabilitiesKHR& _scCapabilities);
-	VkShaderModule CreateShaderModule(const std::vector<char>& _vCode);
-
 	void InitRenderer(const std::string& _strAppName, uint32_t _u32AppVersion, uint64_t _u64WindowHandle, const Vec4F& _v4ClearColor) {
 		g_vVars.g_u64WindowHandle = _u64WindowHandle;
 
@@ -107,6 +108,103 @@ namespace PlatformRenderer {
 		CreateCommandBuffer();
 
 		CreateSyncObjects();
+	}
+
+	void MarkFramebufferUpdated() {
+		g_vVars.g_bFramebufferResized = true;
+	}
+
+	void RenderFrame() {
+		vkWaitForFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame], VK_TRUE, UINT64_MAX);
+
+		vkResetFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame]);
+
+		uint32_t u32ImageIndex = 0;
+		VkResult rRes = vkAcquireNextImageKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, UINT64_MAX, g_vVars.g_vImageAvailableSemaphores[g_vVars.g_u32CurrentFrame], VK_NULL_HANDLE, &u32ImageIndex);
+
+		if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes == VK_SUBOPTIMAL_KHR) {
+			RecreateSwapchain();
+			return;
+		}
+		else if (rRes != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to acquire swapchain image!");
+		}
+
+		vkResetFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame]);
+
+		vkResetCommandBuffer(g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame], 0);
+
+		RecordCommandBuffer(g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame], u32ImageIndex);
+
+		VkPipelineStageFlags psfStageFlags[] = {
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+		};
+
+		VkSubmitInfo siSubmitInfo = {
+			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+			.pNext = nullptr,
+			.waitSemaphoreCount = 1,
+			.pWaitSemaphores = &g_vVars.g_vImageAvailableSemaphores[g_vVars.g_u32CurrentFrame],
+			.pWaitDstStageMask = psfStageFlags,
+			.commandBufferCount = 1,
+			.pCommandBuffers = &g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame],
+			.signalSemaphoreCount = 1,
+			.pSignalSemaphores = &g_vVars.g_vRenderFinishedSemaphores[g_vVars.g_u32CurrentFrame]
+		};
+
+		if (vkQueueSubmit(g_vVars.g_qGraphicsQueue, 1, &siSubmitInfo, g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame]) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to submit draw command buffer!");
+		}
+
+		VkPresentInfoKHR piPresentInfo = {
+			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+			.pNext = nullptr,
+			.waitSemaphoreCount = 1,
+			.pWaitSemaphores = &g_vVars.g_vRenderFinishedSemaphores[g_vVars.g_u32CurrentFrame],
+			.swapchainCount = 1,
+			.pSwapchains = &g_vVars.g_scSwapChain,
+			.pImageIndices = &u32ImageIndex,
+			.pResults = nullptr
+		};
+
+		rRes = vkQueuePresentKHR(g_vVars.g_qPresentQueue, &piPresentInfo);
+
+		if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes == VK_SUBOPTIMAL_KHR || g_vVars.g_bFramebufferResized) {
+			g_vVars.g_bFramebufferResized = false;
+			RecreateSwapchain();
+			return;
+		}
+		else if (rRes != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to present swapchain image!");
+		}
+
+		g_vVars.g_u32CurrentFrame = (g_vVars.g_u32CurrentFrame + 1) % HC_MAX_FRAMES_IN_FLIGHT;
+	}
+
+	void CleanupRenderer() {
+		vkDeviceWaitIdle(g_vVars.g_dDeviceHandle);
+
+		CleanupSwapchain();
+
+		for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
+			vkDestroySemaphore(g_vVars.g_dDeviceHandle, g_vVars.g_vImageAvailableSemaphores[ndx], nullptr);
+			vkDestroySemaphore(g_vVars.g_dDeviceHandle, g_vVars.g_vRenderFinishedSemaphores[ndx], nullptr);
+			vkDestroyFence(g_vVars.g_dDeviceHandle, g_vVars.g_vInFlightFences[ndx], nullptr);
+		}
+
+		vkDestroyCommandPool(g_vVars.g_dDeviceHandle, g_vVars.g_cpCommandPool, nullptr);
+
+		vkDestroyPipeline(g_vVars.g_dDeviceHandle, g_vVars.g_pPipeline, nullptr);
+
+		vkDestroyPipelineLayout(g_vVars.g_dDeviceHandle, g_vVars.g_plPipelineLayout, nullptr);
+
+		vkDestroyRenderPass(g_vVars.g_dDeviceHandle, g_vVars.g_rpRenderPass, nullptr);
+
+		vkDestroyDevice(g_vVars.g_dDeviceHandle, nullptr);
+
+		vkDestroySurfaceKHR(g_vVars.g_iInstance, g_vVars.g_sSurface, nullptr);
+
+		vkDestroyInstance(g_vVars.g_iInstance, nullptr);
 	}
 
 	void CreateInstance(const std::string& _strAppName, uint32_t _u32AppVersion) {
@@ -405,14 +503,17 @@ namespace PlatformRenderer {
 
 		VkPipelineShaderStageCreateInfo pssciShaderStages[] = { pssciVertShaderInfo, pssciFragShaderInfo };
 
+		auto aBinding = VertexSimple::GetBindingDescription();
+		auto aAttributes = VertexSimple::GetAttributeDescriptions();
+
 		VkPipelineVertexInputStateCreateInfo pvisciVertexInputInfo = {
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
-			.vertexBindingDescriptionCount = 0, //TEMPORARY ! ! ! 
-			.pVertexBindingDescriptions = nullptr,
-			.vertexAttributeDescriptionCount = 0,
-			.pVertexAttributeDescriptions = nullptr
+			.vertexBindingDescriptionCount = 1, //TEMPORARY ! ! ! 
+			.pVertexBindingDescriptions = &aBinding,
+			.vertexAttributeDescriptionCount = static_cast<uint32_t>(aAttributes.size()),
+			.pVertexAttributeDescriptions = aAttributes.data()
 		};
 
 		VkPipelineInputAssemblyStateCreateInfo piasciInputAssemblyInfo = {
@@ -689,14 +790,7 @@ namespace PlatformRenderer {
 	}
 
 	void RecreateSwapchain() {
-		Window wWindow(g_vVars.g_u64WindowHandle);
-
-		Vec2F v2WindowSize = wWindow.GetWindowSize();
-
-		while (v2WindowSize == Vec2F(0, 0)) { //Wait here to recreate the swapchain until after the window has been pulled out of minimization
-			v2WindowSize = wWindow.GetWindowSize();
-			wWindow.WaitEvents();
-		}
+		CheckWindowMinimized();
 
 		vkDeviceWaitIdle(g_vVars.g_dDeviceHandle);
 
@@ -880,102 +974,16 @@ namespace PlatformRenderer {
 
 		return smShader;
 	}
+
+	void CheckWindowMinimized() {
+		Window wWindow(g_vVars.g_u64WindowHandle);
+
+		Vec2F v2WindowSize = wWindow.GetWindowSize();
+
+		while (v2WindowSize == Vec2F(0, 0)) { //Wait here to until the window is no longer 0,0 size.
+			v2WindowSize = wWindow.GetWindowSize();
+			wWindow.WaitEvents();
+		}
+	}
 #pragma endregion
-
-	void MarkFramebufferUpdated() {
-		g_vVars.g_bFramebufferResized = true;
-	}
-
-	void RenderFrame() {
-		vkWaitForFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame], VK_TRUE, UINT64_MAX);
-
-		vkResetFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame]);
-
-		uint32_t u32ImageIndex = 0;
-		VkResult rRes = vkAcquireNextImageKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, UINT64_MAX, g_vVars.g_vImageAvailableSemaphores[g_vVars.g_u32CurrentFrame], VK_NULL_HANDLE, &u32ImageIndex);
-
-		if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes == VK_SUBOPTIMAL_KHR) {
-			RecreateSwapchain();
-			return;
-		}
-		else if (rRes != VK_SUCCESS) {
-			throw std::runtime_error("ERROR: Failed to acquire swapchain image!");
-		}
-
-		vkResetFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame]);
-
-		vkResetCommandBuffer(g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame], 0);
-
-		RecordCommandBuffer(g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame], u32ImageIndex);
-
-		VkPipelineStageFlags psfStageFlags[] = {
-			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-		};
-
-		VkSubmitInfo siSubmitInfo = {
-			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-			.pNext = nullptr,
-			.waitSemaphoreCount = 1,
-			.pWaitSemaphores = &g_vVars.g_vImageAvailableSemaphores[g_vVars.g_u32CurrentFrame],
-			.pWaitDstStageMask = psfStageFlags,
-			.commandBufferCount = 1,
-			.pCommandBuffers = &g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame],
-			.signalSemaphoreCount = 1,
-			.pSignalSemaphores = &g_vVars.g_vRenderFinishedSemaphores[g_vVars.g_u32CurrentFrame]
-		};
-
-		if (vkQueueSubmit(g_vVars.g_qGraphicsQueue, 1, &siSubmitInfo, g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame]) != VK_SUCCESS) {
-			throw std::runtime_error("ERROR: Failed to submit draw command buffer!");
-		}
-
-		VkPresentInfoKHR piPresentInfo = {
-			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-			.pNext = nullptr,
-			.waitSemaphoreCount = 1,
-			.pWaitSemaphores = &g_vVars.g_vRenderFinishedSemaphores[g_vVars.g_u32CurrentFrame],
-			.swapchainCount = 1,
-			.pSwapchains = &g_vVars.g_scSwapChain,
-			.pImageIndices = &u32ImageIndex,
-			.pResults = nullptr
-		};
-
-		rRes = vkQueuePresentKHR(g_vVars.g_qPresentQueue, &piPresentInfo);
-
-		if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes == VK_SUBOPTIMAL_KHR || g_vVars.g_bFramebufferResized) {
-			g_vVars.g_bFramebufferResized = false;
-			RecreateSwapchain();
-			return;
-		}
-		else if (rRes != VK_SUCCESS) {
-			throw std::runtime_error("ERROR: Failed to present swapchain image!");
-		}
-
-		g_vVars.g_u32CurrentFrame = (g_vVars.g_u32CurrentFrame + 1) % HC_MAX_FRAMES_IN_FLIGHT;
-	}
-
-	void CleanupRenderer() {
-		vkDeviceWaitIdle(g_vVars.g_dDeviceHandle);
-
-		CleanupSwapchain();
-
-		for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
-			vkDestroySemaphore(g_vVars.g_dDeviceHandle, g_vVars.g_vImageAvailableSemaphores[ndx], nullptr);
-			vkDestroySemaphore(g_vVars.g_dDeviceHandle, g_vVars.g_vRenderFinishedSemaphores[ndx], nullptr);
-			vkDestroyFence(g_vVars.g_dDeviceHandle, g_vVars.g_vInFlightFences[ndx], nullptr);
-		}
-
-		vkDestroyCommandPool(g_vVars.g_dDeviceHandle, g_vVars.g_cpCommandPool, nullptr);
-
-		vkDestroyPipeline(g_vVars.g_dDeviceHandle, g_vVars.g_pPipeline, nullptr);
-
-		vkDestroyPipelineLayout(g_vVars.g_dDeviceHandle, g_vVars.g_plPipelineLayout, nullptr);
-
-		vkDestroyRenderPass(g_vVars.g_dDeviceHandle, g_vVars.g_rpRenderPass, nullptr);
-
-		vkDestroyDevice(g_vVars.g_dDeviceHandle, nullptr);
-
-		vkDestroySurfaceKHR(g_vVars.g_iInstance, g_vVars.g_sSurface, nullptr);
-
-		vkDestroyInstance(g_vVars.g_iInstance, nullptr);
-	}
 }

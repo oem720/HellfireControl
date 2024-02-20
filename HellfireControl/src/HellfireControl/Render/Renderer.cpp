@@ -2,8 +2,6 @@
 #include <HellfireControl/Render/Renderer.hpp>
 #include <HellfireControl/Core/Window.hpp>
 
-#include <Platform/GLInclude.hpp>
-
 RenderingSubsystem* RenderingSubsystem::m_prsInstancePtr = nullptr;
 
 RenderingSubsystem* RenderingSubsystem::GetInstance() {
@@ -23,7 +21,7 @@ static void WindowEventHandler(WindowHandleGeneric _whgHandle, const WindowCallb
 	}
 
 	if (_wcmMessage.m_wcetType & WINDOW_CLOSE) {
-
+		//TODO Possibly handle WINDOW_CLOSE here.
 	}
 }
 

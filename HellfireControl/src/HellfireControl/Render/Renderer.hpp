@@ -1,6 +1,9 @@
 #pragma once
 
 #include <HellfireControl/Core/Common.hpp>
+#include <HellfireControl/Math/Vector.hpp>
+
+#include <Platform/GLInclude.hpp> //TEMPORARY ! ! ! HACK FOR VERTICES, MOVE VERTEX TYPES TO THEIR OWN FILE LATER AND ELIMINATE THIS GARBAGE ! ! !
 
 class RenderingSubsystem {
 private:

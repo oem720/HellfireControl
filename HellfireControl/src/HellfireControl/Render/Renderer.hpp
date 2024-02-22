@@ -7,6 +7,7 @@
 
 class RenderingSubsystem {
 private:
+
 	static RenderingSubsystem* m_prsInstancePtr;
 
 	RenderingSubsystem() {}

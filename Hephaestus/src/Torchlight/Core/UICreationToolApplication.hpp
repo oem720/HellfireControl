@@ -6,7 +6,7 @@ class RenderingSubsystem;
 
 class UICreationToolApplication : public Application {
 private:
-	RenderingSubsystem* m_prsRenderHandle = nullptr;
+	RenderingSubsystem* m_prsRenderer = nullptr;
 
 	void Start();
 

@@ -1,13 +1,13 @@
 
 #include <Platform/Vulkan/VkCore.hpp>
-
 #include <Platform/Vulkan/VkBuffer.hpp>
 
 #define HC_INCLUDE_SURFACE_VK
 #include <Platform/OSInclude.hpp>
 
+#include <HellfireControl/Render/Renderer.hpp>
 #include <HellfireControl/Core/Window.hpp>
-
+#include <HellfireControl/Math/Matrix.hpp>
 
 namespace LayersAndExtensions {
 	std::vector<const char*> g_vValidationLayers = {
@@ -75,11 +75,19 @@ void PlatformRenderer::InitRenderer(const std::string& _strAppName, uint32_t _u3
 
 	CreateRenderPass();
 
+	CreateDescriptorSetLayout();
+
 	CreateGraphicsPipeline();
 
 	CreateFramebuffers();
 
 	CreateCommandPool();
+
+	CreateUniformBuffers();
+
+	CreateDescriptorPool();
+
+	CreateDescriptorSets();
 
 	CreateCommandBuffer();
 
@@ -95,8 +103,8 @@ void PlatformRenderer::RenderFrame() {
 
 	vkResetFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame]);
 
-	uint32_t u32ImageIndex = 0;
-	VkResult rRes = vkAcquireNextImageKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, UINT64_MAX, g_vVars.g_vImageAvailableSemaphores[g_vVars.g_u32CurrentFrame], VK_NULL_HANDLE, &u32ImageIndex);
+	VkResult rRes = vkAcquireNextImageKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, UINT64_MAX,
+		g_vVars.g_vImageAvailableSemaphores[g_vVars.g_u32CurrentFrame], VK_NULL_HANDLE, &g_vVars.g_u32CurrentFrame);
 
 	if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes == VK_SUBOPTIMAL_KHR) {
 		RecreateSwapchain();
@@ -110,7 +118,9 @@ void PlatformRenderer::RenderFrame() {
 
 	vkResetCommandBuffer(g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame], 0);
 
-	RecordCommandBuffer(g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame], u32ImageIndex);
+	RecordCommandBuffer(g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame], g_vVars.g_u32CurrentFrame);
+
+	UpdateUniformBuffer(g_vVars.g_u32CurrentFrame);
 
 	VkPipelineStageFlags psfStageFlags[] = {
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
@@ -139,7 +149,7 @@ void PlatformRenderer::RenderFrame() {
 		.pWaitSemaphores = &g_vVars.g_vRenderFinishedSemaphores[g_vVars.g_u32CurrentFrame],
 		.swapchainCount = 1,
 		.pSwapchains = &g_vVars.g_scSwapChain,
-		.pImageIndices = &u32ImageIndex,
+		.pImageIndices = &g_vVars.g_u32CurrentFrame,
 		.pResults = nullptr
 	};
 
@@ -161,6 +171,15 @@ void PlatformRenderer::CleanupRenderer() {
 	vkDeviceWaitIdle(g_vVars.g_dDeviceHandle);
 
 	CleanupSwapchain();
+
+	for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
+		vkDestroyBuffer(g_vVars.g_dDeviceHandle, g_vVars.g_vUbo[ndx], nullptr);
+		vkFreeMemory(g_vVars.g_dDeviceHandle, g_vVars.g_vUboMem[ndx], nullptr);
+	}
+
+	vkDestroyDescriptorPool(g_vVars.g_dDeviceHandle, g_vVars.g_dpDescriptorPool, nullptr);
+
+	vkDestroyDescriptorSetLayout(g_vVars.g_dDeviceHandle, g_vVars.g_dslDescriptorSetLayout, nullptr);
 
 	for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
 		vkDestroySemaphore(g_vVars.g_dDeviceHandle, g_vVars.g_vImageAvailableSemaphores[ndx], nullptr);
@@ -450,6 +469,28 @@ void PlatformRenderer::CreateRenderPass() {
 	}
 }
 
+void PlatformRenderer::CreateDescriptorSetLayout() {
+	VkDescriptorSetLayoutBinding dslbUboLayoutBinding = {
+		.binding = 0,
+		.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+		.descriptorCount = 1,
+		.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+		.pImmutableSamplers = nullptr
+	};
+
+	VkDescriptorSetLayoutCreateInfo dslciDescriptorLayoutInfo = {
+		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+		.pNext = nullptr,
+		.flags = 0,
+		.bindingCount = 1,
+		.pBindings = &dslbUboLayoutBinding
+	};
+
+	if (vkCreateDescriptorSetLayout(g_vVars.g_dDeviceHandle, &dslciDescriptorLayoutInfo, nullptr, &g_vVars.g_dslDescriptorSetLayout) != VK_SUCCESS) {
+		throw std::runtime_error("ERROR: Failed to create descriptor set layout!");
+	}
+}
+
 void PlatformRenderer::CreateGraphicsPipeline() {
 	auto aVertShader = ReadFile("../../Assets/Shaders/Vulkan/vert.spv"); //TEMPORARY ! ! !
 	auto aFragShader = ReadFile("../../Assets/Shaders/Vulkan/frag.spv");
@@ -579,8 +620,8 @@ void PlatformRenderer::CreateGraphicsPipeline() {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
 		.pNext = nullptr,
 		.flags = 0,
-		.setLayoutCount = 0,
-		.pSetLayouts = nullptr,
+		.setLayoutCount = 1,
+		.pSetLayouts = &g_vVars.g_dslDescriptorSetLayout,
 		.pushConstantRangeCount = 0, //PUSH CONSTANTS HERE
 		.pPushConstantRanges = nullptr
 	};
@@ -653,6 +694,80 @@ void PlatformRenderer::CreateCommandPool() {
 
 	if (vkCreateCommandPool(g_vVars.g_dDeviceHandle, &cpciPoolCreateInfo, nullptr, &g_vVars.g_cpCommandPool) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create command pool!");
+	}
+}
+
+void PlatformRenderer::CreateUniformBuffers() {
+	VkDeviceSize dsSize = sizeof(UniformBufferData);
+
+	g_vVars.g_vUbo.resize(HC_MAX_FRAMES_IN_FLIGHT);
+	g_vVars.g_vUboMem.resize(HC_MAX_FRAMES_IN_FLIGHT);
+	g_vVars.g_vUboMapped.resize(HC_MAX_FRAMES_IN_FLIGHT);
+
+	for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
+		PlatformBuffer::CreateBuffer(dsSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, HC_MEMORY_FLAGS, g_vVars.g_vUbo[ndx], g_vVars.g_vUboMem[ndx]);
+
+		vkMapMemory(g_vVars.g_dDeviceHandle, g_vVars.g_vUboMem[ndx], 0, dsSize, 0, &g_vVars.g_vUboMapped[ndx]);
+	}
+}
+
+void PlatformRenderer::CreateDescriptorPool() {
+	VkDescriptorPoolSize dpsPoolSize = {
+		.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+		.descriptorCount = static_cast<uint32_t>(HC_MAX_FRAMES_IN_FLIGHT)
+	};
+
+	VkDescriptorPoolCreateInfo dpciPoolInfo = {
+		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+		.pNext = nullptr,
+		.flags = 0,
+		.maxSets = static_cast<uint32_t>(HC_MAX_FRAMES_IN_FLIGHT),
+		.poolSizeCount = 1,
+		.pPoolSizes = &dpsPoolSize
+	};
+
+	if (vkCreateDescriptorPool(g_vVars.g_dDeviceHandle, &dpciPoolInfo, nullptr, &g_vVars.g_dpDescriptorPool) != VK_SUCCESS) {
+		throw std::runtime_error("ERROR: Failed to create Descriptor Pool!");
+	}
+}
+
+void PlatformRenderer::CreateDescriptorSets() {
+	std::vector<VkDescriptorSetLayout> vLayouts(HC_MAX_FRAMES_IN_FLIGHT, g_vVars.g_dslDescriptorSetLayout); //Blech, fuck you Vulkan
+	g_vVars.g_vDescriptorSets.resize(HC_MAX_FRAMES_IN_FLIGHT);
+
+	VkDescriptorSetAllocateInfo dsaiAllocateInfo = {
+		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+		.pNext = nullptr,
+		.descriptorPool = g_vVars.g_dpDescriptorPool,
+		.descriptorSetCount = static_cast<uint32_t>(HC_MAX_FRAMES_IN_FLIGHT),
+		.pSetLayouts = vLayouts.data()
+	};
+
+	if (vkAllocateDescriptorSets(g_vVars.g_dDeviceHandle, &dsaiAllocateInfo, g_vVars.g_vDescriptorSets.data()) != VK_SUCCESS) {
+		throw std::runtime_error("ERROR: Failed to allocate Descriptor Sets!");
+	}
+
+	for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
+		VkDescriptorBufferInfo dbiBufferInfo = {
+			.buffer = g_vVars.g_vUbo[ndx],
+			.offset = 0,
+			.range = sizeof(UniformBufferData)
+		};
+
+		VkWriteDescriptorSet wdsDescriptorWrite = {
+			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+			.pNext = nullptr,
+			.dstSet = g_vVars.g_vDescriptorSets[ndx],
+			.dstBinding = 0,
+			.dstArrayElement = 0,
+			.descriptorCount = 1,
+			.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			.pImageInfo = nullptr,
+			.pBufferInfo = &dbiBufferInfo,
+			.pTexelBufferView = nullptr
+		};
+
+		vkUpdateDescriptorSets(g_vVars.g_dDeviceHandle, 1, &wdsDescriptorWrite, 0, nullptr);
 	}
 }
 
@@ -746,17 +861,21 @@ void PlatformRenderer::RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _
 
 	//SERIOUSLY ! ! ! THIS SHIT IS TEMPORARY ! ! !
 	const std::map<VkBuffer, BufferData>* pBuffers = PlatformBuffer::GetActiveBufferData();
+
+	uint32_t u32IndexCount = 0;
 	for (const auto& aBufferPair : *pBuffers) {
-		if (aBufferPair.second.m_u8Type != 0) {
-			continue;
+		if (aBufferPair.second.m_u8Type == 0) {
+			VkDeviceSize dsOffsets[] = { 0 };
+
+			vkCmdBindVertexBuffers(_cbBuffer, 0, 1, &aBufferPair.first, dsOffsets);
 		}
-
-		VkDeviceSize dsOffsets[] = { 0 };
-
-		vkCmdBindVertexBuffers(_cbBuffer, 0, 1, &aBufferPair.first, dsOffsets);
-
-		vkCmdDraw(_cbBuffer, static_cast<uint32_t>(aBufferPair.second.m_u32ItemCount), 1, 0, 0);
+		if (aBufferPair.second.m_u8Type == 1) {
+			vkCmdBindIndexBuffer(_cbBuffer, aBufferPair.first, 0, VK_INDEX_TYPE_UINT16);
+			u32IndexCount = aBufferPair.second.m_u32ItemCount; 
+		}
 	}
+	vkCmdBindDescriptorSets(_cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_vVars.g_plPipelineLayout, 0, 1, &g_vVars.g_vDescriptorSets[_u32ImageIndex], 0, nullptr);
+	vkCmdDrawIndexed(_cbBuffer, u32IndexCount, 1, 0, 0, 0); //TEMPORARY ! ! ! WILL BREAK IF NO INDEX BUFFER PRESENT ! ! !
 
 	vkCmdEndRenderPass(_cbBuffer);
 
@@ -789,9 +908,10 @@ void PlatformRenderer::RecreateSwapchain() {
 	CreateImageViews();
 
 	CreateFramebuffers();
+
+	g_vVars.g_u32CurrentFrame = 0;
 }
 
-#pragma region HelperFunctions
 void PlatformRenderer::ValidateSupportedLayers() {
 	uint32_t u32LayerCount = 0;		
 	vkEnumerateInstanceLayerProperties(&u32LayerCount, nullptr);
@@ -973,4 +1093,17 @@ void PlatformRenderer::CheckWindowMinimized() {
 		wWindow.WaitEvents();
 	}
 }
-#pragma endregion
+
+void PlatformRenderer::UpdateUniformBuffer(uint32_t _u32CurrentImage) {
+	static auto aStartTime = std::chrono::high_resolution_clock::now();
+	auto aCurrentTime = std::chrono::high_resolution_clock::now();
+	float fTime = std::chrono::duration<float, std::chrono::seconds::period>(aCurrentTime - aStartTime).count();
+
+	UniformBufferData ubdData = {
+		.m_mModel = RotateZGlobalDeg(fTime * HC_DEG2RAD(90.0f) * 15.0f, IdentityF()),
+		.m_mView = Inverse(LookAtLH(Vec3F(2.0f, 2.0f, 2.0f), Vec3F(0.0f, 0.0f, 0.0f), Vec3F(0.0f, 0.0f, 1.0f))),
+		.m_mProj = ProjectionF(static_cast<float>(g_vVars.g_eExtent.width) / static_cast<float>(g_vVars.g_eExtent.height), HC_DEG2RAD(45.0f), 0.1f, 10.0f)
+	};
+
+	memcpy(g_vVars.g_vUboMapped[_u32CurrentImage], &ubdData, sizeof(ubdData));
+}

@@ -66,21 +66,28 @@ struct VkVars {
 	VkSurfaceKHR g_sSurface = VK_NULL_HANDLE;
 	VkSwapchainKHR g_scSwapChain = VK_NULL_HANDLE;
 	VkRenderPass g_rpRenderPass = VK_NULL_HANDLE;
+	VkDescriptorSetLayout g_dslDescriptorSetLayout = VK_NULL_HANDLE;
 	VkPipelineLayout g_plPipelineLayout = VK_NULL_HANDLE; //TEMPORARY ! ! !
 	VkPipeline g_pPipeline = VK_NULL_HANDLE;
 	VkCommandPool g_cpCommandPool = VK_NULL_HANDLE;
+	VkDescriptorPool g_dpDescriptorPool = VK_NULL_HANDLE;
 
 	VkFormat g_fFormat = {};
 	VkExtent2D g_eExtent = {};
 	VkClearValue g_cvClearColor = {};
 
 	std::vector<VkCommandBuffer> g_vCommandBuffers;
+	std::vector<VkDescriptorSet> g_vDescriptorSets;
 	std::vector<VkSemaphore> g_vImageAvailableSemaphores;
 	std::vector<VkSemaphore> g_vRenderFinishedSemaphores;
 	std::vector<VkFence> g_vInFlightFences;
 	std::vector<VkImage> g_vImages;
 	std::vector<VkImageView> g_vImageViews;
 	std::vector<VkFramebuffer> g_vFramebuffers;
+
+	std::vector<VkBuffer> g_vUbo; //TODO: POSSIBLE TEMPORARY ! ! !
+	std::vector<VkDeviceMemory> g_vUboMem;
+	std::vector<void*> g_vUboMapped;
 };
 
 class PlatformRenderer {
@@ -94,9 +101,15 @@ private:
 	static void CreateSwapChain();
 	static void CreateImageViews();
 	static void CreateRenderPass();
+	static void CreateDescriptorSetLayout();
 	static void CreateGraphicsPipeline();
 	static void CreateFramebuffers();
 	static void CreateCommandPool();
+
+	static void CreateUniformBuffers(); //TODO: POSSIBLE TEMPORARY ! ! !
+
+	static void CreateDescriptorPool();
+	static void CreateDescriptorSets();
 	static void CreateCommandBuffer();
 	static void CreateSyncObjects();
 	static void RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex);
@@ -112,6 +125,7 @@ private:
 	static VkExtent2D SelectSwapExtent(const VkSurfaceCapabilitiesKHR& _scCapabilities);
 	static VkShaderModule CreateShaderModule(const std::vector<char>& _vCode);
 	static void CheckWindowMinimized();
+	static void UpdateUniformBuffer(uint32_t _u32CurrentImage); //VERY TEMPORARY ! ! !
 
 	static VkVars g_vVars;
 public:

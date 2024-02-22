@@ -2,7 +2,6 @@
 #include <Torchlight/Core/UICreationToolApplication.hpp>
 
 #include <HellfireControl/Render/Renderer.hpp>
-
 #include <HellfireControl/Render/Buffer.hpp>
 
 void UICreationToolApplication::Start() {
@@ -17,20 +16,24 @@ void UICreationToolApplication::Run() {
 	this->Start();
 
 	const std::vector<VertexSimple> vVertices = {
-		{Vec2F(0.0f, -0.5f), Vec3F(1.0f, 0.0f, 0.0f)},
-		{Vec2F(0.5f, 0.5f), Vec3F(0.0f, 1.0f, 0.0f)},
-		{Vec2F(-0.5f, 0.5f), Vec3F(0.0f, 0.0f, 1.0f)}
+		{Vec2F(-0.5f, -0.5f), Vec3F(1.0f, 0.0f, 0.0f)},
+		{Vec2F(0.5f, -0.5f), Vec3F(0.0f, 1.0f, 0.0f)},
+		{Vec2F(0.5f, 0.5f), Vec3F(0.0f, 0.0f, 1.0f)},
+		{Vec2F(-0.5f, 0.5f), Vec3F(1.0f, 1.0f, 1.0f)}
+	};
+
+	const std::vector<uint16_t> vIndices = {
+		0, 1, 2, 2, 3, 0
 	};
 
 	Buffer vertexBuffer(BufferType::VERTEX, vVertices.data(), sizeof(VertexSimple), vVertices.size());
+	Buffer indexBuffer(BufferType::INDEX, vIndices.data(), sizeof(uint16_t), vIndices.size());
 
 	while (!m_wWindow.CloseRequested()) {
 		m_wWindow.PollEvents();
 
 		m_prsRenderer->RenderFrame();
 	}
-
-	vertexBuffer.Cleanup(); //TEMPORARY ! ! ! ADD TO RENDERER SHUTDOWN ! ! !
 
 	this->End();
 }

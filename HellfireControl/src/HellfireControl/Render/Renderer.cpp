@@ -37,7 +37,26 @@ void RenderingSubsystem::RenderFrame() {
 }
 
 void RenderingSubsystem::Cleanup() {
+	for (const auto& aBufferHandle : m_vActiveBuffers) {
+		Buffer(aBufferHandle).Cleanup(false);
+	}
+
+	m_vActiveBuffers.clear();
+
 	PlatformRenderer::CleanupRenderer();
 
 	delete m_prsInstancePtr; //Final renderer cleanup
+}
+
+void RenderingSubsystem::RegisterBuffer(const BufferHandleGeneric& _bhgNewBuffer) {
+	m_vActiveBuffers.push_back(_bhgNewBuffer);
+}
+
+void RenderingSubsystem::DeregisterBuffer(const BufferHandleGeneric& _bhgNewBuffer) {
+	for (int ndx = 0; ndx < m_vActiveBuffers.size(); ++ndx) {
+		if (m_vActiveBuffers[ndx] == _bhgNewBuffer) {
+			m_vActiveBuffers.erase(m_vActiveBuffers.begin() + ndx);
+			break;
+		}
+	}
 }

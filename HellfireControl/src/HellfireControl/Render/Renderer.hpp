@@ -1,12 +1,21 @@
 #pragma once
 
 #include <HellfireControl/Core/Common.hpp>
-#include <HellfireControl/Math/Vector.hpp>
+#include <HellfireControl/Math/Matrix.hpp>
 
 #include <Platform/GLInclude.hpp> //TEMPORARY ! ! ! HACK FOR VERTICES, MOVE VERTEX TYPES TO THEIR OWN FILE LATER AND ELIMINATE THIS GARBAGE ! ! !
 
+#include <HellfireControl/Render/Buffer.hpp>
+
+struct UniformBufferData {
+	MatrixF m_mModel;
+	MatrixF m_mView;
+	MatrixF m_mProj;
+};
+
 class RenderingSubsystem {
 private:
+	std::vector<BufferHandleGeneric> m_vActiveBuffers;
 
 	static RenderingSubsystem* m_prsInstancePtr;
 
@@ -19,4 +28,8 @@ public:
 	void RenderFrame();
 
 	void Cleanup();
+
+	void RegisterBuffer(const BufferHandleGeneric& _bhgNewBuffer);
+
+	void DeregisterBuffer(const BufferHandleGeneric& _bhgNewBuffer);
 };

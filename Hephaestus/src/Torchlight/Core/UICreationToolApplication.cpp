@@ -16,10 +16,10 @@ void UICreationToolApplication::Run() {
 	this->Start();
 
 	const std::vector<VertexSimple> vVertices = {
-		{Vec2F(-0.5f, -0.5f), Vec3F(1.0f, 0.0f, 0.0f)},
-		{Vec2F(0.5f, -0.5f), Vec3F(0.0f, 1.0f, 0.0f)},
-		{Vec2F(0.5f, 0.5f), Vec3F(0.0f, 0.0f, 1.0f)},
-		{Vec2F(-0.5f, 0.5f), Vec3F(1.0f, 1.0f, 1.0f)}
+		{Vec2F(-0.5f, -0.5f), Vec3F(1.0f, 0.0f, 0.0f), Vec2F(1.0f, 0.0f)},
+		{Vec2F(0.5f, -0.5f), Vec3F(0.0f, 1.0f, 0.0f), Vec2F(0.0f, 0.0f)},
+		{Vec2F(0.5f, 0.5f), Vec3F(0.0f, 0.0f, 1.0f), Vec2F(0.0f, 1.0f)},
+		{Vec2F(-0.5f, 0.5f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(1.0f, 1.0f)}
 	};
 
 	const std::vector<uint16_t> vIndices = {

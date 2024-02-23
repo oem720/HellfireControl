@@ -91,26 +91,7 @@ void PlatformBuffer::CreateBuffer(VkDeviceSize _dsSize, VkBufferUsageFlags _bufF
 }
 
 void PlatformBuffer::CopyBuffer(VkBuffer _bSource, VkBuffer _bDestination, VkDeviceSize _dsSize) {
-	VkCommandBufferAllocateInfo cbaiBufferInfo = {
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.pNext = nullptr,
-		.commandPool = PlatformRenderer::g_vVars.g_cpCommandPool,
-		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-		.commandBufferCount = 1
-	};
-
-	VkCommandBuffer cbBuffer;
-
-	vkAllocateCommandBuffers(PlatformRenderer::g_vVars.g_dDeviceHandle, &cbaiBufferInfo, &cbBuffer);
-
-	VkCommandBufferBeginInfo cbbiBeginInfo = {
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-		.pNext = nullptr,
-		.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-		.pInheritanceInfo = nullptr
-	};
-
-	vkBeginCommandBuffer(cbBuffer, &cbbiBeginInfo);
+	VkCommandBuffer cbBuffer = PlatformRenderer::BeginSingleTimeCommands();
 
 	VkBufferCopy bcCopyRegion = {
 		.srcOffset = 0,
@@ -120,24 +101,7 @@ void PlatformBuffer::CopyBuffer(VkBuffer _bSource, VkBuffer _bDestination, VkDev
 
 	vkCmdCopyBuffer(cbBuffer, _bSource, _bDestination, 1, &bcCopyRegion);
 
-	vkEndCommandBuffer(cbBuffer);
-
-	VkSubmitInfo siSubmitInfo = {
-		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-		.pNext = nullptr,
-		.waitSemaphoreCount = 0,
-		.pWaitSemaphores = nullptr,
-		.pWaitDstStageMask = nullptr,
-		.commandBufferCount = 1,
-		.pCommandBuffers = &cbBuffer,
-		.signalSemaphoreCount = 0,
-		.pSignalSemaphores = nullptr
-	};
-
-	vkQueueSubmit(PlatformRenderer::g_vVars.g_qGraphicsQueue, 1, &siSubmitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(PlatformRenderer::g_vVars.g_qGraphicsQueue);
-
-	vkFreeCommandBuffers(PlatformRenderer::g_vVars.g_dDeviceHandle, PlatformRenderer::g_vVars.g_cpCommandPool, 1, &cbBuffer);
+	PlatformRenderer::EndSingleTimeCommands(cbBuffer);
 }
 
 uint32_t PlatformBuffer::TranslateBufferUsage(uint8_t _u8Type) {

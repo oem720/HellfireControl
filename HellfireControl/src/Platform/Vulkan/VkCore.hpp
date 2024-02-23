@@ -7,6 +7,7 @@
 struct VertexSimple {
 	Vec2F m_v2Position;
 	Vec3F m_v3Color;
+	Vec2F m_v2TexCoord;
 
 	static VkVertexInputBindingDescription GetBindingDescription() {
 		VkVertexInputBindingDescription vibdVertexBindingDesc = {
@@ -18,8 +19,8 @@ struct VertexSimple {
 		return vibdVertexBindingDesc;
 	}
 
-	static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions() {
-		std::array<VkVertexInputAttributeDescription, 2> arrAttributes = {
+	static std::array<VkVertexInputAttributeDescription, 3> GetAttributeDescriptions() {
+		std::array<VkVertexInputAttributeDescription, 3> arrAttributes = {
 			VkVertexInputAttributeDescription {
 				.location = 0,
 				.binding = 0,
@@ -31,6 +32,12 @@ struct VertexSimple {
 				.binding = 0,
 				.format = VK_FORMAT_R32G32B32_SFLOAT,
 				.offset = offsetof(VertexSimple, m_v3Color)
+			},
+			VkVertexInputAttributeDescription {
+				.location = 2,
+				.binding = 0,
+				.format = VK_FORMAT_R32G32_SFLOAT,
+				.offset = offsetof(VertexSimple, m_v2TexCoord)
 			}
 		};
 
@@ -71,6 +78,7 @@ struct VkVars {
 	VkPipeline g_pPipeline = VK_NULL_HANDLE;
 	VkCommandPool g_cpCommandPool = VK_NULL_HANDLE;
 	VkDescriptorPool g_dpDescriptorPool = VK_NULL_HANDLE;
+	VkSampler g_sSampler = VK_NULL_HANDLE;
 
 	VkFormat g_fFormat = {};
 	VkExtent2D g_eExtent = {};
@@ -88,6 +96,10 @@ struct VkVars {
 	std::vector<VkBuffer> g_vUbo; //TODO: POSSIBLE TEMPORARY ! ! !
 	std::vector<VkDeviceMemory> g_vUboMem;
 	std::vector<void*> g_vUboMapped;
+
+	VkImage imgTexture; //SUPER TEMPORARY ! ! !
+	VkDeviceMemory dmTextureMemory;
+	VkImageView ivTextureView;
 };
 
 class PlatformRenderer {
@@ -106,13 +118,22 @@ private:
 	static void CreateFramebuffers();
 	static void CreateCommandPool();
 
+	static void CreateTextureImage(); //VERY EXTREMELY TEMPORARY ! ! !
+	static void CreateTextureImageView();
+	static void CreateImage(uint32_t _u32Width, uint32_t _u32Height, VkFormat _fFormat, VkImageTiling _itTiling, VkImageUsageFlags _iufUsage, VkMemoryPropertyFlags _mpfProperties, VkImage& _iImage, VkDeviceMemory& _dmMem);
+	static void TransitionImageLayout(VkImage _iImage, VkFormat _fFormat, VkImageLayout _ilLayoutOld, VkImageLayout _ilLayoutNew);
+	static void CopyBufferToImage(VkBuffer _bBuffer, VkImage _iImage, uint32_t _u32Width, uint32_t _u32Height);
 	static void CreateUniformBuffers(); //TODO: POSSIBLE TEMPORARY ! ! !
 
+	static void CreateTextureSampler();
 	static void CreateDescriptorPool();
 	static void CreateDescriptorSets();
 	static void CreateCommandBuffer();
 	static void CreateSyncObjects();
 	static void RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex);
+	static VkCommandBuffer BeginSingleTimeCommands();
+	static void EndSingleTimeCommands(VkCommandBuffer _cbBuffer);
+	static VkImageView CreateImageView(VkImage _iImage, VkFormat _fFormat);
 	static void CleanupSwapchain();
 	static void RecreateSwapchain();
 	static void ValidateSupportedLayers();

@@ -116,7 +116,7 @@
 //
 //	return mMat;
 //}
-//HC_INLINE MatrixF HC_VECTORCALL ProjectionFReversedInf(float _fAspectRatio, float _fFOV, float _fNearPlane) {
+//HC_INLINE MatrixF HC_VECTORCALL ProjectionFInf(float _fAspectRatio, float _fFOV, float _fNearPlane) {
 //	float fFocal = 1.0f / tanf(_fFOV);
 //	MatrixF mMat;
 //	mMat[0] = Vec4F(fFocal / _fAspectRatio, 0.0f, 0.0f, 0.0f);
@@ -541,7 +541,7 @@ struct HC_ALIGNAS(64) MatrixF
 	return mMat;
 }
 
-[[nodiscard]] HC_INLINE MatrixF ProjectionFReversedInf(float _fAspectRatio, float _fFOV, float _fNearPlane) {
+[[nodiscard]] HC_INLINE MatrixF ProjectionFInf(float _fAspectRatio, float _fFOV, float _fNearPlane) {
 	float fFocal = 1.0f / tanf(_fFOV);
 	MatrixF mMat;
 	mMat[0] = Vec4F(fFocal / _fAspectRatio, 0.0f, 0.0f, 0.0f);

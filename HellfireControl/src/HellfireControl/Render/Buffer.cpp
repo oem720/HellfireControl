@@ -7,8 +7,6 @@ Buffer::Buffer(BufferType _btType, const void* _pDataBlob, uint32_t _u32ItemWidt
 	m_prsRenderer = RenderingSubsystem::GetInstance();
 
 	PlatformBuffer::InitBuffer(m_bhgHandle, _btType, _pDataBlob, _u32ItemWidth, _u32ItemCount);
-
-	m_prsRenderer->RegisterBuffer(m_bhgHandle);
 }
 
 Buffer::Buffer(const BufferHandleGeneric& _bhgPreexisting) {

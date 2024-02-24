@@ -62,7 +62,14 @@ VkVars PlatformRenderer::g_vVars = {};
 void PlatformRenderer::InitRenderer(const std::string& _strAppName, uint32_t _u32AppVersion, uint64_t _u64WindowHandle, const Vec4F& _v4ClearColor) {
 	g_vVars.g_u64WindowHandle = _u64WindowHandle;
 
-	g_vVars.g_cvClearColor.color = { _v4ClearColor.x, _v4ClearColor.y, _v4ClearColor.z, _v4ClearColor.w };
+	g_vVars.g_arrClearValues = {
+		VkClearValue {
+			.color = { _v4ClearColor.x, _v4ClearColor.y, _v4ClearColor.z, _v4ClearColor.w }
+		},
+		VkClearValue {
+			.depthStencil = { 1.0f, 0 }
+		}
+	};
 
 	CreateInstance(_strAppName, _u32AppVersion);
 
@@ -82,9 +89,11 @@ void PlatformRenderer::InitRenderer(const std::string& _strAppName, uint32_t _u3
 
 	CreateGraphicsPipeline();
 
-	CreateFramebuffers();
-
 	CreateCommandPool();
+
+	CreateDepthResources();
+
+	CreateFramebuffers();
 
 	CreateTextureImage(); //VERY EXTREMELY TEMPORARY ! ! !
 	CreateTextureImageView();
@@ -396,26 +405,44 @@ void PlatformRenderer::CreateImageViews() {
 	g_vVars.g_vImageViews.resize(g_vVars.g_vImages.size());
 
 	for (int ndx = 0; ndx < g_vVars.g_vImages.size(); ++ndx) {
-		g_vVars.g_vImageViews[ndx] = CreateImageView(g_vVars.g_vImages[ndx], g_vVars.g_fFormat);
+		g_vVars.g_vImageViews[ndx] = CreateImageView(g_vVars.g_vImages[ndx], g_vVars.g_fFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 }
 
 void PlatformRenderer::CreateRenderPass() {
-	VkAttachmentDescription adAttachmentDesc = {
-		.flags = 0,
-		.format = g_vVars.g_fFormat,
-		.samples = VK_SAMPLE_COUNT_1_BIT,
-		.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-		.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-		.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-		.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-		.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+	std::array<VkAttachmentDescription, 2> arrAttachments = {
+		VkAttachmentDescription {
+			.flags = 0,
+			.format = g_vVars.g_fFormat,
+			.samples = VK_SAMPLE_COUNT_1_BIT,
+			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+			.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+			.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+			.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+		},
+		VkAttachmentDescription {
+			.flags = 0,
+			.format = FindDepthFormat(),
+			.samples = VK_SAMPLE_COUNT_1_BIT,
+			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+			.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+			.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+			.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+		}
 	};
 
-	VkAttachmentReference arAttachmentRef = {
+	VkAttachmentReference arColorRef = {
 		.attachment = 0,
 		.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	};
+
+	VkAttachmentReference arDepthRef = {
+		.attachment = 1,
+		.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
 	};
 
 	VkSubpassDescription sdSubpassDesc = {
@@ -424,9 +451,9 @@ void PlatformRenderer::CreateRenderPass() {
 		.inputAttachmentCount = 0,
 		.pInputAttachments = nullptr,
 		.colorAttachmentCount = 1,
-		.pColorAttachments = &arAttachmentRef,
+		.pColorAttachments = &arColorRef,
 		.pResolveAttachments = 0,
-		.pDepthStencilAttachment = nullptr,
+		.pDepthStencilAttachment = &arDepthRef,
 		.preserveAttachmentCount = 0,
 		.pPreserveAttachments = nullptr
 	};
@@ -434,10 +461,10 @@ void PlatformRenderer::CreateRenderPass() {
 	VkSubpassDependency sdSubpassDependency = {
 		.srcSubpass = VK_SUBPASS_EXTERNAL,
 		.dstSubpass = 0,
-		.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-		.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+		.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
 		.srcAccessMask = 0,
-		.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+		.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
 		.dependencyFlags = 0
 	};
 
@@ -445,8 +472,8 @@ void PlatformRenderer::CreateRenderPass() {
 		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
 		.pNext = nullptr,
 		.flags = 0,
-		.attachmentCount = 1,
-		.pAttachments = &adAttachmentDesc,
+		.attachmentCount = static_cast<uint32_t>(arrAttachments.size()),
+		.pAttachments = arrAttachments.data(),
 		.subpassCount = 1,
 		.pSubpasses = &sdSubpassDesc,
 		.dependencyCount = 1,
@@ -591,7 +618,20 @@ void PlatformRenderer::CreateGraphicsPipeline() {
 		.alphaToOneEnable = VK_FALSE
 	};
 
-	//DEPTH BUFFER GOES HERE
+	VkPipelineDepthStencilStateCreateInfo pdssciDepthStencilStateInfo = {
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+		.pNext = nullptr,
+		.flags = 0,
+		.depthTestEnable = VK_TRUE,
+		.depthWriteEnable = VK_TRUE,
+		.depthCompareOp = VK_COMPARE_OP_LESS,
+		.depthBoundsTestEnable = VK_FALSE,
+		.stencilTestEnable = VK_FALSE,
+		.front = {},
+		.back = {},
+		.minDepthBounds = 0.0f,
+		.maxDepthBounds = 1.0f
+	};
 
 	VkPipelineColorBlendAttachmentState pcbasColorBlendState = {
 		.blendEnable = VK_FALSE,
@@ -641,7 +681,7 @@ void PlatformRenderer::CreateGraphicsPipeline() {
 		.pViewportState = &pvsciViewportStateInfo,
 		.pRasterizationState = &prsciRasterizerInfo,
 		.pMultisampleState = &pmsciMultisampleStateInfo,
-		.pDepthStencilState = nullptr,
+		.pDepthStencilState = &pdssciDepthStencilStateInfo,
 		.pColorBlendState = &pcbsciColorBlendStateInfo,
 		.pDynamicState = &pdsciDynamicStateInfo,
 		.layout = g_vVars.g_plPipelineLayout,
@@ -659,28 +699,6 @@ void PlatformRenderer::CreateGraphicsPipeline() {
 	vkDestroyShaderModule(g_vVars.g_dDeviceHandle, smFrag, nullptr);
 }
 
-void PlatformRenderer::CreateFramebuffers() {
-	g_vVars.g_vFramebuffers.resize(g_vVars.g_vImageViews.size());
-
-	for (int ndx = 0; ndx < g_vVars.g_vImageViews.size(); ++ndx) {
-		VkFramebufferCreateInfo fciFramebufferInfo = {
-			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-			.pNext = nullptr,
-			.flags = 0,
-			.renderPass = g_vVars.g_rpRenderPass,
-			.attachmentCount = 1,
-			.pAttachments = &g_vVars.g_vImageViews[ndx],
-			.width = g_vVars.g_eExtent.width,
-			.height = g_vVars.g_eExtent.height,
-			.layers = 1
-		};
-
-		if (vkCreateFramebuffer(g_vVars.g_dDeviceHandle, &fciFramebufferInfo, nullptr, &g_vVars.g_vFramebuffers[ndx]) != VK_SUCCESS) {
-			throw std::runtime_error("ERROR: Failed to create framebuffers!");
-		}
-	}
-}
-
 void PlatformRenderer::CreateCommandPool() {
 	VkQueueFamilyIndices qfiIndices = GetQueueFamilies(g_vVars.g_pdPhysicalDevice);
 
@@ -693,6 +711,44 @@ void PlatformRenderer::CreateCommandPool() {
 
 	if (vkCreateCommandPool(g_vVars.g_dDeviceHandle, &cpciPoolCreateInfo, nullptr, &g_vVars.g_cpCommandPool) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create command pool!");
+	}
+}
+
+void PlatformRenderer::CreateDepthResources() {
+	VkFormat fDepthFormat = FindDepthFormat();
+
+	CreateImage(g_vVars.g_eExtent.width, g_vVars.g_eExtent.height, fDepthFormat, VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, g_vVars.g_iDepth, g_vVars.g_dmDepthMem);
+
+	g_vVars.g_ivDepthView = CreateImageView(g_vVars.g_iDepth, fDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+	TransitionImageLayout(g_vVars.g_iDepth, fDepthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+}
+
+void PlatformRenderer::CreateFramebuffers() {
+	g_vVars.g_vFramebuffers.resize(g_vVars.g_vImageViews.size());
+
+	for (int ndx = 0; ndx < g_vVars.g_vImageViews.size(); ++ndx) {
+		std::array<VkImageView, 2> arrAttachments = {
+			g_vVars.g_vImageViews[ndx],
+			g_vVars.g_ivDepthView
+		};
+
+		VkFramebufferCreateInfo fciFramebufferInfo = {
+			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.renderPass = g_vVars.g_rpRenderPass,
+			.attachmentCount = static_cast<uint32_t>(arrAttachments.size()),
+			.pAttachments = arrAttachments.data(),
+			.width = g_vVars.g_eExtent.width,
+			.height = g_vVars.g_eExtent.height,
+			.layers = 1
+		};
+
+		if (vkCreateFramebuffer(g_vVars.g_dDeviceHandle, &fciFramebufferInfo, nullptr, &g_vVars.g_vFramebuffers[ndx]) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to create framebuffers!");
+		}
 	}
 }
 
@@ -732,7 +788,7 @@ void PlatformRenderer::CreateTextureImage() {
 }
 
 void PlatformRenderer::CreateTextureImageView() {
-	g_vVars.ivTextureView = CreateImageView(g_vVars.imgTexture, VK_FORMAT_R8G8B8A8_SRGB);
+	g_vVars.ivTextureView = CreateImageView(g_vVars.imgTexture, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void PlatformRenderer::CreateImage(uint32_t _iWidth, uint32_t _iHeight, VkFormat _fFormat, VkImageTiling _itTiling, VkImageUsageFlags _iufFlags, VkMemoryPropertyFlags _mpfProperties, VkImage& _iImage, VkDeviceMemory& _dmImageMem) {
@@ -797,28 +853,43 @@ void PlatformRenderer::TransitionImageLayout(VkImage _iImage, VkFormat _fFormat,
 		}
 	};
 
-	VkPipelineStageFlags psfStageFlags;
-	VkPipelineStageFlags psfDestFlags;
+	if (_ilLayoutNew == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+		imbBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+		if (HasStencilComponent(_fFormat)) {
+			imbBarrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		}
+	}
+
+	VkPipelineStageFlags psfSrcFlags = 0;
+	VkPipelineStageFlags psfDestFlags = 0;
 
 	if (_ilLayoutOld == VK_IMAGE_LAYOUT_UNDEFINED && _ilLayoutNew == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 		imbBarrier.srcAccessMask = 0;
 		imbBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
-		psfStageFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		psfSrcFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		psfDestFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	}
 	else if (_ilLayoutOld == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && _ilLayoutNew == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
 		imbBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		imbBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-		psfStageFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		psfSrcFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		psfDestFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+	else if (_ilLayoutOld == VK_IMAGE_LAYOUT_UNDEFINED && _ilLayoutNew == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+		imbBarrier.srcAccessMask = 0;
+		imbBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+		psfSrcFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		psfDestFlags = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 	}
 	else {
 		throw std::runtime_error("ERROR: Unsupported layout transition attempted!");
 	}
 
-	vkCmdPipelineBarrier(cbBuffer, psfStageFlags, psfDestFlags, 0, 0, nullptr, 0, nullptr, 1, &imbBarrier);
+	vkCmdPipelineBarrier(cbBuffer, psfSrcFlags, psfDestFlags, 0, 0, nullptr, 0, nullptr, 1, &imbBarrier);
 
 	EndSingleTimeCommands(cbBuffer);
 }
@@ -1045,8 +1116,8 @@ void PlatformRenderer::RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _
 		.renderPass = g_vVars.g_rpRenderPass,
 		.framebuffer = g_vVars.g_vFramebuffers[_u32ImageIndex],
 		.renderArea = { { 0, 0 }, g_vVars.g_eExtent},
-		.clearValueCount = 1,
-		.pClearValues = &g_vVars.g_cvClearColor
+		.clearValueCount = static_cast<uint32_t>(g_vVars.g_arrClearValues.size()),
+		.pClearValues = g_vVars.g_arrClearValues.data()
 	};
 
 	vkCmdBeginRenderPass(_cbBuffer, &rpbiBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -1142,7 +1213,7 @@ void PlatformRenderer::EndSingleTimeCommands(VkCommandBuffer _cbBuffer) {
 	vkFreeCommandBuffers(PlatformRenderer::g_vVars.g_dDeviceHandle, PlatformRenderer::g_vVars.g_cpCommandPool, 1, &_cbBuffer);
 }
 
-VkImageView PlatformRenderer::CreateImageView(VkImage _iImage, VkFormat _fFormat) {
+VkImageView PlatformRenderer::CreateImageView(VkImage _iImage, VkFormat _fFormat, VkImageAspectFlags _iafFlags) {
 	VkImageViewCreateInfo ivciViewInfo = {
 		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 		.pNext = nullptr,
@@ -1157,7 +1228,7 @@ VkImageView PlatformRenderer::CreateImageView(VkImage _iImage, VkFormat _fFormat
 			.a = VK_COMPONENT_SWIZZLE_IDENTITY
 		},
 		.subresourceRange = {
-			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+			.aspectMask = _iafFlags,
 			.baseMipLevel = 0,
 			.levelCount = 1,
 			.baseArrayLayer = 0,
@@ -1174,7 +1245,36 @@ VkImageView PlatformRenderer::CreateImageView(VkImage _iImage, VkFormat _fFormat
 	return ivView;
 }
 
+VkFormat PlatformRenderer::FindSupportedFormat(const std::vector<VkFormat>& _vCandidates, VkImageTiling _itTiling, VkFormatFeatureFlags _fffFeatures) {
+	for (VkFormat fFormat : _vCandidates) {
+		VkFormatProperties fpProperties;
+		vkGetPhysicalDeviceFormatProperties(g_vVars.g_pdPhysicalDevice, fFormat, &fpProperties);
+
+		if ((_itTiling == VK_IMAGE_TILING_LINEAR && (fpProperties.linearTilingFeatures & _fffFeatures) == _fffFeatures) ||
+			(_itTiling == VK_IMAGE_TILING_OPTIMAL && (fpProperties.optimalTilingFeatures & _fffFeatures) == _fffFeatures)) {
+			return fFormat;
+		}
+	}
+
+	throw std::runtime_error("ERROR: Failed to find a supported format!");
+}
+
+VkFormat PlatformRenderer::FindDepthFormat() {
+	return FindSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+		VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+}
+
+bool PlatformRenderer::HasStencilComponent(VkFormat _fFormat) {
+	return _fFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || _fFormat == VK_FORMAT_D24_UNORM_S8_UINT;
+}
+
 void PlatformRenderer::CleanupSwapchain() {
+	vkDestroyImageView(g_vVars.g_dDeviceHandle, g_vVars.g_ivDepthView, nullptr);
+	
+	vkDestroyImage(g_vVars.g_dDeviceHandle, g_vVars.g_iDepth, nullptr);
+
+	vkFreeMemory(g_vVars.g_dDeviceHandle, g_vVars.g_dmDepthMem, nullptr);
+
 	for (auto aFramebuffer : g_vVars.g_vFramebuffers) {
 		vkDestroyFramebuffer(g_vVars.g_dDeviceHandle, aFramebuffer, nullptr);
 	}
@@ -1196,6 +1296,8 @@ void PlatformRenderer::RecreateSwapchain() {
 	CreateSwapChain();
 
 	CreateImageViews();
+
+	CreateDepthResources();
 
 	CreateFramebuffers();
 

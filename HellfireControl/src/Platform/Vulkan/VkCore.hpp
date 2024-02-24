@@ -5,7 +5,7 @@
 #include <HellfireControl/Math/Vector.hpp>
 
 struct VertexSimple {
-	Vec2F m_v2Position;
+	Vec3F m_v2Position;
 	Vec3F m_v3Color;
 	Vec2F m_v2TexCoord;
 
@@ -24,7 +24,7 @@ struct VertexSimple {
 			VkVertexInputAttributeDescription {
 				.location = 0,
 				.binding = 0,
-				.format = VK_FORMAT_R32G32_SFLOAT,
+				.format = VK_FORMAT_R32G32B32_SFLOAT,
 				.offset = offsetof(VertexSimple, m_v2Position)
 			},
 			VkVertexInputAttributeDescription {
@@ -80,10 +80,14 @@ struct VkVars {
 	VkDescriptorPool g_dpDescriptorPool = VK_NULL_HANDLE;
 	VkSampler g_sSampler = VK_NULL_HANDLE;
 
-	VkFormat g_fFormat = {};
-	VkExtent2D g_eExtent = {};
-	VkClearValue g_cvClearColor = {};
+	VkImage g_iDepth = VK_NULL_HANDLE;
+	VkDeviceMemory g_dmDepthMem = VK_NULL_HANDLE;
+	VkImageView g_ivDepthView = VK_NULL_HANDLE;
 
+	VkFormat g_fFormat = {};
+	VkExtent2D g_eExtent = {};	
+
+	std::array<VkClearValue, 2> g_arrClearValues = {};
 	std::vector<VkCommandBuffer> g_vCommandBuffers;
 	std::vector<VkDescriptorSet> g_vDescriptorSets;
 	std::vector<VkSemaphore> g_vImageAvailableSemaphores;
@@ -115,8 +119,9 @@ private:
 	static void CreateRenderPass();
 	static void CreateDescriptorSetLayout();
 	static void CreateGraphicsPipeline();
-	static void CreateFramebuffers();
 	static void CreateCommandPool();
+	static void CreateDepthResources();
+	static void CreateFramebuffers();
 
 	static void CreateTextureImage(); //VERY EXTREMELY TEMPORARY ! ! !
 	static void CreateTextureImageView();
@@ -133,7 +138,10 @@ private:
 	static void RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex);
 	static VkCommandBuffer BeginSingleTimeCommands();
 	static void EndSingleTimeCommands(VkCommandBuffer _cbBuffer);
-	static VkImageView CreateImageView(VkImage _iImage, VkFormat _fFormat);
+	static VkImageView CreateImageView(VkImage _iImage, VkFormat _fFormat, VkImageAspectFlags _iafFlags);
+	static VkFormat FindSupportedFormat(const std::vector<VkFormat>& _vCandidates, VkImageTiling _itTiling, VkFormatFeatureFlags _fffFeatures);
+	static VkFormat FindDepthFormat();
+	static bool HasStencilComponent(VkFormat _fFormat);
 	static void CleanupSwapchain();
 	static void RecreateSwapchain();
 	static void ValidateSupportedLayers();

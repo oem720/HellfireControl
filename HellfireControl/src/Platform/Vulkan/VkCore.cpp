@@ -67,7 +67,7 @@ void PlatformRenderer::InitRenderer(const std::string& _strAppName, uint32_t _u3
 			.color = { _v4ClearColor.x, _v4ClearColor.y, _v4ClearColor.z, _v4ClearColor.w }
 		},
 		VkClearValue {
-			.depthStencil = { 1.0f, 0 }
+			.depthStencil = { 0.0f, 0 }
 		}
 	};
 
@@ -624,7 +624,7 @@ void PlatformRenderer::CreateGraphicsPipeline() {
 		.flags = 0,
 		.depthTestEnable = VK_TRUE,
 		.depthWriteEnable = VK_TRUE,
-		.depthCompareOp = VK_COMPARE_OP_LESS,
+		.depthCompareOp = VK_COMPARE_OP_GREATER,
 		.depthBoundsTestEnable = VK_FALSE,
 		.stencilTestEnable = VK_FALSE,
 		.front = {},

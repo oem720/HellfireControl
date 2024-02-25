@@ -2,6 +2,7 @@
 
 #include <HellfireControl/Core/Common.hpp>
 
+#include <HellfireControl/Math/Internal/Vector/Vector2_I.hpp>
 #include <HellfireControl/Math/Internal/Vector/Vector2_F.hpp>
 #include <HellfireControl/Math/Internal/Vector/Vector3_F.hpp>
 #include <HellfireControl/Math/Internal/Vector/Vector4_F.hpp>

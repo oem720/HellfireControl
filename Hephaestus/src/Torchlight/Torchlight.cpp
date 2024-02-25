@@ -8,7 +8,6 @@ int main() {
 	UICreationToolApplication appTorchlight;
 
 	try {
-		UISubsystem* myUI = UISubsystem::GetInstance();
 		appTorchlight.Run();
 	}
 	catch (const std::exception& _exError) {

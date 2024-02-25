@@ -16,7 +16,7 @@ private:
 
 public:
 
-	static UISubsystem* GetInstance();
+	[[nodiscard]] HC_INLINE static UISubsystem* GetInstance();
 
 
 };

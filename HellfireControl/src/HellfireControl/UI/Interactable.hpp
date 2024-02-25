@@ -11,16 +11,16 @@ enum InteractableType : uint8_t {
 	Radio
 };
 
-struct UIPivot {
-	Vec2F center = Vec2F(0.5f, 0.5f);
-	Vec2F topLeft = Vec2F(0, 0);
-	Vec2F topMiddle = Vec2F(0.5f, 0.0f);
-	Vec2F topRight = Vec2F(0, 1);
-	Vec2F bottomLeft = Vec2F(1, 0);
-	Vec2F bottomMiddle = Vec2F(0.5f, 1.0f);
-	Vec2F bottomRight = Vec2F(1, 1);
-	Vec2F middleLeft = Vec2F(0.0f, 0.5f);
-	Vec2F middleRight = Vec2F(1.0f, 0.5f);
+enum UIPivot : uint64_t {
+	topLeft = 0, // (0, 0)
+	topMiddle = 4539628424389459968, // (0.5, 0)
+	topRight = 1065353216, // (0, 1)
+	middleLeft = 1056964608, // (0, 0.5)
+	center = 4539628425446424576, // (0.5, 0.5)
+	middleRight = 4575657222465388544, // (1.0, 0.5);
+	bottomLeft = 4575657221408423936, // (1, 0)
+	bottomMiddle = 4539628425454813184, // (0.5, 1)
+	bottomRight = 4575657222473777152, // (1, 1)
 };
 
 class Interactable {
@@ -37,18 +37,23 @@ private:
 	Vec2F m_vPosition = Vec2F(0, 0);
 	float m_fWidth = 0;
 	float m_fHeight = 0;
+	Vec2F m_pPivot = Vec2F(0.5f, 0.5f);
+	Interactable* m_itParent = nullptr;
 
 public:
 
-	bool GetEnabled() { return m_bEnabled; }
-	void SetEnabled(bool _inputState) { m_bEnabled = _inputState; }
+	[[nodiscard]] HC_INLINE bool GetEnabled() { return m_bEnabled; }
+	HC_INLINE void SetEnabled(bool _inputState) { m_bEnabled = _inputState; }
 
-	bool GetInteractableType() { return m_itType; }
-	void SetInteractableType(InteractableType _inputType) { m_itType = _inputType; }
+	[[nodiscard]] HC_INLINE bool GetInteractableType() { return m_itType; }
+	HC_INLINE void SetInteractableType(InteractableType _inputType) { m_itType = _inputType; }
 
-	float GetWidth() { return m_fWidth; }
-	float SetWidth(float _fWidth) { m_fWidth = _fWidth; }
+	[[nodiscard]] HC_INLINE float GetWidth() { return m_fWidth; }
+	HC_INLINE void SetWidth(float _fWidth) { m_fWidth = _fWidth; }
 
-	float GetHeight() { return m_fHeight; }
-	float SetHeight(float _fHeight) { m_fHeight = _fHeight; }
+	[[nodiscard]] HC_INLINE float GetHeight() { return m_fHeight; }
+	HC_INLINE void SetHeight(float _fHeight) { m_fHeight = _fHeight; }
+
+	[[nodiscard]] HC_INLINE Vec2F GetPivot() { return m_pPivot; }
+	HC_INLINE void SetPivot(UIPivot _pivot);
 };

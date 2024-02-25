@@ -1,20 +1,22 @@
 #pragma once
 
+#include <vector>
 #include <HellfireControl/UI/Interactable.hpp>
 
-static class UI {
+static class UISubsystem {
 private:
 
-	static UI* m_UIInstance;
+	static UISubsystem* m_UIInstance;
 
-	UI() {};
+	static std::vector<Interactable> m_InterableElements;
+
+	UISubsystem() {};
+
+	void Init();
 
 public:
 
-	static UI* GetInstance() {
-		if (!m_UIInstance) {
-			m_UIInstance = new UI();
-		}
-		return m_UIInstance;
-	};
+	static UISubsystem* GetInstance();
+
+
 };

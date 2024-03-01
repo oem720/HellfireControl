@@ -7,7 +7,7 @@
 BufferLocals PlatformBuffer::g_blData = {};
 
 void PlatformBuffer::InitBuffer(BufferHandleGeneric& _bhgOutHandle, uint8_t _u8Type, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount) {
-	VkDeviceSize dsSize = _u32ItemWidth * _u32ItemCount;
+	VkDeviceSize dsSize = static_cast<uint64_t>(_u32ItemWidth) * static_cast<uint64_t>(_u32ItemCount);
 
 	VkBuffer bStagingBuffer;
 	VkDeviceMemory dmStagingMemory;
@@ -112,11 +112,14 @@ uint32_t PlatformBuffer::TranslateBufferUsage(uint8_t _u8Type) {
 	case 1: { //Index
 		return VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	} break;
-	case 2: { //Uniform
+	case 2: { //Storage
+		return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+	} break;
+	case 3: {
 		return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 	} break;
 	default: {
-		throw std::runtime_error("ERROR: Attempted to construct a buffer of NONE type!");
+		throw std::runtime_error("ERROR: Attempted to construct a buffer of INVALID type!");
 	} break;
 	}
 }

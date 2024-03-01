@@ -3,10 +3,11 @@
 #include <HellfireControl/Core/Common.hpp>
 
 enum BufferType : uint8_t {
-	VERTEX,
-	INDEX,
-	UNIFORM,
-	INVALID
+	VERTEX_BUFFER,
+	INDEX_BUFFER,
+	STORAGE_BUFFER,
+	UNIFORM_BUFFER,
+	INVALID_BUFFER
 };
 
 struct BufferHandleGeneric {
@@ -24,7 +25,7 @@ class Buffer {
 private:
 	RenderingSubsystem* m_prsRenderer = nullptr;
 
-	BufferType m_btType = BufferType::INVALID;
+	BufferType m_btType = BufferType::INVALID_BUFFER;
 
 	BufferHandleGeneric m_bhgHandle = {};
 public:

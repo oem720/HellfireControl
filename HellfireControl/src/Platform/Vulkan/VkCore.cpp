@@ -67,7 +67,7 @@ void PlatformRenderer::InitRenderer(const std::string& _strAppName, uint32_t _u3
 			.color = { _v4ClearColor.x, _v4ClearColor.y, _v4ClearColor.z, _v4ClearColor.w }
 		},
 		VkClearValue {
-			.depthStencil = { 0.0f, 0 }
+			.depthStencil = { 1.0f, 0 }
 		}
 	};
 
@@ -624,13 +624,13 @@ void PlatformRenderer::CreateGraphicsPipeline() {
 		.flags = 0,
 		.depthTestEnable = VK_TRUE,
 		.depthWriteEnable = VK_TRUE,
-		.depthCompareOp = VK_COMPARE_OP_GREATER,
+		.depthCompareOp = VK_COMPARE_OP_LESS,
 		.depthBoundsTestEnable = VK_FALSE,
 		.stencilTestEnable = VK_FALSE,
 		.front = {},
 		.back = {},
-		.minDepthBounds = 0.0f,
-		.maxDepthBounds = 1.0f
+		.minDepthBounds = 1.0f,
+		.maxDepthBounds = 0.0f
 	};
 
 	VkPipelineColorBlendAttachmentState pcbasColorBlendState = {
@@ -1129,8 +1129,8 @@ void PlatformRenderer::RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _
 		.y = 0.0f,
 		.width = static_cast<float>(g_vVars.g_eExtent.width),
 		.height = static_cast<float>(g_vVars.g_eExtent.height),
-		.minDepth = 0.0f,
-		.maxDepth = 1.0f
+		.minDepth = 1.0f,
+		.maxDepth = 0.0f
 	};
 
 	vkCmdSetViewport(_cbBuffer, 0, 1, &vViewport);
@@ -1158,7 +1158,7 @@ void PlatformRenderer::RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _
 		}
 	}
 	vkCmdBindDescriptorSets(_cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_vVars.g_plPipelineLayout, 0, 1, &g_vVars.g_vDescriptorSets[_u32ImageIndex], 0, nullptr);
-	vkCmdDrawIndexed(_cbBuffer, u32IndexCount, 1, 0, 0, 0); //TEMPORARY ! ! ! WILL BREAK IF NO INDEX BUFFER PRESENT ! ! !
+	vkCmdDrawIndexed(_cbBuffer, u32IndexCount, 1, 0, 0, 0); //TEMPORARY ! ! ! WILL BREAK IF NO INDEX_BUFFER BUFFER PRESENT ! ! !
 
 	vkCmdEndRenderPass(_cbBuffer);
 

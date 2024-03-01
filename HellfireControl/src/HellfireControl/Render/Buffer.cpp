@@ -1,7 +1,9 @@
 
 #include <HellfireControl/Render/Buffer.hpp>
 #include <HellfireControl/Render/Renderer.hpp>
-#include <Platform/Vulkan/VkBuffer.hpp>
+
+#define HC_INCLUDE_BUFFER
+#include <Platform/GLInclude.hpp>
 
 Buffer::Buffer(BufferType _btType, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount) {
 	m_prsRenderer = RenderingSubsystem::GetInstance();

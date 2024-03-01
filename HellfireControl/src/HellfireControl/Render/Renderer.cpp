@@ -2,6 +2,8 @@
 #include <HellfireControl/Render/Renderer.hpp>
 #include <HellfireControl/Core/Window.hpp>
 
+#include <Platform/GLInclude.hpp>
+
 RenderingSubsystem* RenderingSubsystem::m_prsInstancePtr = nullptr;
 
 RenderingSubsystem* RenderingSubsystem::GetInstance() {

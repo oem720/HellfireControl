@@ -53,10 +53,10 @@ int Random::GenerateInt(int _iMin = 0, int _iMax = INT_MAX) {
 	return static_cast<int>(GetNextVal() % u32Range) + _iMin;
 }
 
-uint64_t Random::GenerateUnsignedInt(uint64_t _uMin = 0, uint64_t _uMax = UINT_MAX) {
+uint32_t Random::GenerateUnsignedInt(uint32_t _uMin = 0, uint32_t _uMax = UINT_MAX) {
 	if (_uMax < _uMin) return GenerateUnsignedInt(_uMax, _uMin);
 
-	uint64_t u32Range = _uMax - _uMin;
+	uint32_t u32Range = _uMax - _uMin;
 	
 	return (GetNextVal() % u32Range) + _uMin;
 }

@@ -3,8 +3,6 @@
 #include <HellfireControl/Core/Common.hpp>
 #include <HellfireControl/Math/Matrix.hpp>
 
-#include <Platform/GLInclude.hpp> //TEMPORARY ! ! ! HACK FOR VERTICES, MOVE VERTEX TYPES TO THEIR OWN FILE LATER AND ELIMINATE THIS GARBAGE ! ! !
-
 #include <HellfireControl/Render/Buffer.hpp>
 
 struct UniformBufferData {

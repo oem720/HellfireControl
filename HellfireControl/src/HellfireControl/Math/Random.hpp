@@ -77,7 +77,7 @@ public:
 	/// <returns>
 	/// uint32_t: Randomly generated 32-bit integer
 	/// </returns>
-	[[nodiscard]] uint64_t GenerateUnsignedInt(uint64_t _uMin, uint64_t _uMax);
+	[[nodiscard]] uint32_t GenerateUnsignedInt(uint32_t _uMin, uint32_t _uMax);
 
 	/// <summary>
 	/// Generates a random long between _lMin and _lMax. Defaults to the full range of long.

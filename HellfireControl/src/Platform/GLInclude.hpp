@@ -4,6 +4,10 @@
 
 #include <Platform/Vulkan/VkCore.hpp>
 
+#ifdef HC_INCLUDE_BUFFER
+#include <Platform/Vulkan/VkBuffer.hpp>
+#endif
+
 #elif HC_USE_OPENGL && !HC_USE_VULKAN
 
 

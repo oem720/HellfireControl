@@ -29,8 +29,8 @@ void PlatformBuffer::InitBuffer(BufferHandleGeneric& _bhgOutHandle, uint8_t _u8T
 	vkFreeMemory(PlatformRenderer::g_vVars.g_dDeviceHandle, dmStagingMemory, nullptr);
 
 	_bhgOutHandle = {
-		.m_u64UpperParam = reinterpret_cast<uint64_t>(bNewBufferHandle),
-		.m_u64LowerParam = reinterpret_cast<uint64_t>(dmNewBufferMemory)
+		.upper = reinterpret_cast<uint64_t>(bNewBufferHandle),
+		.lower = reinterpret_cast<uint64_t>(dmNewBufferMemory)
 	};
 
 	g_blData.g_mBufferTypeTable[bNewBufferHandle] = {
@@ -44,17 +44,21 @@ void PlatformBuffer::Append(const BufferHandleGeneric& _bhgHandle, const void* _
 
 }
 
-void PlatformBuffer::ReplaceData(const BufferHandleGeneric& _bhgHandle, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount) {
+void PlatformBuffer::Update(const BufferHandleGeneric& _bhgHandle, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount) {
 
 }
 
 void PlatformBuffer::CleanupBuffer(const BufferHandleGeneric& _bhgHandle) {
 	vkDeviceWaitIdle(PlatformRenderer::g_vVars.g_dDeviceHandle);
 
-	vkDestroyBuffer(PlatformRenderer::g_vVars.g_dDeviceHandle, reinterpret_cast<VkBuffer>(_bhgHandle.m_u64UpperParam), nullptr);
-	vkFreeMemory(PlatformRenderer::g_vVars.g_dDeviceHandle, reinterpret_cast<VkDeviceMemory>(_bhgHandle.m_u64LowerParam), nullptr);
+	vkDestroyBuffer(PlatformRenderer::g_vVars.g_dDeviceHandle, reinterpret_cast<VkBuffer>(_bhgHandle.upper), nullptr);
+	vkFreeMemory(PlatformRenderer::g_vVars.g_dDeviceHandle, reinterpret_cast<VkDeviceMemory>(_bhgHandle.lower), nullptr);
 
-	g_blData.g_mBufferTypeTable.erase(reinterpret_cast<VkBuffer>(_bhgHandle.m_u64UpperParam));
+	g_blData.g_mBufferTypeTable.erase(reinterpret_cast<VkBuffer>(_bhgHandle.upper));
+}
+
+uint8_t PlatformBuffer::GetBufferType(const BufferHandleGeneric& _bhgHandle) {
+	return g_blData.g_mBufferTypeTable[reinterpret_cast<VkBuffer>(_bhgHandle.upper)].m_u8Type;
 }
 
 void PlatformBuffer::CreateBuffer(VkDeviceSize _dsSize, VkBufferUsageFlags _bufFlags, VkMemoryPropertyFlags _mpfFlags, VkBuffer& _bBuffer, VkDeviceMemory& _dmMemory) {

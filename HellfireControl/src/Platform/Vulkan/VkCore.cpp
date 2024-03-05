@@ -17,19 +17,19 @@ namespace LayersAndExtensions {
 			"VK_LAYER_KHRONOS_validation"
 	};
 
-#ifndef NDEBUG
-	const bool g_bEnableValidationLayers = true;
-#else
-	const bool g_bEnableValidationLayers = false;
-#endif
+#	ifndef NDEBUG
+		const bool g_bEnableValidationLayers = true;
+#	else
+		const bool g_bEnableValidationLayers = false;
+#	endif
 
 	const std::vector<const char*> g_vInstanceExtensions = {
 		VK_KHR_SURFACE_EXTENSION_NAME,
-#ifdef WIN32
-		VK_KHR_WIN32_SURFACE_EXTENSION_NAME
-#else
-
-#endif
+#	ifdef WIN32
+			VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+#	else
+			
+#	endif
 	};
 
 	const std::vector<const char*> g_vDeviceExtensions = {
@@ -109,6 +109,68 @@ void PlatformRenderer::InitRenderer(const std::string& _strAppName, uint32_t _u3
 	CreateCommandBuffer();
 
 	CreateSyncObjects();
+}
+
+void PlatformRenderer::InitRenderContext(RenderContext& _rcContext) {
+	std::vector<VkShaderModule> vShaders;
+	std::vector<VkPipelineShaderStageCreateInfo> vShaderInfos;
+
+	if ((_rcContext.m_rcsfEnabledShaderStages & VK_SHADER_STAGE_COMPUTE_BIT) && (_rcContext.m_rcsfEnabledShaderStages & VK_SHADER_STAGE_ALL_GRAPHICS)) {
+		throw std::runtime_error("ERROR: Attempted to initialize a compute shader on a graphics pipeline!");
+	}
+
+	for (uint32_t u32Flags = VK_SHADER_STAGE_VERTEX_BIT, ndx = 0; u32Flags < VK_SHADER_STAGE_ALL && ndx < _rcContext.m_vShaderFileNames.size(); u32Flags <<= 1) {
+		if (_rcContext.m_rcsfEnabledShaderStages & u32Flags) {
+			auto aShaderCode = ReadFile(_rcContext.m_vShaderFileNames[ndx++]); //Temporary load code
+
+			vShaders.push_back(CreateShaderModule(aShaderCode)); //Add our shader to the module list
+
+			vShaderInfos.push_back(VkPipelineShaderStageCreateInfo{ //Add our shader stage info to the vector
+				.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, //Much of this is temporary, as we will be adding much of the metadata to
+				.pNext = nullptr,											  //the shader asset file.
+				.flags = 0,
+				.stage = static_cast<VkShaderStageFlagBits>(u32Flags),
+				.module = vShaders.back(),
+				.pName = "main",
+				.pSpecializationInfo = nullptr
+			});
+		}
+	}
+
+	if (!(_rcContext.m_rcsfEnabledShaderStages & VK_SHADER_STAGE_COMPUTE_BIT)) {
+		VkPipelineLayoutCreateInfo plciLayoutInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.setLayoutCount = 1,
+			.pSetLayouts = &g_vVars.g_dslDescriptorSetLayout,
+			.pushConstantRangeCount = 0, //PUSH CONSTANTS HERE
+			.pPushConstantRanges = nullptr
+		};
+
+		VkGraphicsPipelineCreateInfo gpciPipelineInfo = {
+			.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.stageCount = vShaderInfos.size(),
+			.pStages = vShaderInfos.data(),
+		};
+	}
+	else {
+		VkComputePipelineCreateInfo cpciPipelineInfo = {
+			.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.stage = vShaderInfos[0],
+			//.layout = ,
+			.basePipelineHandle = VK_NULL_HANDLE,
+			.basePipelineIndex = 0
+		};
+	}
+
+	for (auto& aShader : vShaders) {
+		vkDestroyShaderModule(g_vVars.g_dDeviceHandle, aShader, nullptr); //Cleanup shader data
+	}
 }
 
 void PlatformRenderer::MarkFramebufferUpdated() {
@@ -1094,6 +1156,10 @@ void PlatformRenderer::CreateSyncObjects() {
 			throw std::runtime_error("ERROR: Failed to create sync objects!");
 		}
 	}
+}
+
+void PlatformRenderer::CreatePipelineFromContext(RenderContext& _rcContext) {
+
 }
 
 void PlatformRenderer::RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex) {

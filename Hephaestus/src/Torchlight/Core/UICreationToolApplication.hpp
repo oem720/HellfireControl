@@ -12,6 +12,8 @@ private:
 
 	void End();
 
+	void UpdateUniformBuffer();
+
 public:
 
 	UICreationToolApplication() : Application("Torchlight", AppType::WINDOWED) {}

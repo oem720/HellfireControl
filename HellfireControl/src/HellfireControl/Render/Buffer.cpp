@@ -21,8 +21,8 @@ void Buffer::Append(const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u3
 	PlatformBuffer::Append(m_bhgHandle, _pDataBlob, _u32ItemWidth, _u32ItemCount);
 }
 
-void Buffer::ReplaceData(const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount) {
-	PlatformBuffer::ReplaceData(m_bhgHandle, _pDataBlob, _u32ItemWidth, _u32ItemCount);
+void Buffer::Update(const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount) {
+	PlatformBuffer::Update(m_bhgHandle, _pDataBlob, _u32ItemWidth, _u32ItemCount);
 }
 
 void Buffer::Cleanup(bool _bDeregister) {
@@ -31,4 +31,8 @@ void Buffer::Cleanup(bool _bDeregister) {
 	if (_bDeregister) {
 		m_prsRenderer->DeregisterBuffer(m_bhgHandle);
 	}
+}
+
+BufferType Buffer::GetBufferType(const BufferHandleGeneric& _bhgHandle) {
+	return static_cast<BufferType>(PlatformBuffer::GetBufferType(_bhgHandle));
 }

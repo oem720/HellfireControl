@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <utility>
 #include <cassert>
+#include <iostream>
+#include <stdexcept>
 
 //Required Includes (will not be replaced)
 #include <thread>

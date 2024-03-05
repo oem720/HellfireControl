@@ -10,12 +10,12 @@ enum BufferType : uint8_t {
 	INVALID_BUFFER
 };
 
-struct BufferHandleGeneric {
-	uint64_t m_u64UpperParam;
-	uint64_t m_u64LowerParam;
+struct HC_ALIGNAS(128) BufferHandleGeneric {
+	uint64_t upper;
+	uint64_t lower;
 
 	HC_INLINE bool operator==(const BufferHandleGeneric& _bhgOther) {
-		return this->m_u64UpperParam == _bhgOther.m_u64UpperParam && this->m_u64LowerParam == _bhgOther.m_u64LowerParam;
+		return this->upper == _bhgOther.upper && this->lower == _bhgOther.lower;
 	}
 };
 
@@ -28,16 +28,18 @@ private:
 	BufferType m_btType = BufferType::INVALID_BUFFER;
 
 	BufferHandleGeneric m_bhgHandle = {};
+
+	BufferType GetBufferType(const BufferHandleGeneric& _bhgHandle);
 public:
 	Buffer() = delete;
 
-	Buffer(BufferType _btType, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
+	Buffer(BufferType _btType, const void* _pDataBlob, uint32_t _u32ItemWidth = 1U, uint32_t _u32ItemCount = 1U);
 
 	Buffer(const BufferHandleGeneric& _bhgPreexisting);
 
-	void Append(const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
+	void Append(const void* _pDataBlob, uint32_t _u32ItemWidth = 1U, uint32_t _u32ItemCount = 1U);
 
-	void ReplaceData(const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
+	void Update(const void* _pDataBlob, uint32_t _u32ItemWidth = 1U, uint32_t _u32ItemCount = 1U);
 
 	void Cleanup(bool _bDeregister = true);
 

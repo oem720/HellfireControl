@@ -36,7 +36,9 @@ public:
 
 	static void Append(const BufferHandleGeneric& _bhgHandle, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
 
-	static void ReplaceData(const BufferHandleGeneric& _bhgHandle, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
+	static void Update(const BufferHandleGeneric& _bhgHandle, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
 
 	static void CleanupBuffer(const BufferHandleGeneric& _bhgHandle);
+
+	static uint8_t GetBufferType(const BufferHandleGeneric& _bhgHandle);
 };

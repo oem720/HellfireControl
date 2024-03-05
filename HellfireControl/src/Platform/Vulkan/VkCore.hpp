@@ -60,6 +60,21 @@ struct VkSwapChainSupportDetails {
 	std::vector<VkPresentModeKHR> m_vPresentModes;
 };
 
+struct VkSyncedBufferVars {
+	VkBufferUsageFlags m_bufFlags = 0;
+
+	std::vector<VkBuffer> m_vBuffer;
+	std::vector<VkDeviceMemory> m_vMemory;
+	std::vector<void*> m_vMappedPtrs;
+};
+
+struct VkRenderContextData {
+	VkPipelineLayout m_plPipelineLayout = VK_NULL_HANDLE;
+	VkPipeline m_pPipeline = VK_NULL_HANDLE;
+
+	std::vector<VkSyncedBufferVars> m_vContextBuffers;
+};
+
 struct VkVars {
 	uint64_t g_u64WindowHandle = 0;
 	uint32_t g_u32CurrentFrame = 0;
@@ -74,11 +89,12 @@ struct VkVars {
 	VkSwapchainKHR g_scSwapChain = VK_NULL_HANDLE;
 	VkRenderPass g_rpRenderPass = VK_NULL_HANDLE;
 	VkDescriptorSetLayout g_dslDescriptorSetLayout = VK_NULL_HANDLE;
-	VkPipelineLayout g_plPipelineLayout = VK_NULL_HANDLE; //TEMPORARY ! ! !
-	VkPipeline g_pPipeline = VK_NULL_HANDLE;
 	VkCommandPool g_cpCommandPool = VK_NULL_HANDLE;
 	VkDescriptorPool g_dpDescriptorPool = VK_NULL_HANDLE;
 	VkSampler g_sSampler = VK_NULL_HANDLE;
+
+	VkPipelineLayout g_plPipelineLayout = VK_NULL_HANDLE; //TEMPORARY ! ! !
+	VkPipeline g_pPipeline = VK_NULL_HANDLE;
 
 	VkImage g_iDepth = VK_NULL_HANDLE;
 	VkDeviceMemory g_dmDepthMem = VK_NULL_HANDLE;
@@ -105,6 +121,8 @@ struct VkVars {
 	VkDeviceMemory dmTextureMemory;
 	VkImageView ivTextureView;
 };
+
+struct RenderContext; //Forward Declaration
 
 class PlatformRenderer {
 	friend class PlatformBuffer;
@@ -135,6 +153,9 @@ private:
 	static void CreateDescriptorSets();
 	static void CreateCommandBuffer();
 	static void CreateSyncObjects();
+
+	static void CreatePipelineFromContext(RenderContext& _rcContext);
+
 	static void RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex);
 	static VkCommandBuffer BeginSingleTimeCommands();
 	static void EndSingleTimeCommands(VkCommandBuffer _cbBuffer);
@@ -167,6 +188,8 @@ public:
 	/// <param name="_v4ClearColor: A Vec4F representing the color that the framebuffer defaults to when no pixels are drawn there. Default: Black"></param>
 	static void InitRenderer(const std::string& _strAppName, uint32_t _u32AppVersion, uint64_t _u64WindowHandle, const Vec4F& _v4ClearColor = Vec4F());
 
+	static void InitRenderContext(RenderContext& _rcContext);
+
 	/// <summary>
 	/// Marks the framebuffer as needing to be updated, and Swapchain as needing recreation.
 	/// </summary>
@@ -181,4 +204,15 @@ public:
 	/// Destroys all allocated objects on the GPU and shuts down the rendering system.
 	/// </summary>
 	static void CleanupRenderer();
+
+	/// <summary>
+	/// Returns the actual active area that is being rendered to. In a fullscreen/borderless application, this number is equal to the window resolution.
+	/// In a windowed application of any size, this number is not guaranteed to be equal to the resolution.
+	/// </summary>
+	/// <returns>
+	/// Vec2F: Contains the width and height of the renderable area.
+	/// </returns>
+	[[nodiscard]] HC_INLINE static const Vec2F GetRenderableExtent() {
+		return Vec2F(static_cast<float>(g_vVars.g_eExtent.width), static_cast<float>(g_vVars.g_eExtent.height));
+	}
 };

@@ -33,8 +33,8 @@ struct WindowCallbackMessage {
 	/// <summary>
 	/// Can contain any data for the message that was sent. Determined by the event callback type.
 	/// </summary>
-	long long m_llUpperParam = 0;
-	long long m_llLowerParam = 0;
+	uint64_t upper = 0;
+	uint64_t lower = 0;
 };
 
 typedef std::function<void(WindowHandleGeneric, const WindowCallbackMessage&)> WindowCallback;
@@ -149,7 +149,7 @@ public:
 	/// <summary>
 	/// Cleans all OS Memory and destroys current window.
 	/// </summary>
-	void CleanupWindow();
+	void Cleanup();
 
 	/// <summary>
 	/// Set the name of the window.

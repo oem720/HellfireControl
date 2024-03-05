@@ -8,6 +8,7 @@ struct BufferData {
 	uint8_t m_u8Type = 3;
 	uint32_t m_u32ItemWidth = 0;
 	uint32_t m_u32ItemCount = 0;
+	uint32_t m_u32RenderContextID = 0;
 };
 
 struct BufferLocals {
@@ -32,13 +33,15 @@ private:
 
 	static BufferLocals g_blData;
 public:
-	static void InitBuffer(BufferHandleGeneric& _bhgOutHandle, uint8_t _u8Type, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
+	static void InitBuffer(BufferHandleGeneric& _bhgOutHandle, uint8_t _u8Type, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount, uint32_t _u32RenderContext);
 
-	static void Append(const BufferHandleGeneric& _bhgHandle, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
+	static void Append(const BufferHandleGeneric& _bhgHandle, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount, uint32_t _u32RenderContext);
 
-	static void Update(const BufferHandleGeneric& _bhgHandle, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
+	static void Update(const BufferHandleGeneric& _bhgHandle, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount, uint32_t _u32RenderContext);
 
-	static void CleanupBuffer(const BufferHandleGeneric& _bhgHandle);
+	static void CleanupBuffer(const BufferHandleGeneric& _bhgHandle, uint32_t _u32RenderContext);
 
 	static uint8_t GetBufferType(const BufferHandleGeneric& _bhgHandle);
+
+	static uint32_t GetBufferRenderContext(const BufferHandleGeneric& _bhgHandle);
 };

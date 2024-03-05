@@ -31,7 +31,7 @@ static void WindowEventHandler(WindowHandleGeneric _whgHandle, const WindowCallb
 void RenderingSubsystem::Init(const std::string& _strAppName, uint64_t _u64WindowHandle, uint8_t _u8ActiveContextIDs) {
 	Window(_u64WindowHandle).RegisterEventCallback(WindowEventHandler);
 
-	//TODO Add ability to store end app version data to replace the engine version. For now, they'll be identical.
+	//TODO Make App Version data come from the .ini file.
 	PlatformRenderer::InitRenderer(_strAppName, HC_ENGINE_VERSION, _u64WindowHandle);
 
 	if (_u8ActiveContextIDs & CONTEXT_TYPE_CUSTOM) {
@@ -41,11 +41,13 @@ void RenderingSubsystem::Init(const std::string& _strAppName, uint64_t _u64Windo
 	for (uint8_t u8Flag = CONTEXT_TYPE_2D; u8Flag < CONTEXT_TYPE_ALL; u8Flag <<= 1) {
 		if (_u8ActiveContextIDs & u8Flag) {
 			RenderContext rcContext = {
+				.m_u32ContextID = m_u32NewRenderContextID++,
 				.m_rctContextType = static_cast<RenderContextType>(u8Flag),
 				.m_rcplContextPriority = static_cast<RenderContextPriorityLevel>(u8Flag), //Priority level and type use the same value but are differentiated for clarity.
 				.m_u32ContextSubPriority = 0, //Priority 0 signifies that this will go first during that context's render pass.
 				.m_rcsfEnabledShaderStages = static_cast<RenderContextShaderFlags>(CONTEXT_SHADER_VERTEX | CONTEXT_SHADER_FRAGMENT), //Hard coded for now, will be pulled from a .ini file.
-				.m_vShaderFileNames = GetShaderFileNames(static_cast<RenderContextType>(u8Flag))
+				.m_vShaderFileNames = GetShaderFileNames(static_cast<RenderContextType>(u8Flag)),
+				.m_rcvtVertexType = static_cast<RenderContextVertexType>(u8Flag)
 			};
 
 			PlatformRenderer::InitRenderContext(rcContext); //Init the render context within the platform
@@ -100,6 +102,17 @@ void RenderingSubsystem::DeregisterBuffer(const BufferHandleGeneric& _bhgBuffer)
 
 const Vec2F RenderingSubsystem::GetRenderableExtents() {
 	return PlatformRenderer::GetRenderableExtent();
+}
+
+const RenderContext RenderingSubsystem::GetRenderContext(RenderContextType _rctType) {
+	for (const auto& aContext : m_vRenderContexts) {
+		if (aContext.m_rctContextType == _rctType) {
+			return aContext;
+		}
+	}
+
+	std::cerr << "WARNING: Attempted to get a render context that either doesn't exist or has not been initialized.\n\nThe render context struct given is empty.\n";
+	return {};
 }
 
 std::vector<std::string> RenderingSubsystem::GetShaderFileNames(RenderContextType _rctType) {

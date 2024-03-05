@@ -12,18 +12,64 @@
 #include <HellfireControl/Core/Window.hpp>
 #include <HellfireControl/Math/Matrix.hpp>
 
+#pragma region Static Member Declarations
+uint64_t PlatformRenderer::m_u64WindowHandle = 0;
+uint32_t PlatformRenderer::m_u32CurrentFrame = 0;
+bool PlatformRenderer::m_bFramebufferResized = false;
+
+VkInstance PlatformRenderer::m_iInstance = VK_NULL_HANDLE;
+VkPhysicalDevice PlatformRenderer::m_pdPhysicalDevice = VK_NULL_HANDLE;
+VkDevice PlatformRenderer::m_dDeviceHandle = VK_NULL_HANDLE;
+VkQueue PlatformRenderer::m_qGraphicsQueue = VK_NULL_HANDLE;
+VkQueue PlatformRenderer::m_qPresentQueue = VK_NULL_HANDLE;
+VkSurfaceKHR PlatformRenderer::m_sSurface = VK_NULL_HANDLE;
+VkSwapchainKHR PlatformRenderer::m_scSwapChain = VK_NULL_HANDLE;
+VkRenderPass PlatformRenderer::m_rpRenderPass = VK_NULL_HANDLE;
+VkDescriptorSetLayout PlatformRenderer::m_dslDescriptorSetLayout = VK_NULL_HANDLE;
+VkCommandPool PlatformRenderer::m_cpCommandPool = VK_NULL_HANDLE;
+VkDescriptorPool PlatformRenderer::m_dpDescriptorPool = VK_NULL_HANDLE;
+VkSampler PlatformRenderer::m_sSampler = VK_NULL_HANDLE;
+
+VkImage PlatformRenderer::m_iDepth = VK_NULL_HANDLE;
+VkDeviceMemory PlatformRenderer::m_dmDepthMem = VK_NULL_HANDLE;
+VkImageView PlatformRenderer::m_ivDepthView = VK_NULL_HANDLE;
+
+VkFormat PlatformRenderer::m_fFormat = {};
+VkExtent2D PlatformRenderer::m_eExtent = {};
+
+std::array<VkClearValue, 2> PlatformRenderer::m_arrClearValues = {};
+std::vector<VkCommandBuffer> PlatformRenderer::m_vCommandBuffers = {};
+std::vector<VkDescriptorSet> PlatformRenderer::m_vDescriptorSets = {};
+std::vector<VkSemaphore> PlatformRenderer::m_vImageAvailableSemaphores = {};
+std::vector<VkSemaphore> PlatformRenderer::m_vRenderFinishedSemaphores = {};
+std::vector<VkFence> PlatformRenderer::m_vInFlightFences = {};
+std::vector<VkImage> PlatformRenderer::m_vImages = {};
+std::vector<VkImageView> PlatformRenderer::m_vImageViews = {};
+std::vector<VkFramebuffer> PlatformRenderer::m_vFramebuffers = {};
+
+std::vector<VkBuffer> PlatformRenderer::m_vUbo = {}; //TODO: POSSIBLE TEMPORARY ! ! !
+std::vector<VkDeviceMemory> PlatformRenderer::m_vUboMem = {};
+std::vector<void*> PlatformRenderer::m_vUboMapped = {};
+
+VkImage PlatformRenderer::imgTexture = VK_NULL_HANDLE; //SUPER TEMPORARY ! ! !
+VkDeviceMemory PlatformRenderer::dmTextureMemory = VK_NULL_HANDLE;
+VkImageView PlatformRenderer::ivTextureView = VK_NULL_HANDLE;
+
+std::map<uint32_t, PlatformRenderer::VkRenderContextData> PlatformRenderer::m_mContextMap = {};
+#pragma endregion
+
 namespace LayersAndExtensions {
-	std::vector<const char*> g_vValidationLayers = {
+	std::vector<const char*> m_vValidationLayers = {
 			"VK_LAYER_KHRONOS_validation"
 	};
 
 #	ifndef NDEBUG
-		const bool g_bEnableValidationLayers = true;
+		const bool m_bEnableValidationLayers = true;
 #	else
-		const bool g_bEnableValidationLayers = false;
+		const bool m_bEnableValidationLayers = false;
 #	endif
 
-	const std::vector<const char*> g_vInstanceExtensions = {
+	const std::vector<const char*> m_vInstanceExtensions = {
 		VK_KHR_SURFACE_EXTENSION_NAME,
 #	ifdef WIN32
 			VK_KHR_WIN32_SURFACE_EXTENSION_NAME
@@ -32,7 +78,7 @@ namespace LayersAndExtensions {
 #	endif
 	};
 
-	const std::vector<const char*> g_vDeviceExtensions = {
+	const std::vector<const char*> m_vDeviceExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
 }
@@ -57,12 +103,10 @@ static std::vector<char> ReadFile(const std::string& _strFilename) {
 	return vBuffer;
 }
 
-VkVars PlatformRenderer::g_vVars = {};
-
 void PlatformRenderer::InitRenderer(const std::string& _strAppName, uint32_t _u32AppVersion, uint64_t _u64WindowHandle, const Vec4F& _v4ClearColor) {
-	g_vVars.g_u64WindowHandle = _u64WindowHandle;
+	m_u64WindowHandle = _u64WindowHandle;
 
-	g_vVars.g_arrClearValues = {
+	m_arrClearValues = {
 		VkClearValue {
 			.color = { _v4ClearColor.x, _v4ClearColor.y, _v4ClearColor.z, _v4ClearColor.w }
 		},
@@ -86,8 +130,6 @@ void PlatformRenderer::InitRenderer(const std::string& _strAppName, uint32_t _u3
 	CreateRenderPass();
 
 	CreateDescriptorSetLayout();
-
-	CreateGraphicsPipeline();
 
 	CreateCommandPool();
 
@@ -137,53 +179,179 @@ void PlatformRenderer::InitRenderContext(RenderContext& _rcContext) {
 		}
 	}
 
-	if (!(_rcContext.m_rcsfEnabledShaderStages & VK_SHADER_STAGE_COMPUTE_BIT)) {
-		VkPipelineLayoutCreateInfo plciLayoutInfo = {
-			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+	VkRenderContextData rcdData = {};
+
+	if (_rcContext.m_rcsfEnabledShaderStages & VK_SHADER_STAGE_COMPUTE_BIT) {
+		//TODO: Compute pipeline here.
+	}
+	else {
+		VkVertexData vdData = GetVertexAttributesFromType(_rcContext.m_rcvtVertexType);
+
+		VkPipelineVertexInputStateCreateInfo pvisciVertexInputInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
+			.vertexBindingDescriptionCount = 1,
+			.pVertexBindingDescriptions = &vdData.m_vibdBindingDescription,
+			.vertexAttributeDescriptionCount = static_cast<uint32_t>(vdData.m_vAttributes.size()),
+			.pVertexAttributeDescriptions = vdData.m_vAttributes.data()
+		};
+
+		VkPipelineInputAssemblyStateCreateInfo piasciInputAssemblyInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+			.primitiveRestartEnable = VK_FALSE
+		};
+
+		std::vector<VkDynamicState> vDynamicStates = {
+			VK_DYNAMIC_STATE_VIEWPORT,
+			VK_DYNAMIC_STATE_SCISSOR
+		};
+
+		VkPipelineDynamicStateCreateInfo pdsciDynamicStateInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.dynamicStateCount = static_cast<uint32_t>(vDynamicStates.size()),
+			.pDynamicStates = vDynamicStates.data(),
+		};
+
+		VkPipelineViewportStateCreateInfo pvsciViewportStateInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.viewportCount = 1,
+			.pViewports = nullptr,
+			.scissorCount = 1,
+			.pScissors = nullptr
+		};
+
+		VkPipelineRasterizationStateCreateInfo prsciRasterizerInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.depthClampEnable = VK_FALSE,
+			.rasterizerDiscardEnable = VK_FALSE,
+			.polygonMode = VK_POLYGON_MODE_FILL,
+			.cullMode = VK_CULL_MODE_BACK_BIT,
+			.frontFace = VK_FRONT_FACE_CLOCKWISE,
+			.depthBiasEnable = VK_FALSE,
+			.depthBiasConstantFactor = 0.0f,
+			.depthBiasClamp = 0.0f,
+			.depthBiasSlopeFactor = 0.0f,
+			.lineWidth = 1.0f
+		};
+
+		VkPipelineMultisampleStateCreateInfo pmsciMultisampleStateInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
+			.sampleShadingEnable = VK_FALSE,
+			.minSampleShading = 1.0f,
+			.pSampleMask = nullptr,
+			.alphaToCoverageEnable = VK_FALSE,
+			.alphaToOneEnable = VK_FALSE
+		};
+
+		VkPipelineDepthStencilStateCreateInfo pdssciDepthStencilStateInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.depthTestEnable = VK_TRUE,
+			.depthWriteEnable = VK_TRUE,
+			.depthCompareOp = VK_COMPARE_OP_LESS,
+			.depthBoundsTestEnable = VK_FALSE,
+			.stencilTestEnable = VK_FALSE,
+			.front = {},
+			.back = {},
+			.minDepthBounds = 1.0f,
+			.maxDepthBounds = 0.0f
+		};
+
+		VkPipelineColorBlendAttachmentState pcbasColorBlendState = {
+			.blendEnable = VK_FALSE,
+			.srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
+			.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,
+			.colorBlendOp = VK_BLEND_OP_ADD,
+			.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
+			.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+			.alphaBlendOp = VK_BLEND_OP_ADD,
+			.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
+		};
+
+		VkPipelineColorBlendStateCreateInfo pcbsciColorBlendStateInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.logicOpEnable = VK_FALSE,
+			.logicOp = VK_LOGIC_OP_COPY,
+			.attachmentCount = 1,
+			.pAttachments = &pcbasColorBlendState,
+			.blendConstants = { 0.0f, 0.0f, 0.0f, 0.0f }
+		};
+
+		VkPipelineLayoutCreateInfo plciLayoutInfo = { //Obviously, this is a temporary copy-paste from existing code.
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO, //The idea is to have descriptor sets created per context as needed.
+			.pNext = nullptr,										//Push constants will follow the same principle, and all will be stored in the .ini file.
+			.flags = 0,
 			.setLayoutCount = 1,
-			.pSetLayouts = &g_vVars.g_dslDescriptorSetLayout,
-			.pushConstantRangeCount = 0, //PUSH CONSTANTS HERE
+			.pSetLayouts = &m_dslDescriptorSetLayout,
+			.pushConstantRangeCount = 0,
 			.pPushConstantRanges = nullptr
 		};
 
-		VkGraphicsPipelineCreateInfo gpciPipelineInfo = {
+		if (vkCreatePipelineLayout(m_dDeviceHandle, &plciLayoutInfo, nullptr, &rcdData.m_plPipelineLayout) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to create pipeline layout for the context: " + std::to_string(_rcContext.m_rctContextType) + "!");
+		}
+
+		VkGraphicsPipelineCreateInfo gpciGraphicsPipelineInfo = {
 			.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
-			.stageCount = vShaderInfos.size(),
+			.stageCount = static_cast<uint32_t>(vShaderInfos.size()),
 			.pStages = vShaderInfos.data(),
-		};
-	}
-	else {
-		VkComputePipelineCreateInfo cpciPipelineInfo = {
-			.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
-			.pNext = nullptr,
-			.flags = 0,
-			.stage = vShaderInfos[0],
-			//.layout = ,
+			.pVertexInputState = &pvisciVertexInputInfo,
+			.pInputAssemblyState = &piasciInputAssemblyInfo,
+			.pTessellationState = nullptr, //Tessellation state MAY be needed, but for now, it will remain null.
+			.pViewportState = &pvsciViewportStateInfo,
+			.pRasterizationState = &prsciRasterizerInfo,
+			.pMultisampleState = &pmsciMultisampleStateInfo,
+			.pDepthStencilState = &pdssciDepthStencilStateInfo,
+			.pColorBlendState = &pcbsciColorBlendStateInfo,
+			.pDynamicState = &pdsciDynamicStateInfo,
+			.layout = rcdData.m_plPipelineLayout,
+			.renderPass = m_rpRenderPass,
+			.subpass = 0,
 			.basePipelineHandle = VK_NULL_HANDLE,
 			.basePipelineIndex = 0
 		};
+
+		if (vkCreateGraphicsPipelines(m_dDeviceHandle, VK_NULL_HANDLE, 1, &gpciGraphicsPipelineInfo, nullptr, &rcdData.m_pPipeline) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to create the graphics pipeline for the context: " + std::to_string(_rcContext.m_rctContextType) + "!");
+		}
 	}
 
 	for (auto& aShader : vShaders) {
-		vkDestroyShaderModule(g_vVars.g_dDeviceHandle, aShader, nullptr); //Cleanup shader data
+		vkDestroyShaderModule(m_dDeviceHandle, aShader, nullptr); //Cleanup shader data
 	}
+
+	m_mContextMap[_rcContext.m_u32ContextID] = rcdData; //Add the new render context to the map.
 }
 
 void PlatformRenderer::MarkFramebufferUpdated() {
-	g_vVars.g_bFramebufferResized = true;
+	m_bFramebufferResized = true;
 }
 
 void PlatformRenderer::RenderFrame() {
-	vkWaitForFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame], VK_TRUE, UINT64_MAX);
+	vkWaitForFences(m_dDeviceHandle, 1, &m_vInFlightFences[m_u32CurrentFrame], VK_TRUE, UINT64_MAX);
 
-	vkResetFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame]);
+	vkResetFences(m_dDeviceHandle, 1, &m_vInFlightFences[m_u32CurrentFrame]);
 
-	VkResult rRes = vkAcquireNextImageKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, UINT64_MAX,
-		g_vVars.g_vImageAvailableSemaphores[g_vVars.g_u32CurrentFrame], VK_NULL_HANDLE, &g_vVars.g_u32CurrentFrame);
+	VkResult rRes = vkAcquireNextImageKHR(m_dDeviceHandle, m_scSwapChain, UINT64_MAX,
+		m_vImageAvailableSemaphores[m_u32CurrentFrame], VK_NULL_HANDLE, &m_u32CurrentFrame);
 
 	if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes == VK_SUBOPTIMAL_KHR) {
 		RecreateSwapchain();
@@ -193,13 +361,13 @@ void PlatformRenderer::RenderFrame() {
 		throw std::runtime_error("ERROR: Failed to acquire swapchain image!");
 	}
 
-	vkResetFences(g_vVars.g_dDeviceHandle, 1, &g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame]);
+	vkResetFences(m_dDeviceHandle, 1, &m_vInFlightFences[m_u32CurrentFrame]);
 
-	vkResetCommandBuffer(g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame], 0);
+	vkResetCommandBuffer(m_vCommandBuffers[m_u32CurrentFrame], 0);
 
-	RecordCommandBuffer(g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame], g_vVars.g_u32CurrentFrame);
+	RecordCommandBuffer(m_vCommandBuffers[m_u32CurrentFrame], m_u32CurrentFrame);
 
-	UpdateUniformBuffer(g_vVars.g_u32CurrentFrame);
+	UpdateUniformBuffer(m_u32CurrentFrame);
 
 	VkPipelineStageFlags psfStageFlags[] = {
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
@@ -209,15 +377,15 @@ void PlatformRenderer::RenderFrame() {
 		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
 		.pNext = nullptr,
 		.waitSemaphoreCount = 1,
-		.pWaitSemaphores = &g_vVars.g_vImageAvailableSemaphores[g_vVars.g_u32CurrentFrame],
+		.pWaitSemaphores = &m_vImageAvailableSemaphores[m_u32CurrentFrame],
 		.pWaitDstStageMask = psfStageFlags,
 		.commandBufferCount = 1,
-		.pCommandBuffers = &g_vVars.g_vCommandBuffers[g_vVars.g_u32CurrentFrame],
+		.pCommandBuffers = &m_vCommandBuffers[m_u32CurrentFrame],
 		.signalSemaphoreCount = 1,
-		.pSignalSemaphores = &g_vVars.g_vRenderFinishedSemaphores[g_vVars.g_u32CurrentFrame]
+		.pSignalSemaphores = &m_vRenderFinishedSemaphores[m_u32CurrentFrame]
 	};
 
-	if (vkQueueSubmit(g_vVars.g_qGraphicsQueue, 1, &siSubmitInfo, g_vVars.g_vInFlightFences[g_vVars.g_u32CurrentFrame]) != VK_SUCCESS) {
+	if (vkQueueSubmit(m_qGraphicsQueue, 1, &siSubmitInfo, m_vInFlightFences[m_u32CurrentFrame]) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to submit draw command buffer!");
 	}
 
@@ -225,17 +393,17 @@ void PlatformRenderer::RenderFrame() {
 		.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
 		.pNext = nullptr,
 		.waitSemaphoreCount = 1,
-		.pWaitSemaphores = &g_vVars.g_vRenderFinishedSemaphores[g_vVars.g_u32CurrentFrame],
+		.pWaitSemaphores = &m_vRenderFinishedSemaphores[m_u32CurrentFrame],
 		.swapchainCount = 1,
-		.pSwapchains = &g_vVars.g_scSwapChain,
-		.pImageIndices = &g_vVars.g_u32CurrentFrame,
+		.pSwapchains = &m_scSwapChain,
+		.pImageIndices = &m_u32CurrentFrame,
 		.pResults = nullptr
 	};
 
-	rRes = vkQueuePresentKHR(g_vVars.g_qPresentQueue, &piPresentInfo);
+	rRes = vkQueuePresentKHR(m_qPresentQueue, &piPresentInfo);
 
-	if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes == VK_SUBOPTIMAL_KHR || g_vVars.g_bFramebufferResized) {
-		g_vVars.g_bFramebufferResized = false;
+	if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes == VK_SUBOPTIMAL_KHR || m_bFramebufferResized) {
+		m_bFramebufferResized = false;
 		RecreateSwapchain();
 		return;
 	}
@@ -243,50 +411,49 @@ void PlatformRenderer::RenderFrame() {
 		throw std::runtime_error("ERROR: Failed to present swapchain image!");
 	}
 
-	g_vVars.g_u32CurrentFrame = (g_vVars.g_u32CurrentFrame + 1) % HC_MAX_FRAMES_IN_FLIGHT;
+	m_u32CurrentFrame = (m_u32CurrentFrame + 1) % HC_MAX_FRAMES_IN_FLIGHT;
 }
 
 void PlatformRenderer::CleanupRenderer() {
-	vkDeviceWaitIdle(g_vVars.g_dDeviceHandle);
+	vkDeviceWaitIdle(m_dDeviceHandle);
 
 	CleanupSwapchain();
 
-	vkDestroySampler(g_vVars.g_dDeviceHandle, g_vVars.g_sSampler, nullptr);
+	vkDestroySampler(m_dDeviceHandle, m_sSampler, nullptr);
 
-	vkDestroyImageView(g_vVars.g_dDeviceHandle, g_vVars.ivTextureView, nullptr);
+	vkDestroyImageView(m_dDeviceHandle, ivTextureView, nullptr);
 
-	vkDestroyImage(g_vVars.g_dDeviceHandle, g_vVars.imgTexture, nullptr);
+	vkDestroyImage(m_dDeviceHandle, imgTexture, nullptr);
 
-	vkFreeMemory(g_vVars.g_dDeviceHandle, g_vVars.dmTextureMemory, nullptr);
+	vkFreeMemory(m_dDeviceHandle, dmTextureMemory, nullptr);
 
-	for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
-		vkDestroyBuffer(g_vVars.g_dDeviceHandle, g_vVars.g_vUbo[ndx], nullptr);
-		vkFreeMemory(g_vVars.g_dDeviceHandle, g_vVars.g_vUboMem[ndx], nullptr);
+	for (auto& aContextData : m_mContextMap) {
+		aContextData.second.DestroyBuffers();
 	}
 
-	vkDestroyDescriptorPool(g_vVars.g_dDeviceHandle, g_vVars.g_dpDescriptorPool, nullptr);
+	vkDestroyDescriptorPool(m_dDeviceHandle, m_dpDescriptorPool, nullptr);
 
-	vkDestroyDescriptorSetLayout(g_vVars.g_dDeviceHandle, g_vVars.g_dslDescriptorSetLayout, nullptr);
+	vkDestroyDescriptorSetLayout(m_dDeviceHandle, m_dslDescriptorSetLayout, nullptr);
 
 	for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
-		vkDestroySemaphore(g_vVars.g_dDeviceHandle, g_vVars.g_vImageAvailableSemaphores[ndx], nullptr);
-		vkDestroySemaphore(g_vVars.g_dDeviceHandle, g_vVars.g_vRenderFinishedSemaphores[ndx], nullptr);
-		vkDestroyFence(g_vVars.g_dDeviceHandle, g_vVars.g_vInFlightFences[ndx], nullptr);
+		vkDestroySemaphore(m_dDeviceHandle, m_vImageAvailableSemaphores[ndx], nullptr);
+		vkDestroySemaphore(m_dDeviceHandle, m_vRenderFinishedSemaphores[ndx], nullptr);
+		vkDestroyFence(m_dDeviceHandle, m_vInFlightFences[ndx], nullptr);
 	}
 
-	vkDestroyCommandPool(g_vVars.g_dDeviceHandle, g_vVars.g_cpCommandPool, nullptr);
+	vkDestroyCommandPool(m_dDeviceHandle, m_cpCommandPool, nullptr);
 
-	vkDestroyPipeline(g_vVars.g_dDeviceHandle, g_vVars.g_pPipeline, nullptr);
+	for (auto& aContextData : m_mContextMap) {
+		aContextData.second.DestroyPipelines();
+	}
 
-	vkDestroyPipelineLayout(g_vVars.g_dDeviceHandle, g_vVars.g_plPipelineLayout, nullptr);
+	vkDestroyRenderPass(m_dDeviceHandle, m_rpRenderPass, nullptr);
 
-	vkDestroyRenderPass(g_vVars.g_dDeviceHandle, g_vVars.g_rpRenderPass, nullptr);
+	vkDestroyDevice(m_dDeviceHandle, nullptr);
 
-	vkDestroyDevice(g_vVars.g_dDeviceHandle, nullptr);
+	vkDestroySurfaceKHR(m_iInstance, m_sSurface, nullptr);
 
-	vkDestroySurfaceKHR(g_vVars.g_iInstance, g_vVars.g_sSurface, nullptr);
-
-	vkDestroyInstance(g_vVars.g_iInstance, nullptr);
+	vkDestroyInstance(m_iInstance, nullptr);
 }
 
 void PlatformRenderer::CreateInstance(const std::string& _strAppName, uint32_t _u32AppVersion) {
@@ -307,51 +474,51 @@ void PlatformRenderer::CreateInstance(const std::string& _strAppName, uint32_t _
 		.pApplicationInfo = &aiAppInfo,
 		.enabledLayerCount = 0,
 		.ppEnabledLayerNames = nullptr,
-		.enabledExtensionCount = static_cast<uint32_t>(g_vInstanceExtensions.size()),
-		.ppEnabledExtensionNames = g_vInstanceExtensions.data()
+		.enabledExtensionCount = static_cast<uint32_t>(m_vInstanceExtensions.size()),
+		.ppEnabledExtensionNames = m_vInstanceExtensions.data()
 	};
 
-	if (g_bEnableValidationLayers) {
+	if (m_bEnableValidationLayers) {
 		ValidateSupportedLayers();
 	
-		icInstanceInfo.enabledLayerCount = static_cast<uint32_t>(g_vValidationLayers.size());
-		icInstanceInfo.ppEnabledLayerNames = g_vValidationLayers.data();
+		icInstanceInfo.enabledLayerCount = static_cast<uint32_t>(m_vValidationLayers.size());
+		icInstanceInfo.ppEnabledLayerNames = m_vValidationLayers.data();
 	}
 
-	if (vkCreateInstance(&icInstanceInfo, nullptr, &g_vVars.g_iInstance) != VK_SUCCESS) {
+	if (vkCreateInstance(&icInstanceInfo, nullptr, &m_iInstance) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create Vulkan Instance!");
 	}
 }
 
 void PlatformRenderer::CreateSurface(uint64_t _u32WindowHandle) {
-	PlatformSurface::CreatePlatformSurface(_u32WindowHandle, g_vVars.g_iInstance, g_vVars.g_sSurface);
+	PlatformSurface::CreatePlatformSurface(_u32WindowHandle, m_iInstance, m_sSurface);
 }
 
 void PlatformRenderer::SelectPhysicalDevice() {
 	uint32_t u32DeviceCount = 0;
-	vkEnumeratePhysicalDevices(g_vVars.g_iInstance, &u32DeviceCount, nullptr);
+	vkEnumeratePhysicalDevices(m_iInstance, &u32DeviceCount, nullptr);
 
 	if (!u32DeviceCount) {
 		throw std::runtime_error("ERROR: Failed to find compatible GPUs!");
 	}
 
 	std::vector<VkPhysicalDevice> vDevices(u32DeviceCount);
-	vkEnumeratePhysicalDevices(g_vVars.g_iInstance, &u32DeviceCount, vDevices.data());
+	vkEnumeratePhysicalDevices(m_iInstance, &u32DeviceCount, vDevices.data());
 
 	for (const auto& aDevice : vDevices) {
 		if (CheckDeviceSuitability(aDevice)) {
-			g_vVars.g_pdPhysicalDevice = aDevice;
+			m_pdPhysicalDevice = aDevice;
 			break;
 		}
 	}
 
-	if (g_vVars.g_pdPhysicalDevice == VK_NULL_HANDLE) {
+	if (m_pdPhysicalDevice == VK_NULL_HANDLE) {
 		throw std::runtime_error("ERROR: Failed to find a suitable GPU!");
 	}
 }
 
 void PlatformRenderer::CreateLogicalDevice() {
-	VkQueueFamilyIndices qfiIndices = GetQueueFamilies(g_vVars.g_pdPhysicalDevice);
+	VkQueueFamilyIndices qfiIndices = GetQueueFamilies(m_pdPhysicalDevice);
 
 	std::vector<VkDeviceQueueCreateInfo> vQueueCreateInfos;
 	std::set<uint32_t> sUniqueQueueFamilies = {
@@ -385,26 +552,26 @@ void PlatformRenderer::CreateLogicalDevice() {
 		.pQueueCreateInfos = vQueueCreateInfos.data(),
 		.enabledLayerCount = 0,
 		.ppEnabledLayerNames = nullptr,
-		.enabledExtensionCount = static_cast<uint32_t>(g_vDeviceExtensions.size()),
-		.ppEnabledExtensionNames = g_vDeviceExtensions.data(),
+		.enabledExtensionCount = static_cast<uint32_t>(m_vDeviceExtensions.size()),
+		.ppEnabledExtensionNames = m_vDeviceExtensions.data(),
 		.pEnabledFeatures = &pdfFeatures,
 	};
 
-	if (g_bEnableValidationLayers) {
-		dciDeviceInfo.enabledLayerCount = static_cast<uint64_t>(g_vValidationLayers.size());
-		dciDeviceInfo.ppEnabledLayerNames = g_vValidationLayers.data();
+	if (m_bEnableValidationLayers) {
+		dciDeviceInfo.enabledLayerCount = static_cast<uint64_t>(m_vValidationLayers.size());
+		dciDeviceInfo.ppEnabledLayerNames = m_vValidationLayers.data();
 	}
 
-	if (vkCreateDevice(g_vVars.g_pdPhysicalDevice, &dciDeviceInfo, nullptr, &g_vVars.g_dDeviceHandle) != VK_SUCCESS) {
+	if (vkCreateDevice(m_pdPhysicalDevice, &dciDeviceInfo, nullptr, &m_dDeviceHandle) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create logical device!");
 	}
 
-	vkGetDeviceQueue(g_vVars.g_dDeviceHandle, qfiIndices.m_u32GraphicsFamily.value(), 0, &g_vVars.g_qGraphicsQueue);
-	vkGetDeviceQueue(g_vVars.g_dDeviceHandle, qfiIndices.m_u32PresentFamily.value(), 0, &g_vVars.g_qPresentQueue);
+	vkGetDeviceQueue(m_dDeviceHandle, qfiIndices.m_u32GraphicsFamily.value(), 0, &m_qGraphicsQueue);
+	vkGetDeviceQueue(m_dDeviceHandle, qfiIndices.m_u32PresentFamily.value(), 0, &m_qPresentQueue);
 }
 
 void PlatformRenderer::CreateSwapChain() {
-	VkSwapChainSupportDetails scsdSupport = QuerySwapChainSupport(g_vVars.g_pdPhysicalDevice);
+	VkSwapChainSupportDetails scsdSupport = QuerySwapChainSupport(m_pdPhysicalDevice);
 
 	VkSurfaceFormatKHR sfFormat = SelectSwapSurfaceFormat(scsdSupport.m_vFormats);
 	VkPresentModeKHR pmMode = SelectSwapPresentMode(scsdSupport.m_vPresentModes);
@@ -420,7 +587,7 @@ void PlatformRenderer::CreateSwapChain() {
 		.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
 		.pNext = nullptr,
 		.flags = 0,
-		.surface = g_vVars.g_sSurface,
+		.surface = m_sSurface,
 		.minImageCount = u32ImageCount,
 		.imageFormat = sfFormat.format,
 		.imageColorSpace = sfFormat.colorSpace,
@@ -434,7 +601,7 @@ void PlatformRenderer::CreateSwapChain() {
 		.oldSwapchain = VK_NULL_HANDLE,
 	};
 
-	VkQueueFamilyIndices qfiIndices = GetQueueFamilies(g_vVars.g_pdPhysicalDevice);
+	VkQueueFamilyIndices qfiIndices = GetQueueFamilies(m_pdPhysicalDevice);
 	uint32_t u32QueueFamilyIndices[] = { 
 		qfiIndices.m_u32GraphicsFamily.value(),
 		qfiIndices.m_u32PresentFamily.value()
@@ -451,23 +618,23 @@ void PlatformRenderer::CreateSwapChain() {
 		scciSwapChainInfo.pQueueFamilyIndices = nullptr;
 	}
 
-	if (vkCreateSwapchainKHR(g_vVars.g_dDeviceHandle, &scciSwapChainInfo, nullptr, &g_vVars.g_scSwapChain) != VK_SUCCESS) {
+	if (vkCreateSwapchainKHR(m_dDeviceHandle, &scciSwapChainInfo, nullptr, &m_scSwapChain) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create swapchain!");
 	}
 
-	vkGetSwapchainImagesKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, &u32ImageCount, nullptr);
-	g_vVars.g_vImages.resize(u32ImageCount);
-	vkGetSwapchainImagesKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, &u32ImageCount, g_vVars.g_vImages.data());
+	vkGetSwapchainImagesKHR(m_dDeviceHandle, m_scSwapChain, &u32ImageCount, nullptr);
+	m_vImages.resize(u32ImageCount);
+	vkGetSwapchainImagesKHR(m_dDeviceHandle, m_scSwapChain, &u32ImageCount, m_vImages.data());
 
-	g_vVars.g_fFormat = sfFormat.format;
-	g_vVars.g_eExtent = eExtent;
+	m_fFormat = sfFormat.format;
+	m_eExtent = eExtent;
 }
 
 void PlatformRenderer::CreateImageViews() {
-	g_vVars.g_vImageViews.resize(g_vVars.g_vImages.size());
+	m_vImageViews.resize(m_vImages.size());
 
-	for (int ndx = 0; ndx < g_vVars.g_vImages.size(); ++ndx) {
-		g_vVars.g_vImageViews[ndx] = CreateImageView(g_vVars.g_vImages[ndx], g_vVars.g_fFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+	for (int ndx = 0; ndx < m_vImages.size(); ++ndx) {
+		m_vImageViews[ndx] = CreateImageView(m_vImages[ndx], m_fFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 }
 
@@ -475,7 +642,7 @@ void PlatformRenderer::CreateRenderPass() {
 	std::array<VkAttachmentDescription, 2> arrAttachments = {
 		VkAttachmentDescription {
 			.flags = 0,
-			.format = g_vVars.g_fFormat,
+			.format = m_fFormat,
 			.samples = VK_SAMPLE_COUNT_1_BIT,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
 			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -542,7 +709,7 @@ void PlatformRenderer::CreateRenderPass() {
 		.pDependencies = &sdSubpassDependency
 	};
 
-	if (vkCreateRenderPass(g_vVars.g_dDeviceHandle, &rpciRenderPassInfo, nullptr, &g_vVars.g_rpRenderPass) != VK_SUCCESS) {
+	if (vkCreateRenderPass(m_dDeviceHandle, &rpciRenderPassInfo, nullptr, &m_rpRenderPass) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create render pass!");
 	}
 }
@@ -574,195 +741,13 @@ void PlatformRenderer::CreateDescriptorSetLayout() {
 		.pBindings = arrBindings.data()
 	};
 
-	if (vkCreateDescriptorSetLayout(g_vVars.g_dDeviceHandle, &dslciDescriptorLayoutInfo, nullptr, &g_vVars.g_dslDescriptorSetLayout) != VK_SUCCESS) {
+	if (vkCreateDescriptorSetLayout(m_dDeviceHandle, &dslciDescriptorLayoutInfo, nullptr, &m_dslDescriptorSetLayout) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create descriptor set layout!");
 	}
 }
 
-void PlatformRenderer::CreateGraphicsPipeline() {
-	auto aVertShader = ReadFile("../../Assets/Shaders/Vulkan/test_vert.spv"); //TEMPORARY ! ! !
-	auto aFragShader = ReadFile("../../Assets/Shaders/Vulkan/test_frag.spv");
-
-	VkShaderModule smVert = CreateShaderModule(aVertShader);
-	VkShaderModule smFrag = CreateShaderModule(aFragShader);
-
-	VkPipelineShaderStageCreateInfo pssciVertShaderInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.stage = VK_SHADER_STAGE_VERTEX_BIT,
-		.module = smVert,
-		.pName = "main",
-		.pSpecializationInfo = nullptr
-	};
-
-	VkPipelineShaderStageCreateInfo pssciFragShaderInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-		.module = smFrag,
-		.pName = "main",
-		.pSpecializationInfo = nullptr
-	};
-
-	VkPipelineShaderStageCreateInfo pssciShaderStages[] = { pssciVertShaderInfo, pssciFragShaderInfo };
-
-	auto aBinding = VertexSimple::GetBindingDescription();
-	auto aAttributes = VertexSimple::GetAttributeDescriptions();
-
-	VkPipelineVertexInputStateCreateInfo pvisciVertexInputInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.vertexBindingDescriptionCount = 1, //TEMPORARY ! ! ! 
-		.pVertexBindingDescriptions = &aBinding,
-		.vertexAttributeDescriptionCount = static_cast<uint32_t>(aAttributes.size()),
-		.pVertexAttributeDescriptions = aAttributes.data()
-	};
-
-	VkPipelineInputAssemblyStateCreateInfo piasciInputAssemblyInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-		.primitiveRestartEnable = VK_FALSE
-	};
-
-	std::vector<VkDynamicState> vDynamicStates = {
-		VK_DYNAMIC_STATE_VIEWPORT,
-		VK_DYNAMIC_STATE_SCISSOR
-	};
-
-	VkPipelineDynamicStateCreateInfo pdsciDynamicStateInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.dynamicStateCount = static_cast<uint32_t>(vDynamicStates.size()),
-		.pDynamicStates = vDynamicStates.data(),
-	};
-
-	VkPipelineViewportStateCreateInfo pvsciViewportStateInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.viewportCount = 1,
-		.pViewports = nullptr,
-		.scissorCount = 1,
-		.pScissors = nullptr
-	};
-
-	VkPipelineRasterizationStateCreateInfo prsciRasterizerInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.depthClampEnable = VK_FALSE,
-		.rasterizerDiscardEnable = VK_FALSE,
-		.polygonMode = VK_POLYGON_MODE_FILL,
-		.cullMode = VK_CULL_MODE_BACK_BIT,
-		.frontFace = VK_FRONT_FACE_CLOCKWISE,
-		.depthBiasEnable = VK_FALSE,
-		.depthBiasConstantFactor = 0.0f,
-		.depthBiasClamp = 0.0f,
-		.depthBiasSlopeFactor = 0.0f,
-		.lineWidth = 1.0f
-	};
-
-	VkPipelineMultisampleStateCreateInfo pmsciMultisampleStateInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-		.sampleShadingEnable = VK_FALSE,
-		.minSampleShading = 1.0f,
-		.pSampleMask = nullptr,
-		.alphaToCoverageEnable = VK_FALSE,
-		.alphaToOneEnable = VK_FALSE
-	};
-
-	VkPipelineDepthStencilStateCreateInfo pdssciDepthStencilStateInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.depthTestEnable = VK_TRUE,
-		.depthWriteEnable = VK_TRUE,
-		.depthCompareOp = VK_COMPARE_OP_LESS,
-		.depthBoundsTestEnable = VK_FALSE,
-		.stencilTestEnable = VK_FALSE,
-		.front = {},
-		.back = {},
-		.minDepthBounds = 1.0f,
-		.maxDepthBounds = 0.0f
-	};
-
-	VkPipelineColorBlendAttachmentState pcbasColorBlendState = {
-		.blendEnable = VK_FALSE,
-		.srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
-		.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,
-		.colorBlendOp = VK_BLEND_OP_ADD,
-		.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
-		.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
-		.alphaBlendOp = VK_BLEND_OP_ADD,
-		.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
-	};
-
-	VkPipelineColorBlendStateCreateInfo pcbsciColorBlendStateInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.logicOpEnable = VK_FALSE,
-		.logicOp = VK_LOGIC_OP_COPY,
-		.attachmentCount = 1,
-		.pAttachments = &pcbasColorBlendState,
-		.blendConstants = { 0.0f, 0.0f, 0.0f, 0.0f }
-	};
-
-	VkPipelineLayoutCreateInfo plciLayoutInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.setLayoutCount = 1,
-		.pSetLayouts = &g_vVars.g_dslDescriptorSetLayout,
-		.pushConstantRangeCount = 0, //PUSH CONSTANTS HERE
-		.pPushConstantRanges = nullptr
-	};
-
-	if (vkCreatePipelineLayout(g_vVars.g_dDeviceHandle, &plciLayoutInfo, nullptr, &g_vVars.g_plPipelineLayout) != VK_SUCCESS) {
-		throw std::runtime_error("ERROR: Failed to create pipeline layout!");
-	}
-
-	VkGraphicsPipelineCreateInfo gpciGraphicsPipelineInfo = {
-		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.stageCount = 2,
-		.pStages = pssciShaderStages,
-		.pVertexInputState = &pvisciVertexInputInfo,
-		.pInputAssemblyState = &piasciInputAssemblyInfo,
-		.pTessellationState = nullptr,
-		.pViewportState = &pvsciViewportStateInfo,
-		.pRasterizationState = &prsciRasterizerInfo,
-		.pMultisampleState = &pmsciMultisampleStateInfo,
-		.pDepthStencilState = &pdssciDepthStencilStateInfo,
-		.pColorBlendState = &pcbsciColorBlendStateInfo,
-		.pDynamicState = &pdsciDynamicStateInfo,
-		.layout = g_vVars.g_plPipelineLayout,
-		.renderPass = g_vVars.g_rpRenderPass,
-		.subpass = 0,
-		.basePipelineHandle = VK_NULL_HANDLE,
-		.basePipelineIndex = 0
-	};
-
-	if (vkCreateGraphicsPipelines(g_vVars.g_dDeviceHandle, VK_NULL_HANDLE, 1, &gpciGraphicsPipelineInfo, nullptr, &g_vVars.g_pPipeline) != VK_SUCCESS) {
-		throw std::runtime_error("ERROR: Failed to create the graphics pipeline!");
-	}
-
-	vkDestroyShaderModule(g_vVars.g_dDeviceHandle, smVert, nullptr); //TEMPORARY ! ! !
-	vkDestroyShaderModule(g_vVars.g_dDeviceHandle, smFrag, nullptr);
-}
-
 void PlatformRenderer::CreateCommandPool() {
-	VkQueueFamilyIndices qfiIndices = GetQueueFamilies(g_vVars.g_pdPhysicalDevice);
+	VkQueueFamilyIndices qfiIndices = GetQueueFamilies(m_pdPhysicalDevice);
 
 	VkCommandPoolCreateInfo cpciPoolCreateInfo = {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
@@ -771,7 +756,7 @@ void PlatformRenderer::CreateCommandPool() {
 		.queueFamilyIndex = qfiIndices.m_u32GraphicsFamily.value()
 	};
 
-	if (vkCreateCommandPool(g_vVars.g_dDeviceHandle, &cpciPoolCreateInfo, nullptr, &g_vVars.g_cpCommandPool) != VK_SUCCESS) {
+	if (vkCreateCommandPool(m_dDeviceHandle, &cpciPoolCreateInfo, nullptr, &m_cpCommandPool) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create command pool!");
 	}
 }
@@ -779,36 +764,36 @@ void PlatformRenderer::CreateCommandPool() {
 void PlatformRenderer::CreateDepthResources() {
 	VkFormat fDepthFormat = FindDepthFormat();
 
-	CreateImage(g_vVars.g_eExtent.width, g_vVars.g_eExtent.height, fDepthFormat, VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, g_vVars.g_iDepth, g_vVars.g_dmDepthMem);
+	CreateImage(m_eExtent.width, m_eExtent.height, fDepthFormat, VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_iDepth, m_dmDepthMem);
 
-	g_vVars.g_ivDepthView = CreateImageView(g_vVars.g_iDepth, fDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+	m_ivDepthView = CreateImageView(m_iDepth, fDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-	TransitionImageLayout(g_vVars.g_iDepth, fDepthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+	TransitionImageLayout(m_iDepth, fDepthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 }
 
 void PlatformRenderer::CreateFramebuffers() {
-	g_vVars.g_vFramebuffers.resize(g_vVars.g_vImageViews.size());
+	m_vFramebuffers.resize(m_vImageViews.size());
 
-	for (int ndx = 0; ndx < g_vVars.g_vImageViews.size(); ++ndx) {
+	for (int ndx = 0; ndx < m_vImageViews.size(); ++ndx) {
 		std::array<VkImageView, 2> arrAttachments = {
-			g_vVars.g_vImageViews[ndx],
-			g_vVars.g_ivDepthView
+			m_vImageViews[ndx],
+			m_ivDepthView
 		};
 
 		VkFramebufferCreateInfo fciFramebufferInfo = {
 			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
 			.pNext = nullptr,
 			.flags = 0,
-			.renderPass = g_vVars.g_rpRenderPass,
+			.renderPass = m_rpRenderPass,
 			.attachmentCount = static_cast<uint32_t>(arrAttachments.size()),
 			.pAttachments = arrAttachments.data(),
-			.width = g_vVars.g_eExtent.width,
-			.height = g_vVars.g_eExtent.height,
+			.width = m_eExtent.width,
+			.height = m_eExtent.height,
 			.layers = 1
 		};
 
-		if (vkCreateFramebuffer(g_vVars.g_dDeviceHandle, &fciFramebufferInfo, nullptr, &g_vVars.g_vFramebuffers[ndx]) != VK_SUCCESS) {
+		if (vkCreateFramebuffer(m_dDeviceHandle, &fciFramebufferInfo, nullptr, &m_vFramebuffers[ndx]) != VK_SUCCESS) {
 			throw std::runtime_error("ERROR: Failed to create framebuffers!");
 		}
 	}
@@ -818,7 +803,7 @@ void PlatformRenderer::CreateTextureImage() {
 	int iWidth, iHeight, iChannels;
 	stbi_uc* pPixels = stbi_load("../../Assets/Textures/test_texture.jpg", &iWidth, &iHeight, &iChannels, STBI_rgb_alpha);
 
-	VkDeviceSize dsSize = iWidth * iHeight * 4;
+	VkDeviceSize dsSize = static_cast<uint64_t>(iWidth) * static_cast<uint64_t>(iHeight) * 4U;
 
 	if (!pPixels) {
 		throw std::runtime_error("ERROR: Failed to load texture!");
@@ -830,27 +815,27 @@ void PlatformRenderer::CreateTextureImage() {
 	PlatformBuffer::CreateBuffer(dsSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, HC_MEMORY_FLAGS, bStagingBuffer, dmStagingMem);
 
 	void* pvData;
-	vkMapMemory(g_vVars.g_dDeviceHandle, dmStagingMem, 0, dsSize, 0, &pvData);
+	vkMapMemory(m_dDeviceHandle, dmStagingMem, 0, dsSize, 0, &pvData);
 	memcpy(pvData, pPixels, static_cast<size_t>(dsSize));
-	vkUnmapMemory(g_vVars.g_dDeviceHandle, dmStagingMem);
+	vkUnmapMemory(m_dDeviceHandle, dmStagingMem);
 
 	stbi_image_free(pPixels);
 
 	CreateImage(iWidth, iHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, g_vVars.imgTexture, g_vVars.dmTextureMemory);
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, imgTexture, dmTextureMemory);
 
-	TransitionImageLayout(g_vVars.imgTexture, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	TransitionImageLayout(imgTexture, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	
-	CopyBufferToImage(bStagingBuffer, g_vVars.imgTexture, static_cast<uint32_t>(iWidth), static_cast<uint32_t>(iHeight));
+	CopyBufferToImage(bStagingBuffer, imgTexture, static_cast<uint32_t>(iWidth), static_cast<uint32_t>(iHeight));
 
-	TransitionImageLayout(g_vVars.imgTexture, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	TransitionImageLayout(imgTexture, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-	vkDestroyBuffer(g_vVars.g_dDeviceHandle, bStagingBuffer, nullptr);
-	vkFreeMemory(g_vVars.g_dDeviceHandle, dmStagingMem, nullptr);
+	vkDestroyBuffer(m_dDeviceHandle, bStagingBuffer, nullptr);
+	vkFreeMemory(m_dDeviceHandle, dmStagingMem, nullptr);
 }
 
 void PlatformRenderer::CreateTextureImageView() {
-	g_vVars.ivTextureView = CreateImageView(g_vVars.imgTexture, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+	ivTextureView = CreateImageView(imgTexture, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void PlatformRenderer::CreateImage(uint32_t _iWidth, uint32_t _iHeight, VkFormat _fFormat, VkImageTiling _itTiling, VkImageUsageFlags _iufFlags, VkMemoryPropertyFlags _mpfProperties, VkImage& _iImage, VkDeviceMemory& _dmImageMem) {
@@ -872,12 +857,12 @@ void PlatformRenderer::CreateImage(uint32_t _iWidth, uint32_t _iHeight, VkFormat
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
 	};
 
-	if (vkCreateImage(g_vVars.g_dDeviceHandle, &iciImageInfo, nullptr, &_iImage) != VK_SUCCESS) {
+	if (vkCreateImage(m_dDeviceHandle, &iciImageInfo, nullptr, &_iImage) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create image!");
 	}
 
 	VkMemoryRequirements mrRequirements;
-	vkGetImageMemoryRequirements(g_vVars.g_dDeviceHandle, _iImage, &mrRequirements);
+	vkGetImageMemoryRequirements(m_dDeviceHandle, _iImage, &mrRequirements);
 
 	VkMemoryAllocateInfo maiAllocInfo = {
 		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
@@ -886,11 +871,11 @@ void PlatformRenderer::CreateImage(uint32_t _iWidth, uint32_t _iHeight, VkFormat
 		.memoryTypeIndex = PlatformBuffer::FindMemoryType(mrRequirements.memoryTypeBits, _mpfProperties)
 	};
 
-	if (vkAllocateMemory(g_vVars.g_dDeviceHandle, &maiAllocInfo, nullptr, &_dmImageMem) != VK_SUCCESS) {
+	if (vkAllocateMemory(m_dDeviceHandle, &maiAllocInfo, nullptr, &_dmImageMem) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to allocate iamge memory!");
 	}
 
-	vkBindImageMemory(g_vVars.g_dDeviceHandle, _iImage, _dmImageMem, 0);
+	vkBindImageMemory(m_dDeviceHandle, _iImage, _dmImageMem, 0);
 }
 
 void PlatformRenderer::TransitionImageLayout(VkImage _iImage, VkFormat _fFormat, VkImageLayout _ilLayoutOld, VkImageLayout _ilLayoutNew) {
@@ -989,20 +974,20 @@ void PlatformRenderer::CopyBufferToImage(VkBuffer _bBuffer, VkImage _iImage, uin
 void PlatformRenderer::CreateUniformBuffers() {
 	VkDeviceSize dsSize = sizeof(UniformBufferData);
 
-	g_vVars.g_vUbo.resize(HC_MAX_FRAMES_IN_FLIGHT);
-	g_vVars.g_vUboMem.resize(HC_MAX_FRAMES_IN_FLIGHT);
-	g_vVars.g_vUboMapped.resize(HC_MAX_FRAMES_IN_FLIGHT);
+	m_vUbo.resize(HC_MAX_FRAMES_IN_FLIGHT);
+	m_vUboMem.resize(HC_MAX_FRAMES_IN_FLIGHT);
+	m_vUboMapped.resize(HC_MAX_FRAMES_IN_FLIGHT);
 
 	for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
-		PlatformBuffer::CreateBuffer(dsSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, HC_MEMORY_FLAGS, g_vVars.g_vUbo[ndx], g_vVars.g_vUboMem[ndx]);
+		PlatformBuffer::CreateBuffer(dsSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, HC_MEMORY_FLAGS, m_vUbo[ndx], m_vUboMem[ndx]);
 
-		vkMapMemory(g_vVars.g_dDeviceHandle, g_vVars.g_vUboMem[ndx], 0, dsSize, 0, &g_vVars.g_vUboMapped[ndx]);
+		vkMapMemory(m_dDeviceHandle, m_vUboMem[ndx], 0, dsSize, 0, &m_vUboMapped[ndx]);
 	}
 }
 
 void PlatformRenderer::CreateTextureSampler() {
 	VkPhysicalDeviceProperties pdpProperties;
-	vkGetPhysicalDeviceProperties(g_vVars.g_pdPhysicalDevice, &pdpProperties);
+	vkGetPhysicalDeviceProperties(m_pdPhysicalDevice, &pdpProperties);
 
 	VkSamplerCreateInfo sciSamplerInfo = {
 		.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
@@ -1025,7 +1010,7 @@ void PlatformRenderer::CreateTextureSampler() {
 		.unnormalizedCoordinates = VK_FALSE
 	};
 
-	if (vkCreateSampler(g_vVars.g_dDeviceHandle, &sciSamplerInfo, nullptr, &g_vVars.g_sSampler) != VK_SUCCESS) {
+	if (vkCreateSampler(m_dDeviceHandle, &sciSamplerInfo, nullptr, &m_sSampler) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create texture sampler!");
 	}
 }
@@ -1051,37 +1036,37 @@ void PlatformRenderer::CreateDescriptorPool() {
 		.pPoolSizes = arrDescSize.data()
 	};
 
-	if (vkCreateDescriptorPool(g_vVars.g_dDeviceHandle, &dpciPoolInfo, nullptr, &g_vVars.g_dpDescriptorPool) != VK_SUCCESS) {
+	if (vkCreateDescriptorPool(m_dDeviceHandle, &dpciPoolInfo, nullptr, &m_dpDescriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create Descriptor Pool!");
 	}
 }
 
 void PlatformRenderer::CreateDescriptorSets() {
-	std::vector<VkDescriptorSetLayout> vLayouts(HC_MAX_FRAMES_IN_FLIGHT, g_vVars.g_dslDescriptorSetLayout); //Blech, fuck you Vulkan
-	g_vVars.g_vDescriptorSets.resize(HC_MAX_FRAMES_IN_FLIGHT);
+	std::vector<VkDescriptorSetLayout> vLayouts(HC_MAX_FRAMES_IN_FLIGHT, m_dslDescriptorSetLayout); //Blech, fuck you Vulkan
+	m_vDescriptorSets.resize(HC_MAX_FRAMES_IN_FLIGHT);
 
 	VkDescriptorSetAllocateInfo dsaiAllocateInfo = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
 		.pNext = nullptr,
-		.descriptorPool = g_vVars.g_dpDescriptorPool,
+		.descriptorPool = m_dpDescriptorPool,
 		.descriptorSetCount = static_cast<uint32_t>(HC_MAX_FRAMES_IN_FLIGHT),
 		.pSetLayouts = vLayouts.data()
 	};
 
-	if (vkAllocateDescriptorSets(g_vVars.g_dDeviceHandle, &dsaiAllocateInfo, g_vVars.g_vDescriptorSets.data()) != VK_SUCCESS) {
+	if (vkAllocateDescriptorSets(m_dDeviceHandle, &dsaiAllocateInfo, m_vDescriptorSets.data()) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to allocate Descriptor Sets!");
 	}
 
 	for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
 		VkDescriptorBufferInfo dbiBufferInfo = {
-			.buffer = g_vVars.g_vUbo[ndx],
+			.buffer = m_vUbo[ndx],
 			.offset = 0,
 			.range = sizeof(UniformBufferData)
 		};
 
 		VkDescriptorImageInfo dbiImageInfo = {
-			.sampler = g_vVars.g_sSampler,
-			.imageView = g_vVars.ivTextureView,
+			.sampler = m_sSampler,
+			.imageView = ivTextureView,
 			.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 		};
 
@@ -1089,7 +1074,7 @@ void PlatformRenderer::CreateDescriptorSets() {
 			VkWriteDescriptorSet {
 				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
 				.pNext = nullptr,
-				.dstSet = g_vVars.g_vDescriptorSets[ndx],
+				.dstSet = m_vDescriptorSets[ndx],
 				.dstBinding = 0,
 				.dstArrayElement = 0,
 				.descriptorCount = 1,
@@ -1101,7 +1086,7 @@ void PlatformRenderer::CreateDescriptorSets() {
 			VkWriteDescriptorSet {
 				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
 				.pNext = nullptr,
-				.dstSet = g_vVars.g_vDescriptorSets[ndx],
+				.dstSet = m_vDescriptorSets[ndx],
 				.dstBinding = 1,
 				.dstArrayElement = 0,
 				.descriptorCount = 1,
@@ -1112,30 +1097,30 @@ void PlatformRenderer::CreateDescriptorSets() {
 			}
 		};
 
-		vkUpdateDescriptorSets(g_vVars.g_dDeviceHandle, static_cast<uint32_t>(arrDescWrite.size()), arrDescWrite.data(), 0, nullptr);
+		vkUpdateDescriptorSets(m_dDeviceHandle, static_cast<uint32_t>(arrDescWrite.size()), arrDescWrite.data(), 0, nullptr);
 	}
 }
 
 void PlatformRenderer::CreateCommandBuffer() {
-	g_vVars.g_vCommandBuffers.resize(HC_MAX_FRAMES_IN_FLIGHT);
+	m_vCommandBuffers.resize(HC_MAX_FRAMES_IN_FLIGHT);
 
 	VkCommandBufferAllocateInfo cbaiBufferAllocateInfo = {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 		.pNext = nullptr,
-		.commandPool = g_vVars.g_cpCommandPool,
+		.commandPool = m_cpCommandPool,
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-		.commandBufferCount = static_cast<uint32_t>(g_vVars.g_vCommandBuffers.size())
+		.commandBufferCount = static_cast<uint32_t>(m_vCommandBuffers.size())
 	};
 
-	if (vkAllocateCommandBuffers(g_vVars.g_dDeviceHandle, &cbaiBufferAllocateInfo, g_vVars.g_vCommandBuffers.data()) != VK_SUCCESS) {
+	if (vkAllocateCommandBuffers(m_dDeviceHandle, &cbaiBufferAllocateInfo, m_vCommandBuffers.data()) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to allocate command buffers!");
 	}
 }
 
 void PlatformRenderer::CreateSyncObjects() {
-	g_vVars.g_vImageAvailableSemaphores.resize(HC_MAX_FRAMES_IN_FLIGHT);
-	g_vVars.g_vRenderFinishedSemaphores.resize(HC_MAX_FRAMES_IN_FLIGHT);
-	g_vVars.g_vInFlightFences.resize(HC_MAX_FRAMES_IN_FLIGHT);
+	m_vImageAvailableSemaphores.resize(HC_MAX_FRAMES_IN_FLIGHT);
+	m_vRenderFinishedSemaphores.resize(HC_MAX_FRAMES_IN_FLIGHT);
+	m_vInFlightFences.resize(HC_MAX_FRAMES_IN_FLIGHT);
 
 	VkSemaphoreCreateInfo sciSemaphoreInfo = {
 		.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
@@ -1150,16 +1135,25 @@ void PlatformRenderer::CreateSyncObjects() {
 	};
 
 	for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
-		if (vkCreateSemaphore(g_vVars.g_dDeviceHandle, &sciSemaphoreInfo, nullptr, &g_vVars.g_vImageAvailableSemaphores[ndx]) != VK_SUCCESS ||
-			vkCreateSemaphore(g_vVars.g_dDeviceHandle, &sciSemaphoreInfo, nullptr, &g_vVars.g_vRenderFinishedSemaphores[ndx]) != VK_SUCCESS ||
-			vkCreateFence(g_vVars.g_dDeviceHandle, &fciFenceInfo, nullptr, &g_vVars.g_vInFlightFences[ndx]) != VK_SUCCESS) {
+		if (vkCreateSemaphore(m_dDeviceHandle, &sciSemaphoreInfo, nullptr, &m_vImageAvailableSemaphores[ndx]) != VK_SUCCESS ||
+			vkCreateSemaphore(m_dDeviceHandle, &sciSemaphoreInfo, nullptr, &m_vRenderFinishedSemaphores[ndx]) != VK_SUCCESS ||
+			vkCreateFence(m_dDeviceHandle, &fciFenceInfo, nullptr, &m_vInFlightFences[ndx]) != VK_SUCCESS) {
 			throw std::runtime_error("ERROR: Failed to create sync objects!");
 		}
 	}
 }
 
-void PlatformRenderer::CreatePipelineFromContext(RenderContext& _rcContext) {
+VkVertexData PlatformRenderer::GetVertexAttributesFromType(uint8_t _u8VertexType) {
+	switch (_u8VertexType) {
+	case CONTEXT_VERTEX_TYPE_3D: {
+		return VkVertexData{
+			.m_vibdBindingDescription = VertexSimple::GetBindingDescription(),
+			.m_vAttributes = VertexSimple::GetAttributeDescriptions()
+		};
+	} break;
+	}
 
+	throw std::runtime_error("ERROR: Attempted to get vertex metadata for a type that doesn't exist/is unsupported!");
 }
 
 void PlatformRenderer::RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex) {
@@ -1179,22 +1173,22 @@ void PlatformRenderer::RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _
 	VkRenderPassBeginInfo rpbiBeginInfo = {
 		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
 		.pNext = nullptr,
-		.renderPass = g_vVars.g_rpRenderPass,
-		.framebuffer = g_vVars.g_vFramebuffers[_u32ImageIndex],
-		.renderArea = { { 0, 0 }, g_vVars.g_eExtent},
-		.clearValueCount = static_cast<uint32_t>(g_vVars.g_arrClearValues.size()),
-		.pClearValues = g_vVars.g_arrClearValues.data()
+		.renderPass = m_rpRenderPass,
+		.framebuffer = m_vFramebuffers[_u32ImageIndex],
+		.renderArea = { { 0, 0 }, m_eExtent},
+		.clearValueCount = static_cast<uint32_t>(m_arrClearValues.size()),
+		.pClearValues = m_arrClearValues.data()
 	};
 
 	vkCmdBeginRenderPass(_cbBuffer, &rpbiBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	vkCmdBindPipeline(_cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_vVars.g_pPipeline);
+	//vkCmdBindPipeline(_cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pPipeline);
 
 	VkViewport vViewport = {
 		.x = 0.0f,
 		.y = 0.0f,
-		.width = static_cast<float>(g_vVars.g_eExtent.width),
-		.height = static_cast<float>(g_vVars.g_eExtent.height),
+		.width = static_cast<float>(m_eExtent.width),
+		.height = static_cast<float>(m_eExtent.height),
 		.minDepth = 1.0f,
 		.maxDepth = 0.0f
 	};
@@ -1203,7 +1197,7 @@ void PlatformRenderer::RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _
 
 	VkRect2D rScissor = {
 		.offset = { 0, 0 },
-		.extent = g_vVars.g_eExtent
+		.extent = m_eExtent
 	};
 
 	vkCmdSetScissor(_cbBuffer, 0, 1, &rScissor);
@@ -1223,7 +1217,7 @@ void PlatformRenderer::RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _
 			u32IndexCount = aBufferPair.second.m_u32ItemCount; 
 		}
 	}
-	vkCmdBindDescriptorSets(_cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_vVars.g_plPipelineLayout, 0, 1, &g_vVars.g_vDescriptorSets[_u32ImageIndex], 0, nullptr);
+	//vkCmdBindDescriptorSets(_cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_plPipelineLayout, 0, 1, &m_vDescriptorSets[_u32ImageIndex], 0, nullptr);
 	vkCmdDrawIndexed(_cbBuffer, u32IndexCount, 1, 0, 0, 0); //TEMPORARY ! ! ! WILL BREAK IF NO INDEX_BUFFER BUFFER PRESENT ! ! !
 
 	vkCmdEndRenderPass(_cbBuffer);
@@ -1237,14 +1231,14 @@ VkCommandBuffer PlatformRenderer::BeginSingleTimeCommands() {
 	VkCommandBufferAllocateInfo cbaiBufferInfo = {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 		.pNext = nullptr,
-		.commandPool = PlatformRenderer::g_vVars.g_cpCommandPool,
+		.commandPool = PlatformRenderer::m_cpCommandPool,
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = 1
 	};
 
 	VkCommandBuffer cbBuffer;
 
-	vkAllocateCommandBuffers(PlatformRenderer::g_vVars.g_dDeviceHandle, &cbaiBufferInfo, &cbBuffer);
+	vkAllocateCommandBuffers(PlatformRenderer::m_dDeviceHandle, &cbaiBufferInfo, &cbBuffer);
 
 	VkCommandBufferBeginInfo cbbiBeginInfo = {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -1273,10 +1267,10 @@ void PlatformRenderer::EndSingleTimeCommands(VkCommandBuffer _cbBuffer) {
 		.pSignalSemaphores = nullptr
 	};
 
-	vkQueueSubmit(PlatformRenderer::g_vVars.g_qGraphicsQueue, 1, &siSubmitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(PlatformRenderer::g_vVars.g_qGraphicsQueue);
+	vkQueueSubmit(PlatformRenderer::m_qGraphicsQueue, 1, &siSubmitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(PlatformRenderer::m_qGraphicsQueue);
 
-	vkFreeCommandBuffers(PlatformRenderer::g_vVars.g_dDeviceHandle, PlatformRenderer::g_vVars.g_cpCommandPool, 1, &_cbBuffer);
+	vkFreeCommandBuffers(PlatformRenderer::m_dDeviceHandle, PlatformRenderer::m_cpCommandPool, 1, &_cbBuffer);
 }
 
 VkImageView PlatformRenderer::CreateImageView(VkImage _iImage, VkFormat _fFormat, VkImageAspectFlags _iafFlags) {
@@ -1304,7 +1298,7 @@ VkImageView PlatformRenderer::CreateImageView(VkImage _iImage, VkFormat _fFormat
 
 	VkImageView ivView;
 
-	if (vkCreateImageView(g_vVars.g_dDeviceHandle, &ivciViewInfo, nullptr, &ivView) != VK_SUCCESS) {
+	if (vkCreateImageView(m_dDeviceHandle, &ivciViewInfo, nullptr, &ivView) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create texture image view!");
 	}
 
@@ -1314,7 +1308,7 @@ VkImageView PlatformRenderer::CreateImageView(VkImage _iImage, VkFormat _fFormat
 VkFormat PlatformRenderer::FindSupportedFormat(const std::vector<VkFormat>& _vCandidates, VkImageTiling _itTiling, VkFormatFeatureFlags _fffFeatures) {
 	for (VkFormat fFormat : _vCandidates) {
 		VkFormatProperties fpProperties;
-		vkGetPhysicalDeviceFormatProperties(g_vVars.g_pdPhysicalDevice, fFormat, &fpProperties);
+		vkGetPhysicalDeviceFormatProperties(m_pdPhysicalDevice, fFormat, &fpProperties);
 
 		if ((_itTiling == VK_IMAGE_TILING_LINEAR && (fpProperties.linearTilingFeatures & _fffFeatures) == _fffFeatures) ||
 			(_itTiling == VK_IMAGE_TILING_OPTIMAL && (fpProperties.optimalTilingFeatures & _fffFeatures) == _fffFeatures)) {
@@ -1335,27 +1329,27 @@ bool PlatformRenderer::HasStencilComponent(VkFormat _fFormat) {
 }
 
 void PlatformRenderer::CleanupSwapchain() {
-	vkDestroyImageView(g_vVars.g_dDeviceHandle, g_vVars.g_ivDepthView, nullptr);
+	vkDestroyImageView(m_dDeviceHandle, m_ivDepthView, nullptr);
 	
-	vkDestroyImage(g_vVars.g_dDeviceHandle, g_vVars.g_iDepth, nullptr);
+	vkDestroyImage(m_dDeviceHandle, m_iDepth, nullptr);
 
-	vkFreeMemory(g_vVars.g_dDeviceHandle, g_vVars.g_dmDepthMem, nullptr);
+	vkFreeMemory(m_dDeviceHandle, m_dmDepthMem, nullptr);
 
-	for (auto aFramebuffer : g_vVars.g_vFramebuffers) {
-		vkDestroyFramebuffer(g_vVars.g_dDeviceHandle, aFramebuffer, nullptr);
+	for (auto aFramebuffer : m_vFramebuffers) {
+		vkDestroyFramebuffer(m_dDeviceHandle, aFramebuffer, nullptr);
 	}
 
-	for (auto aView : g_vVars.g_vImageViews) {
-		vkDestroyImageView(g_vVars.g_dDeviceHandle, aView, nullptr);
+	for (auto aView : m_vImageViews) {
+		vkDestroyImageView(m_dDeviceHandle, aView, nullptr);
 	}
 
-	vkDestroySwapchainKHR(g_vVars.g_dDeviceHandle, g_vVars.g_scSwapChain, nullptr);
+	vkDestroySwapchainKHR(m_dDeviceHandle, m_scSwapChain, nullptr);
 }
 
 void PlatformRenderer::RecreateSwapchain() {
 	CheckWindowMinimized();
 
-	vkDeviceWaitIdle(g_vVars.g_dDeviceHandle);
+	vkDeviceWaitIdle(m_dDeviceHandle);
 
 	CleanupSwapchain();
 
@@ -1367,7 +1361,7 @@ void PlatformRenderer::RecreateSwapchain() {
 
 	CreateFramebuffers();
 
-	g_vVars.g_u32CurrentFrame = 0;
+	m_u32CurrentFrame = 0;
 }
 
 void PlatformRenderer::ValidateSupportedLayers() {
@@ -1377,18 +1371,18 @@ void PlatformRenderer::ValidateSupportedLayers() {
 	std::vector<VkLayerProperties> vLayerProperties(u32LayerCount);		
 	vkEnumerateInstanceLayerProperties(&u32LayerCount, vLayerProperties.data());
 
-	for (int ndx = 0; ndx < g_vValidationLayers.size(); ++ndx) {
+	for (int ndx = 0; ndx < m_vValidationLayers.size(); ++ndx) {
 		bool bLayerFound = false;
 
 		for (const auto& aLayerProperties : vLayerProperties) {
-			if (!strcmp(g_vValidationLayers[ndx], aLayerProperties.layerName)) {
+			if (!strcmp(m_vValidationLayers[ndx], aLayerProperties.layerName)) {
 				bLayerFound = true;
 				break;
 			}
 		}
 
 		if (!bLayerFound) {
-			g_vValidationLayers.erase(g_vValidationLayers.begin() + ndx--); //If our layer is unsupported, remove it.
+			m_vValidationLayers.erase(m_vValidationLayers.begin() + ndx--); //If our layer is unsupported, remove it.
 		}
 	}
 }
@@ -1400,7 +1394,7 @@ bool PlatformRenderer::ValidateSupportedDeviceExtensions(VkPhysicalDevice _pdDev
 	std::vector<VkExtensionProperties> vAvailableExtensions(u32ExtensionCount);
 	vkEnumerateDeviceExtensionProperties(_pdDevice, nullptr, &u32ExtensionCount, vAvailableExtensions.data());
 
-	std::set<std::string> sRequiredExtensions(g_vDeviceExtensions.begin(), g_vDeviceExtensions.end());
+	std::set<std::string> sRequiredExtensions(m_vDeviceExtensions.begin(), m_vDeviceExtensions.end());
 
 	for (const auto& aExtension : vAvailableExtensions) {
 		sRequiredExtensions.erase(aExtension.extensionName);
@@ -1431,7 +1425,7 @@ bool PlatformRenderer::CheckDeviceSuitability(VkPhysicalDevice _pdDevice) {
 		&& bExtensionsSupported && bSwapChainAdequate && pdfFeatures.samplerAnisotropy;
 }
 
-VkQueueFamilyIndices PlatformRenderer::GetQueueFamilies(VkPhysicalDevice _pdDevice) {
+PlatformRenderer::VkQueueFamilyIndices PlatformRenderer::GetQueueFamilies(VkPhysicalDevice _pdDevice) {
 	VkQueueFamilyIndices qfiIndices = {};
 
 	uint32_t u32FamilyCount = 0;
@@ -1447,7 +1441,7 @@ VkQueueFamilyIndices PlatformRenderer::GetQueueFamilies(VkPhysicalDevice _pdDevi
 			qfiIndices.m_u32GraphicsFamily = iFamilyNumber;
 		}
 
-		vkGetPhysicalDeviceSurfaceSupportKHR(_pdDevice, iFamilyNumber, g_vVars.g_sSurface, &bPresentSupport);
+		vkGetPhysicalDeviceSurfaceSupportKHR(_pdDevice, iFamilyNumber, m_sSurface, &bPresentSupport);
 		if (bPresentSupport) {
 			qfiIndices.m_u32PresentFamily = iFamilyNumber;
 		}
@@ -1462,25 +1456,25 @@ VkQueueFamilyIndices PlatformRenderer::GetQueueFamilies(VkPhysicalDevice _pdDevi
 	return qfiIndices;
 }
 
-VkSwapChainSupportDetails PlatformRenderer::QuerySwapChainSupport(VkPhysicalDevice _pdDevice) {
+PlatformRenderer::VkSwapChainSupportDetails PlatformRenderer::QuerySwapChainSupport(VkPhysicalDevice _pdDevice) {
 	VkSwapChainSupportDetails scsdDetails = {};
 
-	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_pdDevice, g_vVars.g_sSurface, &scsdDetails.m_scCapabilities);
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_pdDevice, m_sSurface, &scsdDetails.m_scCapabilities);
 
 	uint32_t u32FormatCount = 0;
-	vkGetPhysicalDeviceSurfaceFormatsKHR(_pdDevice, g_vVars.g_sSurface, &u32FormatCount, nullptr);
+	vkGetPhysicalDeviceSurfaceFormatsKHR(_pdDevice, m_sSurface, &u32FormatCount, nullptr);
 
 	if (u32FormatCount) {
 		scsdDetails.m_vFormats.resize(u32FormatCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(_pdDevice, g_vVars.g_sSurface, &u32FormatCount, scsdDetails.m_vFormats.data());
+		vkGetPhysicalDeviceSurfaceFormatsKHR(_pdDevice, m_sSurface, &u32FormatCount, scsdDetails.m_vFormats.data());
 	}
 
 	uint32_t u32PresentModeCount = 0;
-	vkGetPhysicalDeviceSurfacePresentModesKHR(_pdDevice, g_vVars.g_sSurface, &u32PresentModeCount, nullptr);
+	vkGetPhysicalDeviceSurfacePresentModesKHR(_pdDevice, m_sSurface, &u32PresentModeCount, nullptr);
 
 	if (u32PresentModeCount) {
 		scsdDetails.m_vPresentModes.resize(u32PresentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(_pdDevice, g_vVars.g_sSurface, &u32PresentModeCount, scsdDetails.m_vPresentModes.data());
+		vkGetPhysicalDeviceSurfacePresentModesKHR(_pdDevice, m_sSurface, &u32PresentModeCount, scsdDetails.m_vPresentModes.data());
 	}
 
 	return scsdDetails;
@@ -1511,7 +1505,7 @@ VkExtent2D PlatformRenderer::SelectSwapExtent(const VkSurfaceCapabilitiesKHR& _s
 		return _scCapabilities.currentExtent;
 	}
 	else {
-		Vec2F v2Size = Window(g_vVars.g_u64WindowHandle).GetWindowSize();
+		Vec2F v2Size = Window(m_u64WindowHandle).GetWindowSize();
 
 		VkExtent2D eViewportSize = {
 			.width = static_cast<uint32_t>(v2Size.x),
@@ -1538,7 +1532,7 @@ VkShaderModule PlatformRenderer::CreateShaderModule(const std::vector<char>& _vC
 		.pCode = reinterpret_cast<const uint32_t*>(_vCode.data())
 	};
 
-	if (vkCreateShaderModule(g_vVars.g_dDeviceHandle, &smciShaderInfo, nullptr, &smShader)) {
+	if (vkCreateShaderModule(m_dDeviceHandle, &smciShaderInfo, nullptr, &smShader)) {
 		throw std::runtime_error("ERROR: Could not create shader module!");
 	}
 
@@ -1546,7 +1540,7 @@ VkShaderModule PlatformRenderer::CreateShaderModule(const std::vector<char>& _vC
 }
 
 void PlatformRenderer::CheckWindowMinimized() {
-	Window wWindow(g_vVars.g_u64WindowHandle);
+	Window wWindow(m_u64WindowHandle);
 
 	Vec2F v2WindowSize = wWindow.GetWindowSize();
 
@@ -1564,8 +1558,8 @@ void PlatformRenderer::UpdateUniformBuffer(uint32_t _u32CurrentImage) {
 	UniformBufferData ubdData = {
 		.m_mModel = RotateZGlobalDeg(fTime * HC_DEG2RAD(90.0f) * 15.0f, IdentityF()),
 		.m_mView = Inverse(LookAtLH(Vec3F(1.0f, 1.0f, 1.0f), Vec3F(0.0f, 0.0f, 0.0f), Vec3F(0.0f, 0.0f, 1.0f))),
-		.m_mProj = ProjectionF(static_cast<float>(g_vVars.g_eExtent.width) / static_cast<float>(g_vVars.g_eExtent.height), HC_DEG2RAD(45.0f), 0.1f, 10.0f)
+		.m_mProj = ProjectionF(static_cast<float>(m_eExtent.width) / static_cast<float>(m_eExtent.height), HC_DEG2RAD(45.0f), 0.1f, 10.0f)
 	};
 
-	memcpy(g_vVars.g_vUboMapped[_u32CurrentImage], &ubdData, sizeof(ubdData));
+	memcpy(m_vUboMapped[_u32CurrentImage], &ubdData, sizeof(ubdData));
 }

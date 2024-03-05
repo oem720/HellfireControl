@@ -52,7 +52,7 @@ void UICreationToolApplication::Start() {
 
 	UniformBufferData ubdData = {};
 
-	Buffer uniformBuffer(BufferType::UNIFORM_BUFFER, &ubdData, sizeof(UniformBufferData));
+	Buffer uniformBuffer(BufferType::UNIFORM_BUFFER, &ubdData, sizeof(UniformBufferData), m_prsRenderer->GetRenderContext(CONTEXT_TYPE_3D).m_u32ContextID);
 }
 
 void UICreationToolApplication::Run() {

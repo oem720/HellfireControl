@@ -19,8 +19,8 @@ struct VertexSimple {
 		return vibdVertexBindingDesc;
 	}
 
-	static std::array<VkVertexInputAttributeDescription, 3> GetAttributeDescriptions() {
-		std::array<VkVertexInputAttributeDescription, 3> arrAttributes = {
+	static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions() {
+		std::vector<VkVertexInputAttributeDescription> vAttributes = {
 			VkVertexInputAttributeDescription {
 				.location = 0,
 				.binding = 0,
@@ -41,85 +41,13 @@ struct VertexSimple {
 			}
 		};
 
-		return arrAttributes;
+		return vAttributes;
 	}
 };
 
-struct VkQueueFamilyIndices {
-	std::optional<uint32_t> m_u32GraphicsFamily;
-	std::optional<uint32_t> m_u32PresentFamily;
-
-	HC_INLINE bool IsComplete() {
-		return m_u32GraphicsFamily.has_value() && m_u32PresentFamily.has_value();
-	}
-};
-
-struct VkSwapChainSupportDetails {
-	VkSurfaceCapabilitiesKHR m_scCapabilities = {};
-	std::vector<VkSurfaceFormatKHR> m_vFormats;
-	std::vector<VkPresentModeKHR> m_vPresentModes;
-};
-
-struct VkSyncedBufferVars {
-	VkBufferUsageFlags m_bufFlags = 0;
-
-	std::vector<VkBuffer> m_vBuffer;
-	std::vector<VkDeviceMemory> m_vMemory;
-	std::vector<void*> m_vMappedPtrs;
-};
-
-struct VkRenderContextData {
-	VkPipelineLayout m_plPipelineLayout = VK_NULL_HANDLE;
-	VkPipeline m_pPipeline = VK_NULL_HANDLE;
-
-	std::vector<VkSyncedBufferVars> m_vContextBuffers;
-};
-
-struct VkVars {
-	uint64_t g_u64WindowHandle = 0;
-	uint32_t g_u32CurrentFrame = 0;
-	bool g_bFramebufferResized = false;
-
-	VkInstance g_iInstance = VK_NULL_HANDLE;
-	VkPhysicalDevice g_pdPhysicalDevice = VK_NULL_HANDLE;
-	VkDevice g_dDeviceHandle = VK_NULL_HANDLE;
-	VkQueue g_qGraphicsQueue = VK_NULL_HANDLE;
-	VkQueue g_qPresentQueue = VK_NULL_HANDLE;
-	VkSurfaceKHR g_sSurface = VK_NULL_HANDLE;
-	VkSwapchainKHR g_scSwapChain = VK_NULL_HANDLE;
-	VkRenderPass g_rpRenderPass = VK_NULL_HANDLE;
-	VkDescriptorSetLayout g_dslDescriptorSetLayout = VK_NULL_HANDLE;
-	VkCommandPool g_cpCommandPool = VK_NULL_HANDLE;
-	VkDescriptorPool g_dpDescriptorPool = VK_NULL_HANDLE;
-	VkSampler g_sSampler = VK_NULL_HANDLE;
-
-	VkPipelineLayout g_plPipelineLayout = VK_NULL_HANDLE; //TEMPORARY ! ! !
-	VkPipeline g_pPipeline = VK_NULL_HANDLE;
-
-	VkImage g_iDepth = VK_NULL_HANDLE;
-	VkDeviceMemory g_dmDepthMem = VK_NULL_HANDLE;
-	VkImageView g_ivDepthView = VK_NULL_HANDLE;
-
-	VkFormat g_fFormat = {};
-	VkExtent2D g_eExtent = {};	
-
-	std::array<VkClearValue, 2> g_arrClearValues = {};
-	std::vector<VkCommandBuffer> g_vCommandBuffers;
-	std::vector<VkDescriptorSet> g_vDescriptorSets;
-	std::vector<VkSemaphore> g_vImageAvailableSemaphores;
-	std::vector<VkSemaphore> g_vRenderFinishedSemaphores;
-	std::vector<VkFence> g_vInFlightFences;
-	std::vector<VkImage> g_vImages;
-	std::vector<VkImageView> g_vImageViews;
-	std::vector<VkFramebuffer> g_vFramebuffers;
-
-	std::vector<VkBuffer> g_vUbo; //TODO: POSSIBLE TEMPORARY ! ! !
-	std::vector<VkDeviceMemory> g_vUboMem;
-	std::vector<void*> g_vUboMapped;
-
-	VkImage imgTexture; //SUPER TEMPORARY ! ! !
-	VkDeviceMemory dmTextureMemory;
-	VkImageView ivTextureView;
+struct VkVertexData {
+	VkVertexInputBindingDescription m_vibdBindingDescription;
+	std::vector<VkVertexInputAttributeDescription> m_vAttributes;
 };
 
 struct RenderContext; //Forward Declaration
@@ -127,7 +55,108 @@ struct RenderContext; //Forward Declaration
 class PlatformRenderer {
 	friend class PlatformBuffer;
 
+public:
+	struct VkQueueFamilyIndices {
+		std::optional<uint32_t> m_u32GraphicsFamily;
+		std::optional<uint32_t> m_u32PresentFamily;
+
+		HC_INLINE bool IsComplete() const {
+			return m_u32GraphicsFamily.has_value() && m_u32PresentFamily.has_value();
+		}
+	};
+
+	struct VkSwapChainSupportDetails {
+		VkSurfaceCapabilitiesKHR m_scCapabilities = {};
+		std::vector<VkSurfaceFormatKHR> m_vFormats;
+		std::vector<VkPresentModeKHR> m_vPresentModes;
+	};
+
+	struct VkSyncedBufferVars {
+		VkBufferUsageFlags m_bufFlags = 0;
+
+		std::vector<VkBuffer> m_vBuffers;
+		std::vector<VkDeviceMemory> m_vMemory;
+		std::vector<void*> m_vMappedPtrs;
+
+		void Destroy() {
+			for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
+				vkDestroyBuffer(m_dDeviceHandle, m_vBuffers[ndx], nullptr);
+
+				vkFreeMemory(m_dDeviceHandle, m_vMemory[ndx], nullptr);
+
+				m_vBuffers.clear(); //Clear lists to prevent UAF error
+				m_vMemory.clear();
+				m_vMappedPtrs.clear();
+			}
+		}
+	};
+
+	struct VkRenderContextData {
+		VkPipelineLayout m_plPipelineLayout = VK_NULL_HANDLE;
+		VkPipeline m_pPipeline = VK_NULL_HANDLE;
+
+		std::vector<VkSyncedBufferVars> m_vContextBuffers;
+
+		void DestroyBuffers() {
+			for (auto& aBuffers : m_vContextBuffers) {
+				aBuffers.Destroy();
+			}
+
+			m_vContextBuffers.clear(); //Clear list to prevent UAF error
+		}
+
+		void DestroyPipelines() { //Separated into its own function to maintain destroy order within cleanup function.
+			vkDestroyPipelineLayout(m_dDeviceHandle, m_plPipelineLayout, nullptr);
+
+			vkDestroyPipeline(m_dDeviceHandle, m_pPipeline, nullptr);
+		}
+	};
+
 private:
+	static uint64_t m_u64WindowHandle;
+	static uint32_t m_u32CurrentFrame;
+	static bool m_bFramebufferResized;
+
+	static VkInstance m_iInstance;
+	static VkPhysicalDevice m_pdPhysicalDevice;
+	static VkDevice m_dDeviceHandle;
+	static VkQueue m_qGraphicsQueue;
+	static VkQueue m_qPresentQueue;
+	static VkSurfaceKHR m_sSurface;
+	static VkSwapchainKHR m_scSwapChain;
+	static VkRenderPass m_rpRenderPass;
+	static VkDescriptorSetLayout m_dslDescriptorSetLayout;
+	static VkCommandPool m_cpCommandPool;
+	static VkDescriptorPool m_dpDescriptorPool;
+	static VkSampler m_sSampler;
+
+	static VkImage m_iDepth;
+	static VkDeviceMemory m_dmDepthMem;
+	static VkImageView m_ivDepthView;
+
+	static VkFormat m_fFormat;
+	static VkExtent2D m_eExtent;
+
+	static std::array<VkClearValue, 2> m_arrClearValues;
+	static std::vector<VkCommandBuffer> m_vCommandBuffers;
+	static std::vector<VkDescriptorSet> m_vDescriptorSets;
+	static std::vector<VkSemaphore> m_vImageAvailableSemaphores;
+	static std::vector<VkSemaphore> m_vRenderFinishedSemaphores;
+	static std::vector<VkFence> m_vInFlightFences;
+	static std::vector<VkImage> m_vImages;
+	static std::vector<VkImageView> m_vImageViews;
+	static std::vector<VkFramebuffer> m_vFramebuffers;
+
+	static std::vector<VkBuffer> m_vUbo; //TODO: POSSIBLE TEMPORARY ! ! !
+	static std::vector<VkDeviceMemory> m_vUboMem;
+	static std::vector<void*> m_vUboMapped;
+
+	static VkImage imgTexture; //SUPER TEMPORARY ! ! !
+	static VkDeviceMemory dmTextureMemory;
+	static VkImageView ivTextureView;
+
+	static std::map<uint32_t, VkRenderContextData> m_mContextMap;
+
 	static void CreateInstance(const std::string& _strAppName, uint32_t _u32Version);
 	static void CreateSurface(uint64_t _u64WindowHandle);
 	static void SelectPhysicalDevice();
@@ -136,7 +165,6 @@ private:
 	static void CreateImageViews();
 	static void CreateRenderPass();
 	static void CreateDescriptorSetLayout();
-	static void CreateGraphicsPipeline();
 	static void CreateCommandPool();
 	static void CreateDepthResources();
 	static void CreateFramebuffers();
@@ -154,7 +182,7 @@ private:
 	static void CreateCommandBuffer();
 	static void CreateSyncObjects();
 
-	static void CreatePipelineFromContext(RenderContext& _rcContext);
+	static VkVertexData GetVertexAttributesFromType(uint8_t _u8VertexType);
 
 	static void RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex);
 	static VkCommandBuffer BeginSingleTimeCommands();
@@ -176,8 +204,6 @@ private:
 	static VkShaderModule CreateShaderModule(const std::vector<char>& _vCode);
 	static void CheckWindowMinimized();
 	static void UpdateUniformBuffer(uint32_t _u32CurrentImage); //VERY TEMPORARY ! ! !
-
-	static VkVars g_vVars;
 public:
 	/// <summary>
 	/// Initializes the renderer using the given parameters
@@ -187,6 +213,7 @@ public:
 	/// <param name="_u64WindowHandle: A handle to the render target window"></param>
 	/// <param name="_v4ClearColor: A Vec4F representing the color that the framebuffer defaults to when no pixels are drawn there. Default: Black"></param>
 	static void InitRenderer(const std::string& _strAppName, uint32_t _u32AppVersion, uint64_t _u64WindowHandle, const Vec4F& _v4ClearColor = Vec4F());
+
 
 	static void InitRenderContext(RenderContext& _rcContext);
 
@@ -213,6 +240,6 @@ public:
 	/// Vec2F: Contains the width and height of the renderable area.
 	/// </returns>
 	[[nodiscard]] HC_INLINE static const Vec2F GetRenderableExtent() {
-		return Vec2F(static_cast<float>(g_vVars.g_eExtent.width), static_cast<float>(g_vVars.g_eExtent.height));
+		return Vec2F(static_cast<float>(m_eExtent.width), static_cast<float>(m_eExtent.height));
 	}
 };

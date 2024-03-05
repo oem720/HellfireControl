@@ -3,11 +3,11 @@
 #include <HellfireControl/Core/Common.hpp>
 
 enum BufferType : uint8_t {
-	VERTEX_BUFFER,
-	INDEX_BUFFER,
-	STORAGE_BUFFER,
-	UNIFORM_BUFFER,
-	INVALID_BUFFER
+	UNIFORM_BUFFER = 16U,
+	STORAGE_BUFFER = 32U,
+	INDEX_BUFFER = 64U,
+	VERTEX_BUFFER = 128U,
+	INVALID_BUFFER = 1U
 };
 
 struct HC_ALIGNAS(128) BufferHandleGeneric {
@@ -29,11 +29,13 @@ private:
 
 	BufferHandleGeneric m_bhgHandle = {};
 
+	uint32_t m_u32RenderContextID = 0;
+
 	BufferType GetBufferType(const BufferHandleGeneric& _bhgHandle);
 public:
 	Buffer() = delete;
 
-	Buffer(BufferType _btType, const void* _pDataBlob, uint32_t _u32ItemWidth = 1U, uint32_t _u32ItemCount = 1U);
+	Buffer(BufferType _btType, const void* _pDataBlob, uint32_t _u32ItemWidth = 1U, uint32_t _u32ItemCount = 1U, uint32_t _u32RenderContextID = 0);
 
 	Buffer(const BufferHandleGeneric& _bhgPreexisting);
 

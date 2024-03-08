@@ -95,5 +95,5 @@ public:
 
 	[[nodiscard]] const Vec2F GetRenderableExtents();
 
-	[[nodiscard]] const RenderContext GetRenderContext(RenderContextType _rctType);
+	[[nodiscard]] const uint32_t GetRenderContextID(RenderContextType _rctType);
 };

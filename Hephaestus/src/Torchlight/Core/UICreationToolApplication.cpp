@@ -6,7 +6,7 @@
 
 #include <Platform/GLInclude.hpp> //Hack to get hard coded values working. This will be fixed when vertices are moved to their own file.
 
-void UICreationToolApplication::UpdateUniformBuffer() {
+void UICreationToolApplication::UpdateUniformBuffer(const BufferHandleGeneric& _bhgHandle) {
 	static auto aStartTime = std::chrono::high_resolution_clock::now();
 	auto aCurrentTime = std::chrono::high_resolution_clock::now();
 	float fTime = std::chrono::duration<float, std::chrono::seconds::period>(aCurrentTime - aStartTime).count();
@@ -18,6 +18,8 @@ void UICreationToolApplication::UpdateUniformBuffer() {
 		.m_mView = Inverse(LookAtLH(Vec3F(1.0f, 1.0f, 1.0f), Vec3F(0.0f, 0.0f, 0.0f), Vec3F(0.0f, 0.0f, 1.0f))),
 		.m_mProj = ProjectionF(v2RenderableArea.x / v2RenderableArea.y, HC_DEG2RAD(45.0f), 0.1f, 10.0f)
 	};
+
+	Buffer(_bhgHandle).Update(&ubdData, sizeof(UniformBufferData));
 }
 
 void UICreationToolApplication::Start() {
@@ -49,14 +51,14 @@ void UICreationToolApplication::Start() {
 
 	m_prsRenderer->RegisterBuffer(vertexBuffer.GetBufferHandle());
 	m_prsRenderer->RegisterBuffer(indexBuffer.GetBufferHandle());
-
-	UniformBufferData ubdData = {};
-
-	Buffer uniformBuffer(BufferType::UNIFORM_BUFFER, &ubdData, sizeof(UniformBufferData), m_prsRenderer->GetRenderContext(CONTEXT_TYPE_3D).m_u32ContextID);
 }
 
 void UICreationToolApplication::Run() {
-	this->Start();	
+	this->Start();
+
+	UniformBufferData ubdData = {};
+
+	Buffer uniformBuffer(BufferType::UNIFORM_BUFFER, &ubdData, sizeof(UniformBufferData), m_prsRenderer->GetRenderContextID(CONTEXT_TYPE_3D));
 
 	while (!m_wWindow.CloseRequested()) {
 		m_wWindow.PollEvents();

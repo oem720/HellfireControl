@@ -5,6 +5,7 @@
 struct BufferHandleGeneric;
 
 struct BufferData {
+	uint32_t m_u32BufferID = 0;
 	uint8_t m_u8Type = 3;
 	uint32_t m_u32ItemWidth = 0;
 	uint32_t m_u32ItemCount = 0;

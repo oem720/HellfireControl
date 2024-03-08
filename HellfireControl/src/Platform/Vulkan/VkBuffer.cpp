@@ -30,11 +30,14 @@ void PlatformBuffer::InitBuffer(BufferHandleGeneric& _bhgOutHandle, uint8_t _u8T
 		};
 
 		g_blData.g_mBufferTypeTable[vsbBufferData.m_vBuffers[0]] = {
+			.m_u32BufferID = static_cast<uint32_t>(PlatformRenderer::m_mContextMap[_u32RenderContext].m_vContextBuffers.size()),
 			.m_u8Type = _u8Type,
 			.m_u32ItemWidth = _u32ItemWidth,
 			.m_u32ItemCount = _u32ItemCount,
 			.m_u32RenderContextID = _u32RenderContext
 		};
+
+		PlatformRenderer::m_mContextMap[_u32RenderContext].m_vContextBuffers.push_back(vsbBufferData);
 	}
 	else {
 		VkBuffer bStagingBuffer;
@@ -75,10 +78,11 @@ void PlatformBuffer::Append(const BufferHandleGeneric& _bhgHandle, const void* _
 
 void PlatformBuffer::Update(const BufferHandleGeneric& _bhgHandle, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount, uint32_t _u32RenderContext) {
 	if (GetBufferType(_bhgHandle) & UNIFORM_BUFFER) {
-		uint32_t u32Context = GetBufferRenderContext(_bhgHandle);
+		BufferData bdData = g_blData.g_mBufferTypeTable[reinterpret_cast<VkBuffer>(_bhgHandle.upper)];
 
-		void* pvDest = nullptr;
-		PlatformRenderer::m_mContextMap[u32Context].m_vContextBuffers
+		void* pvDest = PlatformRenderer::m_mContextMap[_u32RenderContext].m_vContextBuffers[bdData.m_u32BufferID].m_vMappedPtrs[PlatformRenderer::m_u32CurrentFrame];
+
+		memcpy(pvDest, _pDataBlob, _u32ItemWidth * _u32ItemCount);
 	}
 }
 

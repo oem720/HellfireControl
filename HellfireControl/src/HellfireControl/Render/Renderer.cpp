@@ -104,15 +104,15 @@ const Vec2F RenderingSubsystem::GetRenderableExtents() {
 	return PlatformRenderer::GetRenderableExtent();
 }
 
-const RenderContext RenderingSubsystem::GetRenderContext(RenderContextType _rctType) {
+const uint32_t RenderingSubsystem::GetRenderContextID(RenderContextType _rctType) {
 	for (const auto& aContext : m_vRenderContexts) {
 		if (aContext.m_rctContextType == _rctType) {
-			return aContext;
+			return aContext.m_u32ContextID;
 		}
 	}
 
-	std::cerr << "WARNING: Attempted to get a render context that either doesn't exist or has not been initialized.\n\nThe render context struct given is empty.\n";
-	return {};
+	std::cerr << "WARNING: Attempted to get a render context that either doesn't exist or has not been initialized.\n\nThe render context ID given is -1.\n";
+	return -1;
 }
 
 std::vector<std::string> RenderingSubsystem::GetShaderFileNames(RenderContextType _rctType) {

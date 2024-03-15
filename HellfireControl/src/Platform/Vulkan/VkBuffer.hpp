@@ -26,8 +26,6 @@ private:
 
 	static void CopyBuffer(VkBuffer _bSource, VkBuffer _bDestination, VkDeviceSize _dsSize);
 
-	static uint32_t TranslateBufferUsage(uint8_t _u8Type);
-
 	static uint32_t FindMemoryType(uint32_t _u32TypeFilter, VkMemoryPropertyFlags _mpfFlags);
 
 	static const std::map<VkBuffer, BufferData>* GetActiveBufferData();

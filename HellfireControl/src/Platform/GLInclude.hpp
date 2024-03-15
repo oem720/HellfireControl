@@ -4,9 +4,9 @@
 
 #include <Platform/Vulkan/VkCore.hpp>
 
-#ifdef HC_INCLUDE_BUFFER
 #include <Platform/Vulkan/VkBuffer.hpp>
-#endif
+
+#include <Platform/Vulkan/VkRenderContext.hpp>
 
 #elif HC_USE_OPENGL && !HC_USE_VULKAN
 

@@ -10,21 +10,8 @@ enum BufferType : uint8_t {
 	INVALID_BUFFER = 1U
 };
 
-struct HC_ALIGNAS(128) BufferHandleGeneric {
-	uint64_t upper;
-	uint64_t lower;
-
-	HC_INLINE bool operator==(const BufferHandleGeneric& _bhgOther) {
-		return this->upper == _bhgOther.upper && this->lower == _bhgOther.lower;
-	}
-};
-
-class RenderingSubsystem;
-
 class Buffer {
 private:
-	RenderingSubsystem* m_prsRenderer = nullptr;
-
 	BufferType m_btType = BufferType::INVALID_BUFFER;
 
 	BufferHandleGeneric m_bhgHandle = {};
@@ -35,15 +22,15 @@ private:
 public:
 	Buffer() = delete;
 
-	Buffer(BufferType _btType, const void* _pDataBlob, uint32_t _u32ItemWidth = 1U, uint32_t _u32ItemCount = 1U, uint32_t _u32RenderContextID = 0);
+	Buffer(BufferType _btType, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount, uint32_t _u32RenderContextID);
 
 	Buffer(const BufferHandleGeneric& _bhgPreexisting);
 
-	void Append(const void* _pDataBlob, uint32_t _u32ItemWidth = 1U, uint32_t _u32ItemCount = 1U);
+	void Append(const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
 
-	void Update(const void* _pDataBlob, uint32_t _u32ItemWidth = 1U, uint32_t _u32ItemCount = 1U);
+	void Update(const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
 
-	void Cleanup(bool _bDeregister = true);
+	void Cleanup();
 
 	[[nodiscard]] HC_INLINE BufferHandleGeneric GetBufferHandle() const { return m_bhgHandle; }
 };

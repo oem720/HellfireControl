@@ -53,3 +53,15 @@
 #include <optional>
 #include <set>
 #include <limits>
+
+//Generic Platform Handles
+typedef uint64_t WindowHandleGeneric;
+
+struct HC_ALIGNAS(128) BufferHandleGeneric {
+	uint64_t upper;
+	uint64_t lower;
+
+	HC_INLINE bool operator==(const BufferHandleGeneric & _bhgOther) {
+		return this->upper == _bhgOther.upper && this->lower == _bhgOther.lower;
+	}
+};

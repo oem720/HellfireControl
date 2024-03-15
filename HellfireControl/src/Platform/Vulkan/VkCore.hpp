@@ -54,8 +54,8 @@ struct RenderContext; //Forward Declaration
 
 class PlatformRenderer {
 	friend class PlatformBuffer;
-
-public:
+	friend class PlatformRenderContext;
+private:
 	struct VkQueueFamilyIndices {
 		std::optional<uint32_t> m_u32GraphicsFamily;
 		std::optional<uint32_t> m_u32PresentFamily;
@@ -71,48 +71,6 @@ public:
 		std::vector<VkPresentModeKHR> m_vPresentModes;
 	};
 
-	struct VkSyncedBufferVars {
-		VkBufferUsageFlags m_bufFlags = 0;
-
-		std::vector<VkBuffer> m_vBuffers;
-		std::vector<VkDeviceMemory> m_vMemory;
-		std::vector<void*> m_vMappedPtrs;
-
-		void Destroy() {
-			for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
-				vkDestroyBuffer(m_dDeviceHandle, m_vBuffers[ndx], nullptr);
-
-				vkFreeMemory(m_dDeviceHandle, m_vMemory[ndx], nullptr);
-
-				m_vBuffers.clear(); //Clear lists to prevent UAF error
-				m_vMemory.clear();
-				m_vMappedPtrs.clear();
-			}
-		}
-	};
-
-	struct VkRenderContextData {
-		VkPipelineLayout m_plPipelineLayout = VK_NULL_HANDLE;
-		VkPipeline m_pPipeline = VK_NULL_HANDLE;
-
-		std::vector<VkSyncedBufferVars> m_vContextBuffers;
-
-		void DestroyBuffers() {
-			for (auto& aBuffers : m_vContextBuffers) {
-				aBuffers.Destroy();
-			}
-
-			m_vContextBuffers.clear(); //Clear list to prevent UAF error
-		}
-
-		void DestroyPipelines() { //Separated into its own function to maintain destroy order within cleanup function.
-			vkDestroyPipelineLayout(m_dDeviceHandle, m_plPipelineLayout, nullptr);
-
-			vkDestroyPipeline(m_dDeviceHandle, m_pPipeline, nullptr);
-		}
-	};
-
-private:
 	static uint64_t m_u64WindowHandle;
 	static uint32_t m_u32CurrentFrame;
 	static bool m_bFramebufferResized;
@@ -155,8 +113,6 @@ private:
 	static VkDeviceMemory dmTextureMemory;
 	static VkImageView ivTextureView;
 
-	static std::map<uint32_t, VkRenderContextData> m_mContextMap;
-
 	static void CreateInstance(const std::string& _strAppName, uint32_t _u32Version);
 	static void CreateSurface(uint64_t _u64WindowHandle);
 	static void SelectPhysicalDevice();
@@ -181,8 +137,6 @@ private:
 	static void CreateDescriptorSets();
 	static void CreateCommandBuffer();
 	static void CreateSyncObjects();
-
-	static VkVertexData GetVertexAttributesFromType(uint8_t _u8VertexType);
 
 	static void RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex);
 	static VkCommandBuffer BeginSingleTimeCommands();
@@ -213,9 +167,6 @@ public:
 	/// <param name="_u64WindowHandle: A handle to the render target window"></param>
 	/// <param name="_v4ClearColor: A Vec4F representing the color that the framebuffer defaults to when no pixels are drawn there. Default: Black"></param>
 	static void InitRenderer(const std::string& _strAppName, uint32_t _u32AppVersion, uint64_t _u64WindowHandle, const Vec4F& _v4ClearColor = Vec4F());
-
-
-	static void InitRenderContext(RenderContext& _rcContext);
 
 	/// <summary>
 	/// Marks the framebuffer as needing to be updated, and Swapchain as needing recreation.

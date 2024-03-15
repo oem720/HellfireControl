@@ -3,8 +3,6 @@
 #include <HellfireControl/Core/Common.hpp>
 #include <HellfireControl/Math/Vector.hpp>
 
-typedef uint64_t WindowHandleGeneric;
-
 enum WindowType : uint8_t {
 	WINDOWED,
 	WINDOWED_FULLSCREEN,

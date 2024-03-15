@@ -40,17 +40,14 @@ void RenderingSubsystem::Init(const std::string& _strAppName, uint64_t _u64Windo
 
 	for (uint8_t u8Flag = CONTEXT_TYPE_2D; u8Flag < CONTEXT_TYPE_ALL; u8Flag <<= 1) {
 		if (_u8ActiveContextIDs & u8Flag) {
-			RenderContext rcContext = {
-				.m_u32ContextID = m_u32NewRenderContextID++,
-				.m_rctContextType = static_cast<RenderContextType>(u8Flag),
-				.m_rcplContextPriority = static_cast<RenderContextPriorityLevel>(u8Flag), //Priority level and type use the same value but are differentiated for clarity.
-				.m_u32ContextSubPriority = 0, //Priority 0 signifies that this will go first during that context's render pass.
-				.m_rcsfEnabledShaderStages = static_cast<RenderContextShaderFlags>(CONTEXT_SHADER_VERTEX | CONTEXT_SHADER_FRAGMENT), //Hard coded for now, will be pulled from a .ini file.
-				.m_vShaderFileNames = GetShaderFileNames(static_cast<RenderContextType>(u8Flag)),
-				.m_rcvtVertexType = static_cast<RenderContextVertexType>(u8Flag)
-			};
-
-			PlatformRenderer::InitRenderContext(rcContext); //Init the render context within the platform
+			RenderContext rcContext(
+				static_cast<RenderContextType>(u8Flag),
+				static_cast<RenderContextPriorityLevel>(u8Flag),
+				0,
+				static_cast<RenderContextVertexType>(u8Flag),
+				static_cast<RenderContextShaderFlags>(CONTEXT_SHADER_VERTEX | CONTEXT_SHADER_FRAGMENT),
+				GetShaderFileNames(u8Flag)
+			);
 
 			m_vRenderContexts.push_back(rcContext); //Add our context to the list
 		}
@@ -62,41 +59,20 @@ void RenderingSubsystem::RenderFrame() {
 }
 
 void RenderingSubsystem::Cleanup() {
-	for (const auto& aBufferHandle : m_vActiveBuffers) {
-		Buffer(aBufferHandle).Cleanup(false);
-	}
-
-	m_vActiveBuffers.clear();
-
 	PlatformRenderer::CleanupRenderer();
 
 	delete m_prsInstancePtr; //Final renderer cleanup
 }
 
-void RenderingSubsystem::RegisterRenderContext(RenderContext& _rcContext, uint8_t _u8PreceedingContextCount) {
-	PlatformRenderer::InitRenderContext(_rcContext);
-
+void RenderingSubsystem::RegisterRenderContext(const RenderContext& _rcContext, uint8_t _u8PreceedingContextCount) {
 	if (_u8PreceedingContextCount >= m_vRenderContexts.size()) {
 		//If no preceeding count is given or if the given preceeding count exceeds active render contexts, push to the end.
 		//TODO: Add an exception to ensure that a render context of a given type goes before contexts that depend on the output.
 		m_vRenderContexts.push_back(_rcContext);
 	}
 	else {
-		//Insert to the list in the position after the preceeding count of contexts.5
+		//Insert to the list in the position after the preceeding count of contexts.
 		m_vRenderContexts.insert(m_vRenderContexts.begin() + _u8PreceedingContextCount, _rcContext);
-	}
-}
-
-void RenderingSubsystem::RegisterBuffer(const BufferHandleGeneric& _bhgNewBuffer) {
-	m_vActiveBuffers.push_back(_bhgNewBuffer);
-}
-
-void RenderingSubsystem::DeregisterBuffer(const BufferHandleGeneric& _bhgBuffer) {
-	for (int ndx = 0; ndx < m_vActiveBuffers.size(); ++ndx) {
-		if (m_vActiveBuffers[ndx] == _bhgBuffer) {
-			m_vActiveBuffers.erase(m_vActiveBuffers.begin() + ndx);
-			break;
-		}
 	}
 }
 
@@ -104,7 +80,7 @@ const Vec2F RenderingSubsystem::GetRenderableExtents() {
 	return PlatformRenderer::GetRenderableExtent();
 }
 
-const uint32_t RenderingSubsystem::GetRenderContextID(RenderContextType _rctType) {
+const uint32_t RenderingSubsystem::GetRenderContextID(uint8_t _rctType) {
 	for (const auto& aContext : m_vRenderContexts) {
 		if (aContext.m_rctContextType == _rctType) {
 			return aContext.m_u32ContextID;
@@ -115,7 +91,7 @@ const uint32_t RenderingSubsystem::GetRenderContextID(RenderContextType _rctType
 	return -1;
 }
 
-std::vector<std::string> RenderingSubsystem::GetShaderFileNames(RenderContextType _rctType) {
+std::vector<std::string> RenderingSubsystem::GetShaderFileNames(uint8_t _rctType) {
 	switch (_rctType) {
 	case CONTEXT_TYPE_3D: {
 		return {

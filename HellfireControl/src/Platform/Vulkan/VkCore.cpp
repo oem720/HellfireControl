@@ -982,14 +982,14 @@ void PlatformRenderer::RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _
 
 	uint32_t u32IndexCount = 0;
 	for (const auto& aBufferPair : *pBuffers) {
-		if (aBufferPair.second.m_u8Type == 0) {
+		if (aBufferPair.second.m_u8Type == VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) {
 			VkDeviceSize dsOffsets[] = { 0 };
 
 			vkCmdBindVertexBuffers(_cbBuffer, 0, 1, &aBufferPair.first, dsOffsets);
 		}
-		if (aBufferPair.second.m_u8Type == 1) {
+		if (aBufferPair.second.m_u8Type == VK_BUFFER_USAGE_INDEX_BUFFER_BIT) {
 			vkCmdBindIndexBuffer(_cbBuffer, aBufferPair.first, 0, VK_INDEX_TYPE_UINT16);
-			u32IndexCount = aBufferPair.second.m_u32ItemCount; 
+			u32IndexCount = aBufferPair.second.m_u32ItemCount;
 		}
 	}
 	vkCmdBindDescriptorSets(_cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, PlatformRenderContext::m_mContextMap[PlatformRenderContext::m_u32ActiveRenderContext].m_plPipelineLayout, 0, 1, &m_vDescriptorSets[_u32ImageIndex], 0, nullptr);

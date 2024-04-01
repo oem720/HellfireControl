@@ -50,8 +50,6 @@ struct VkVertexData {
 	std::vector<VkVertexInputAttributeDescription> m_vAttributes;
 };
 
-struct RenderContext; //Forward Declaration
-
 class PlatformRenderer {
 	friend class PlatformBuffer;
 	friend class PlatformRenderContext;

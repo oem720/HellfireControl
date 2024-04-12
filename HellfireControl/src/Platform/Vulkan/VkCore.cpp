@@ -139,7 +139,7 @@ void PlatformRenderer::MarkFramebufferUpdated() {
 	m_bFramebufferResized = true;
 }
 
-void PlatformRenderer::RenderFrame() {
+void PlatformRenderer::BeginRenderPass() {
 	vkWaitForFences(m_dDeviceHandle, 1, &m_vInFlightFences[m_u32CurrentFrame], VK_TRUE, UINT64_MAX);
 
 	vkResetFences(m_dDeviceHandle, 1, &m_vInFlightFences[m_u32CurrentFrame]);
@@ -157,12 +157,40 @@ void PlatformRenderer::RenderFrame() {
 
 	vkResetFences(m_dDeviceHandle, 1, &m_vInFlightFences[m_u32CurrentFrame]);
 
-	vkResetCommandBuffer(m_vCommandBuffers[m_u32CurrentFrame], 0);
+	VkCommandBuffer cbBuffer = m_vCommandBuffers[m_u32CurrentFrame];
 
-	RecordCommandBuffer(m_vCommandBuffers[m_u32CurrentFrame], m_u32CurrentFrame);
+	vkResetCommandBuffer(cbBuffer, 0);
 
-	UpdateUniformBuffer(m_u32CurrentFrame);
+	VkCommandBufferBeginInfo cbbiBeginInfo = {
+		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+		.pNext = nullptr,
+		.flags = 0,
+		.pInheritanceInfo = nullptr
+	};
 
+	if (vkBeginCommandBuffer(cbBuffer, &cbbiBeginInfo) != VK_SUCCESS) {
+		throw std::runtime_error("ERROR: Failed to being recording a command buffer!");
+	}
+
+	VkRenderPassBeginInfo rpbiBeginInfo = {
+		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+		.pNext = nullptr,
+		.renderPass = m_rpRenderPass,
+		.framebuffer = m_vFramebuffers[m_u32CurrentFrame],
+		.renderArea = { { 0, 0 }, m_eExtent},
+		.clearValueCount = static_cast<uint32_t>(m_arrClearValues.size()),
+		.pClearValues = m_arrClearValues.data()
+	};
+
+	vkCmdBeginRenderPass(cbBuffer, &rpbiBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+}
+
+void PlatformRenderer::Draw(uint32_t _u32ContextID) {
+	RecordCommandBuffer(m_vCommandBuffers[m_u32CurrentFrame], _u32ContextID, m_u32CurrentFrame);
+}
+
+void PlatformRenderer::Present() {
 	VkPipelineStageFlags psfStageFlags[] = {
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
 	};
@@ -194,7 +222,7 @@ void PlatformRenderer::RenderFrame() {
 		.pResults = nullptr
 	};
 
-	rRes = vkQueuePresentKHR(m_qPresentQueue, &piPresentInfo);
+	VkResult rRes = vkQueuePresentKHR(m_qPresentQueue, &piPresentInfo);
 
 	if (rRes == VK_ERROR_OUT_OF_DATE_KHR || rRes == VK_SUBOPTIMAL_KHR || m_bFramebufferResized) {
 		m_bFramebufferResized = false;
@@ -931,33 +959,10 @@ void PlatformRenderer::CreateSyncObjects() {
 	}
 }
 
-void PlatformRenderer::RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex) {
-	VkCommandBufferBeginInfo cbbiBeginInfo = {
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.pInheritanceInfo = nullptr
-	};
+void PlatformRenderer::RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ContextID, uint32_t _u32ImageIndex) {
+	PlatformRenderContext::VkRenderContextData& rcdCurrentContext = PlatformRenderContext::m_mContextMap[_u32ContextID];
 
-	if (vkBeginCommandBuffer(_cbBuffer, &cbbiBeginInfo) != VK_SUCCESS) {
-		throw std::runtime_error("ERROR: Failed to being recording a command buffer!");
-	}
-	
-	//TEMPORARY ! ! ! MOVE TO MORE GENERIC FUNCTIONS ! ! !
-
-	VkRenderPassBeginInfo rpbiBeginInfo = {
-		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-		.pNext = nullptr,
-		.renderPass = m_rpRenderPass,
-		.framebuffer = m_vFramebuffers[_u32ImageIndex],
-		.renderArea = { { 0, 0 }, m_eExtent},
-		.clearValueCount = static_cast<uint32_t>(m_arrClearValues.size()),
-		.pClearValues = m_arrClearValues.data()
-	};
-
-	vkCmdBeginRenderPass(_cbBuffer, &rpbiBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-	vkCmdBindPipeline(_cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, PlatformRenderContext::m_mContextMap[PlatformRenderContext::m_u32ActiveRenderContext].m_pPipeline);
+	vkCmdBindPipeline(_cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, rcdCurrentContext.m_pPipeline);
 
 	VkViewport vViewport = {
 		.x = 0.0f,
@@ -977,23 +982,28 @@ void PlatformRenderer::RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _
 
 	vkCmdSetScissor(_cbBuffer, 0, 1, &rScissor);
 
-	//SERIOUSLY ! ! ! THIS SHIT IS TEMPORARY ! ! !
-	const std::map<VkBuffer, BufferData>* pBuffers = PlatformBuffer::GetActiveBufferData();
+	if (rcdCurrentContext.m_vVertexBuffers.size() > 0 && rcdCurrentContext.m_vIndexBuffers.size() == rcdCurrentContext.m_vVertexBuffers.size()) {
+		//TEMPORARY! The temporary bit here is the lack of descriptors for each render context. This will be rectified after the intial version.
+		vkCmdBindDescriptorSets(_cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, rcdCurrentContext.m_plPipelineLayout, 0, 1, &m_vDescriptorSets[_u32ImageIndex], 0, nullptr);
 
-	uint32_t u32IndexCount = 0;
-	for (const auto& aBufferPair : *pBuffers) {
-		if (aBufferPair.second.m_u8Type == VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) {
-			VkDeviceSize dsOffsets[] = { 0 };
+		VkDeviceSize dsOffsets[] = { 0 }; //Vulkan forcing my hand.
 
-			vkCmdBindVertexBuffers(_cbBuffer, 0, 1, &aBufferPair.first, dsOffsets);
-		}
-		if (aBufferPair.second.m_u8Type == VK_BUFFER_USAGE_INDEX_BUFFER_BIT) {
-			vkCmdBindIndexBuffer(_cbBuffer, aBufferPair.first, 0, VK_INDEX_TYPE_UINT16);
-			u32IndexCount = aBufferPair.second.m_u32ItemCount;
+		for (int ndx = 0; ndx < rcdCurrentContext.m_vVertexBuffers.size(); ++ndx) {
+			//Extract matching buffer handles. This assumes buffers are loaded simultaneously and thus match in bindings.
+			//This will be guaranteed by the asset load code for models.
+			VkBuffer bVertexBuffer = reinterpret_cast<VkBuffer>(rcdCurrentContext.m_vVertexBuffers[ndx].upper);
+			VkBuffer bIndexBuffer = reinterpret_cast<VkBuffer>(rcdCurrentContext.m_vIndexBuffers[ndx].upper);
+
+			vkCmdBindVertexBuffers(_cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, 1, &bVertexBuffer, dsOffsets);
+
+			vkCmdBindIndexBuffer(_cbBuffer, bIndexBuffer, 0, VK_INDEX_TYPE_UINT16); //Temporary -- store index type.
+
+			vkCmdDrawIndexed(_cbBuffer, PlatformBuffer::g_blData.g_mBufferDataTable[bIndexBuffer].m_u32ItemCount, 1, 0, 0, 0); //Temporary -- support instancing.
 		}
 	}
-	vkCmdBindDescriptorSets(_cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, PlatformRenderContext::m_mContextMap[PlatformRenderContext::m_u32ActiveRenderContext].m_plPipelineLayout, 0, 1, &m_vDescriptorSets[_u32ImageIndex], 0, nullptr);
-	vkCmdDrawIndexed(_cbBuffer, u32IndexCount, 1, 0, 0, 0); //TEMPORARY ! ! ! WILL BREAK IF NO INDEX_BUFFER BUFFER PRESENT ! ! !
+	else {
+		throw std::runtime_error("ERROR: Attempted to draw an object with no index buffer! Models MUST include an index buffer!");
+	}
 
 	vkCmdEndRenderPass(_cbBuffer);
 
@@ -1323,18 +1333,4 @@ void PlatformRenderer::CheckWindowMinimized() {
 		v2WindowSize = wWindow.GetWindowSize();
 		wWindow.WaitEvents();
 	}
-}
-
-void PlatformRenderer::UpdateUniformBuffer(uint32_t _u32CurrentImage) {
-	static auto aStartTime = std::chrono::high_resolution_clock::now();
-	auto aCurrentTime = std::chrono::high_resolution_clock::now();
-	float fTime = std::chrono::duration<float, std::chrono::seconds::period>(aCurrentTime - aStartTime).count();
-
-	UniformBufferData ubdData = {
-		.m_mModel = RotateZGlobalDeg(fTime * HC_DEG2RAD(90.0f) * 15.0f, IdentityF()),
-		.m_mView = Inverse(LookAtLH(Vec3F(1.0f, 1.0f, 1.0f), Vec3F(0.0f, 0.0f, 0.0f), Vec3F(0.0f, 0.0f, 1.0f))),
-		.m_mProj = ProjectionF(static_cast<float>(m_eExtent.width) / static_cast<float>(m_eExtent.height), HC_DEG2RAD(45.0f), 0.1f, 10.0f)
-	};
-
-	memcpy(m_vUboMapped[_u32CurrentImage], &ubdData, sizeof(ubdData));
 }

@@ -4,6 +4,8 @@
 #include <Platform/GLInclude.hpp>
 
 Buffer::Buffer(BufferType _btType, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount, uint32_t _u32RenderContextID) {
+	m_btType = _btType;
+
 	m_u32RenderContextID = _u32RenderContextID;
 
 	PlatformBuffer::InitBuffer(m_bhgHandle, _btType, _pDataBlob, _u32ItemWidth, _u32ItemCount, m_u32RenderContextID);

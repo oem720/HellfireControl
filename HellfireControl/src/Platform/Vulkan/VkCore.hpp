@@ -136,7 +136,7 @@ private:
 	static void CreateCommandBuffer();
 	static void CreateSyncObjects();
 
-	static void RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ImageIndex);
+	static void RecordCommandBuffer(VkCommandBuffer _cbBuffer, uint32_t _u32ContextID, uint32_t _u32ImageIndex);
 	static VkCommandBuffer BeginSingleTimeCommands();
 	static void EndSingleTimeCommands(VkCommandBuffer _cbBuffer);
 	static VkImageView CreateImageView(VkImage _iImage, VkFormat _fFormat, VkImageAspectFlags _iafFlags);
@@ -155,7 +155,6 @@ private:
 	static VkExtent2D SelectSwapExtent(const VkSurfaceCapabilitiesKHR& _scCapabilities);
 	static VkShaderModule CreateShaderModule(const std::vector<char>& _vCode);
 	static void CheckWindowMinimized();
-	static void UpdateUniformBuffer(uint32_t _u32CurrentImage); //VERY TEMPORARY ! ! !
 public:
 	/// <summary>
 	/// Initializes the renderer using the given parameters
@@ -171,10 +170,14 @@ public:
 	/// </summary>
 	static void MarkFramebufferUpdated();
 
-	/// <summary>
-	/// Renders the current frame and presents it to the screen.
-	/// </summary>
-	static void RenderFrame();
+	
+	static void BeginRenderPass();
+
+	
+	static void Draw(uint32_t _u32ContextID);
+
+
+	static void Present();
 
 	/// <summary>
 	/// Destroys all allocated objects on the GPU and shuts down the rendering system.

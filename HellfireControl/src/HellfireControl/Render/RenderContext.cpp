@@ -13,10 +13,6 @@ RenderContext::RenderContext(RenderContextType _rctType, RenderContextPriorityLe
 	PlatformRenderContext::InitRenderContext(*this); //Ick.
 }
 
-void RenderContext::SetActive() {
-	PlatformRenderContext::SetActiveRenderContext(m_u32ContextID);
-}
-
 void RenderContext::BindVertexBuffer(const BufferHandleGeneric& _bhgHandle) {
 
 }

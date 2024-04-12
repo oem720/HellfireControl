@@ -10,7 +10,7 @@ void UICreationToolApplication::Start() {
 
 	m_prsRenderer = RenderingSubsystem::GetInstance();
 
-	m_prsRenderer->Init(m_strApplicationName, m_wWindow.GetNativeWindowHandle(), CONTEXT_TYPE_3D | CONTEXT_TYPE_2D);
+	m_prsRenderer->Init(m_strApplicationName, m_wWindow.GetNativeWindowHandle(), CONTEXT_TYPE_3D);
 
 	const std::vector<VertexSimple> vVertices = {
 		{ Vec3F(-0.5f, -0.5f, 0.25f), Vec3F(1.0f, 0.0f, 0.0f), Vec2F(1.0f, 0.0f) },

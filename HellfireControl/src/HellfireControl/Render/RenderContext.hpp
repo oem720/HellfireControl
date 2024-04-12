@@ -65,8 +65,6 @@ public:
 	RenderContext(RenderContextType _rctType, RenderContextPriorityLevel _rcplPriority, uint32_t _u32SubPriority,
 		RenderContextVertexType _rcvtVertex, RenderContextShaderFlags _rcsfEnabledShaders, const std::vector<std::string> _vShaderFilenames);
 
-	void SetActive();
-
 	void BindVertexBuffer(const BufferHandleGeneric& _bhgHandle);
 
 	void BindIndexBuffer(const BufferHandleGeneric& _bhgHandle);

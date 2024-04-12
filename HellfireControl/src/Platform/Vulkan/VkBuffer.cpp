@@ -30,7 +30,7 @@ void PlatformBuffer::InitBuffer(BufferHandleGeneric& _bhgOutHandle, uint8_t _u8T
 			.lower = reinterpret_cast<uint64_t>(vsbBufferData.m_vMemory[0])
 		};
 
-		g_blData.g_mBufferTypeTable[vsbBufferData.m_vBuffers[0]] = {
+		g_blData.g_mBufferDataTable[vsbBufferData.m_vBuffers[0]] = {
 			.m_u32BufferID = static_cast<uint32_t>(PlatformRenderContext::m_mContextMap[_u32RenderContext].m_vContextBuffers.size()),
 			.m_u8Type = _u8Type,
 			.m_u32ItemWidth = _u32ItemWidth,
@@ -65,7 +65,7 @@ void PlatformBuffer::InitBuffer(BufferHandleGeneric& _bhgOutHandle, uint8_t _u8T
 			.lower = reinterpret_cast<uint64_t>(dmNewBufferMemory)
 		};
 
-		g_blData.g_mBufferTypeTable[bNewBufferHandle] = {
+		g_blData.g_mBufferDataTable[bNewBufferHandle] = {
 			.m_u8Type = _u8Type,
 			.m_u32ItemWidth = _u32ItemWidth,
 			.m_u32ItemCount = _u32ItemCount
@@ -91,7 +91,7 @@ void PlatformBuffer::Append(const BufferHandleGeneric& _bhgHandle, const void* _
 
 void PlatformBuffer::Update(const BufferHandleGeneric& _bhgHandle, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount, uint32_t _u32RenderContext) {
 	if (GetBufferType(_bhgHandle) & (UNIFORM_BUFFER | STORAGE_BUFFER)) {
-		BufferData bdData = g_blData.g_mBufferTypeTable[reinterpret_cast<VkBuffer>(_bhgHandle.upper)];
+		BufferData bdData = g_blData.g_mBufferDataTable[reinterpret_cast<VkBuffer>(_bhgHandle.upper)];
 
 		void* pvDest = PlatformRenderContext::m_mContextMap[_u32RenderContext].m_vContextBuffers[bdData.m_u32BufferID].m_vMappedPtrs[PlatformRenderer::m_u32CurrentFrame];
 
@@ -105,15 +105,15 @@ void PlatformBuffer::CleanupBuffer(const BufferHandleGeneric& _bhgHandle, uint32
 	vkDestroyBuffer(PlatformRenderer::m_dDeviceHandle, reinterpret_cast<VkBuffer>(_bhgHandle.upper), nullptr);
 	vkFreeMemory(PlatformRenderer::m_dDeviceHandle, reinterpret_cast<VkDeviceMemory>(_bhgHandle.lower), nullptr);
 
-	g_blData.g_mBufferTypeTable.erase(reinterpret_cast<VkBuffer>(_bhgHandle.upper));
+	g_blData.g_mBufferDataTable.erase(reinterpret_cast<VkBuffer>(_bhgHandle.upper));
 }
 
 uint8_t PlatformBuffer::GetBufferType(const BufferHandleGeneric& _bhgHandle) {
-	return g_blData.g_mBufferTypeTable[reinterpret_cast<VkBuffer>(_bhgHandle.upper)].m_u8Type;
+	return g_blData.g_mBufferDataTable[reinterpret_cast<VkBuffer>(_bhgHandle.upper)].m_u8Type;
 }
 
 uint32_t PlatformBuffer::GetBufferRenderContext(const BufferHandleGeneric& _bhgHandle) {
-	return g_blData.g_mBufferTypeTable[reinterpret_cast<VkBuffer>(_bhgHandle.upper)].m_u32RenderContextID;
+	return g_blData.g_mBufferDataTable[reinterpret_cast<VkBuffer>(_bhgHandle.upper)].m_u32RenderContextID;
 }
 
 void PlatformBuffer::CreateBuffer(VkDeviceSize _dsSize, VkBufferUsageFlags _bufFlags, VkMemoryPropertyFlags _mpfFlags, VkBuffer& _bBuffer, VkDeviceMemory& _dmMemory) {
@@ -177,5 +177,5 @@ uint32_t PlatformBuffer::FindMemoryType(uint32_t _u32TypeFilter, VkMemoryPropert
 }
 
 const std::map<VkBuffer, BufferData>* PlatformBuffer::GetActiveBufferData() {
-	return &g_blData.g_mBufferTypeTable;
+	return &g_blData.g_mBufferDataTable;
 }

@@ -55,7 +55,13 @@ void RenderingSubsystem::Init(const std::string& _strAppName, uint64_t _u64Windo
 }
 
 void RenderingSubsystem::RenderFrame() {
-	PlatformRenderer::RenderFrame();
+	PlatformRenderer::BeginRenderPass();
+
+	for (int ndx = 0; ndx < m_vRenderContexts.size(); ++ndx) {
+		PlatformRenderer::Draw(m_vRenderContexts[ndx].m_u32ContextID);
+	}
+
+	PlatformRenderer::Present();
 }
 
 void RenderingSubsystem::Cleanup() {

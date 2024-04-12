@@ -22,11 +22,11 @@ private:
 				vkDestroyBuffer(PlatformRenderer::m_dDeviceHandle, m_vBuffers[ndx], nullptr);
 
 				vkFreeMemory(PlatformRenderer::m_dDeviceHandle, m_vMemory[ndx], nullptr);
-
-				m_vBuffers.clear(); //Clear lists to prevent UAF error
-				m_vMemory.clear();
-				m_vMappedPtrs.clear();
 			}
+
+			m_vBuffers.clear(); //Clear lists to prevent UAF error
+			m_vMemory.clear();
+			m_vMappedPtrs.clear();
 		}
 	};
 
@@ -79,8 +79,6 @@ private:
 	static void CleanupAllContextData();
 public:
 	static void InitRenderContext(const RenderContext& _rcContext);
-
-	static HC_INLINE void SetActiveRenderContext(uint32_t _u32ContextID) { m_u32ActiveRenderContext = _u32ContextID; }
 
 	static void CleanupRenderContext(uint32_t _u32ContextID);
 };

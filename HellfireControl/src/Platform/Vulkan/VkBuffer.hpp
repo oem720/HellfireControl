@@ -13,7 +13,7 @@ struct BufferData {
 };
 
 struct BufferLocals {
-	std::map<VkBuffer, BufferData> g_mBufferTypeTable;
+	std::map<VkBuffer, BufferData> g_mBufferDataTable;
 };
 
 constexpr VkMemoryPropertyFlags HC_MEMORY_FLAGS = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;

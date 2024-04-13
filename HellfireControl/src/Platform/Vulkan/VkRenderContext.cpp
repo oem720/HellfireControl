@@ -41,21 +41,6 @@ void PlatformRenderContext::InitRenderContext(const RenderContext& _rcContext) {
 
 	VkRenderContextData rcdData = {};
 
-	//Viewport and scissor are hardcoded for now, but can be adjusted, and will be in the .ini file
-	rcdData.m_vViewport = {
-		.x = 0.0f,
-		.y = 0.0f,
-		.width = static_cast<float>(PlatformRenderer::m_eExtent.width),
-		.height = static_cast<float>(PlatformRenderer::m_eExtent.height),
-		.minDepth = 1.0f,
-		.maxDepth = 0.0f
-	};
-
-	rcdData.m_rScissor = {
-		.offset = { 0, 0 },
-		.extent = PlatformRenderer::m_eExtent
-	};
-
 	CreateDescriptorData(rcdData);
 
 	if (_rcContext.m_rcsfEnabledShaderStages & VK_SHADER_STAGE_COMPUTE_BIT) {

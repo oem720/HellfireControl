@@ -155,9 +155,23 @@ void PlatformRenderer::Draw(uint32_t _u32ContextID) {
 
 	vkCmdBindPipeline(cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, rcdCurrentContext.m_pPipeline); //Set pipeline, viewport, and scissor from context.
 
-	vkCmdSetViewport(cbBuffer, 0, 1, &rcdCurrentContext.m_vViewport);
+	VkViewport vViewport = {
+		.x = 0.0f,
+		.y = 0.0f,
+		.width = static_cast<float>(PlatformRenderer::m_eExtent.width),
+		.height = static_cast<float>(PlatformRenderer::m_eExtent.height),
+		.minDepth = 1.0f,
+		.maxDepth = 0.0f
+	};
 
-	vkCmdSetScissor(cbBuffer, 0, 1, &rcdCurrentContext.m_rScissor);
+	VkRect2D rScissor = {
+		.offset = { 0, 0 },
+		.extent = PlatformRenderer::m_eExtent
+	};
+
+	vkCmdSetViewport(cbBuffer, 0, 1, &vViewport);
+
+	vkCmdSetScissor(cbBuffer, 0, 1, &rScissor);
 	//Bind descriptor data from context.
 	vkCmdBindDescriptorSets(cbBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, rcdCurrentContext.m_plPipelineLayout, 0, 1, &rcdCurrentContext.m_ddDescriptorData.m_vDescriptorSets[m_u32CurrentFrame], 0, nullptr);
 

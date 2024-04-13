@@ -49,10 +49,6 @@ private:
 
 		std::vector<BufferHandleGeneric> m_vIndexBuffers;
 
-		VkViewport m_vViewport = {};
-
-		VkRect2D m_rScissor = {};
-
 		void Destroy() {
 			vkDeviceWaitIdle(PlatformRenderer::m_dDeviceHandle);
 

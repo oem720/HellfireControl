@@ -10,8 +10,10 @@ void UnitTesterApplication::Start() {
 }
 
 void UnitTesterApplication::Run() {
-	uint32_t u32Successes = 0;
-	uint32_t u32TotalTests = 0;
+	this->Start();
+
+	uint64_t u32Successes = 0;
+	uint64_t u32TotalTests = 0;
 
 	for (int ndx = 0; ndx < m_vTestBlocks.size(); ++ndx) {
 		m_vTestBlocks[ndx].ExecuteTests(); //Run tests
@@ -57,6 +59,8 @@ void UnitTesterApplication::Run() {
 	Console::Print("Overall Average Speed: ");
 	Console::Print(std::to_string(m_fAverageExecutionTimeMs), Console::YELLOW);
 	Console::Print(" ms\n");
+
+	this->End();
 }
 
 void UnitTesterApplication::End() {

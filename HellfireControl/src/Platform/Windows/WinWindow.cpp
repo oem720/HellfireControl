@@ -1,17 +1,23 @@
 
 #include <Platform/Windows/WinWindow.hpp>
 
+#include <HellfireControl/Core/Window.hpp>
+
 #include <HellfireControl/Util/Util.hpp>
 
 #define HC_WINDOW_CLASS L"HCE"
 
 namespace PlatformWindow {
 	struct Win32WindowData {
-		int m_iX;
-		int m_iY;
-		int m_iWidth;
-		int m_iHeight;
-		uint8_t m_u8Style;
+		int m_iX = 0;
+		int m_iY = 0;
+		int m_iWidth = 0;
+		int m_iHeight = 0;
+		uint8_t m_u8Style = 0;
+
+		bool m_bRequestedClose = false;
+
+		std::vector<WindowCallback> m_vCallbacks;
 	};
 
 	struct Win32Globals {
@@ -30,10 +36,10 @@ namespace PlatformWindow {
 
 		switch (_u8Style) {
 		case 0: { //Windowed
-			lVal = WS_OVERLAPPED;
+			lVal = WS_OVERLAPPEDWINDOW;
 		} break;
 		case 1: { //Windowed_Fullscreen
-			lVal = WS_OVERLAPPED | WS_MAXIMIZE;
+			lVal = WS_OVERLAPPEDWINDOW | WS_MAXIMIZE;
 		} break;
 		case 2: { //Borderless
 			lVal = WS_POPUP | WS_MAXIMIZE;
@@ -50,7 +56,7 @@ namespace PlatformWindow {
 		DEVMODE dmSettings = {};
 
 		if (!EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmSettings)) {
-			assert(!"ERROR: Failed to enumerate settings!");
+			throw std::runtime_error("ERROR: Failed to enumerate settings!");
 		}
 
 		dmSettings.dmPelsWidth = _iWidth;
@@ -58,7 +64,7 @@ namespace PlatformWindow {
 		dmSettings.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
 
 		if (ChangeDisplaySettings(&dmSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL) {
-			assert(!"ERROR: Display resolution incompatible!");
+			throw std::runtime_error("ERROR: Display resolution incompatible!");
 		}
 
 		g_LocalData.g_bFullscreen = true;
@@ -70,20 +76,44 @@ namespace PlatformWindow {
 		g_LocalData.g_bFullscreen = false;
 	}
 
+	void NotifyCallbacks(uint64_t _u64Handle, const WindowCallbackMessage& _wcmMessage) {
+		for (const auto& aCallbackFunc : g_LocalData.g_mapWindowData[reinterpret_cast<HWND>(_u64Handle)].m_vCallbacks) {
+			aCallbackFunc(_u64Handle, _wcmMessage);
+		}
+	}
+
 	LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		switch (uMsg) {
-		case WM_WINDOWPOSCHANGED: {
-			WINDOWPOS* pWindowPos = reinterpret_cast<WINDOWPOS*>(lParam);
+		case WM_MOVE: {
+			g_LocalData.g_mapWindowData[hwnd].m_iX = LOWORD(lParam);
+			g_LocalData.g_mapWindowData[hwnd].m_iY = HIWORD(lParam);
 
-			g_LocalData.g_mapWindowData[hwnd].m_iX = pWindowPos->x;
-			g_LocalData.g_mapWindowData[hwnd].m_iY = pWindowPos->y;
-			g_LocalData.g_mapWindowData[hwnd].m_iWidth = pWindowPos->cx;
-			g_LocalData.g_mapWindowData[hwnd].m_iHeight = pWindowPos->cy;
+			return 0;
+		} break;
+		case WM_SIZE: {
+			g_LocalData.g_mapWindowData[hwnd].m_iWidth = static_cast<int>(LOWORD(lParam));
+			g_LocalData.g_mapWindowData[hwnd].m_iHeight = static_cast<int>(HIWORD(lParam));
+
+			WindowCallbackMessage wcmMessage = {
+				.m_wcetType = WINDOW_RESIZE, //Combine move and resize flags
+				.upper = 0, //Unused for resize command
+				.lower = (static_cast<uint64_t>(LOWORD(lParam)) << 32 | static_cast<uint64_t>(HIWORD(lParam))) //Pack size into lower
+			};
+			
+			NotifyCallbacks(reinterpret_cast<uint64_t>(hwnd), wcmMessage);
 
 			return 0;
 		} break;
 		case WM_CLOSE: {
-			CleanupWindow(reinterpret_cast<uint64_t>(hwnd));
+			g_LocalData.g_mapWindowData[hwnd].m_bRequestedClose = true;
+
+			WindowCallbackMessage wcmMessage = {
+				.m_wcetType = WINDOW_CLOSE,
+				.upper = 0, //Parameters are unused for this message.
+				.lower = 0, 
+			};
+
+			NotifyCallbacks(reinterpret_cast<uint64_t>(hwnd), wcmMessage);
 
 			return 0;
 		} break;
@@ -110,7 +140,7 @@ namespace PlatformWindow {
 		};
 
 		if (!RegisterClass(&wcClass)) {
-			assert(!"ERROR: [Windows Only] Window Class could not be initialized!");
+			throw std::runtime_error("ERROR: [Windows Only] Window Class could not be initialized!");
 		}
 
 		g_LocalData.g_bWindowClassRegistered = true;
@@ -122,7 +152,7 @@ namespace PlatformWindow {
 		g_LocalData.g_bWindowClassRegistered = false;
 	}
 
-	void InitWindow(uint64_t& _u64Handle, uint8_t _u8Type, const std::string& _strName, const Vec2F& _v2Size, const Vec2F& _v2Loc) {
+	void InitWindow(uint64_t& _u64OutHandle, uint8_t _u8Type, const std::string& _strName, const Vec2F& _v2Size, const Vec2F& _v2Loc) {
 		if (!g_LocalData.g_bWindowClassRegistered) {
 			InitWindowClass();
 		}
@@ -143,7 +173,7 @@ namespace PlatformWindow {
 		);
 
 		if (hwndWindowHandle == NULL) {
-			assert(!"ERROR: Window failed to create!");
+			throw std::runtime_error("ERROR: Window failed to create!");
 		}
 
 		if (_u8Type == 3) { //If in fullscreen mode, call the fullscreen function
@@ -153,7 +183,7 @@ namespace PlatformWindow {
 		ShowWindow(hwndWindowHandle, _u8Type == 1 ? 3 : 1); //Only on the Windowed_Fullscreen type do we start fullscreen
 
 
-		_u64Handle = reinterpret_cast<uint64_t>(hwndWindowHandle); //Assign to our generic handle pointer
+		_u64OutHandle = reinterpret_cast<uint64_t>(hwndWindowHandle); //Assign to our generic handle pointer
 
 		Win32WindowData wwdData = {
 			.m_iX = static_cast<int>(_v2Loc.x),
@@ -163,6 +193,37 @@ namespace PlatformWindow {
 		};
 
 		g_LocalData.g_mapWindowData[hwndWindowHandle] = wwdData; //Insert our window data into the structure
+	}
+
+	void RegisterWindowCallbacks(uint64_t _u64Handle, std::vector<WindowCallback>*& _pOutWindowCallbacks) {
+		_pOutWindowCallbacks = &g_LocalData.g_mapWindowData[reinterpret_cast<HWND>(_u64Handle)].m_vCallbacks;
+	}
+
+	bool CloseRequested(uint64_t _u64Handle) {
+		return g_LocalData.g_mapWindowData[reinterpret_cast<HWND>(_u64Handle)].m_bRequestedClose;
+	}
+
+	void PollEventQueue(uint64_t _u64Handle) {
+		MSG mMessage = {};
+		HWND hwndHandle = reinterpret_cast<HWND>(_u64Handle);
+
+		while (PeekMessage(&mMessage, NULL, 0, 0, PM_REMOVE)) {
+			switch (mMessage.message) {
+			case WM_QUIT: {
+				g_LocalData.g_mapWindowData[hwndHandle].m_bRequestedClose = true; //Tell the window wrapper that no more messages are received and it's time to quit
+			} break;
+			default: {
+				TranslateMessage(&mMessage);
+				DispatchMessage(&mMessage); //For now, just send everything to the WindowProcedure
+			} break;
+			}
+		}
+	}
+
+	void WaitEvents(uint64_t _u64Handle) {
+		WaitMessage();
+
+		PollEventQueue(_u64Handle);
 	}
 
 	bool SetWindowName(uint64_t _u64Handle, const std::string& _strName) {
@@ -243,6 +304,10 @@ namespace PlatformWindow {
 		return bSucceeded;
 	}
 
+	void SetWindowFocus(uint64_t _u64Handle) {
+		SetFocus(reinterpret_cast<HWND>(_u64Handle));
+	}
+
 	Vec2F GetWindowSize(uint64_t _u64Handle) {
 		HWND hwnd = reinterpret_cast<HWND>(_u64Handle);
 
@@ -259,6 +324,10 @@ namespace PlatformWindow {
 		return g_LocalData.g_mapWindowData[reinterpret_cast<HWND>(_u64Handle)].m_u8Style;
 	}
 
+	bool GetWindowFocus(uint64_t _u64Handle) {
+		return GetFocus() == reinterpret_cast<HWND>(_u64Handle);
+	}
+
 	void CleanupWindow(uint64_t _u64Handle) {
 		HWND hwnd = reinterpret_cast<HWND>(_u64Handle);
 
@@ -267,7 +336,7 @@ namespace PlatformWindow {
 		}
 
 		if (!DestroyWindow(hwnd)) {
-			assert(!"ERROR: Window failed to destroy!");
+			throw std::runtime_error("ERROR: Window failed to destroy!");
 		}
 
 		g_LocalData.g_mapWindowData.erase(hwnd); //Delete local data for this window instance.

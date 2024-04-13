@@ -4,9 +4,20 @@
 #include <stdint.h>
 #include <utility>
 #include <cassert>
+#include <iostream>
+#include <stdexcept>
 
 //Required Includes (will not be replaced)
 #include <thread>
+#include <fstream>
+#include <stdexcept>
+#include <functional>
+#include <chrono>
+
+//Borrowed from Vulkan docs
+#define HC_CONVERT_TO_VERSION_NO(_variant, _major, _minor, _patch)  ((((uint64_t)(_variant)) << 29U) | (((uint64_t)(_major)) << 22U) | (((uint64_t)(_minor)) << 12U) | ((uint64_t)(_patch)))
+//Engine Version No.
+#define HC_ENGINE_VERSION HC_CONVERT_TO_VERSION_NO(1, 1, 0, 0)
 
 //Defines for commonly used math functions
 #define HC_PI 3.14159265358979323846f
@@ -29,9 +40,28 @@
 #define HC_ENABLE_DOUBLE_PRECISION 1
 #define HC_USE_ROTOR 1
 
+#define HC_USE_VULKAN 1
+#define HC_USE_OPENGL 0
+
 //Includes for STL library that will be replaced with custom implementations in the future
 #include <string>
 #include <vector>
+#include <array>
 #include <list>
 #include <map>
 #include <unordered_map>
+#include <optional>
+#include <set>
+#include <limits>
+
+//Generic Platform Handles
+typedef uint64_t WindowHandleGeneric;
+
+struct HC_ALIGNAS(128) BufferHandleGeneric {
+	uint64_t upper;
+	uint64_t lower;
+
+	HC_INLINE bool operator==(const BufferHandleGeneric & _bhgOther) {
+		return this->upper == _bhgOther.upper && this->lower == _bhgOther.lower;
+	}
+};

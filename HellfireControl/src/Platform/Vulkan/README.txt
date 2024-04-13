@@ -1,0 +1,1 @@
+Shader files in this directory are temporary and will be moved to a more permanent location once the asset handler has begun development and once the graphics pipeline is functional.

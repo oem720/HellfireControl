@@ -1,6 +1,9 @@
 
 #include <Platform/Vulkan/VkRenderContext.hpp>
 
+#include <Platform/Vulkan/VkRenderer.hpp>
+#include <Platform/Vulkan/VkBuffer.hpp>
+
 #include <HellfireControl/Util/Util.hpp>
 #include <HellfireControl/Render/RenderContext.hpp>
 
@@ -20,7 +23,7 @@ void PlatformRenderContext::InitRenderContext(const RenderContext& _rcContext) {
 		if (_rcContext.m_rcsfEnabledShaderStages & u32Flags) {
 			auto aShaderCode = Util::ReadFile(_rcContext.m_vShaderFileNames[ndx++]); //Temporary load code
 
-			vShaders.push_back(PlatformRenderer::CreateShaderModule(aShaderCode)); //Add our shader to the module list
+			vShaders.push_back(VkUtil::CreateShaderModule(aShaderCode)); //Add our shader to the module list
 
 			vShaderInfos.push_back(
 				VkPipelineShaderStageCreateInfo { //Add our shader stage info to the vector
@@ -37,6 +40,23 @@ void PlatformRenderContext::InitRenderContext(const RenderContext& _rcContext) {
 	}
 
 	VkRenderContextData rcdData = {};
+
+	//Viewport and scissor are hardcoded for now, but can be adjusted, and will be in the .ini file
+	rcdData.m_vViewport = {
+		.x = 0.0f,
+		.y = 0.0f,
+		.width = static_cast<float>(PlatformRenderer::m_eExtent.width),
+		.height = static_cast<float>(PlatformRenderer::m_eExtent.height),
+		.minDepth = 1.0f,
+		.maxDepth = 0.0f
+	};
+
+	rcdData.m_rScissor = {
+		.offset = { 0, 0 },
+		.extent = PlatformRenderer::m_eExtent
+	};
+
+	CreateDescriptorData(rcdData);
 
 	if (_rcContext.m_rcsfEnabledShaderStages & VK_SHADER_STAGE_COMPUTE_BIT) {
 		//TODO: Compute pipeline here.
@@ -155,7 +175,7 @@ void PlatformRenderContext::InitRenderContext(const RenderContext& _rcContext) {
 			.pNext = nullptr,										//Push constants will follow the same principle, and all will be stored in the .ini file.
 			.flags = 0,
 			.setLayoutCount = 1,
-			.pSetLayouts = &PlatformRenderer::m_dslDescriptorSetLayout,
+			.pSetLayouts = &rcdData.m_ddDescriptorData.m_dslDescriptorSetLayout,
 			.pushConstantRangeCount = 0,
 			.pPushConstantRanges = nullptr
 		};
@@ -202,6 +222,131 @@ void PlatformRenderContext::CleanupRenderContext(uint32_t _u32ContextID) {
 	m_mContextMap[_u32ContextID].Destroy();
 
 	m_mContextMap.erase(_u32ContextID); //Remove from the map after free.
+}
+
+void PlatformRenderContext::CreateDescriptorData(VkRenderContextData& _rcdContext) {
+	//TODO For now all descriptor set data is hard coded from what the demo needs. Future implementation requires that shaders be
+	//analyzed for the proper descriptors and the descriptor sets be built accordingly.
+
+	//Descriptor Layout
+	{
+		VkDescriptorSetLayoutBinding dslbUboLayoutBinding = {
+			.binding = 0,
+			.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			.descriptorCount = 1,
+			.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+			.pImmutableSamplers = nullptr
+		};
+
+		VkDescriptorSetLayoutBinding dslbSamplerBinding = {
+			.binding = 1,
+			.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			.descriptorCount = 1,
+			.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+			.pImmutableSamplers = nullptr
+		};
+
+		std::array<VkDescriptorSetLayoutBinding, 2> arrBindings = { dslbUboLayoutBinding, dslbSamplerBinding };
+
+		VkDescriptorSetLayoutCreateInfo dslciDescriptorLayoutInfo = {
+			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.bindingCount = static_cast<uint32_t>(arrBindings.size()),
+			.pBindings = arrBindings.data()
+		};
+
+		if (vkCreateDescriptorSetLayout(PlatformRenderer::m_dDeviceHandle, &dslciDescriptorLayoutInfo, nullptr, &_rcdContext.m_ddDescriptorData.m_dslDescriptorSetLayout) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to create descriptor set layout!");
+		}
+	}
+
+	//Descriptor Pool
+	{
+		std::array<VkDescriptorPoolSize, 2> arrDescSize = {
+			VkDescriptorPoolSize {
+				.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				.descriptorCount = static_cast<uint32_t>(HC_MAX_FRAMES_IN_FLIGHT)
+			},
+			VkDescriptorPoolSize {
+				.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+				.descriptorCount = static_cast<uint32_t>(HC_MAX_FRAMES_IN_FLIGHT)
+			}
+		};
+
+		VkDescriptorPoolCreateInfo dpciPoolInfo = {
+			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.maxSets = static_cast<uint32_t>(HC_MAX_FRAMES_IN_FLIGHT),
+			.poolSizeCount = arrDescSize.size(),
+			.pPoolSizes = arrDescSize.data()
+		};
+
+		if (vkCreateDescriptorPool(PlatformRenderer::m_dDeviceHandle, &dpciPoolInfo, nullptr, &_rcdContext.m_ddDescriptorData.m_dpDescriptorPool) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to create Descriptor Pool!");
+		}
+	}
+}
+
+void PlatformRenderContext::TempInitDescriptors(uint32_t _u32BufferID, VkRenderContextData& _rcdData) {
+	std::vector<VkDescriptorSetLayout> vLayouts(HC_MAX_FRAMES_IN_FLIGHT, _rcdData.m_ddDescriptorData.m_dslDescriptorSetLayout); //Blech, fuck you Vulkan
+	_rcdData.m_ddDescriptorData.m_vDescriptorSets.resize(HC_MAX_FRAMES_IN_FLIGHT);
+
+	VkDescriptorSetAllocateInfo dsaiAllocateInfo = {
+		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+		.pNext = nullptr,
+		.descriptorPool = _rcdData.m_ddDescriptorData.m_dpDescriptorPool,
+		.descriptorSetCount = static_cast<uint32_t>(HC_MAX_FRAMES_IN_FLIGHT),
+		.pSetLayouts = vLayouts.data()
+	};
+
+	if (vkAllocateDescriptorSets(PlatformRenderer::m_dDeviceHandle, &dsaiAllocateInfo, _rcdData.m_ddDescriptorData.m_vDescriptorSets.data()) != VK_SUCCESS) {
+		throw std::runtime_error("ERROR: Failed to allocate Descriptor Sets!");
+	}
+
+	for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
+		VkDescriptorBufferInfo dbiBufferInfo = {
+			.buffer = _rcdData.m_vContextBuffers[_u32BufferID].m_vBuffers[ndx],
+			.offset = 0,
+			.range = PlatformBuffer::g_blData.g_mBufferDataTable[_rcdData.m_vContextBuffers[_u32BufferID].m_vBuffers[0]].m_u32ItemWidth
+		};
+
+		VkDescriptorImageInfo dbiImageInfo = {
+			.sampler = PlatformRenderer::m_sSampler,
+			.imageView = PlatformRenderer::ivTextureView,
+			.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+		};
+
+		std::array<VkWriteDescriptorSet, 2> arrDescWrite = {
+			VkWriteDescriptorSet {
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.pNext = nullptr,
+				.dstSet = _rcdData.m_ddDescriptorData.m_vDescriptorSets[ndx],
+				.dstBinding = 0,
+				.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				.pImageInfo = nullptr,
+				.pBufferInfo = &dbiBufferInfo,
+				.pTexelBufferView = nullptr
+			},
+			VkWriteDescriptorSet {
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.pNext = nullptr,
+				.dstSet = _rcdData.m_ddDescriptorData.m_vDescriptorSets[ndx],
+				.dstBinding = 1,
+				.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+				.pImageInfo = &dbiImageInfo,
+				.pBufferInfo = nullptr,
+				.pTexelBufferView = nullptr
+			}
+		};
+
+		vkUpdateDescriptorSets(PlatformRenderer::m_dDeviceHandle, static_cast<uint32_t>(arrDescWrite.size()), arrDescWrite.data(), 0, nullptr);
+	}
 }
 
 void PlatformRenderContext::CleanupAllContextData() {

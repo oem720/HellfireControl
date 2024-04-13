@@ -1,6 +1,6 @@
 
 #include <Platform/Vulkan/VkBuffer.hpp>
-#include <Platform/Vulkan/VkCore.hpp>
+#include <Platform/Vulkan/VkRenderer.hpp>
 #include <Platform/Vulkan/VkRenderContext.hpp>
 
 #include <HellfireControl/Render/Buffer.hpp>
@@ -39,6 +39,8 @@ void PlatformBuffer::InitBuffer(BufferHandleGeneric& _bhgOutHandle, uint8_t _u8T
 		};
 
 		PlatformRenderContext::m_mContextMap[_u32RenderContext].m_vContextBuffers.push_back(vsbBufferData);
+
+		PlatformRenderContext::TempInitDescriptors(PlatformRenderContext::m_mContextMap[_u32RenderContext].m_vContextBuffers.size() - 1, PlatformRenderContext::m_mContextMap[_u32RenderContext]);
 	}
 	else {
 		VkBuffer bStagingBuffer;
@@ -150,7 +152,7 @@ void PlatformBuffer::CreateBuffer(VkDeviceSize _dsSize, VkBufferUsageFlags _bufF
 }
 
 void PlatformBuffer::CopyBuffer(VkBuffer _bSource, VkBuffer _bDestination, VkDeviceSize _dsSize) {
-	VkCommandBuffer cbBuffer = PlatformRenderer::BeginSingleTimeCommands();
+	VkCommandBuffer cbBuffer = VkUtil::BeginSingleTimeCommands();
 
 	VkBufferCopy bcCopyRegion = {
 		.srcOffset = 0,
@@ -160,7 +162,7 @@ void PlatformBuffer::CopyBuffer(VkBuffer _bSource, VkBuffer _bDestination, VkDev
 
 	vkCmdCopyBuffer(cbBuffer, _bSource, _bDestination, 1, &bcCopyRegion);
 
-	PlatformRenderer::EndSingleTimeCommands(cbBuffer);
+	VkUtil::EndSingleTimeCommands(cbBuffer);
 }
 
 uint32_t PlatformBuffer::FindMemoryType(uint32_t _u32TypeFilter, VkMemoryPropertyFlags _mpfFlags) {

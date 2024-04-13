@@ -20,7 +20,8 @@ constexpr VkMemoryPropertyFlags HC_MEMORY_FLAGS = VK_MEMORY_PROPERTY_HOST_VISIBL
 
 class PlatformBuffer {
 	friend class PlatformRenderer;
-
+	friend class PlatformRenderContext;
+	friend class VkUtil;
 private:
 	static void CreateBuffer(VkDeviceSize _dsSize, VkBufferUsageFlags _bufFlags, VkMemoryPropertyFlags _mpfFlags, VkBuffer& _bBuffer, VkDeviceMemory& _dmMemory);
 

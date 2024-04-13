@@ -2,7 +2,7 @@
 
 #if HC_USE_VULKAN && !HC_USE_OPENGL
 
-#include <Platform/Vulkan/VkCore.hpp>
+#include <Platform/Vulkan/VkRenderer.hpp>
 
 #include <Platform/Vulkan/VkBuffer.hpp>
 

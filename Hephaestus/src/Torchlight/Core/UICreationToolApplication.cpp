@@ -1,7 +1,7 @@
 
 #include <Torchlight/Core/UICreationToolApplication.hpp>
 
-#include <Platform/Vulkan/VkCore.hpp> //Hack to get hard coded values working. This will be fixed when vertices are moved to their own file.
+#include <Platform/Vulkan/VkUtil.hpp> //Hack to get hard coded values working. This will be fixed when vertices are moved to their own file.
 
 #include <HellfireControl/Render/Renderer.hpp>
 
@@ -13,14 +13,14 @@ void UICreationToolApplication::Start() {
 	m_prsRenderer->Init(m_strApplicationName, m_wWindow.GetNativeWindowHandle(), CONTEXT_TYPE_3D);
 
 	const std::vector<VertexSimple> vVertices = {
-		{ Vec3F(-0.5f, -0.5f, 0.25f), Vec3F(1.0f, 0.0f, 0.0f), Vec2F(1.0f, 0.0f) },
-		{ Vec3F(0.5f, -0.5f, 0.25f), Vec3F(0.0f, 1.0f, 0.0f), Vec2F(0.0f, 0.0f) },
-		{ Vec3F(0.5f, 0.5f, 0.25f), Vec3F(0.0f, 0.0f, 1.0f), Vec2F(0.0f, 1.0f) },
+		{ Vec3F(-0.5f, -0.5f, 0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(1.0f, 0.0f) },
+		{ Vec3F(0.5f, -0.5f, 0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(0.0f, 0.0f) },
+		{ Vec3F(0.5f, 0.5f, 0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(0.0f, 1.0f) },
 		{ Vec3F(-0.5f, 0.5f, 0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(1.0f, 1.0f) },
 
-		{ Vec3F(-0.5f, -0.5f, -0.25f), Vec3F(1.0f, 0.0f, 0.0f), Vec2F(1.0f, 0.0f) },
-		{ Vec3F(0.5f, -0.5f, -0.25f), Vec3F(0.0f, 1.0f, 0.0f), Vec2F(0.0f, 0.0f) },
-		{ Vec3F(0.5f, 0.5f, -0.25f), Vec3F(0.0f, 0.0f, 1.0f), Vec2F(0.0f, 1.0f) },
+		{ Vec3F(-0.5f, -0.5f, -0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(1.0f, 0.0f) },
+		{ Vec3F(0.5f, -0.5f, -0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(0.0f, 0.0f) },
+		{ Vec3F(0.5f, 0.5f, -0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(0.0f, 1.0f) },
 		{ Vec3F(-0.5f, 0.5f, -0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(1.0f, 1.0f) }
 	};
 

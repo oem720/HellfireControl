@@ -2,7 +2,8 @@
 
 #include <Platform/GLCommon.hpp>
 
-#include <Platform/Vulkan/VkCore.hpp>
+#include <Platform/Vulkan/VkUtil.hpp>
+#include <Platform/Vulkan/VkRenderer.hpp>
 
 class RenderContext; //Forward Declare
 
@@ -30,15 +31,27 @@ private:
 		}
 	};
 
+	struct VkDescriptorData {
+		VkDescriptorSetLayout m_dslDescriptorSetLayout = VK_NULL_HANDLE;
+		VkDescriptorPool m_dpDescriptorPool = VK_NULL_HANDLE;
+
+		std::vector<VkDescriptorSet> m_vDescriptorSets;
+	};
+
 	struct VkRenderContextData {
 		VkPipelineLayout m_plPipelineLayout = VK_NULL_HANDLE;
 		VkPipeline m_pPipeline = VK_NULL_HANDLE;
+		VkDescriptorData m_ddDescriptorData;
 
 		std::vector<VkSyncedBufferVars> m_vContextBuffers;
 
 		std::vector<BufferHandleGeneric> m_vVertexBuffers;
 
 		std::vector<BufferHandleGeneric> m_vIndexBuffers;
+
+		VkViewport m_vViewport = {};
+
+		VkRect2D m_rScissor = {};
 
 		void Destroy() {
 			vkDeviceWaitIdle(PlatformRenderer::m_dDeviceHandle);
@@ -54,6 +67,10 @@ private:
 			for (auto& aBufferHandle : m_vIndexBuffers) {
 				DestroyBuffer(aBufferHandle);
 			}
+
+			vkDestroyDescriptorPool(PlatformRenderer::m_dDeviceHandle, m_ddDescriptorData.m_dpDescriptorPool, nullptr);
+
+			vkDestroyDescriptorSetLayout(PlatformRenderer::m_dDeviceHandle, m_ddDescriptorData.m_dslDescriptorSetLayout, nullptr);
 
 			vkDestroyPipelineLayout(PlatformRenderer::m_dDeviceHandle, m_plPipelineLayout, nullptr);
 
@@ -76,9 +93,13 @@ private:
 
 	static VkVertexData GetVertexAttributesFromType(uint8_t _u8VertexType);
 
+	static void CreateDescriptorData(VkRenderContextData& _rcdContext);
+
 	static void CleanupAllContextData();
 public:
 	static void InitRenderContext(const RenderContext& _rcContext);
+
+	static void TempInitDescriptors(uint32_t _u32BufferID, VkRenderContextData& _rcdData);
 
 	static void CleanupRenderContext(uint32_t _u32ContextID);
 };

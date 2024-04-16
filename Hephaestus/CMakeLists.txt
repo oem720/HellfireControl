@@ -21,6 +21,9 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio")
         string(REPLACE "/" "\\" _source_path_msvc "${_source_path_msvc}")
         source_group("${_source_path_msvc}" FILES "${_source}")
     endforeach()
+
+    set_property(TARGET Torchlight PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+
 endif()
 
 target_include_directories(Torchlight PUBLIC src)

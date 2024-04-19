@@ -14,7 +14,7 @@ uint64_t HashString(const std::string& _strValue) {
 	uint64_t u64Hash = 0;
 
 	for (int ndx = 0; ndx < _strValue.size(); ++ndx) {
-		u64Hash += ((ndx & 1) ? -1 : 1) * (static_cast<uint64_t>(_strValue[ndx]) * HC_HASH_PRIME_P) + (static_cast<uint64_t>(_strValue[ndx]) * HC_HASH_PRIME_Q);
+		u64Hash ^= ((ndx & 1) ? -1 : 1) * (static_cast<uint64_t>(_strValue[ndx]) * HC_HASH_PRIME_P) + (static_cast<uint64_t>(_strValue[ndx]) * HC_HASH_PRIME_Q);
 	}
 
 	return u64Hash;

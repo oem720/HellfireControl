@@ -21,7 +21,7 @@ void Window::WaitEvents() {
 	PlatformWindow::WaitEvents(m_whgHandle);
 }
 
-void Window::CleanupWindow() {
+void Window::Cleanup() {
 	PlatformWindow::CleanupWindow(m_whgHandle);
 }
 

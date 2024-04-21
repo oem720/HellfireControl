@@ -4,6 +4,8 @@
 
 class RenderingSubsystem;
 
+struct BufferHandleGeneric;
+
 class UICreationToolApplication : public Application {
 private:
 	RenderingSubsystem* m_prsRenderer = nullptr;
@@ -11,6 +13,8 @@ private:
 	void Start();
 
 	void End();
+
+	void UpdateUniformBuffer(const BufferHandleGeneric& _bhgHandle);
 
 public:
 

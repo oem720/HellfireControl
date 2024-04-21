@@ -96,10 +96,10 @@ namespace PlatformWindow {
 
 			WindowCallbackMessage wcmMessage = {
 				.m_wcetType = WINDOW_RESIZE, //Combine move and resize flags
-				.m_llUpperParam = 0, //Unused for resize command
-				.m_llLowerParam = (static_cast<long long>(LOWORD(lParam)) << 32 | static_cast<long long>(HIWORD(lParam))) //Pack size into lower
+				.upper = 0, //Unused for resize command
+				.lower = (static_cast<uint64_t>(LOWORD(lParam)) << 32 | static_cast<uint64_t>(HIWORD(lParam))) //Pack size into lower
 			};
-
+			
 			NotifyCallbacks(reinterpret_cast<uint64_t>(hwnd), wcmMessage);
 
 			return 0;
@@ -109,8 +109,8 @@ namespace PlatformWindow {
 
 			WindowCallbackMessage wcmMessage = {
 				.m_wcetType = WINDOW_CLOSE,
-				.m_llUpperParam = 0, //Parameters are unused for this message.
-				.m_llLowerParam = 0, 
+				.upper = 0, //Parameters are unused for this message.
+				.lower = 0, 
 			};
 
 			NotifyCallbacks(reinterpret_cast<uint64_t>(hwnd), wcmMessage);

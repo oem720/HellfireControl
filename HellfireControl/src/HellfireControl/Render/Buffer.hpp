@@ -3,42 +3,34 @@
 #include <HellfireControl/Core/Common.hpp>
 
 enum BufferType : uint8_t {
-	VERTEX,
-	INDEX,
-	UNIFORM,
-	INVALID
+	UNIFORM_BUFFER = 16U,
+	STORAGE_BUFFER = 32U,
+	INDEX_BUFFER = 64U,
+	VERTEX_BUFFER = 128U,
+	INVALID_BUFFER = 1U
 };
-
-struct BufferHandleGeneric {
-	uint64_t m_u64UpperParam;
-	uint64_t m_u64LowerParam;
-
-	HC_INLINE bool operator==(const BufferHandleGeneric& _bhgOther) {
-		return this->m_u64UpperParam == _bhgOther.m_u64UpperParam && this->m_u64LowerParam == _bhgOther.m_u64LowerParam;
-	}
-};
-
-class RenderingSubsystem;
 
 class Buffer {
 private:
-	RenderingSubsystem* m_prsRenderer = nullptr;
-
-	BufferType m_btType = BufferType::INVALID;
+	BufferType m_btType = BufferType::INVALID_BUFFER;
 
 	BufferHandleGeneric m_bhgHandle = {};
+
+	uint32_t m_u32RenderContextID = 0;
+
+	BufferType GetBufferType(const BufferHandleGeneric& _bhgHandle);
 public:
 	Buffer() = delete;
 
-	Buffer(BufferType _btType, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
+	Buffer(BufferType _btType, const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount, uint32_t _u32RenderContextID);
 
 	Buffer(const BufferHandleGeneric& _bhgPreexisting);
 
 	void Append(const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
 
-	void ReplaceData(const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
+	void Update(const void* _pDataBlob, uint32_t _u32ItemWidth, uint32_t _u32ItemCount);
 
-	void Cleanup(bool _bDeregister = true);
+	void Cleanup();
 
 	[[nodiscard]] HC_INLINE BufferHandleGeneric GetBufferHandle() const { return m_bhgHandle; }
 };

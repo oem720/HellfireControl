@@ -1,8 +1,5 @@
-#include <iostream>
-#include <stdexcept>
 
 #include <Torchlight/Core/UICreationToolApplication.hpp>
-#include <HellfireControl/UI/UI.hpp>
 
 int main() {
 	UICreationToolApplication appTorchlight;

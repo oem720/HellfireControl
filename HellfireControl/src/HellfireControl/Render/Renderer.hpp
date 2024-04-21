@@ -3,9 +3,8 @@
 #include <HellfireControl/Core/Common.hpp>
 #include <HellfireControl/Math/Matrix.hpp>
 
-#include <Platform/GLInclude.hpp> //TEMPORARY ! ! ! HACK FOR VERTICES, MOVE VERTEX TYPES TO THEIR OWN FILE LATER AND ELIMINATE THIS GARBAGE ! ! !
-
 #include <HellfireControl/Render/Buffer.hpp>
+#include <HellfireControl/Render/RenderContext.hpp>
 
 struct UniformBufferData {
 	MatrixF m_mModel;
@@ -15,21 +14,27 @@ struct UniformBufferData {
 
 class RenderingSubsystem {
 private:
-	std::vector<BufferHandleGeneric> m_vActiveBuffers;
+	std::vector<RenderContext> m_vRenderContexts;
+
+	uint32_t m_u32NewRenderContextID = 0;
 
 	static RenderingSubsystem* m_prsInstancePtr;
+
+	std::vector<std::string> GetShaderFileNames(uint8_t _rctType); //TEMPORARY ! ! ! WILL BE REPLACED WITH READING FROM AN INI FILE
 
 	RenderingSubsystem() {}
 public:
 	static RenderingSubsystem* GetInstance();
 
-	void Init(const std::string& _strAppName, uint64_t _u64WindowHandle);
+	void Init(const std::string& _strAppName, uint64_t _u64WindowHandle, uint8_t _u8ActiveContextIDs);
 
 	void RenderFrame();
 
 	void Cleanup();
 
-	void RegisterBuffer(const BufferHandleGeneric& _bhgNewBuffer);
+	void RegisterRenderContext(const RenderContext& _rcContext, uint8_t _u8PreceedingContextCount = UINT8_MAX);
 
-	void DeregisterBuffer(const BufferHandleGeneric& _bhgNewBuffer);
+	[[nodiscard]] const Vec2F GetRenderableExtents();
+
+	[[nodiscard]] const uint32_t GetRenderContextID(uint8_t _rctType);
 };

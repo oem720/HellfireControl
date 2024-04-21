@@ -25,11 +25,15 @@ private:
 	friend bool operator<(const GUID& _gLeft, const GUID& _gRight);
 public:
 	GUID(const GUID& _gOther) = default;
+
 	GUID& operator=(const GUID& _gOther) = default;
+
 	GUID(GUID&& _gOther) = default;
+
 	GUID& operator=(GUID&& _gOther) = default;
 
 	bool operator==(const GUID& _gOther) const;
+
 	bool operator!=(const GUID& _gOther) const;
 
 	operator std::string() const;

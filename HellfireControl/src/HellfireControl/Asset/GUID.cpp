@@ -1,10 +1,10 @@
 
 #include <HellfireControl/Asset/GUID.hpp>
-#include <HellfireControl/Math/Random.hpp>
 
 //Hash numbers
 constexpr uint64_t HC_HASH_PRIME_P = 0xE4BB93D3DF4F7A61U;
 constexpr uint64_t HC_HASH_PRIME_Q = 0xB98DEDA5D48BCBC7U;
+constexpr uint64_t HC_HASH_PRIME_R = 0xCB53E93F9CD22179U;
 
 uint64_t HashLong(uint64_t _u64Value) {
 	return (_u64Value * HC_HASH_PRIME_P) + (_u64Value * HC_HASH_PRIME_Q);
@@ -38,10 +38,11 @@ GUID::operator std::string() const {
 }
 
 GUID GUID::ConstructRandom() {
-	Random rRand;
 	GUID gId;
 
-	gId.upper = HashLong(static_cast<uint64_t>(rRand.GenerateLong(LLONG_MIN, LLONG_MAX))); //partially constrained -- unfortunate!
+	uint64_t u64Time = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count());
+
+	gId.upper = HashLong(u64Time) ^ HC_HASH_PRIME_R;
 	gId.lower = HashLong(gId.upper);
 
 	return gId;

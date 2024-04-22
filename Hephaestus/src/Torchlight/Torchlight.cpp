@@ -1,5 +1,6 @@
 
 #include <Torchlight/Core/UICreationToolApplication.hpp>
+#include <HellfireControl/UI/UI.hpp>
 
 int main() {
 	UICreationToolApplication appTorchlight;

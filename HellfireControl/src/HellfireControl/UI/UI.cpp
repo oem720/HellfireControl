@@ -1,6 +1,8 @@
 #include <HellfireControl/UI/UI.hpp>
 
 UISubsystem* UISubsystem::m_UIInstance = nullptr;
+int UISubsystem::m_IScreenWidth = -1;
+int UISubsystem::m_IScreenHeight = -1;
 
 void UISubsystem::Init() {
 	

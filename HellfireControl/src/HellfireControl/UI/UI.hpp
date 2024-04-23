@@ -10,8 +10,8 @@ private:
 
 	static std::vector<Interactable> m_InterableElements;
 
-	static int m_IScreenWidth = -1;
-	static int m_IScreenHeight = -1;
+	static int m_IScreenWidth;
+	static int m_IScreenHeight;
 
 	UISubsystem() {};
 

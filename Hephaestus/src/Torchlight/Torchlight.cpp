@@ -8,7 +8,7 @@ int main() {
 
 	try {
 		SignedDistanceField reader;
-		//reader.Bit();
+		//reader.Run();
 		appTorchlight.Run();
 	}
 	catch (const std::exception& _exError) {

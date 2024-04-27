@@ -29,7 +29,7 @@ void SignedDistanceField::Run() {
         }
     }
     stbi_write_bmp("bitmap.bmp", h, w, 1, data);
-    delete data;
+    free(data);
     stbi_image_free(img);
     std::cout << h << " " << w << " " << comp;
 };

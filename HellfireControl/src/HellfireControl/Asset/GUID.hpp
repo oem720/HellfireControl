@@ -4,6 +4,7 @@
 
 class File;
 
+
 class GUID {
 private:
 	union {
@@ -13,8 +14,6 @@ private:
 		};
 		unsigned char m_arrBytes[16];
 	};
-
-	GUID();
 
 	static uint8_t HexDigitToChar(char _cDigit);
 
@@ -29,6 +28,8 @@ private:
 
 	friend bool operator<(const GUID& _gLeft, const GUID& _gRight);
 public:
+	GUID();
+
 	GUID(const GUID& _gOther) = default;
 
 	GUID& operator=(const GUID& _gOther) = default;

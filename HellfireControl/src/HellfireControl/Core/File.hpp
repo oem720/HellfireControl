@@ -2,8 +2,6 @@
 
 #include <HellfireControl/Core/Common.hpp>
 
-#include <HellfireControl/Util/SerializableObject.hpp>
-
 #define HC_SFINAE_REQUIRE_NUMERIC typename std::enable_if<std::disjunction<std::is_integral<T>, std::is_floating_point<T>>::value>::type
 
 enum FileOpenFlag : uint8_t {
@@ -97,7 +95,7 @@ public:
 
 public:
 	template <typename T, typename = HC_SFINAE_REQUIRE_NUMERIC>
-	HC_INLINE File& operator<<(const T _val) {
+	HC_INLINE File& operator<<(const T& _val) {
 		if (IsOpen() && m_fofFlags & FILE_OPEN_FLAG_WRITE) {
 			(m_fofFlags & FILE_OPEN_FLAG_BINARY) ? WriteBinary(&_val, sizeof(T)) : WriteASCII(std::to_string(_val));
 		}
@@ -109,10 +107,10 @@ public:
 	}
 
 	template <typename T, typename = HC_SFINAE_REQUIRE_NUMERIC>
-	HC_INLINE File& operator>>(T _val) {
+	HC_INLINE File& operator>>(T& _val) {
 		if (IsOpen() && m_fofFlags & FILE_OPEN_FLAG_READ) {
 			if (m_fofFlags & FILE_OPEN_FLAG_BINARY) {
-				ReadBinary(&_val, sizeof(T))
+				ReadBinary(&_val, sizeof(T));
 			}
 			else {
 				std::string strVal;
@@ -122,7 +120,7 @@ public:
 				ConvertToNumericValue(strVal, _val);
 			}
 		}
-		else{
+		else {
 			std::cerr << "WARNING! Attempted to read from a file that is unopened or does not have read privileges!\n";
 		}
 
@@ -132,12 +130,8 @@ public:
 	template<typename T>
 	HC_INLINE File& operator<<(const std::vector<T>& _vVector) {
 		if (IsOpen() && m_fofFlags & FILE_OPEN_FLAG_WRITE) {
-			SignalStartOfStructure();
-
 			//Vector length followed by data must be written
-			*this << _vVector.size();
-
-			SignalEndOfStructure();
+			*this << static_cast<uint32_t>(_vVector.size());
 
 			//Data written individually to take advantage of serializer function for object.
 			for (int ndx = 0; ndx < _vVector.size(); ++ndx) {
@@ -156,10 +150,10 @@ public:
 		if (IsOpen() && m_fofFlags & FILE_OPEN_FLAG_READ) {
 			_vVector.clear(); //Clear the vector to ensure no data is carried over.
 
-			int iSize = 0;
-			*this >> iSize; //Read the size
+			uint32_t u32Size = 0;
+			*this >> u32Size; //Read the size
 
-			_vVector.resize(iSize); //Resize our vector to allocate the memory needed.
+			_vVector.resize(u32Size); //Resize our vector to allocate the memory needed.
 
 			//Leverage Deserialize function to read in the data.
 			for (int ndx = 0; ndx < _vVector.size(); ++ndx) {

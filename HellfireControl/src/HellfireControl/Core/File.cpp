@@ -18,7 +18,7 @@ File::File(const std::string& _strFilename, uint8_t _fofFlags) {
 	}
 }
 
-File::~File(){
+File::~File() {
 	if (IsOpen()) {
 		Close();
 	}
@@ -84,7 +84,7 @@ int File::ResolveFileFlags() {
 		iOpenFlags |= std::ios_base::out;
 	}
 
-	if (m_fofFlags & FILE_OPEN_FLAG_APPEND) {							
+	if (m_fofFlags & FILE_OPEN_FLAG_APPEND) {
 		iOpenFlags |= std::ios_base::app;
 	}
 
@@ -103,7 +103,7 @@ int File::ResolveFileFlags() {
 	return iOpenFlags;
 }
 
-void File::OpenFile(int _iFlags){
+void File::OpenFile(int _iFlags) {
 	m_fStream = std::fstream(m_pthFilepath, _iFlags);
 
 	if (!m_fStream.is_open()) {
@@ -124,20 +124,18 @@ void File::ExtractFileBlob() {
 }
 
 std::string File::ParseLine(const std::function<const bool(char&)>& _funcCondition) {
-	bool bDelimiterFound = false;
 	bool bInQuotes = false;
 	char cNext;
 
 	std::string strOutput;
 
-	while (_funcCondition(cNext) && !bDelimiterFound) {
+	while (_funcCondition(cNext)) {
 		if (cNext == HC_DELIMITER_TAB && !bInQuotes) {
 			continue;
 		}
 
 		if ((cNext == HC_DELIMITER_WHITESPACE || cNext == HC_DELIMITER_NEWLINE) && !bInQuotes) {
-			bDelimiterFound = true;
-			continue;
+			break;
 		}
 
 		if (cNext == HC_DELIMITER_STR_SEP) {
@@ -153,13 +151,13 @@ std::string File::ParseLine(const std::function<const bool(char&)>& _funcConditi
 
 void File::ReadBinary(void* _ptrvDest, size_t _sNumBytes) {
 	if (m_fofFlags & FILE_OPEN_FLAG_BLOB) {
-		if ((m_ptrBlobPointer + _sNumBytes < m_vDataBlob.end()._Ptr)) {
+		if ((m_ptrBlobPointer + _sNumBytes > m_vDataBlob.end()._Ptr)) {
 			std::cerr << "WARNING: Attempted to read past the file memory bounds!";
 			return;
 		}
 
 		memcpy(_ptrvDest, m_ptrBlobPointer, _sNumBytes); //Memcpy from the blob.
-		
+
 		m_ptrBlobPointer += _sNumBytes; //Advance the read pointer
 	}
 	else {
@@ -172,16 +170,11 @@ void File::WriteBinary(const void* _ptrvSrc, size_t _sNumBytes) {
 }
 
 void File::ReadASCII(std::string& _strDest) {
-	std::function<const bool(char&)> funcCondition;
+	std::function<const bool(char&)> funcTuple = (m_fofFlags & FILE_OPEN_FLAG_BLOB) ?
+		std::function<const bool(char&)>([&](char& _cNext) -> const bool { return (_cNext = *m_ptrBlobPointer++, m_ptrBlobPointer != m_vDataBlob.end()._Ptr); }) :
+		std::function<const bool(char&)>([&](char& _cNext) -> const bool { return (m_fStream.get(_cNext), !m_fStream.eof()); });
 
-	if (m_fofFlags & FILE_OPEN_FLAG_BLOB) {
-		funcCondition = [&](char& _cNext) -> const bool { return (_cNext = *m_ptrBlobPointer++, m_ptrBlobPointer != m_vDataBlob.end()._Ptr); };
-	}
-	else {		
-		funcCondition = [&](char& _cNext) -> const bool {return (m_fStream.get(_cNext), !m_fStream.eof()); };
-	}
-
-	_strDest = ParseLine(funcCondition);
+	_strDest = ParseLine(funcTuple);
 }
 
 void File::WriteASCII(const std::string& _strVal) {
@@ -191,7 +184,7 @@ void File::WriteASCII(const std::string& _strVal) {
 File& operator<<(File& _fFile, const std::string& _strString) {
 	if (_fFile.IsOpen() && _fFile.m_fofFlags & FILE_OPEN_FLAG_WRITE) {
 		if (_fFile.m_fofFlags & FILE_OPEN_FLAG_BINARY) {
-			_fFile << _strString.length(); //Write the length.
+			_fFile << static_cast<uint32_t>(_strString.length()); //Write the length.
 
 			_fFile.WriteBinary(_strString.data(), _strString.length());
 		}
@@ -211,15 +204,13 @@ File& operator>>(File& _fFile, std::string& _strString) {
 		if (_fFile.m_fofFlags & FILE_OPEN_FLAG_BINARY) {
 			_strString.clear(); //Reset string before processing
 
-			size_t sLength = 0;
-			_fFile >> sLength; //Read in the length
+			uint32_t u32Size = 0;
+			_fFile >> u32Size; //Read in the length
 
-			_fFile.ReadBinary(_strString.data(), sLength);
+			_fFile.ReadBinary(_strString.data(), u32Size);
 		}
 		else {
 			_fFile.ReadASCII(_strString);
-
-			_strString = _strString.substr(1, _strString.size() - 2); //Remove the surrounding quotation marks
 		}
 	}
 	else {

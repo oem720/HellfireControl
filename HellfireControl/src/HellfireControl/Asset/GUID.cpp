@@ -127,8 +127,8 @@ uint8_t GUID::HexPairToChar(char _cLeft, char _cRight) {
 
 bool GUID::CheckValidHexChar(char _cDigit) {
 	return (_cDigit > 47 && _cDigit < 58) ||
-		   (_cDigit > 64 && _cDigit < 71) ||
-		   (_cDigit > 96 && _cDigit < 103);
+		(_cDigit > 64 && _cDigit < 71) ||
+		(_cDigit > 96 && _cDigit < 103);
 }
 
 std::ostream& operator<<(std::ostream& _sStream, const GUID& _gID) {
@@ -150,18 +150,14 @@ std::ostream& operator<<(std::ostream& _sStream, const GUID& _gID) {
 }
 
 File& operator<<(File& _fFile, const GUID& _gID) {
-	_fFile.SignalStartOfStructure();
-
 	//Disgusting hack to get GUIDs to print as a string.
 	if (_fFile.IsBinary()) {
-		_fFile << _gID.AsString();
-	}
-	else {
 		_fFile << _gID.upper;
 		_fFile << _gID.lower;
 	}
-
-	_fFile.SignalEndOfStructure();
+	else {
+		_fFile << _gID.AsString();
+	}
 
 	return _fFile;
 }

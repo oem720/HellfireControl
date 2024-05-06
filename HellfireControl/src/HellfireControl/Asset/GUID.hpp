@@ -2,6 +2,8 @@
 
 #include <HellfireControl/Core/Common.hpp>
 
+class File;
+
 class GUID {
 private:
 	union {
@@ -21,6 +23,9 @@ private:
 	static bool CheckValidHexChar(char _cDigit);
 
 	friend std::ostream& operator<<(std::ostream& _sStream, const GUID& _gID);
+
+	friend File& operator<<(File& _fFile, const GUID& _gID);
+	friend File& operator>>(File& _fFile, GUID& _gID);
 
 	friend bool operator<(const GUID& _gLeft, const GUID& _gRight);
 public:

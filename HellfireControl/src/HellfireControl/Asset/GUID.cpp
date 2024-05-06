@@ -1,6 +1,8 @@
 
 #include <HellfireControl/Asset/GUID.hpp>
 
+#include <HellfireControl/Core/File.hpp>
+
 //Hash numbers
 constexpr uint64_t HC_HASH_PRIME_P = 0xE4BB93D3DF4F7A61U;
 constexpr uint64_t HC_HASH_PRIME_Q = 0xB98DEDA5D48BCBC7U;
@@ -145,6 +147,40 @@ std::ostream& operator<<(std::ostream& _sStream, const GUID& _gID) {
 	_sStream.flags(fFormat);
 
 	return _sStream;
+}
+
+File& operator<<(File& _fFile, const GUID& _gID) {
+	_fFile.SignalStartOfStructure();
+
+	//Disgusting hack to get GUIDs to print as a string.
+	if (_fFile.IsBinary()) {
+		_fFile << _gID.AsString();
+	}
+	else {
+		_fFile << _gID.upper;
+		_fFile << _gID.lower;
+	}
+
+	_fFile.SignalEndOfStructure();
+
+	return _fFile;
+}
+
+File& operator>>(File& _fFile, GUID& _gID) {
+
+	if (_fFile.IsBinary()) {
+		_fFile >> _gID.upper;
+		_fFile >> _gID.lower;
+	}
+	else {
+		std::string strGUID;
+
+		_fFile >> strGUID;
+
+		_gID = GUID::ConstructFromGUIDString(strGUID);
+	}
+
+	return _fFile;
 }
 
 bool operator<(const GUID& _gLeft, const GUID& _gRight) {

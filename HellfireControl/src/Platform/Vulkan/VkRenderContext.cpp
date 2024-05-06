@@ -5,6 +5,7 @@
 #include <Platform/Vulkan/VkBuffer.hpp>
 
 #include <HellfireControl/Util/Util.hpp>
+#include <HellfireControl/Core/File.hpp>
 #include <HellfireControl/Render/RenderContext.hpp>
 
 uint32_t PlatformRenderContext::m_u32ActiveRenderContext = 0;

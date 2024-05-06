@@ -175,7 +175,7 @@ void File::ReadASCII(std::string& _strDest) {
 	std::function<const bool(char&)> funcCondition;
 
 	if (m_fofFlags & FILE_OPEN_FLAG_BLOB) {
-		funcCondition = [&](char& _cNext) -> const bool { return (_cNext = *m_ptrBlobPointer++, m_ptrBlobPointer == m_vDataBlob.end()._Ptr); };
+		funcCondition = [&](char& _cNext) -> const bool { return (_cNext = *m_ptrBlobPointer++, m_ptrBlobPointer != m_vDataBlob.end()._Ptr); };
 	}
 	else {		
 		funcCondition = [&](char& _cNext) -> const bool {return (m_fStream.get(_cNext), !m_fStream.eof()); };

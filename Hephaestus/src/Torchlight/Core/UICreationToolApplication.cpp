@@ -44,7 +44,7 @@ void UICreationToolApplication::Run() {
 
 	FileDialog fd;
 
-	fd.InitDialogBox(FILE_DIALOG_SAVE, ALL_VIDEO_FORMATS, "./");
+	fd.InitDialogBox(FILE_DIALOG_SAVE, ALL_VIDEO_FORMATS, "C:\\");
 
 	std::vector<std::string> results = fd.GetUserSelections();
 

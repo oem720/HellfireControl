@@ -233,6 +233,21 @@ bool PlatformFileDialog::CreateFileDialog(uint8_t _u8Type, uint64_t _u64FileExte
 
 	if (FAILED(hRes)) { return false; }
 
+	std::wstring strFilepath = Util::ConvertToWString(_strDefaultPath);
+
+	wchar_t cCanonPath[MAX_PATH];
+
+	PathCanonicalize(cCanonPath, strFilepath.c_str());
+
+	IShellItem* pDefaultFolder = NULL;
+
+	hRes = SHCreateItemFromParsingName(cCanonPath, NULL, IID_PPV_ARGS(&pDefaultFolder));
+
+	if (SUCCEEDED(hRes)) {
+		pFileDialog->SetFolder(pDefaultFolder);
+		pDefaultFolder->Release();
+	}
+
 	hRes = pFileDialog->Show(NULL);
 
 	if (SUCCEEDED(hRes)) {

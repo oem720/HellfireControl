@@ -5,6 +5,8 @@
 
 #include <HellfireControl/Render/Renderer.hpp>
 
+#include <HellfireControl/UI/FileDialog.hpp>
+
 void UICreationToolApplication::Start() {
 	m_wWindow = Window(m_strApplicationName, WINDOWED, Vec2F(800, 600), Vec2F(0, 0));
 
@@ -39,6 +41,8 @@ void UICreationToolApplication::Run() {
 	UniformBufferData ubdData = {};
 
 	Buffer uniformBuffer(BufferType::UNIFORM_BUFFER, &ubdData, sizeof(UniformBufferData), 1, m_prsRenderer->GetRenderContextID(CONTEXT_TYPE_3D));
+
+	FileDialog fd;
 
 	while (!m_wWindow.CloseRequested()) {
 		m_wWindow.PollEvents();

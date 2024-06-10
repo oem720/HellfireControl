@@ -32,7 +32,7 @@ target_include_directories(Torchlight PUBLIC ../HellfireControl/src)
 if(WIN32)
 	target_include_directories(Torchlight PUBLIC $ENV{VULKAN_SDK}/Include/)
 	target_link_directories(Torchlight PUBLIC $ENV{VULKAN_SDK}/Lib/)
-	target_link_libraries(Torchlight PUBLIC vulkan-1.lib)
+	target_link_libraries(Torchlight PUBLIC vulkan-1.lib;comctl32.lib;propsys.lib;shlwapi.lib)
 endif(WIN32)
 
 target_link_libraries(Torchlight PUBLIC HellfireCore)

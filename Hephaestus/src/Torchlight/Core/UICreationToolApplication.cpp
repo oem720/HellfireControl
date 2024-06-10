@@ -42,7 +42,13 @@ void UICreationToolApplication::Run() {
 
 	Buffer uniformBuffer(BufferType::UNIFORM_BUFFER, &ubdData, sizeof(UniformBufferData), 1, m_prsRenderer->GetRenderContextID(CONTEXT_TYPE_3D));
 
-	FileDialog fd;
+	FileDialog fd(FILE_DIALOG_OPEN, ALL_SUPPORTED_FILE_FORMATS, "./");
+
+	std::vector<std::string> results = fd.GetUserSelections();
+
+	for (const auto& str : results) {
+		std::cout << str << std::endl;
+	}
 
 	while (!m_wWindow.CloseRequested()) {
 		m_wWindow.PollEvents();

@@ -67,3 +67,32 @@ struct HC_ALIGNAS(128) BufferHandleGeneric {
 		return this->upper == _bhgOther.upper && this->lower == _bhgOther.lower;
 	}
 };
+
+//TODO Move all enums to their own file!
+enum DialogAllowedFileTypes : uint64_t {
+	JPEG = 0x1,
+	PNG = 0x2,
+	GIF = 0x4,
+	BMP = 0x8,
+	ALL_IMAGE_FORMATS = 0xF,
+	OBJ = 0x10,
+	FBX = 0x20,
+	GLTF = 0x40,
+	ALL_MODEL_FORMATS = 0x70, //TODO: Numbering will change when Hellfire Assets are inserted!
+	DDS = 0x80,
+	KTX = 0x100,
+	MTL = 0x200,
+	ALL_TEXTURE_FORMATS = 0x380,
+	WAV = 0x400,
+	MP3 = 0x800,
+	OGG = 0x1000,
+	ALL_AUDIO_FORMATS = 0x2200,
+	MP4 = 0x2000,
+	MOV = 0x4000,
+	AVI = 0x8000,
+	WMV = 0x10000,
+	ALL_VIDEO_FORMATS = 0x24000,
+	/*TODO: Insert Hellfire Formats Here!*/
+	//ALL_HELLFIRE_FORMATS,
+	ALL_SUPPORTED_FILE_FORMATS = 0xFFFFFFFFFFFFFFFF
+};

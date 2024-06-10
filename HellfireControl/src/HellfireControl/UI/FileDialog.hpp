@@ -11,7 +11,7 @@ class FileDialog {
 public:
 	FileDialog();
 
-	FileDialog(DialogType _dtType, const std::vector<std::string>& _vAllowedExtensions, const std::string& _strDefaultPath);
+	FileDialog(DialogType _dtType, uint64_t _u64AllowedFileExtensions, const std::string& _strDefaultPath);
 
 	std::vector<std::string> GetUserSelections() const;
 };

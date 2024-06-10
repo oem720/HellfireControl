@@ -9,9 +9,9 @@ enum DialogType : uint8_t {
 
 class FileDialog {
 public:
-	FileDialog();
+	FileDialog() {}
 
-	FileDialog(DialogType _dtType, uint64_t _u64AllowedFileExtensions, const std::string& _strDefaultPath);
+	void InitDialogBox(DialogType _dtType, uint64_t _u64AllowedFileExtensions, const std::string& _strDefaultPath);
 
 	std::vector<std::string> GetUserSelections() const;
 };

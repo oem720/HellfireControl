@@ -42,7 +42,9 @@ void UICreationToolApplication::Run() {
 
 	Buffer uniformBuffer(BufferType::UNIFORM_BUFFER, &ubdData, sizeof(UniformBufferData), 1, m_prsRenderer->GetRenderContextID(CONTEXT_TYPE_3D));
 
-	FileDialog fd(FILE_DIALOG_OPEN, ALL_SUPPORTED_FILE_FORMATS, "./");
+	FileDialog fd;
+
+	fd.InitDialogBox(FILE_DIALOG_SAVE, ALL_VIDEO_FORMATS, "./");
 
 	std::vector<std::string> results = fd.GetUserSelections();
 

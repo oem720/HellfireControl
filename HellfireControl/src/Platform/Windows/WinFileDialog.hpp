@@ -15,6 +15,10 @@ private:
 	static std::vector<COMDLG_FILTERSPEC> ResolveFileExtensionFlags(uint64_t _u64FileExtensionFlags);
 
 	static std::wstring ResolveDefaultFileExtension(const std::vector<COMDLG_FILTERSPEC> & _vFilters);
+
+	static void HandleOpenDialogSelection(IFileOpenDialog* _pDialog);
+
+	static void HandleSaveDialogSelection(IFileSaveDialog* _pDialog);
 public:
 	static bool CreateFileDialog(uint8_t _u8Type, uint64_t _u64FileExtensions, const std::string& _strDefaultPath);
 

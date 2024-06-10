@@ -46,6 +46,10 @@ std::vector<COMDLG_FILTERSPEC> PlatformFileDialog::m_vFilterCombinations = {
 
 #define HC_ALL_FORMATS_INDEX 0
 #define HC_ALL_IMAGES_INDEX 1
+#define HC_ALL_MODELS_INDEX 2
+#define HC_ALL_TEXTURES_INDEX 3
+#define HC_ALL_AUDIO_INDEX 4
+#define HC_ALL_VIDEO_INDEX 5
 
 HRESULT PlatformFileDialog::CreateEventHandlerInstance(REFIID _rId, void** _ppVoid) {
 	*_ppVoid = NULL;
@@ -77,6 +81,22 @@ std::vector<COMDLG_FILTERSPEC> PlatformFileDialog::ResolveFileExtensionFlags(uin
 		vFilters.push_back(m_vFilterCombinations[HC_ALL_IMAGES_INDEX]);
 	}
 
+	if ((_u64FileExtensionFlags & ALL_MODEL_FORMATS) == ALL_MODEL_FORMATS) {
+		vFilters.push_back(m_vFilterCombinations[HC_ALL_MODELS_INDEX]);
+	}
+
+	if ((_u64FileExtensionFlags & ALL_TEXTURE_FORMATS) == ALL_TEXTURE_FORMATS) {
+		vFilters.push_back(m_vFilterCombinations[HC_ALL_TEXTURES_INDEX]);
+	}
+
+	if ((_u64FileExtensionFlags & ALL_AUDIO_FORMATS) == ALL_AUDIO_FORMATS) {
+		vFilters.push_back(m_vFilterCombinations[HC_ALL_AUDIO_INDEX]);
+	}
+
+	if ((_u64FileExtensionFlags & ALL_VIDEO_FORMATS) == ALL_VIDEO_FORMATS) {
+		vFilters.push_back(m_vFilterCombinations[HC_ALL_VIDEO_INDEX]);
+	}
+
 	int iFlagSum = 0;
 	for (uint64_t ndx = 0, flag = 1; ndx < m_vFilterNames.size() && flag < 0xFFFFFFFFFFFFFFFF; ++ndx, flag <<= 1) {
 		if (_u64FileExtensionFlags & flag) {
@@ -88,7 +108,67 @@ std::vector<COMDLG_FILTERSPEC> PlatformFileDialog::ResolveFileExtensionFlags(uin
 }
 
 std::wstring PlatformFileDialog::ResolveDefaultFileExtension(const std::vector<COMDLG_FILTERSPEC> & _vFilters) {
+	const std::wstring HC_COMBINATION_NAME = L"All";
+
+	for (int ndx = 0; ndx < _vFilters.size(); ++ndx) {
+		std::wstring strFilterName(_vFilters[ndx].pszName);
+
+		if (HC_COMBINATION_NAME.compare(strFilterName.substr(0, 3)) == 0) {
+			continue;
+		}
+
+		std::wstring strExtNames(_vFilters[ndx].pszSpec);
+
+		return strExtNames.substr(2, 3);
+	}
+
 	return std::wstring();
+}
+
+void PlatformFileDialog::HandleOpenDialogSelection(IFileOpenDialog* _pDialog) {
+	IShellItemArray* pShellItemResultArray = NULL;
+
+	HRESULT hRes = _pDialog->GetResults(&pShellItemResultArray);
+
+	if (SUCCEEDED(hRes)) {
+		DWORD dwCount;
+
+		pShellItemResultArray->GetCount(&dwCount);
+
+		for (int ndx = 0; ndx < dwCount; ++ndx) {
+			IShellItem* pShellItem = NULL;
+
+			pShellItemResultArray->GetItemAt(ndx, &pShellItem);
+
+			PWSTR pszFilepath = NULL;
+
+			hRes = pShellItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilepath);
+
+			if (SUCCEEDED(hRes)) {
+				m_vUserSelections.push_back(Util::ConvertFromWString(std::wstring(pszFilepath)));
+			}
+		}
+
+		pShellItemResultArray->Release();
+	}
+}
+
+void PlatformFileDialog::HandleSaveDialogSelection(IFileSaveDialog* _pDialog) {
+	IShellItem* pShellItemResult = NULL;
+
+	HRESULT hRes = _pDialog->GetResult(&pShellItemResult);
+
+	if (SUCCEEDED(hRes)) {
+		PWSTR pszFilePath = NULL;
+
+		hRes = pShellItemResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+
+		if (SUCCEEDED(hRes)) {
+			m_vUserSelections.push_back(Util::ConvertFromWString(std::wstring(pszFilePath)));
+		}
+
+		pShellItemResult->Release();
+	}
 }
 
 bool PlatformFileDialog::CreateFileDialog(uint8_t _u8Type, uint64_t _u64FileExtensions, const std::string& _strDefaultPath) {
@@ -98,11 +178,26 @@ bool PlatformFileDialog::CreateFileDialog(uint8_t _u8Type, uint64_t _u64FileExte
 
 	IFileDialog* pFileDialog = NULL;
 
-	CLSID clsidDialogType = _u8Type == 0 ? CLSID_FileOpenDialog : CLSID_FileSaveDialog; //If the parameter is 0, it must be open, all other values are save.
+	HRESULT hRes;
 
-	HRESULT hRes = CoCreateInstance(clsidDialogType, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pFileDialog));
+	if (_u8Type == 0) {
+		IFileOpenDialog* pTemp = NULL;
 
-	if (FAILED(hRes)) { return false; }
+		hRes = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pTemp));
+
+		if (FAILED(hRes)) { return false; }
+
+		pFileDialog = pTemp;
+	}
+	else {
+		IFileSaveDialog* pTemp = NULL;
+
+		hRes = CoCreateInstance(CLSID_FileSaveDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pTemp));
+
+		if (FAILED(hRes)) { return false; }
+
+		pFileDialog = pTemp;
+	}
 
 	IFileDialogEvents* pDialogEvents = NULL;
 
@@ -122,7 +217,7 @@ bool PlatformFileDialog::CreateFileDialog(uint8_t _u8Type, uint64_t _u64FileExte
 
 	if (FAILED(hRes)) { return false; }
 
-	hRes = pFileDialog->SetOptions(dwFlags | FOS_FORCEFILESYSTEM);
+	hRes = pFileDialog->SetOptions(dwFlags | FOS_FORCEFILESYSTEM | (_u8Type == 0 ? FOS_ALLOWMULTISELECT : 0));
 
 	if (FAILED(hRes)) { return false; }
 
@@ -141,20 +236,7 @@ bool PlatformFileDialog::CreateFileDialog(uint8_t _u8Type, uint64_t _u64FileExte
 	hRes = pFileDialog->Show(NULL);
 
 	if (SUCCEEDED(hRes)) {
-		IShellItem* pShellItemResult;
-
-		hRes = pFileDialog->GetResult(&pShellItemResult);
-
-		if (SUCCEEDED(hRes)) {
-			PWSTR pszFilePath = NULL;
-
-			hRes = pShellItemResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
-
-			if (SUCCEEDED(hRes)) {
-				m_vUserSelections.push_back(Util::ConvertFromWString(std::wstring(pszFilePath)));
-			}
-			pShellItemResult->Release();
-		}
+		_u8Type == 0 ? HandleOpenDialogSelection(static_cast<IFileOpenDialog*>(pFileDialog)) : HandleSaveDialogSelection(static_cast<IFileSaveDialog*>(pFileDialog));
 	}
 
 	pFileDialog->Unadvise(dwCookie);

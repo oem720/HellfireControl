@@ -31,6 +31,7 @@ std::vector<COMDLG_FILTERSPEC> PlatformFileDialog::m_vFilterNames = {
 	{ L"Quicktime File Format", L"*.mov" },
 	{ L"Audio Video Interleave", L"*.avi" },
 	{ L"Windows Media Video", L"*.wmv" },
+	{ L"TrueType Font", L"*.ttf" },
 	/*TODO Add new file formats here!*/
 };
 

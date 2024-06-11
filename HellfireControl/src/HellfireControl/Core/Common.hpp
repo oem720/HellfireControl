@@ -92,6 +92,7 @@ enum DialogAllowedFileTypes : uint64_t {
 	AVI = 0x8000,
 	WMV = 0x10000,
 	ALL_VIDEO_FORMATS = 0x1E000,
+	TTF = 0x20000,
 	/*TODO: Insert Hellfire Formats Here!*/
 	//ALL_HELLFIRE_FORMATS,
 	ALL_SUPPORTED_FILE_FORMATS = 0xFFFFFFFFFFFFFFFF

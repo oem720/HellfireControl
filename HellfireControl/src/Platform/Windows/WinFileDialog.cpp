@@ -27,21 +27,21 @@ std::vector<COMDLG_FILTERSPEC> PlatformFileDialog::m_vFilterNames = {
 	{ L"Waveform Audio Files", L"*.wav;*.wave" },
 	{ L"MP3 Audio Files", L"*.mp3" },
 	{ L"OGG Audio Files", L"*.ogg;*.ogv;*.oga;*.ogx;*.ogm;*.spx;*.opus" },
-	{ L"MP4 Video File", L"*.mp4;*.m4p;*.m4b;*.m4r;*.m4v" },
+	{ L"MP4 Video File", L"*.mp4;*.m4v" },
 	{ L"Quicktime File Format", L"*.mov" },
 	{ L"Audio Video Interleave", L"*.avi" },
 	{ L"Windows Media Video", L"*.wmv" },
-	{ L"TrueType Font", L"*.ttf" },
+	{ L"TrueType Font", L"*.ttf;*.ttc;*.otf;*.otc" },
 	/*TODO Add new file formats here!*/
 };
 
 std::vector<COMDLG_FILTERSPEC> PlatformFileDialog::m_vFilterCombinations = {
-	{ L"All Supported Formats", L"*.jpg;*.jpeg;*.jpe;*.jif;*.jfif;*.jfi;*.png;*.gif;*.bmp;*.obj;*.fbx;*.gltf;*.dds;*.ktx;*.mtl;*.wav;*.wave;*.mp3;*.ogg;*.ogv;*.oga;*.ogx;*.ogm;*.spx;*.opus;*.mp4;*.m4p;*.m4b;*.m4r;*.m4v;*.mov;*.avi;*.wmv;" },
+	{ L"All Supported Formats", L"*.jpg;*.jpeg;*.jpe;*.jif;*.jfif;*.jfi;*.png;*.gif;*.bmp;*.obj;*.fbx;*.gltf;*.dds;*.ktx;*.mtl;*.wav;*.wave;*.mp3;*.ogg;*.ogv;*.oga;*.ogx;*.ogm;*.spx;*.opus;*.mp4;*.m4v;*.mov;*.avi;*.wmv;*.ttf;*.ttc;*.otf;*.otc" },
 	{ L"All Supported Image Formats", L"*.jpg;*.jpeg;*.jpe;*.jif;*.jfif;*.jfi;*.png;*.gif;*.bmp" },
 	{ L"All Supported 3D Model Formats", L"*.obj;*.fbx;*.gltf" },
 	{ L"All Supported Texture Formats", L"*.dds;*.ktx;*.mtl" },
 	{ L"All Supported Audio Formats", L"*.wav;*.wave;*.mp3;*.ogg;*.ogv;*.oga;*.ogx;*.ogm;*.spx;*.opus" },
-	{ L"All Supported Video Formats", L"*.mp4;*.m4p;*.m4b;*.m4r;*.m4v;*.mov;*.avi;*.wmv" },
+	{ L"All Supported Video Formats", L"*.mp4;*.m4v;*.mov;*.avi;*.wmv" },
 	//{ L"All Hellfire Assets ()", L"" }
 };
 

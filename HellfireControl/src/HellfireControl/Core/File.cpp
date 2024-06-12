@@ -64,9 +64,28 @@ void File::SignalEndOfStructure() {
 
 void File::Close() {
 	m_fStream.close();
+	m_vDataBlob.clear();
 
 	m_pthFilepath = "";
 	m_fofFlags = 0;
+}
+
+void File::GoToByte(size_t _sLocation){
+	if (m_fofFlags & FILE_OPEN_FLAG_BLOB) {
+		m_ptrBlobPointer = (&m_vDataBlob[0]) + _sLocation;
+	}
+	else {
+		m_fStream.seekg(_sLocation);
+	}
+}
+
+void File::AdvanceBytes(int64_t _i64Distance) {
+	if (m_fofFlags & FILE_OPEN_FLAG_BLOB) { 
+		m_ptrBlobPointer += _i64Distance;
+	}
+	else {
+		m_fStream.seekg(m_fStream.tellg() + _i64Distance);
+	}
 }
 
 int File::ResolveFileFlags() {

@@ -10,9 +10,8 @@
 #include <shlobj.h>
 #include <objbase.h>      
 #include <shobjidl.h>     
-#include <shlwapi.h>
-#include <knownfolders.h> 
-#include <propvarutil.h>  
+#include <shlwapi.h> 
+#include <propvarutil.h>
 #include <propkey.h>      
 #include <propidl.h>      
 #include <strsafe.h> 

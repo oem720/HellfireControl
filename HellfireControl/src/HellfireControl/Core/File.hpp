@@ -2,8 +2,6 @@
 
 #include <HellfireControl/Core/Common.hpp>
 
-#define HC_SFINAE_REQUIRE_NUMERIC typename std::enable_if<std::disjunction<std::is_integral<T>, std::is_floating_point<T>>::value>::type
-
 enum FileOpenFlag : uint8_t {
 	FILE_OPEN_FLAG_ASCII = 1U,
 	FILE_OPEN_FLAG_BINARY = 2U,
@@ -92,6 +90,10 @@ public:
 	[[nodiscard]] HC_INLINE bool AtEOF() const { return m_fStream.eof() || m_ptrBlobPointer == m_vDataBlob.end()._Ptr; }
 
 	[[nodiscard]] HC_INLINE bool IsBinary() const { return m_fofFlags & FILE_OPEN_FLAG_BINARY; }
+
+	void AdvanceBytes(int64_t _i64Distance);
+
+	void GoToByte(size_t _sLocation);
 
 public:
 	template <typename T, typename = HC_SFINAE_REQUIRE_NUMERIC>

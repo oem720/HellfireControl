@@ -1,11 +1,13 @@
 
 #include <Torchlight/Core/UICreationToolApplication.hpp>
 
+#include <Torchlight/Util/FontProcessor.hpp>
+
 #include <Platform/Vulkan/VkUtil.hpp> //Hack to get hard coded values working. This will be fixed when vertices are moved to their own file.
 
 #include <HellfireControl/Render/Renderer.hpp>
 
-#include <HellfireControl/UI/FileDialog.hpp>
+#include <HellfireControl/Asset/Font.hpp>
 
 void UICreationToolApplication::Start() {
 	m_wWindow = Window(m_strApplicationName, WINDOWED, Vec2F(800, 600), Vec2F(0, 0));
@@ -42,7 +44,7 @@ void UICreationToolApplication::Run() {
 
 	Buffer uniformBuffer(BufferType::UNIFORM_BUFFER, &ubdData, sizeof(UniformBufferData), 1, m_prsRenderer->GetRenderContextID(CONTEXT_TYPE_3D));
 
-	
+	FontProcessor::ProcessFont("./Assets/Fonts/calibri.ttf");
 
 	while (!m_wWindow.CloseRequested()) {
 		m_wWindow.PollEvents();

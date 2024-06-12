@@ -4,7 +4,6 @@
 
 class File;
 
-
 class GUID {
 private:
 	union {

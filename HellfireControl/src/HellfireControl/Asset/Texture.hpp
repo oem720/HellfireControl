@@ -6,4 +6,6 @@
 
 class Texture : public Asset {
 
+public:
+	~Texture() {} //TODO: Finish this class implementation.
 };

@@ -3,11 +3,10 @@
 #include <HellfireControl/Core/Common.hpp>
 
 #include <HellfireControl/Asset/Asset.hpp>
-#include <HellfireControl/Asset/Texture.hpp>
+
+class Texture;
 
 class Font : public Asset {
-	friend class FontProcessor;
-
 private:
 	struct Glyph {
 		int x = 0;
@@ -20,11 +19,14 @@ private:
 
 	std::map<char8_t, Glyph> m_mGlyphMap;
 
-	std::unique_ptr<Texture> m_texSDF;
+	//std::unique_ptr<Texture> m_texSDF;
 
-	Font() = delete;
+	Font() {}
 
-	Font(const std::vector<uint8_t>& _vData, std::unique_ptr<Texture> m_texSDF);
+	Font(const std::vector<uint8_t>& _vData/*, std::unique_ptr<Texture> m_texSDF*/) {}
+
 public:
 	~Font();
+
+	friend class FontProcessor;
 };

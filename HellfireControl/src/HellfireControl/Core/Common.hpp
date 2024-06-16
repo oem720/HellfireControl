@@ -32,8 +32,9 @@
 #define HC_FLOAT_COMPARE(_val1, _val2) fabsf(_val1 - _val2) < HC_EPSILON
 #define HC_DOUBLE_COMPARE(_val1, _val2) fabs(_val1 - _val2) < HC_EPSILON
 
-#define HC_SFINAE_REQUIRE_NUMERIC typename std::enable_if<std::disjunction<std::is_integral<T>, std::is_floating_point<T>>::value>::type
-#define HC_SFINAE_REQUIRE_INTEGER typename std::enable_if<std::is_integral<T>::value>::type
+#define HC_SFINAE_REQUIRE_NUMERIC(_typename) typename = typename std::enable_if<std::disjunction<std::is_integral<_typename>, std::is_floating_point<_typename>>::value>::type
+#define HC_SFINAE_REQUIRE_INTEGER(_typename) typename = typename std::enable_if<std::is_integral<_typename>::value>::type
+#define HC_SFINAE_REQUIRE_FLOATING_POINT(_typename) typename = typename std::enable_if<std::is_floating_point<_typename>>::value>::type
 
 //Defines for standardized declarations
 #define HC_INLINE inline

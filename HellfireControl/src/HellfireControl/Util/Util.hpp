@@ -9,13 +9,13 @@ namespace Util {
 
 	[[nodiscard]] std::vector<char> ReadFile(const std::string& _strFilename);
 
-	template<typename T, typename = HC_SFINAE_REQUIRE_INTEGER>
+	template<typename T, HC_SFINAE_REQUIRE_INTEGER(T)>
 	bool IsBitSet(T _value, uint8_t _u8BitToCheck) {
 		return ((_value >> _u8BitToCheck) & 0x1);
 	}
 
-	template<typename T, typename = HC_SFINAE_REQUIRE_INTEGER>
-	void InverseBytes(T& _value) {
+	template<typename T, HC_SFINAE_REQUIRE_INTEGER(T)>
+	void ReverseBytes(T& _value) {
 		union {
 			T value = 0;
 			char bytes[sizeof(T)];

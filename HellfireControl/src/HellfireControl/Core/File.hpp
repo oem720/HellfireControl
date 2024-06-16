@@ -43,7 +43,7 @@ private:
 
 	void WriteASCII(const std::string& _strVal);
 
-	template<typename T, typename = HC_SFINAE_REQUIRE_NUMERIC>
+	template<typename T, HC_SFINAE_REQUIRE_NUMERIC(T)>
 	HC_INLINE void ConvertToNumericValue(const std::string& _strVal, T& _output) {
 		auto [ptr, error] = std::from_chars(_strVal.data(), _strVal.data() + _strVal.size(), _output);
 
@@ -96,7 +96,7 @@ public:
 	void GoToByte(size_t _sLocation);
 
 public:
-	template <typename T, typename = HC_SFINAE_REQUIRE_NUMERIC>
+	template <typename T, HC_SFINAE_REQUIRE_NUMERIC(T)>
 	HC_INLINE File& operator<<(const T& _val) {
 		if (IsOpen() && m_fofFlags & FILE_OPEN_FLAG_WRITE) {
 			(m_fofFlags & FILE_OPEN_FLAG_BINARY) ? WriteBinary(&_val, sizeof(T)) : WriteASCII(std::to_string(_val));
@@ -108,7 +108,7 @@ public:
 		return *this;
 	}
 
-	template <typename T, typename = HC_SFINAE_REQUIRE_NUMERIC>
+	template <typename T, HC_SFINAE_REQUIRE_NUMERIC(T)>
 	HC_INLINE File& operator>>(T& _val) {
 		if (IsOpen() && m_fofFlags & FILE_OPEN_FLAG_READ) {
 			if (m_fofFlags & FILE_OPEN_FLAG_BINARY) {

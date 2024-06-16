@@ -25,6 +25,8 @@ void FontProcessor::ProcessFont(const std::string& _strFilepath) {
 
 		ParseGlyph(fFontFile, vGlyphData[ndx]); //Parse the glyph individually
 	}
+
+
 }
 
 void FontProcessor::GetDataBlockOffsets(File& _fFontFile, std::map<std::string, uint32_t>& _mOutDataBlockLocations) {
@@ -99,6 +101,10 @@ enum TTFSimpleGlyphFlags : uint8_t {
 
 std::unique_ptr<FontProcessor::TTFSimpleGlyph> FontProcessor::ParseSimpleGlyph(File& _fFontFile, int16_t _i16ContourCount) {
 	auto aSimpleGlyph = std::make_unique<TTFSimpleGlyph>();
+
+	if (_i16ContourCount == 0) {
+		return aSimpleGlyph; //No data to read...
+	}
 
 	aSimpleGlyph->m_vContourEndPts.resize(_i16ContourCount);
 

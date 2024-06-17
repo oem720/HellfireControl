@@ -5,6 +5,9 @@
 #include <HellfireControl/Util/Util.hpp>
 #include <HellfireControl/Core/File.hpp>
 
+#include <Windows.h>
+#include <gdiplus.h>
+
 class Font;
 
 class FontProcessor {
@@ -27,11 +30,16 @@ private:
 	typedef uint16_t uFWord;		//Unsigned FWord
 	typedef int16_t F2Dot14;		//16 bit signed fixed point number stored as 2.14
 	typedef int64_t LongDateTime;	//Date in seconds from 12:00 Midnight, January 1st 1904.
+	
+	struct TTFPoint {
+		int16_t x;
+		int16_t y;
+	};
 
 	struct TTFGlyphDescriptor {
 		int16_t m_i16ContourCount;
 		FWord m_fXMin;
-		FWord m_fYMIn;
+		FWord m_fYMin;
 		FWord m_fXMax;
 		FWord m_fYMax;
 	};
@@ -49,8 +57,7 @@ private:
 		std::vector<uint16_t> m_vContourEndPts;
 		std::vector<uint8_t> m_vInstructions;
 		std::vector<uint8_t> m_vFlags;
-		std::vector<int16_t> m_vXCoords;
-		std::vector<int16_t> m_vYCoords;
+		std::vector<TTFPoint> m_vCoords;
 
 		bool m_bOnCurve = true;;
 
@@ -82,9 +89,14 @@ private:
 	typedef std::pair<TTFGlyphDescriptor, std::unique_ptr<TTFGlyph>> TTFGlyphData; //This alias joins the two blocks of glyph data together
 
 	static void GetDataBlockOffsets(File& _fFontFile, std::map<std::string, uint32_t>& _mOutDataBlockLocations);
-	static void GetGlyphOffsets(File& _fFontFile, std::map<std::string, uint32_t>& _mDataBlockLocations, std::vector<uint32_t>& _vOutGlyphLocations);
+	static void GetGlyphOffsets(File& _fFontFile, std::map<std::string, uint32_t>& _mDataBlockLocations, std::vector<uint32_t>& _vOutGlyphLocations, uint16_t& _u16OutPixelsPerEm);
 	static void ParseGlyph(File& _fFontFile, TTFGlyphData& _gdOutGlyphData);
 	static std::unique_ptr<TTFSimpleGlyph> ParseSimpleGlyph(File& _fFontFile, int16_t _i16ContourCount);
 	static std::unique_ptr<TTFCompoundGlyph> ParseCompoundGlyph(File& _fFontFile, int16_t _i16ContourCount);
 	static void ParseCoordinates(File& _fFontFile, const std::vector<uint8_t>& _vFlags, bool bIsX, std::vector<int16_t>& _vOutCoordinates);
+
+	static void CreateTemporaryBitmaps(const std::vector<TTFGlyphData>& _vGlyphs, uint16_t _u16PixelsPerEm);
+	static PBITMAPINFO CreateBitmapInfoStruct(HWND hwnd, HBITMAP hBmp);
+	static void CreateBitmapFile(HWND hwnd, LPTSTR pszFile, PBITMAPINFO pbi, HBITMAP hBMP, HDC hDC);
+	static void DrawBresenhamLine(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pEnd, uint32_t _u32RowLength);
 };

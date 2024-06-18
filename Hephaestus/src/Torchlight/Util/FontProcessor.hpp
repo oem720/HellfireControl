@@ -34,6 +34,7 @@ private:
 	struct TTFPoint {
 		int16_t x;
 		int16_t y;
+		bool onCurve;
 	};
 
 	struct TTFGlyphDescriptor {
@@ -58,8 +59,6 @@ private:
 		std::vector<uint8_t> m_vInstructions;
 		std::vector<uint8_t> m_vFlags;
 		std::vector<TTFPoint> m_vCoords;
-
-		bool m_bOnCurve = true;;
 
 		virtual ~TTFSimpleGlyph() {}
 	};
@@ -91,12 +90,17 @@ private:
 	static void GetDataBlockOffsets(File& _fFontFile, std::map<std::string, uint32_t>& _mOutDataBlockLocations);
 	static void GetGlyphOffsets(File& _fFontFile, std::map<std::string, uint32_t>& _mDataBlockLocations, std::vector<uint32_t>& _vOutGlyphLocations, uint16_t& _u16OutPixelsPerEm);
 	static void ParseGlyph(File& _fFontFile, TTFGlyphData& _gdOutGlyphData);
-	static std::unique_ptr<TTFSimpleGlyph> ParseSimpleGlyph(File& _fFontFile, int16_t _i16ContourCount);
+	static std::unique_ptr<TTFSimpleGlyph> ParseSimpleGlyph(File& _fFontFile, int16_t _i16ContourCount, uint32_t _u32MinX, uint32_t _u32MinY);
 	static std::unique_ptr<TTFCompoundGlyph> ParseCompoundGlyph(File& _fFontFile, int16_t _i16ContourCount);
-	static void ParseCoordinates(File& _fFontFile, const std::vector<uint8_t>& _vFlags, bool bIsX, std::vector<int16_t>& _vOutCoordinates);
+	static void ParseCoordinates(File& _fFontFile, const std::vector<uint8_t>& _vFlags, bool bIsX, std::vector<TTFPoint>& _vOutCoordinates, uint32_t _u32MinX, uint32_t _u32MinY);
 
 	static void CreateTemporaryBitmaps(const std::vector<TTFGlyphData>& _vGlyphs, uint16_t _u16PixelsPerEm);
+	static void CreateCompleteContour(std::vector<TTFPoint>& _vPoints, int& _iOutPointOffset);
 	static PBITMAPINFO CreateBitmapInfoStruct(HWND hwnd, HBITMAP hBmp);
 	static void CreateBitmapFile(HWND hwnd, LPTSTR pszFile, PBITMAPINFO pbi, HBITMAP hBMP, HDC hDC);
 	static void DrawBresenhamLine(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pEnd, uint32_t _u32RowLength);
+	static TTFPoint BezierInterpolation(TTFPoint _p0, TTFPoint _p1, TTFPoint _p2, float _fT);
+	static void DrawBezierCurve(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pControl, TTFPoint _pEnd, int _iResolution, uint32_t _u32RowLength);
+	static void DrawPoint(std::vector<uint32_t>& _vBitmap, TTFPoint _pPosition, uint32_t _u32Width, uint32_t _u32Height);
+	static void PlotPixel(std::vector<uint32_t>& _vBitmap, int _iX, int _iY, uint32_t _u32Color, uint32_t _u32RowLength);
 };

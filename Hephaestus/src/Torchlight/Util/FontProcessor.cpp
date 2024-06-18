@@ -87,7 +87,7 @@ void FontProcessor::ParseGlyph(File& _fFontFile, TTFGlyphData& _gdOutGlyphData) 
 		_gdOutGlyphData.second = ParseCompoundGlyph(_fFontFile, _gdOutGlyphData.first.m_i16ContourCount);
 	}
 	else {
-		_gdOutGlyphData.second = ParseSimpleGlyph(_fFontFile, _gdOutGlyphData.first.m_i16ContourCount);
+		_gdOutGlyphData.second = ParseSimpleGlyph(_fFontFile, _gdOutGlyphData.first.m_i16ContourCount, _gdOutGlyphData.first.m_fXMin, _gdOutGlyphData.first.m_fYMin);
 	}
 }
 
@@ -100,7 +100,7 @@ enum TTFSimpleGlyphFlags : uint8_t {
 	INSTRUCTION_Y = 5
 };
 
-std::unique_ptr<FontProcessor::TTFSimpleGlyph> FontProcessor::ParseSimpleGlyph(File& _fFontFile, int16_t _i16ContourCount) {
+std::unique_ptr<FontProcessor::TTFSimpleGlyph> FontProcessor::ParseSimpleGlyph(File& _fFontFile, int16_t _i16ContourCount, uint32_t _u32MinX, uint32_t _u32MinY) {
 	auto aSimpleGlyph = std::make_unique<TTFSimpleGlyph>();
 
 	if (_i16ContourCount == 0) {
@@ -125,6 +125,7 @@ std::unique_ptr<FontProcessor::TTFSimpleGlyph> FontProcessor::ParseSimpleGlyph(F
 	int iNumPoints = 1 + (*std::max_element(aSimpleGlyph->m_vContourEndPts.begin(), aSimpleGlyph->m_vContourEndPts.end()));
 
 	aSimpleGlyph->m_vFlags.resize(iNumPoints);
+	aSimpleGlyph->m_vCoords.resize(iNumPoints);
 
 	for (int ndx = 0; ndx < iNumPoints; ++ndx) {
 		uint8_t u8Flag = ReadTTFValue<uint8_t>(_fFontFile);
@@ -140,15 +141,8 @@ std::unique_ptr<FontProcessor::TTFSimpleGlyph> FontProcessor::ParseSimpleGlyph(F
 		}
 	}
 
-	std::vector<int16_t> vCoordBufferX(iNumPoints);
-	std::vector<int16_t> vCoordBufferY(iNumPoints);
-
-	ParseCoordinates(_fFontFile, aSimpleGlyph->m_vFlags, true, vCoordBufferX);
-	ParseCoordinates(_fFontFile, aSimpleGlyph->m_vFlags, false, vCoordBufferY);
-
-	for (int ndx = 0; ndx < iNumPoints; ++ndx) {
-		aSimpleGlyph->m_vCoords.push_back({ vCoordBufferX[ndx], vCoordBufferY[ndx] });
-	}
+	ParseCoordinates(_fFontFile, aSimpleGlyph->m_vFlags, true, aSimpleGlyph->m_vCoords, _u32MinX, _u32MinY);
+	ParseCoordinates(_fFontFile, aSimpleGlyph->m_vFlags, false, aSimpleGlyph->m_vCoords, _u32MinX, _u32MinY);
 
 	return std::move(aSimpleGlyph);
 }
@@ -159,35 +153,48 @@ std::unique_ptr<FontProcessor::TTFCompoundGlyph> FontProcessor::ParseCompoundGly
 	return std::move(aCompoundGlyph);
 }
 
-void FontProcessor::ParseCoordinates(File& _fFontFile, const std::vector<uint8_t>& _vFlags, bool bIsX, std::vector<int16_t>& _vOutCoordinates) {
-	int iOffsetSizeFlagBit = bIsX ? IS_SINGLE_BYTE_X : IS_SINGLE_BYTE_Y;
-	int iOffsetSignOrSkipBit = bIsX ? INSTRUCTION_X : INSTRUCTION_Y;
+void FontProcessor::ParseCoordinates(File& _fFontFile, const std::vector<uint8_t>& _vFlags, bool _bIsX, std::vector<TTFPoint>& _vOutCoordinates, uint32_t _u32MinX, uint32_t _u32MinY) {
+	int iOffsetSizeFlagBit = _bIsX ? IS_SINGLE_BYTE_X : IS_SINGLE_BYTE_Y;
+	int iOffsetSignOrSkipBit = _bIsX ? INSTRUCTION_X : INSTRUCTION_Y;
 
+	int iCoordValue = 0;
 	for (int ndx = 0; ndx < _vOutCoordinates.size(); ++ndx) {
-		_vOutCoordinates[ndx] = _vOutCoordinates[std::max(0, ndx - 1)];
-		
 		uint8_t u8Flag = _vFlags[ndx];
 
 		if (Util::IsBitSet(u8Flag, iOffsetSizeFlagBit)) {
-			_vOutCoordinates[ndx] += ReadTTFValue<uint8_t>(_fFontFile) * (Util::IsBitSet(u8Flag, iOffsetSignOrSkipBit) ? 1 : -1);
+			int iOffset = ReadTTFValue<uint8_t>(_fFontFile);
+			iCoordValue += Util::IsBitSet(u8Flag, iOffsetSignOrSkipBit) ? iOffset : -iOffset;
 		}
 		else if (!Util::IsBitSet(u8Flag, iOffsetSignOrSkipBit)) {
-			_vOutCoordinates[ndx] += ReadTTFValue<uint16_t>(_fFontFile);
+			iCoordValue += ReadTTFValue<int16_t>(_fFontFile);
 		}
+
+		if (_bIsX) {
+			_vOutCoordinates[ndx].x = iCoordValue;
+			_vOutCoordinates[ndx].x -= _u32MinX;
+		}
+		else {
+			_vOutCoordinates[ndx].y = iCoordValue;
+			_vOutCoordinates[ndx].y -= _u32MinY;
+		}
+
+		_vOutCoordinates[ndx].onCurve = Util::IsBitSet(u8Flag, ON_CURVE);
 	}
 }
 
 void FontProcessor::CreateTemporaryBitmaps(const std::vector<TTFGlyphData>& _vGlyphs, uint16_t _u16PixelsPerEm) {
 	int glyphCount = 0;
 	for (const auto& glyph : _vGlyphs) {
-		if (glyphCount == 10) break; //SCRAM BUTTON FOR FILE CREATION.
+		if (glyphCount > 10) {
+			break; //Don't fill my file system with CRAP!
+		}
 
-		uint32_t bitmapWidth = (glyph.first.m_fXMax - glyph.first.m_fXMin);
-		uint32_t bitmapHeight = (glyph.first.m_fYMax - glyph.first.m_fYMin);
+		uint32_t bitmapWidth = (glyph.first.m_fXMax - glyph.first.m_fXMin) + 1;
+		uint32_t bitmapHeight = (glyph.first.m_fYMax - glyph.first.m_fYMin) + 1;
 
 		size_t bufferSize = (((bitmapWidth * 32 + 15) >> 4) << 1) * bitmapHeight;
 
-		std::vector<uint32_t> colors(bufferSize, 0);
+		std::vector<uint32_t> vRaster(bitmapWidth * bitmapHeight, 0);
 
 		if (glyph.first.m_i16ContourCount > 0) {
 			int contourStartIndex = 0;
@@ -198,24 +205,61 @@ void FontProcessor::CreateTemporaryBitmaps(const std::vector<TTFGlyphData>& _vGl
 				int contourPointsCount = endIndex - contourStartIndex + 1;
 				std::vector<TTFPoint> points(contourPointsCount);
 		
-				std::copy(glyphData->m_vCoords.begin() + contourStartIndex, glyphData->m_vCoords.begin() + endIndex, points.begin());
+				std::copy(glyphData->m_vCoords.begin() + contourStartIndex, glyphData->m_vCoords.begin() + endIndex + 1, points.begin());
+
+				int iFirstPoint = 0;
+				CreateCompleteContour(points, iFirstPoint);
 				
-				for (int ndx = 0; ndx < points.size(); ++ndx) {
-					DrawBresenhamLine(colors, points[ndx], points[(ndx + 1) % points.size()], bitmapWidth);
+				for (auto& point : points) {
+					point.y = bitmapHeight - point.y - 1;
+				}
+				
+				for (int ndx = iFirstPoint; ndx < points.size(); ndx += 2) {
+					//DrawBresenhamLine(vRaster, points[ndx], points[(ndx + 1) % points.size()], bitmapWidth);
+					DrawBezierCurve(vRaster, points[ndx], points[(ndx + 1) % points.size()], points[(ndx + 2) % points.size()], 28, bitmapWidth);
+				}
+
+				for (auto& point : points) {
+					DrawPoint(vRaster, point, bitmapWidth, bitmapHeight);
 				}
 		
 				contourStartIndex = endIndex + 1;
-			}			
+			}
+		}
+		else { 
+			continue; //Skip Compound Glyphs for now.
 		}
 
 		std::wstring path = L"./Assets/Fonts/TestOutput/";
 
-		HBITMAP bitmap = CreateBitmap(bitmapWidth, bitmapHeight, 1, 32, colors.data());
+		HBITMAP bitmap = CreateBitmap(bitmapWidth, bitmapHeight, 1, 32, vRaster.data());
 		PBITMAPINFO info = CreateBitmapInfoStruct(NULL, bitmap);
 		CreateBitmapFile(NULL, (path + std::to_wstring(glyphCount) + L".bmp").data(), info, bitmap, GetDC(NULL));
 
 		glyphCount++;
 	}
+}
+
+/// <summary>
+/// Credit to Sebastian Lague: https://www.youtube.com/watch?v=SO83KQuuZvg&t=596s
+/// </summary>
+void FontProcessor::CreateCompleteContour(std::vector<TTFPoint>& _vPoints, int& _iOutPointOffset) {
+	for (_iOutPointOffset = 0; _iOutPointOffset < _vPoints.size(); ++_iOutPointOffset) {
+		if (_vPoints[_iOutPointOffset].onCurve) break;
+	}
+
+	std::vector<TTFPoint> vNewPoints;
+	for (int ndx = 0; ndx < _vPoints.size(); ++ndx) {
+		TTFPoint curr = _vPoints[(ndx + _iOutPointOffset) % _vPoints.size()];
+		TTFPoint next = _vPoints[(ndx + _iOutPointOffset + 1) % _vPoints.size()];
+		vNewPoints.push_back(curr);
+
+		if (curr.onCurve == next.onCurve && ndx < _vPoints.size()) {
+			TTFPoint mid = { (curr.x + next.x) / 2, (curr.y + next.y) / 2 };
+			vNewPoints.push_back(mid);
+		}
+	}
+	_vPoints = vNewPoints;
 }
 
 PBITMAPINFO FontProcessor::CreateBitmapInfoStruct(HWND hwnd, HBITMAP hBmp) {
@@ -341,16 +385,80 @@ void FontProcessor::CreateBitmapFile(HWND hwnd, LPTSTR pszFile, PBITMAPINFO pbi,
 	GlobalFree((HGLOBAL)lpBits);
 }
 
+/// <summary>
+/// Thanks to Alois Zingl, Vienna, Austria at this link: http://members.chello.at/~easyfilter/bresenham.html
+/// </summary>
 void FontProcessor::DrawBresenhamLine(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pEnd, uint32_t _u32RowLength) {
-	int dx = abs(_pEnd.x - _pStart.x), sx = _pStart.x < _pEnd.x ? 1 : -1;
-	int dy = -abs(_pEnd.y - _pStart.y), sy = _pStart.y < _pEnd.y ? 1 : -1;
+	int x0 =_pStart.x;
+	int y0 =_pStart.y;
+	int x1 =_pEnd.x;
+	int y1 =_pEnd.y;
+
+	int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+	int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
 	int err = dx + dy, e2; /* error value e_xy */
 
 	for (;;) {  /* loop */
-		_vBitmap[_pStart.y * _u32RowLength + _pStart.x] = 0xFFFFFFFF;
-		if (_pStart.x == _pEnd.x && _pStart.y == _pEnd.y) break;
+		PlotPixel(_vBitmap, x0, y0, 0xFFFFFFFF, _u32RowLength);
+		if (x0 == x1 && y0 == y1) break;
 		e2 = 2 * err;
-		if (e2 >= dy) { err += dy; _pStart.x += sx; } /* e_xy+e_x > 0 */
-		if (e2 <= dx) { err += dx; _pStart.y += sy; } /* e_xy+e_y < 0 */
+		if (e2 >= dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
+		if (e2 <= dx) { err += dx; y0 += sy; } /* e_xy+e_y < 0 */
 	}
+}
+
+FontProcessor::TTFPoint FontProcessor::BezierInterpolation(TTFPoint _p0, TTFPoint _p1, TTFPoint _p2, float _fT) {
+	TTFPoint pIntermediateA = { Math::Lerp(_p0.x, _p1.x, _fT), Math::Lerp(_p0.y, _p1.y, _fT) };
+	TTFPoint pIntermediateB = { Math::Lerp(_p1.x, _p2.x, _fT), Math::Lerp(_p1.y, _p2.y, _fT) };
+	return { (int16_t)Math::Lerp(pIntermediateA.x, pIntermediateB.x, _fT), (int16_t)Math::Lerp(pIntermediateA.y, pIntermediateB.y, _fT) };
+}
+
+void FontProcessor::DrawBezierCurve(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pControl, TTFPoint _pEnd, int _iResolution, uint32_t _u32RowLength) {
+	TTFPoint prev = _pStart;
+
+	for (int count = 0; count < _iResolution; ++count) {
+		float t = (count + 1.0f) / _iResolution;
+		TTFPoint next = BezierInterpolation(_pStart, _pControl, _pEnd, t);
+		DrawBresenhamLine(_vBitmap, prev, next, _u32RowLength);
+		prev = next;
+	}
+}
+
+void FontProcessor::DrawPoint(std::vector<uint32_t>& _vBitmap, TTFPoint _pPosition, uint32_t _u32Width, uint32_t _u32Height) {
+	static const uint32_t u32Color = 0x00FF0000;
+	
+	PlotPixel(_vBitmap, _pPosition.x, _pPosition.y, u32Color, _u32Width);
+
+	if (_pPosition.x > 0) {
+		PlotPixel(_vBitmap, _pPosition.x - 1, _pPosition.y, u32Color, _u32Width);
+		if (_pPosition.y > 0) {
+			PlotPixel(_vBitmap, _pPosition.x - 1, _pPosition.y - 1, u32Color, _u32Width);
+		}
+		if (_pPosition.y < _u32Height - 1) {
+			PlotPixel(_vBitmap, _pPosition.x - 1, _pPosition.y + 1, u32Color, _u32Width);
+		}
+	}
+	if (_pPosition.x < _u32Width - 1) {
+		PlotPixel(_vBitmap, _pPosition.x + 1, _pPosition.y, u32Color, _u32Width);
+		if (_pPosition.y > 0) {
+			PlotPixel(_vBitmap, _pPosition.x + 1, _pPosition.y - 1, u32Color, _u32Width);
+		}
+		if (_pPosition.y < _u32Height - 1) {
+			PlotPixel(_vBitmap, _pPosition.x + 1, _pPosition.y + 1, u32Color, _u32Width);
+		}
+	}
+	if (_pPosition.y > 0) {
+		PlotPixel(_vBitmap, _pPosition.x, _pPosition.y - 1, u32Color, _u32Width);
+	}
+	if (_pPosition.y < _u32Height - 1) {
+		PlotPixel(_vBitmap, _pPosition.x, _pPosition.y + 1, u32Color, _u32Width);
+	}
+}
+
+void FontProcessor::PlotPixel(std::vector<uint32_t>& _vBitmap, int _iX, int _iY, uint32_t _u32Color, uint32_t _u32RowLength) {
+	int index = _iY * _u32RowLength + _iX;
+
+	if (index > _vBitmap.size() - 1 || index < 0) return;
+
+	_vBitmap[index] = _u32Color;
 }

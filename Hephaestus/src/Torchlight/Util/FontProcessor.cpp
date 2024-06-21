@@ -107,10 +107,10 @@ std::unique_ptr<FontProcessor::TTFSimpleGlyph> FontProcessor::ParseSimpleGlyph(F
 		return aSimpleGlyph; //No data to read...
 	}
 
-	aSimpleGlyph->m_vContourEndPts.resize(_i16ContourCount);
+	std::vector<uint16_t> vContourEndPts(_i16ContourCount);
 
 	for (int ndx = 0; ndx < _i16ContourCount; ++ndx) {
-		aSimpleGlyph->m_vContourEndPts[ndx] = ReadTTFValue<uint16_t>(_fFontFile);
+		vContourEndPts[ndx] = ReadTTFValue<uint16_t>(_fFontFile);
 	}
 
 	//aSimpleGlyph->m_vInstructions.resize(ReadTTFValue<uint16_t>(_fFontFile));
@@ -122,28 +122,53 @@ std::unique_ptr<FontProcessor::TTFSimpleGlyph> FontProcessor::ParseSimpleGlyph(F
 	_fFontFile.AdvanceBytes(ReadTTFValue<int16_t>(_fFontFile));
 
 	//Get the largest contour end point index and add 1 (1 based count). This will equal the count of points
-	int iNumPoints = 1 + (*std::max_element(aSimpleGlyph->m_vContourEndPts.begin(), aSimpleGlyph->m_vContourEndPts.end()));
+	int iNumPoints = 1 + (*std::max_element(vContourEndPts.begin(), vContourEndPts.end()));
 
-	aSimpleGlyph->m_vFlags.resize(iNumPoints);
-	aSimpleGlyph->m_vCoords.resize(iNumPoints);
+	std::vector<uint8_t> vFlags(iNumPoints);
+	std::vector<TTFPoint> vPoints(iNumPoints);
 
 	for (int ndx = 0; ndx < iNumPoints; ++ndx) {
 		uint8_t u8Flag = ReadTTFValue<uint8_t>(_fFontFile);
 
-		aSimpleGlyph->m_vFlags[ndx] = u8Flag;
+		vFlags[ndx] = u8Flag;
 
 		if (Util::IsBitSet(u8Flag, REPEAT)) {
 			uint8_t u8RepeatCount = ReadTTFValue<uint8_t>(_fFontFile);
 
 			for (int iFlagCount = 0; iFlagCount < u8RepeatCount; ++iFlagCount) {
-				aSimpleGlyph->m_vFlags[++ndx] = u8Flag;
+				vFlags[++ndx] = u8Flag;
 			}
 		}
 	}
 
-	ParseCoordinates(_fFontFile, aSimpleGlyph->m_vFlags, true, aSimpleGlyph->m_vCoords, _u32MinX, _u32MinY);
-	ParseCoordinates(_fFontFile, aSimpleGlyph->m_vFlags, false, aSimpleGlyph->m_vCoords, _u32MinX, _u32MinY);
+	ParseCoordinates(_fFontFile, vFlags, true, vPoints, _u32MinX, _u32MinY);
+	ParseCoordinates(_fFontFile, vFlags, false, vPoints, _u32MinX, _u32MinY);
 
+	int iContourStart = 0;
+
+	for (int ndx = 0; ndx < vContourEndPts.size(); ++ndx) {
+		std::vector<TTFPoint> vContourPoints;
+		TTFContour contour;
+
+		int iNumPointsInContour = vContourEndPts[ndx] - iContourStart + 1;
+
+		vContourPoints.insert(vContourPoints.end(), vPoints.begin() + iContourStart, vPoints.begin() + iContourStart + iNumPointsInContour);
+
+		int iPointOffset = GetPointOffset(vContourPoints);
+
+		RecreateImpliedPoints(vContourPoints, iPointOffset);
+
+		for (int sNdx = iPointOffset; sNdx < vContourPoints.size(); sNdx += 2) {
+			contour.push_back({ vContourPoints[sNdx],
+								vContourPoints[(sNdx + 1) % vContourPoints.size()],
+								vContourPoints[(sNdx + 2) % vContourPoints.size()] });
+		}
+
+		aSimpleGlyph->m_vContours.push_back(contour);
+
+		iContourStart = vContourEndPts[ndx] + 1;
+	}
+	
 	return std::move(aSimpleGlyph);
 }
 
@@ -179,87 +204,88 @@ void FontProcessor::ParseCoordinates(File& _fFontFile, const std::vector<uint8_t
 		}
 
 		_vOutCoordinates[ndx].onCurve = Util::IsBitSet(u8Flag, ON_CURVE);
+
+		_vOutCoordinates[ndx].pointNumber = ndx;
 	}
+}
+
+int FontProcessor::GetPointOffset(const std::vector<TTFPoint>& _vPoints) {
+	int iPointOffset;
+	for (iPointOffset = 0; iPointOffset < _vPoints.size(); ++iPointOffset) {
+		if (_vPoints[iPointOffset].onCurve) break;
+	}
+
+	return iPointOffset;
+}
+
+/// <summary>
+/// Credit to Sebastian Lague: https://www.youtube.com/watch?v=SO83KQuuZvg&t=596s
+/// </summary>
+void FontProcessor::RecreateImpliedPoints(std::vector<TTFPoint>& _vPoints, int _iPointOffset) {
+
+	std::vector<TTFPoint> vNewPoints;
+	for (int ndx = 0; ndx < _vPoints.size(); ++ndx) {
+		TTFPoint curr = _vPoints[(ndx + _iPointOffset) % _vPoints.size()];
+		TTFPoint next = _vPoints[(ndx + _iPointOffset + 1) % _vPoints.size()];
+		vNewPoints.push_back(curr);
+
+		if (curr.onCurve == next.onCurve && ndx < _vPoints.size()) {
+			TTFPoint mid = { (curr.x + next.x) / 2, (curr.y + next.y) / 2 };
+			mid.pointNumber = static_cast<float>(ndx) + 0.5f;
+			vNewPoints.push_back(mid);
+		}
+	}
+	_vPoints = vNewPoints;
+}
+
+void FontProcessor::InvertYAxis(TTFContour& _cContour, uint32_t _u32BitmapHeight) {
+	for (TTFCurve& curve : _cContour) {
+		curve.m_p0.y = _u32BitmapHeight - curve.m_p0.y + 1;
+		curve.m_p1.y = _u32BitmapHeight - curve.m_p1.y + 1;
+		curve.m_p2.y = _u32BitmapHeight - curve.m_p2.y + 1;
+	}
+}
+
+int FontProcessor::FindFurthestLeftXCoordinate(const TTFCurve& _cCurve) {
+	return std::min(std::min(_cCurve.m_p0.x, _cCurve.m_p1.x), std::min(_cCurve.m_p1.x, _cCurve.m_p2.x));
 }
 
 void FontProcessor::CreateTemporaryBitmaps(const std::vector<TTFGlyphData>& _vGlyphs, uint16_t _u16PixelsPerEm) {
 	int glyphCount = 0;
+
 	for (const auto& glyph : _vGlyphs) {
-		if (glyphCount > 10) {
+		if (glyphCount >= 10) {
 			break; //Don't fill my file system with CRAP!
 		}
 
 		uint32_t bitmapWidth = (glyph.first.m_fXMax - glyph.first.m_fXMin) + 1;
 		uint32_t bitmapHeight = (glyph.first.m_fYMax - glyph.first.m_fYMin) + 1;
 
-		size_t bufferSize = (((bitmapWidth * 32 + 15) >> 4) << 1) * bitmapHeight;
-
 		std::vector<uint32_t> vRaster(bitmapWidth * bitmapHeight, 0);
 
 		if (glyph.first.m_i16ContourCount > 0) {
-			int contourStartIndex = 0;
-		
 			TTFSimpleGlyph* glyphData = (TTFSimpleGlyph*)glyph.second.get();
 		
-			for (int endIndex : glyphData->m_vContourEndPts) {
-				int contourPointsCount = endIndex - contourStartIndex + 1;
-				std::vector<TTFPoint> points(contourPointsCount);
-		
-				std::copy(glyphData->m_vCoords.begin() + contourStartIndex, glyphData->m_vCoords.begin() + endIndex + 1, points.begin());
+			for (int ndx = 0; ndx < glyphData->m_vContours.size(); ++ndx) {
+				TTFContour contour = glyphData->m_vContours[ndx];
 
-				int iFirstPoint = 0;
-				CreateCompleteContour(points, iFirstPoint);
-				
-				for (auto& point : points) {
-					point.y = bitmapHeight - point.y - 1;
-				}
-				
-				for (int ndx = iFirstPoint; ndx < points.size(); ndx += 2) {
-					//DrawBresenhamLine(vRaster, points[ndx], points[(ndx + 1) % points.size()], bitmapWidth);
-					DrawBezierCurve(vRaster, points[ndx], points[(ndx + 1) % points.size()], points[(ndx + 2) % points.size()], 28, bitmapWidth);
-				}
+				InvertYAxis(contour, bitmapHeight);
 
-				for (auto& point : points) {
-					DrawPoint(vRaster, point, bitmapWidth, bitmapHeight);
-				}
-		
-				contourStartIndex = endIndex + 1;
+				for (TTFCurve& curve : contour) {
+					DrawBezierCurve(vRaster, curve.m_p0, curve.m_p1, curve.m_p2, 28, bitmapWidth);
+				}				
 			}
+
+			FillGlyph(vRaster, bitmapWidth, bitmapHeight, glyphData->m_vContours);
 		}
-		else { 
+		else {
 			continue; //Skip Compound Glyphs for now.
 		}
 
-		std::wstring path = L"./Assets/Fonts/TestOutput/";
-
-		HBITMAP bitmap = CreateBitmap(bitmapWidth, bitmapHeight, 1, 32, vRaster.data());
-		PBITMAPINFO info = CreateBitmapInfoStruct(NULL, bitmap);
-		CreateBitmapFile(NULL, (path + std::to_wstring(glyphCount) + L".bmp").data(), info, bitmap, GetDC(NULL));
+		SaveToFile(vRaster, bitmapWidth, bitmapHeight, glyphCount);
 
 		glyphCount++;
 	}
-}
-
-/// <summary>
-/// Credit to Sebastian Lague: https://www.youtube.com/watch?v=SO83KQuuZvg&t=596s
-/// </summary>
-void FontProcessor::CreateCompleteContour(std::vector<TTFPoint>& _vPoints, int& _iOutPointOffset) {
-	for (_iOutPointOffset = 0; _iOutPointOffset < _vPoints.size(); ++_iOutPointOffset) {
-		if (_vPoints[_iOutPointOffset].onCurve) break;
-	}
-
-	std::vector<TTFPoint> vNewPoints;
-	for (int ndx = 0; ndx < _vPoints.size(); ++ndx) {
-		TTFPoint curr = _vPoints[(ndx + _iOutPointOffset) % _vPoints.size()];
-		TTFPoint next = _vPoints[(ndx + _iOutPointOffset + 1) % _vPoints.size()];
-		vNewPoints.push_back(curr);
-
-		if (curr.onCurve == next.onCurve && ndx < _vPoints.size()) {
-			TTFPoint mid = { (curr.x + next.x) / 2, (curr.y + next.y) / 2 };
-			vNewPoints.push_back(mid);
-		}
-	}
-	_vPoints = vNewPoints;
 }
 
 PBITMAPINFO FontProcessor::CreateBitmapInfoStruct(HWND hwnd, HBITMAP hBmp) {
@@ -385,43 +411,20 @@ void FontProcessor::CreateBitmapFile(HWND hwnd, LPTSTR pszFile, PBITMAPINFO pbi,
 	GlobalFree((HGLOBAL)lpBits);
 }
 
-/// <summary>
-/// Thanks to Alois Zingl, Vienna, Austria at this link: http://members.chello.at/~easyfilter/bresenham.html
-/// </summary>
-void FontProcessor::DrawBresenhamLine(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pEnd, uint32_t _u32RowLength) {
-	int x0 =_pStart.x;
-	int y0 =_pStart.y;
-	int x1 =_pEnd.x;
-	int y1 =_pEnd.y;
+void FontProcessor::SaveToFile(std::vector<uint32_t>& _vBitmap, uint32_t _u32BitmapWidth, uint32_t _u32BitmapHeight, int _iGlyphNumber) {
+	static const std::wstring path = L"./Assets/Fonts/TestOutput/";
 
-	int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-	int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-	int err = dx + dy, e2; /* error value e_xy */
-
-	for (;;) {  /* loop */
-		PlotPixel(_vBitmap, x0, y0, 0xFFFFFFFF, _u32RowLength);
-		if (x0 == x1 && y0 == y1) break;
-		e2 = 2 * err;
-		if (e2 >= dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
-		if (e2 <= dx) { err += dx; y0 += sy; } /* e_xy+e_y < 0 */
-	}
+	HBITMAP bitmap = CreateBitmap(_u32BitmapWidth, _u32BitmapHeight, 1, 32, _vBitmap.data());
+	PBITMAPINFO info = CreateBitmapInfoStruct(NULL, bitmap);
+	CreateBitmapFile(NULL, (path + std::to_wstring(_iGlyphNumber) + L".bmp").data(), info, bitmap, GetDC(NULL));
 }
 
-FontProcessor::TTFPoint FontProcessor::BezierInterpolation(TTFPoint _p0, TTFPoint _p1, TTFPoint _p2, float _fT) {
-	TTFPoint pIntermediateA = { Math::Lerp(_p0.x, _p1.x, _fT), Math::Lerp(_p0.y, _p1.y, _fT) };
-	TTFPoint pIntermediateB = { Math::Lerp(_p1.x, _p2.x, _fT), Math::Lerp(_p1.y, _p2.y, _fT) };
-	return { (int16_t)Math::Lerp(pIntermediateA.x, pIntermediateB.x, _fT), (int16_t)Math::Lerp(pIntermediateA.y, pIntermediateB.y, _fT) };
-}
+void FontProcessor::PlotPixel(std::vector<uint32_t>& _vBitmap, int _iX, int _iY, uint32_t _u32Color, uint32_t _u32RowLength) {
+	int index = _iY * _u32RowLength + _iX;
 
-void FontProcessor::DrawBezierCurve(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pControl, TTFPoint _pEnd, int _iResolution, uint32_t _u32RowLength) {
-	TTFPoint prev = _pStart;
+	if (index > _vBitmap.size() - 1 || index < 0) return;
 
-	for (int count = 0; count < _iResolution; ++count) {
-		float t = (count + 1.0f) / _iResolution;
-		TTFPoint next = BezierInterpolation(_pStart, _pControl, _pEnd, t);
-		DrawBresenhamLine(_vBitmap, prev, next, _u32RowLength);
-		prev = next;
-	}
+	_vBitmap[index] = _u32Color;
 }
 
 void FontProcessor::DrawPoint(std::vector<uint32_t>& _vBitmap, TTFPoint _pPosition, uint32_t _u32Width, uint32_t _u32Height) {
@@ -455,10 +458,116 @@ void FontProcessor::DrawPoint(std::vector<uint32_t>& _vBitmap, TTFPoint _pPositi
 	}
 }
 
-void FontProcessor::PlotPixel(std::vector<uint32_t>& _vBitmap, int _iX, int _iY, uint32_t _u32Color, uint32_t _u32RowLength) {
-	int index = _iY * _u32RowLength + _iX;
+/// <summary>
+/// Thanks to Alois Zingl, Vienna, Austria at this link: http://members.chello.at/~easyfilter/bresenham.html
+/// </summary>
+void FontProcessor::DrawBresenhamLine(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pEnd, uint32_t _u32RowLength) {
+	int x0 =_pStart.x;
+	int y0 =_pStart.y;
+	int x1 =_pEnd.x;
+	int y1 =_pEnd.y;
 
-	if (index > _vBitmap.size() - 1 || index < 0) return;
+	int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+	int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+	int err = dx + dy, e2; /* error value e_xy */
 
-	_vBitmap[index] = _u32Color;
+	for (;;) {  /* loop */
+		PlotPixel(_vBitmap, x0, y0, 0xFFFFFFFF, _u32RowLength);
+		if (x0 == x1 && y0 == y1) break;
+		e2 = 2 * err;
+		if (e2 >= dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
+		if (e2 <= dx) { err += dx; y0 += sy; } /* e_xy+e_y < 0 */
+	}
+}
+
+void FontProcessor::DrawBezierCurve(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pControl, TTFPoint _pEnd, int _iResolution, uint32_t _u32RowLength) {
+	TTFPoint prev = _pStart;
+
+	for (int count = 0; count < _iResolution; ++count) {
+		float t = (count + 1.0f) / _iResolution;
+		TTFPoint next = BezierInterpolation(_pStart, _pControl, _pEnd, t);
+		DrawBresenhamLine(_vBitmap, prev, next, _u32RowLength);
+		prev = next;
+	}
+}
+
+void FontProcessor::FillGlyph(std::vector<uint32_t>& _vBitmap, uint16_t _u16Width, uint16_t _u16Height, std::vector<TTFContour>& _vAllContours) {
+	static const uint32_t color = 0xFFFFFFFF;
+
+	for (int16_t y = 0; y < _u16Height; ++y) {
+		for (int16_t x = 0; x < _u16Width; ++x) {
+			if (CheckValidPoint({ x, y }, _vAllContours)) {
+				PlotPixel(_vBitmap, x, y, color, _u16Width);
+			}
+		}
+	}
+}
+
+FontProcessor::TTFPoint FontProcessor::BezierInterpolation(TTFPoint _p0, TTFPoint _p1, TTFPoint _p2, float _fT) {
+	return { (int16_t)QuadraticInterpolation(_p0.x, _p1.x, _p2.x, _fT), (int16_t)QuadraticInterpolation(_p0.y, _p1.y, _p2.y, _fT) };
+}
+
+float FontProcessor::QuadraticInterpolation(float _f0, float _f1, float _f2, float _fT) {
+	float fA = (_f0 - (2.0f * _f1) + _f2);
+	float fB = 2.0f * (_f1 - _f0);
+
+	return (fA * (_fT * _fT)) + (fB * _fT) + _f0;
+}
+
+void FontProcessor::CalculateQuadraticRoots(float _fA, float _fB, float _fC, float& _fOutRootA, float& _fOutRootB) {
+	_fOutRootA = NAN;
+	_fOutRootB = NAN;
+
+	if (HC_FLOAT_COMPARE(_fA, 0.0f)) {
+		if (!(HC_FLOAT_COMPARE(_fB, 0.0f))) {
+			_fOutRootA = -_fC / _fB;
+		}
+	}
+	else {
+		float fDiscriminant = _fB * _fB - 4.0f * _fA * _fC;
+
+		if (fDiscriminant >= 0.0f) {
+			float fSqrt = sqrtf(fDiscriminant);
+			_fOutRootA = (-_fB + fSqrt) / (2.0f * _fA);
+			_fOutRootB = (-_fB - fSqrt) / (2.0f * _fA);
+		}
+	}
+}
+
+bool FontProcessor::IsValidIntersection(float _fT) {
+	return (_fT >= 0.0f && _fT <= 1.0f);
+}
+
+int FontProcessor::GetHorizontalIntersectionCount(TTFPoint _pPosition, TTFPoint _p0, TTFPoint _p1, TTFPoint _p2) {
+	float fA = _p0.y - (2.0f * _p1.y) + _p2.y;
+	float fB = 2.0f * (_p1.y - _p0.y);
+	float fC = _p0.y;
+
+	int iCount = 0;
+
+	if (FindFurthestLeftXCoordinate({ _p0, _p1, _p2 }) < _pPosition.x) {
+		return iCount; //If the curve is to the left of the pixel, skip it.
+	}
+
+	float fRootA, fRootB;
+	CalculateQuadraticRoots(fA, fB, fC - _pPosition.y, fRootA, fRootB);
+
+	int iSign = _p0.pointNumber > _p1.pointNumber ? -1 : 1;
+
+	iCount += IsValidIntersection(fRootA) ? iSign : 0.0f;
+	iCount += IsValidIntersection(fRootB) ? iSign : 0.0f;
+
+	return iCount;
+}
+
+bool FontProcessor::CheckValidPoint(TTFPoint _pPosition, std::vector<TTFContour>& _vAllContours) {
+	int iIntersectionCount = 0;
+
+	for (TTFContour& contour : _vAllContours) {
+		for (TTFCurve& curve : contour) {
+			iIntersectionCount += GetHorizontalIntersectionCount(_pPosition, curve.m_p0, curve.m_p1, curve.m_p2);
+		}
+	}
+
+	return iIntersectionCount != 0;
 }

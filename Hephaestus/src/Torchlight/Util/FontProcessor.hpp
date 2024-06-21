@@ -35,7 +35,22 @@ private:
 		int16_t x;
 		int16_t y;
 		bool onCurve;
+		float pointNumber = -1.0f;
 	};
+
+	struct TTFCurve {
+		union {
+			TTFPoint m_arrPoints[3];
+
+			struct {
+				TTFPoint m_p0;
+				TTFPoint m_p1;
+				TTFPoint m_p2;
+			};
+		};
+	};
+
+	typedef std::vector<TTFCurve> TTFContour;
 
 	struct TTFGlyphDescriptor {
 		int16_t m_i16ContourCount;
@@ -55,10 +70,8 @@ private:
 
 	class TTFSimpleGlyph final : public TTFGlyph {
 	public:
-		std::vector<uint16_t> m_vContourEndPts;
-		std::vector<uint8_t> m_vInstructions;
-		std::vector<uint8_t> m_vFlags;
-		std::vector<TTFPoint> m_vCoords;
+		//std::vector<uint8_t> m_vInstructions;
+		std::vector<TTFContour> m_vContours;
 
 		virtual ~TTFSimpleGlyph() {}
 	};
@@ -93,14 +106,26 @@ private:
 	static std::unique_ptr<TTFSimpleGlyph> ParseSimpleGlyph(File& _fFontFile, int16_t _i16ContourCount, uint32_t _u32MinX, uint32_t _u32MinY);
 	static std::unique_ptr<TTFCompoundGlyph> ParseCompoundGlyph(File& _fFontFile, int16_t _i16ContourCount);
 	static void ParseCoordinates(File& _fFontFile, const std::vector<uint8_t>& _vFlags, bool bIsX, std::vector<TTFPoint>& _vOutCoordinates, uint32_t _u32MinX, uint32_t _u32MinY);
+	static int GetPointOffset(const std::vector<TTFPoint>& _vPoints);
+	static void RecreateImpliedPoints(std::vector<TTFPoint>& _vPoints, int _iPointOffset);
+	static void InvertYAxis(TTFContour& _cContour, uint32_t _u32BitmapHeight);
+	static int FindFurthestLeftXCoordinate(const TTFCurve& _cCurve);
 
 	static void CreateTemporaryBitmaps(const std::vector<TTFGlyphData>& _vGlyphs, uint16_t _u16PixelsPerEm);
-	static void CreateCompleteContour(std::vector<TTFPoint>& _vPoints, int& _iOutPointOffset);
 	static PBITMAPINFO CreateBitmapInfoStruct(HWND hwnd, HBITMAP hBmp);
 	static void CreateBitmapFile(HWND hwnd, LPTSTR pszFile, PBITMAPINFO pbi, HBITMAP hBMP, HDC hDC);
-	static void DrawBresenhamLine(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pEnd, uint32_t _u32RowLength);
-	static TTFPoint BezierInterpolation(TTFPoint _p0, TTFPoint _p1, TTFPoint _p2, float _fT);
-	static void DrawBezierCurve(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pControl, TTFPoint _pEnd, int _iResolution, uint32_t _u32RowLength);
-	static void DrawPoint(std::vector<uint32_t>& _vBitmap, TTFPoint _pPosition, uint32_t _u32Width, uint32_t _u32Height);
+	static void SaveToFile(std::vector<uint32_t>& _vBitmap, uint32_t _u32BitmapWidth, uint32_t _u32BitmapHeight, int _iGlyphNumber);
+
 	static void PlotPixel(std::vector<uint32_t>& _vBitmap, int _iX, int _iY, uint32_t _u32Color, uint32_t _u32RowLength);
+	static void DrawPoint(std::vector<uint32_t>& _vBitmap, TTFPoint _pPosition, uint32_t _u32Width, uint32_t _u32Height);
+	static void DrawBresenhamLine(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pEnd, uint32_t _u32RowLength);
+	static void DrawBezierCurve(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pControl, TTFPoint _pEnd, int _iResolution, uint32_t _u32RowLength);
+	static void FillGlyph(std::vector<uint32_t>& _vBitmap, uint16_t _u16Width, uint16_t _u16Height, std::vector<TTFContour>& _vAllContours);
+
+	static TTFPoint BezierInterpolation(TTFPoint _p0, TTFPoint _p1, TTFPoint _p2, float _fT);
+	static float QuadraticInterpolation(float _f0, float _f1, float _f2, float _fT);
+	static void CalculateQuadraticRoots(float _fA, float _fB, float _fC, float& _fOutRootA, float& _fOutRootB);
+	static bool IsValidIntersection(float _fT);
+	static int GetHorizontalIntersectionCount(TTFPoint _pPosition, TTFPoint _p0, TTFPoint _p1, TTFPoint _p2);
+	static bool CheckValidPoint(TTFPoint _pPosition, std::vector<TTFContour>& _vAllContours);
 };

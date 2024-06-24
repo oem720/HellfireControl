@@ -32,10 +32,14 @@ private:
 	typedef int64_t LongDateTime;	//Date in seconds from 12:00 Midnight, January 1st 1904.
 	
 	struct TTFPoint {
-		int16_t x;
-		int16_t y;
-		bool onCurve;
+		int16_t x = _I16_MIN;
+		int16_t y = _I16_MIN;
+		bool onCurve = false;
 		float pointNumber = -1.0f;
+
+		bool IsValid() const {
+			return x != _I16_MIN && y != _I16_MIN;
+		}
 	};
 
 	struct TTFCurve {
@@ -48,6 +52,10 @@ private:
 				TTFPoint m_p2;
 			};
 		};
+
+		bool IsValid() const {
+			return m_p0.IsValid() && m_p1.IsValid() && m_p2.IsValid();
+		}
 	};
 
 	typedef std::vector<TTFCurve> TTFContour;
@@ -108,10 +116,12 @@ private:
 	static void ParseCoordinates(File& _fFontFile, const std::vector<uint8_t>& _vFlags, bool bIsX, std::vector<TTFPoint>& _vOutCoordinates, uint32_t _u32MinX, uint32_t _u32MinY);
 	static int GetPointOffset(const std::vector<TTFPoint>& _vPoints);
 	static void RecreateImpliedPoints(std::vector<TTFPoint>& _vPoints, int _iPointOffset);
-	static void InvertYAxis(TTFContour& _cContour, uint32_t _u32BitmapHeight);
-	static int FindFurthestLeftXCoordinate(const TTFCurve& _cCurve);
+	static void MakeContourCurvesMonotonic(TTFContour& _tContour);
+	static std::vector<TTFPoint> SplitCurveAtTurningPoint(const TTFCurve& _tCurve);
+	static void FlipImageVertically(std::vector<uint32_t>& _vBitmap, uint32_t _u32Width, uint32_t _u32Height);
 
-	static void CreateTemporaryBitmaps(const std::vector<TTFGlyphData>& _vGlyphs, uint16_t _u16PixelsPerEm);
+	static void CreateGlyphBitmaps(const std::vector<TTFGlyphData>& _vGlyphs, uint16_t _u16PixelsPerEm);
+
 	static PBITMAPINFO CreateBitmapInfoStruct(HWND hwnd, HBITMAP hBmp);
 	static void CreateBitmapFile(HWND hwnd, LPTSTR pszFile, PBITMAPINFO pbi, HBITMAP hBMP, HDC hDC);
 	static void SaveToFile(std::vector<uint32_t>& _vBitmap, uint32_t _u32BitmapWidth, uint32_t _u32BitmapHeight, int _iGlyphNumber);
@@ -122,10 +132,10 @@ private:
 	static void DrawBezierCurve(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pControl, TTFPoint _pEnd, int _iResolution, uint32_t _u32RowLength);
 	static void FillGlyph(std::vector<uint32_t>& _vBitmap, uint16_t _u16Width, uint16_t _u16Height, std::vector<TTFContour>& _vAllContours);
 
+	static bool CheckValidPoint(TTFPoint _pPosition, std::vector<TTFContour>& _vAllContours);
+	static int GetHorizontalIntersectionCount(TTFPoint _pPosition, TTFPoint _p0, TTFPoint _p1, TTFPoint _p2);
+	static bool IsValidIntersection(float _fT);
+	static void CalculateQuadraticRoots(float _fA, float _fB, float _fC, float& _fOutRootA, float& _fOutRootB);
 	static TTFPoint BezierInterpolation(TTFPoint _p0, TTFPoint _p1, TTFPoint _p2, float _fT);
 	static float QuadraticInterpolation(float _f0, float _f1, float _f2, float _fT);
-	static void CalculateQuadraticRoots(float _fA, float _fB, float _fC, float& _fOutRootA, float& _fOutRootB);
-	static bool IsValidIntersection(float _fT);
-	static int GetHorizontalIntersectionCount(TTFPoint _pPosition, TTFPoint _p0, TTFPoint _p1, TTFPoint _p2);
-	static bool CheckValidPoint(TTFPoint _pPosition, std::vector<TTFContour>& _vAllContours);
 };

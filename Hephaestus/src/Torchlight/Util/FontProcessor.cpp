@@ -27,7 +27,7 @@ void FontProcessor::ProcessFont(const std::string& _strFilepath) {
 		ParseGlyph(fFontFile, vGlyphData[ndx]); //Parse the glyph individually
 	}
 
-	CreateTemporaryBitmaps(vGlyphData, u16Resolution);
+	CreateGlyphBitmaps(vGlyphData, u16Resolution);
 }
 
 void FontProcessor::GetDataBlockOffsets(File& _fFontFile, std::map<std::string, uint32_t>& _mOutDataBlockLocations) {
@@ -164,6 +164,8 @@ std::unique_ptr<FontProcessor::TTFSimpleGlyph> FontProcessor::ParseSimpleGlyph(F
 								vContourPoints[(sNdx + 2) % vContourPoints.size()] });
 		}
 
+		MakeContourCurvesMonotonic(contour);
+
 		aSimpleGlyph->m_vContours.push_back(contour);
 
 		iContourStart = vContourEndPts[ndx] + 1;
@@ -219,7 +221,7 @@ int FontProcessor::GetPointOffset(const std::vector<TTFPoint>& _vPoints) {
 }
 
 /// <summary>
-/// Credit to Sebastian Lague: https://www.youtube.com/watch?v=SO83KQuuZvg&t=596s
+/// Credit to Sebastian Lague: https://github.com/SebLague/Text-Rendering/tree/main
 /// </summary>
 void FontProcessor::RecreateImpliedPoints(std::vector<TTFPoint>& _vPoints, int _iPointOffset) {
 
@@ -238,19 +240,86 @@ void FontProcessor::RecreateImpliedPoints(std::vector<TTFPoint>& _vPoints, int _
 	_vPoints = vNewPoints;
 }
 
-void FontProcessor::InvertYAxis(TTFContour& _cContour, uint32_t _u32BitmapHeight) {
-	for (TTFCurve& curve : _cContour) {
-		curve.m_p0.y = _u32BitmapHeight - curve.m_p0.y + 1;
-		curve.m_p1.y = _u32BitmapHeight - curve.m_p1.y + 1;
-		curve.m_p2.y = _u32BitmapHeight - curve.m_p2.y + 1;
+/// <summary>
+/// Credit to Sebastian Lague: https://github.com/SebLague/Text-Rendering/tree/main
+/// </summary>
+void FontProcessor::MakeContourCurvesMonotonic(TTFContour& _tContour) {
+	TTFContour tMonotonicContour;
+
+	for (auto& aCurve : _tContour) {
+		TTFCurve tMonotonicCurveA = {};
+		TTFCurve tMonotonicCurveB = {};
+
+		tMonotonicCurveA.m_p0 = aCurve.m_p0; //First point will always be valid.
+
+		if (aCurve.m_p1.y < std::min(aCurve.m_p0.y, aCurve.m_p2.y) || aCurve.m_p1.y > std::min(aCurve.m_p0.y, aCurve.m_p2.y)) {
+			auto aSplit = SplitCurveAtTurningPoint(aCurve);
+
+			tMonotonicCurveA = { tMonotonicCurveA.m_p0, aSplit[0], aSplit[1] };
+			tMonotonicCurveB = { aSplit[1], aSplit[2], aSplit[3] };
+		}
+		else {
+			tMonotonicCurveA.m_p1 = aCurve.m_p1;
+			tMonotonicCurveA.m_p2 = aCurve.m_p2;
+		}
+
+		if (tMonotonicCurveA.IsValid()) { tMonotonicContour.push_back(tMonotonicCurveA); }
+		if (tMonotonicCurveB.IsValid()) { tMonotonicContour.push_back(tMonotonicCurveB); }
 	}
 }
 
-int FontProcessor::FindFurthestLeftXCoordinate(const TTFCurve& _cCurve) {
-	return std::min(std::min(_cCurve.m_p0.x, _cCurve.m_p1.x), std::min(_cCurve.m_p1.x, _cCurve.m_p2.x));
+/// <summary>
+/// Credit to Sebastian Lague: https://github.com/SebLague/Text-Rendering/tree/main
+/// </summary>
+std::vector<FontProcessor::TTFPoint> FontProcessor::SplitCurveAtTurningPoint(const TTFCurve& _tCurve) {
+	Vec2F p0(_tCurve.m_p0.x, _tCurve.m_p0.y);
+	Vec2F p1(_tCurve.m_p1.x, _tCurve.m_p1.y);
+	Vec2F p2(_tCurve.m_p2.x, _tCurve.m_p2.y);
+
+	Vec2F a = p0 - (2.0f * p1) + p2;
+	Vec2F b = 2 * (p1 - p0);
+	Vec2F c = p0;
+
+	float fT = -b.y / (2.0f * a.y);
+
+	Vec2F vec2TurningPoint = (a * (fT * fT)) + (b * fT) + c;
+
+	float fP1AX = p0.x + b.x * ((vec2TurningPoint.y - p0.y) / b.y);
+
+	float fP1BX = p2.x + (2.0f * a.x + b.x) * ((vec2TurningPoint.y - p2.y) / (2.0f * a.y + b.y));
+
+	std::vector<TTFPoint> vPoints(4);
+
+	vPoints[0] = { (int16_t)fP1AX, (int16_t)vec2TurningPoint.y };
+	vPoints[1] = { (int16_t)vec2TurningPoint.x, (int16_t)vec2TurningPoint.y };
+	vPoints[2] = { (int16_t)fP1BX, (int16_t)vec2TurningPoint.y };
+	vPoints[3] = { _tCurve.m_p2 };
+
+	return vPoints;
 }
 
-void FontProcessor::CreateTemporaryBitmaps(const std::vector<TTFGlyphData>& _vGlyphs, uint16_t _u16PixelsPerEm) {
+void FontProcessor::FlipImageVertically(std::vector<uint32_t>& _vBitmap, uint32_t _u32Width, uint32_t _u32Height){
+	std::vector<std::vector<uint32_t>> vRows;
+	for (int iRow = 0; iRow < _u32Height; ++iRow) {
+		int iRowStart = iRow * _u32Width;
+		int iRowEnd = iRowStart + _u32Width;
+
+		std::vector<uint32_t> vRow;
+		vRow.insert(vRow.begin(), _vBitmap.begin() + iRowStart, _vBitmap.begin() + iRowEnd);
+
+		vRows.push_back(vRow);
+	}
+
+	std::reverse(vRows.begin(), vRows.end());
+
+	_vBitmap.clear();
+
+	for (auto& aRow : vRows) {
+		_vBitmap.insert(_vBitmap.end(), aRow.begin(), aRow.end());
+	}
+}
+
+void FontProcessor::CreateGlyphBitmaps(const std::vector<TTFGlyphData>& _vGlyphs, uint16_t _u16PixelsPerEm) {
 	int glyphCount = 0;
 
 	for (const auto& glyph : _vGlyphs) {
@@ -267,11 +336,7 @@ void FontProcessor::CreateTemporaryBitmaps(const std::vector<TTFGlyphData>& _vGl
 			TTFSimpleGlyph* glyphData = (TTFSimpleGlyph*)glyph.second.get();
 		
 			for (int ndx = 0; ndx < glyphData->m_vContours.size(); ++ndx) {
-				TTFContour contour = glyphData->m_vContours[ndx];
-
-				InvertYAxis(contour, bitmapHeight);
-
-				for (TTFCurve& curve : contour) {
+				for (TTFCurve& curve : glyphData->m_vContours[ndx]) {
 					DrawBezierCurve(vRaster, curve.m_p0, curve.m_p1, curve.m_p2, 28, bitmapWidth);
 				}				
 			}
@@ -279,8 +344,10 @@ void FontProcessor::CreateTemporaryBitmaps(const std::vector<TTFGlyphData>& _vGl
 			FillGlyph(vRaster, bitmapWidth, bitmapHeight, glyphData->m_vContours);
 		}
 		else {
-			continue; //Skip Compound Glyphs for now.
+			continue; //Skip Compound Glyphs, as they require a different rasterization setup.
 		}
+
+		FlipImageVertically(vRaster, bitmapWidth, bitmapHeight);
 
 		SaveToFile(vRaster, bitmapWidth, bitmapHeight, glyphCount);
 
@@ -503,63 +570,6 @@ void FontProcessor::FillGlyph(std::vector<uint32_t>& _vBitmap, uint16_t _u16Widt
 	}
 }
 
-FontProcessor::TTFPoint FontProcessor::BezierInterpolation(TTFPoint _p0, TTFPoint _p1, TTFPoint _p2, float _fT) {
-	return { (int16_t)QuadraticInterpolation(_p0.x, _p1.x, _p2.x, _fT), (int16_t)QuadraticInterpolation(_p0.y, _p1.y, _p2.y, _fT) };
-}
-
-float FontProcessor::QuadraticInterpolation(float _f0, float _f1, float _f2, float _fT) {
-	float fA = (_f0 - (2.0f * _f1) + _f2);
-	float fB = 2.0f * (_f1 - _f0);
-
-	return (fA * (_fT * _fT)) + (fB * _fT) + _f0;
-}
-
-void FontProcessor::CalculateQuadraticRoots(float _fA, float _fB, float _fC, float& _fOutRootA, float& _fOutRootB) {
-	_fOutRootA = NAN;
-	_fOutRootB = NAN;
-
-	if (HC_FLOAT_COMPARE(_fA, 0.0f)) {
-		if (!(HC_FLOAT_COMPARE(_fB, 0.0f))) {
-			_fOutRootA = -_fC / _fB;
-		}
-	}
-	else {
-		float fDiscriminant = _fB * _fB - 4.0f * _fA * _fC;
-
-		if (fDiscriminant >= 0.0f) {
-			float fSqrt = sqrtf(fDiscriminant);
-			_fOutRootA = (-_fB + fSqrt) / (2.0f * _fA);
-			_fOutRootB = (-_fB - fSqrt) / (2.0f * _fA);
-		}
-	}
-}
-
-bool FontProcessor::IsValidIntersection(float _fT) {
-	return (_fT >= 0.0f && _fT <= 1.0f);
-}
-
-int FontProcessor::GetHorizontalIntersectionCount(TTFPoint _pPosition, TTFPoint _p0, TTFPoint _p1, TTFPoint _p2) {
-	float fA = _p0.y - (2.0f * _p1.y) + _p2.y;
-	float fB = 2.0f * (_p1.y - _p0.y);
-	float fC = _p0.y;
-
-	int iCount = 0;
-
-	if (FindFurthestLeftXCoordinate({ _p0, _p1, _p2 }) < _pPosition.x) {
-		return iCount; //If the curve is to the left of the pixel, skip it.
-	}
-
-	float fRootA, fRootB;
-	CalculateQuadraticRoots(fA, fB, fC - _pPosition.y, fRootA, fRootB);
-
-	int iSign = _p0.pointNumber > _p1.pointNumber ? -1 : 1;
-
-	iCount += IsValidIntersection(fRootA) ? iSign : 0.0f;
-	iCount += IsValidIntersection(fRootB) ? iSign : 0.0f;
-
-	return iCount;
-}
-
 bool FontProcessor::CheckValidPoint(TTFPoint _pPosition, std::vector<TTFContour>& _vAllContours) {
 	int iIntersectionCount = 0;
 
@@ -570,4 +580,63 @@ bool FontProcessor::CheckValidPoint(TTFPoint _pPosition, std::vector<TTFContour>
 	}
 
 	return iIntersectionCount != 0;
+}
+
+int FontProcessor::GetHorizontalIntersectionCount(TTFPoint _pPosition, TTFPoint _p0, TTFPoint _p1, TTFPoint _p2) {
+	float fA = _p0.y - (2.0f * _p1.y) + _p2.y;
+	float fB = 2.0f * (_p1.y - _p0.y);
+	float fC = _p0.y;
+
+	int iCount = 0;
+
+	float fRootA, fRootB;
+	CalculateQuadraticRoots(fA, fB, fC - (float)_pPosition.y, fRootA, fRootB);
+
+	fRootA = Math::Clamp(fRootA);
+	fRootB = Math::Clamp(fRootB);
+
+	bool bIsRight = QuadraticInterpolation(_p0.x, _p1.x, _p2.x, fRootA) > (float)_pPosition.x && QuadraticInterpolation(_p0.x, _p1.x, _p2.x, fRootB) > (float)_pPosition.x;
+	//bool bIsRight = true;
+
+	int iSign = _p0.pointNumber > _p1.pointNumber ? -1 : 1;
+
+	iCount += IsValidIntersection(fRootA) && bIsRight ? Math::Clamp(0.5f + fRootA) * iSign : 0.0f;
+	iCount += IsValidIntersection(fRootB) && bIsRight ? Math::Clamp(0.5f + fRootB) * iSign : 0.0f;
+
+	return iCount;
+}
+
+bool FontProcessor::IsValidIntersection(float _fT) {
+	return (_fT >= -HC_EPSILON && _fT <= 1.0f + HC_EPSILON);
+}
+
+void FontProcessor::CalculateQuadraticRoots(float _fA, float _fB, float _fC, float& _fOutRootA, float& _fOutRootB) {
+	_fOutRootA = NAN;
+	_fOutRootB = NAN;
+
+	if (HC_FLOAT_COMPARE(_fA, 0.0f)) {
+		if (_fB != 0.0f) {
+			_fOutRootA = -_fC / _fB;
+		}
+	}
+	else {
+		float fDiscriminant = (_fB * _fB) - (4.0f * _fA * _fC);
+
+		if (fDiscriminant > -HC_EPSILON) {
+			float fSqrt = sqrtf(std::max(0.0f, fDiscriminant));
+			_fOutRootA = (-_fB + fSqrt) / (2.0f * _fA);
+			_fOutRootB = (-_fB - fSqrt) / (2.0f * _fA);
+		}
+	}
+}
+
+FontProcessor::TTFPoint FontProcessor::BezierInterpolation(TTFPoint _p0, TTFPoint _p1, TTFPoint _p2, float _fT) {
+	return { (int16_t)QuadraticInterpolation(_p0.x, _p1.x, _p2.x, _fT), (int16_t)QuadraticInterpolation(_p0.y, _p1.y, _p2.y, _fT) };
+}
+
+float FontProcessor::QuadraticInterpolation(float _f0, float _f1, float _f2, float _fT) {
+	float fA = (_f0 - (2.0f * _f1) + _f2);
+	float fB = 2.0f * (_f1 - _f0);
+
+	return (fA * (_fT * _fT)) + (fB * _fT) + _f0;
 }

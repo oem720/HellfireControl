@@ -3,8 +3,6 @@
 
 #include <HellfireControl/Asset/Font.hpp>
 
-#include <HellfireControl/Math/Math.hpp>
-
 void FontProcessor::ProcessFont(const std::string& _strFilepath) {
 	File fFontFile(_strFilepath, FILE_OPEN_FLAG_READ | FILE_OPEN_FLAG_BINARY); //Open file in binary
 
@@ -148,7 +146,7 @@ std::unique_ptr<FontProcessor::TTFSimpleGlyph> FontProcessor::ParseSimpleGlyph(F
 
 	for (int ndx = 0; ndx < vContourEndPts.size(); ++ndx) {
 		std::vector<TTFPoint> vContourPoints;
-		TTFContour contour;
+		TTFContour tContour;
 
 		int iNumPointsInContour = vContourEndPts[ndx] - iContourStart + 1;
 
@@ -159,16 +157,25 @@ std::unique_ptr<FontProcessor::TTFSimpleGlyph> FontProcessor::ParseSimpleGlyph(F
 		RecreateImpliedPoints(vContourPoints, iPointOffset);
 
 		for (int sNdx = iPointOffset; sNdx < vContourPoints.size(); sNdx += 2) {
-			contour.push_back({ vContourPoints[sNdx],
+			tContour.m_vCurves.push_back({ vContourPoints[sNdx],
 								vContourPoints[(sNdx + 1) % vContourPoints.size()],
 								vContourPoints[(sNdx + 2) % vContourPoints.size()] });
 		}
 
-		MakeContourCurvesMonotonic(contour);
+		MakeContourCurvesMonotonic(tContour);
 
-		aSimpleGlyph->m_vContours.push_back(contour);
+		aSimpleGlyph->m_vContours.push_back(tContour);
 
 		iContourStart = vContourEndPts[ndx] + 1;
+	}
+
+	for (int oNdx = 0; oNdx < aSimpleGlyph->m_vContours.size(); ++oNdx) {
+		for (int iNdx = 0; iNdx < aSimpleGlyph->m_vContours.size(); ++iNdx) {
+			if (iNdx == oNdx) continue; //If the two contours we're checking are the same, skip
+
+			//Check if the contour is contained in another one
+			CheckContourContained(aSimpleGlyph->m_vContours[oNdx], aSimpleGlyph->m_vContours[iNdx]);
+		}
 	}
 	
 	return std::move(aSimpleGlyph);
@@ -246,7 +253,7 @@ void FontProcessor::RecreateImpliedPoints(std::vector<TTFPoint>& _vPoints, int _
 void FontProcessor::MakeContourCurvesMonotonic(TTFContour& _tContour) {
 	TTFContour tMonotonicContour;
 
-	for (auto& aCurve : _tContour) {
+	for (auto& aCurve : _tContour.m_vCurves) {
 		TTFCurve tMonotonicCurveA = {};
 		TTFCurve tMonotonicCurveB = {};
 
@@ -263,8 +270,8 @@ void FontProcessor::MakeContourCurvesMonotonic(TTFContour& _tContour) {
 			tMonotonicCurveA.m_p2 = aCurve.m_p2;
 		}
 
-		if (tMonotonicCurveA.IsValid()) { tMonotonicContour.push_back(tMonotonicCurveA); }
-		if (tMonotonicCurveB.IsValid()) { tMonotonicContour.push_back(tMonotonicCurveB); }
+		if (tMonotonicCurveA.IsValid()) { tMonotonicContour.m_vCurves.push_back(tMonotonicCurveA); }
+		if (tMonotonicCurveB.IsValid()) { tMonotonicContour.m_vCurves.push_back(tMonotonicCurveB); }
 	}
 }
 
@@ -298,7 +305,136 @@ std::vector<FontProcessor::TTFPoint> FontProcessor::SplitCurveAtTurningPoint(con
 	return vPoints;
 }
 
-void FontProcessor::FlipImageVertically(std::vector<uint32_t>& _vBitmap, uint32_t _u32Width, uint32_t _u32Height){
+void FontProcessor::CheckContourContained(TTFContour& _tContour, const TTFContour& _tPossibleOuter) {
+	for (const auto& aCurve : _tContour.m_vCurves) {
+		//Run our point check on every point in the curve against the outer contour.
+		//Because p1 is a control point, and therefore is never directly hit, it can be safely skipped.
+		//This may lead to an edge case below when testing for the curves to cross, but that edge case
+		//is unlikely to ever be hit.
+		if (!CheckPointInContour(aCurve.m_p0, _tPossibleOuter) || !CheckPointInContour(aCurve.m_p2, _tPossibleOuter)) {
+			return;
+		}
+	}
+
+	//It's here that the edge case may arise -- this test only checks straight line segments against
+	//each other. Therefore, it may have a problem if multiple curves are close together, since the data
+	//will be too granular. This is not an issue for 99.999999% of fonts, so it is not an issue to worry
+	//about right now.
+	if (CheckCurveOutlineIntersection(_tContour, _tPossibleOuter)) {
+		return;
+	}
+
+	//If it never hits any of the early outs, flip the hole boolean.
+	_tContour.m_bIsHole = !_tContour.m_bIsHole;
+}
+
+bool FontProcessor::CheckCurveOutlineIntersection(const TTFContour& _tContourA, const TTFContour& _tContourB) {
+	for (const auto& aInnerCurve : _tContourA.m_vCurves) {
+		for (const auto& aOuterCurve : _tContourB.m_vCurves) {
+			if (CheckLineIntersection(aInnerCurve, aOuterCurve)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool FontProcessor::CheckPointInContour(const TTFPoint& _tPoint, const TTFContour& _tPossibleOuter) {
+	std::vector<TTFPoint> vVertices;
+
+	//Unpack curves into a list of vertices for the contour. We do not use the control point for testing.
+	for (const auto& aCurve : _tPossibleOuter.m_vCurves) {
+		vVertices.push_back(aCurve.m_p0);
+		vVertices.push_back(aCurve.m_p2);
+	}
+
+	bool bIsInside = false;
+
+	for (int iLeft = 0, iRight = vVertices.size() - 1; iLeft < vVertices.size(); ++iLeft) {
+		if ((vVertices[iLeft].y < _tPoint.y && vVertices[iRight].y >= _tPoint.y) ||
+			(vVertices[iRight].y < _tPoint.y && vVertices[iLeft].y >= _tPoint.y)) {
+			float fTest = vVertices[iLeft].x + static_cast<float>(_tPoint.y - vVertices[iLeft].y) / static_cast<float>(vVertices[iRight].y - vVertices[iLeft].y) * static_cast<float>(vVertices[iRight].x - vVertices[iLeft].x);
+
+			if (fTest < _tPoint.x) {
+				bIsInside = !bIsInside;
+			}
+		}
+		iRight = iLeft;
+	}
+
+	return bIsInside;
+}
+
+bool FontProcessor::CheckLineIntersection(const TTFCurve& _tCurveA, const TTFCurve& _tCurveB) {
+	Vec2F A = Vec2F(_tCurveA.m_p0.x, _tCurveA.m_p0.y);
+	Vec2F B = Vec2F(_tCurveA.m_p2.x, _tCurveA.m_p2.y);
+
+	Vec2F C = Vec2F(_tCurveB.m_p0.x, _tCurveB.m_p0.y);
+	Vec2F D = Vec2F(_tCurveB.m_p2.x, _tCurveB.m_p2.y);
+
+	Vec2F r = B - A;
+	Vec2F s = D - C;
+
+	float fNumerator = Cross(C - A, r);
+	float fDenominator = Cross(r, s);
+
+	if (fNumerator == 0.0f && fDenominator == 0.0f) {
+		if (A == C || A == D || B == C || B == D) {
+			return true;
+		}
+
+		return !((C.x - A.x < 0.0f) == (C.x - B.x < 0.0f) == (D.x - A.x < 0.0f) == (D.x - B.x < 0.0f)) ||
+			   !((C.y - A.y < 0.0f) == (C.y - B.y < 0.0f) == (D.y - A.y < 0.0f) == (D.y - B.y < 0.0f));
+	}
+
+	if (fDenominator == 0.0f) {
+		return false; //Parallel lines
+	}
+
+	float u = fNumerator / fDenominator;
+	float t = Cross(C - A, s) / fDenominator;
+
+	return (t >= 0.0f) && (t <= 1.0f) && (u >= 0.0f) && (u <= 1.0f); 
+}
+
+void FontProcessor::CreateGlyphBitmaps(const std::vector<TTFGlyphData>& _vGlyphs, uint16_t _u16PixelsPerEm) {
+	int glyphCount = 0;
+
+	for (const auto& glyph : _vGlyphs) {
+		//if (glyphCount >= 10) {
+		//	break; //Don't fill my file system with CRAP!
+		//}
+
+		uint32_t bitmapWidth = (glyph.first.m_fXMax - glyph.first.m_fXMin) + 1;
+		uint32_t bitmapHeight = (glyph.first.m_fYMax - glyph.first.m_fYMin) + 1;
+
+		std::vector<uint32_t> vRaster(bitmapWidth * bitmapHeight, 0);
+
+		if (glyph.first.m_i16ContourCount > 0) {
+			TTFSimpleGlyph* glyphData = (TTFSimpleGlyph*)glyph.second.get();
+
+			FillGlyph(vRaster, bitmapWidth, bitmapHeight, 0xFFFFFFFF, glyphData->m_vContours);
+		
+			for (int ndx = 0; ndx < glyphData->m_vContours.size(); ++ndx) {
+				for (TTFCurve& curve : glyphData->m_vContours[ndx].m_vCurves) {
+					DrawBezierCurve(vRaster, curve.m_p0, curve.m_p1, curve.m_p2, 0xFFFF0000, 28, bitmapWidth);
+				}				
+			}
+		}
+		else {
+			continue; //Skip Compound Glyphs, as they require a different rasterization setup.
+		}
+
+		FlipImageVertically(vRaster, bitmapWidth, bitmapHeight);
+
+		SaveToFile(vRaster, bitmapWidth, bitmapHeight, glyphCount);
+
+ 		glyphCount++;
+	}
+}
+
+void FontProcessor::FlipImageVertically(std::vector<uint32_t>& _vBitmap, uint32_t _u32Width, uint32_t _u32Height) {
 	std::vector<std::vector<uint32_t>> vRows;
 	for (int iRow = 0; iRow < _u32Height; ++iRow) {
 		int iRowStart = iRow * _u32Width;
@@ -316,42 +452,6 @@ void FontProcessor::FlipImageVertically(std::vector<uint32_t>& _vBitmap, uint32_
 
 	for (auto& aRow : vRows) {
 		_vBitmap.insert(_vBitmap.end(), aRow.begin(), aRow.end());
-	}
-}
-
-void FontProcessor::CreateGlyphBitmaps(const std::vector<TTFGlyphData>& _vGlyphs, uint16_t _u16PixelsPerEm) {
-	int glyphCount = 0;
-
-	for (const auto& glyph : _vGlyphs) {
-		if (glyphCount >= 10) {
-			break; //Don't fill my file system with CRAP!
-		}
-
-		uint32_t bitmapWidth = (glyph.first.m_fXMax - glyph.first.m_fXMin) + 1;
-		uint32_t bitmapHeight = (glyph.first.m_fYMax - glyph.first.m_fYMin) + 1;
-
-		std::vector<uint32_t> vRaster(bitmapWidth * bitmapHeight, 0);
-
-		if (glyph.first.m_i16ContourCount > 0) {
-			TTFSimpleGlyph* glyphData = (TTFSimpleGlyph*)glyph.second.get();
-		
-			for (int ndx = 0; ndx < glyphData->m_vContours.size(); ++ndx) {
-				for (TTFCurve& curve : glyphData->m_vContours[ndx]) {
-					DrawBezierCurve(vRaster, curve.m_p0, curve.m_p1, curve.m_p2, 28, bitmapWidth);
-				}				
-			}
-
-			FillGlyph(vRaster, bitmapWidth, bitmapHeight, glyphData->m_vContours);
-		}
-		else {
-			continue; //Skip Compound Glyphs, as they require a different rasterization setup.
-		}
-
-		FlipImageVertically(vRaster, bitmapWidth, bitmapHeight);
-
-		SaveToFile(vRaster, bitmapWidth, bitmapHeight, glyphCount);
-
-		glyphCount++;
 	}
 }
 
@@ -494,7 +594,7 @@ void FontProcessor::PlotPixel(std::vector<uint32_t>& _vBitmap, int _iX, int _iY,
 	_vBitmap[index] = _u32Color;
 }
 
-void FontProcessor::DrawPoint(std::vector<uint32_t>& _vBitmap, TTFPoint _pPosition, uint32_t _u32Width, uint32_t _u32Height) {
+void FontProcessor::DrawPoint(std::vector<uint32_t>& _vBitmap, TTFPoint _pPosition, uint32_t _u32Width, uint32_t _u32Height, uint32_t _u32Color) {
 	static const uint32_t u32Color = 0x00FF0000;
 	
 	PlotPixel(_vBitmap, _pPosition.x, _pPosition.y, u32Color, _u32Width);
@@ -528,7 +628,7 @@ void FontProcessor::DrawPoint(std::vector<uint32_t>& _vBitmap, TTFPoint _pPositi
 /// <summary>
 /// Thanks to Alois Zingl, Vienna, Austria at this link: http://members.chello.at/~easyfilter/bresenham.html
 /// </summary>
-void FontProcessor::DrawBresenhamLine(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pEnd, uint32_t _u32RowLength) {
+void FontProcessor::DrawBresenhamLine(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pEnd, uint32_t _u32Color, uint32_t _u32RowLength) {
 	int x0 =_pStart.x;
 	int y0 =_pStart.y;
 	int x1 =_pEnd.x;
@@ -539,7 +639,7 @@ void FontProcessor::DrawBresenhamLine(std::vector<uint32_t>& _vBitmap, TTFPoint 
 	int err = dx + dy, e2; /* error value e_xy */
 
 	for (;;) {  /* loop */
-		PlotPixel(_vBitmap, x0, y0, 0xFFFFFFFF, _u32RowLength);
+		PlotPixel(_vBitmap, x0, y0, _u32Color, _u32RowLength);
 		if (x0 == x1 && y0 == y1) break;
 		e2 = 2 * err;
 		if (e2 >= dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
@@ -547,91 +647,124 @@ void FontProcessor::DrawBresenhamLine(std::vector<uint32_t>& _vBitmap, TTFPoint 
 	}
 }
 
-void FontProcessor::DrawBezierCurve(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pControl, TTFPoint _pEnd, int _iResolution, uint32_t _u32RowLength) {
+void FontProcessor::DrawBezierCurve(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pControl, TTFPoint _pEnd, uint32_t _u32Color, int _iResolution, uint32_t _u32RowLength) {
 	TTFPoint prev = _pStart;
 
 	for (int count = 0; count < _iResolution; ++count) {
 		float t = (count + 1.0f) / _iResolution;
 		TTFPoint next = BezierInterpolation(_pStart, _pControl, _pEnd, t);
-		DrawBresenhamLine(_vBitmap, prev, next, _u32RowLength);
+		DrawBresenhamLine(_vBitmap, prev, next, _u32Color, _u32RowLength);
 		prev = next;
 	}
 }
 
-void FontProcessor::FillGlyph(std::vector<uint32_t>& _vBitmap, uint16_t _u16Width, uint16_t _u16Height, std::vector<TTFContour>& _vAllContours) {
-	static const uint32_t color = 0xFFFFFFFF;
+void FontProcessor::FillGlyph(std::vector<uint32_t>& _vBitmap, uint16_t _u16Width, uint16_t _u16Height, uint32_t _u32Color, std::vector<TTFContour>& _vAllContours) {
+	for (const auto& aContour : _vAllContours) {
+		RasterizeContour(_vBitmap, aContour, _u16Width, _u16Height, _u32Color);
+	}
+}
 
-	for (int16_t y = 0; y < _u16Height; ++y) {
-		for (int16_t x = 0; x < _u16Width; ++x) {
-			if (CheckValidPoint({ x, y }, _vAllContours)) {
-				PlotPixel(_vBitmap, x, y, color, _u16Width);
+void FontProcessor::RasterizeContour(std::vector<uint32_t>& _vBitmap, const TTFContour& _tContour, uint16_t _u16Width, uint16_t _u16Height, uint32_t _u32Color) {
+	struct {
+		bool operator()(const TTFEdgeTableEntry& _tLeft, const TTFEdgeTableEntry& _tRight) { return _tLeft.m_vec2Min.y < _tRight.m_vec2Min.y; }
+	} TTFSortOnY;
+
+	struct {
+		bool operator()(const TTFEdgeTableEntry& _tLeft, const TTFEdgeTableEntry& _tRight) { return _tLeft.m_fCurrentX < _tRight.m_fCurrentX; }
+	} TTFSortOnX;
+
+	std::vector<TTFEdgeTableEntry> vEdgeTable; //Polygon Edges
+	std::vector<TTFEdgeTableEntry> vActiveEdges; //Active Edges
+
+	//Move the integer contour into the floating point contour. This is to allow accuracy when not working with glyphs scaled to be 1:1
+	for (const auto& aCurve : _tContour.m_vCurves) {
+		if (aCurve.IsHorizontal()) {
+			continue;
+		}
+
+		int iMinYIndex = aCurve.GetMinYIndex();
+		int iMaxYIndex = iMinYIndex == 2 ? 0 : 2;
+
+		TTFEdgeTableEntry eteEntry = {
+			.m_vec2Min = Vec2F(aCurve.m_arrPoints[iMinYIndex].x, aCurve.m_arrPoints[iMinYIndex].y),
+			.m_vec2ControlPoint = Vec2F(aCurve.m_p1.x, aCurve.m_p1.y),
+			.m_vec2Max = Vec2F(aCurve.m_arrPoints[iMaxYIndex].x, aCurve.m_arrPoints[iMaxYIndex].y),
+			.m_fCurrentX = static_cast<float>(aCurve.m_arrPoints[iMinYIndex].x),
+			.m_bDownward = iMinYIndex == 2,
+			.m_bHoleEdge = _tContour.m_bIsHole
+		};
+
+		vEdgeTable.push_back(eteEntry);
+	}
+
+	//Start by sorting the edges on their minimum Y
+	std::sort(vEdgeTable.begin(), vEdgeTable.end(), TTFSortOnY);
+
+	int16_t y = 0;
+	//Go until the y coordinate is the height of the bitmap or the edge counts are empty
+	while (y < _u16Height && !(vEdgeTable.empty() && vActiveEdges.empty())) {
+		//Move edges from ET to AET when the minimum Y is equal to the y coordinate.
+		for (int ndx = 0; ndx < vEdgeTable.size(); ++ndx) {
+			if (static_cast<int16_t>(vEdgeTable[ndx].m_vec2Min.y) == y) {
+				vActiveEdges.push_back(vEdgeTable[ndx]);
+				vEdgeTable.erase(vEdgeTable.begin() + ndx--);
 			}
 		}
-	}
-}
 
-bool FontProcessor::CheckValidPoint(TTFPoint _pPosition, std::vector<TTFContour>& _vAllContours) {
-	int iIntersectionCount = 0;
-
-	for (TTFContour& contour : _vAllContours) {
-		for (TTFCurve& curve : contour) {
-			iIntersectionCount += GetHorizontalIntersectionCount(_pPosition, curve.m_p0, curve.m_p1, curve.m_p2);
+		//If there are no active edges, continue to the next scanline
+		if (vActiveEdges.size() == 0) {
+			y++;
+			continue;
 		}
-	}
 
-	return iIntersectionCount != 0;
-}
+		//Sort AET on X
+		std::sort(vActiveEdges.begin(), vActiveEdges.end(), TTFSortOnX);
 
-int FontProcessor::GetHorizontalIntersectionCount(TTFPoint _pPosition, TTFPoint _p0, TTFPoint _p1, TTFPoint _p2) {
-	float fA = _p0.y - (2.0f * _p1.y) + _p2.y;
-	float fB = 2.0f * (_p1.y - _p0.y);
-	float fC = _p0.y;
+		//Draw lines between each point
+		int iCurrNdx = 0;
+		while (iCurrNdx < vActiveEdges.size() - 1) {
+			auto& aEntry1 = vActiveEdges[iCurrNdx];
+			auto& aEntry2 = vActiveEdges[iCurrNdx + 1];
 
-	int iCount = 0;
+			DrawBresenhamLine(_vBitmap,
+				{ static_cast<int16_t>(std::roundf(aEntry1.m_fCurrentX)), y },
+				{ static_cast<int16_t>(std::roundf(aEntry2.m_fCurrentX)), y },
+				_tContour.m_bIsHole ? 0x0 : _u32Color,
+				_u16Width);
 
-	float fRootA, fRootB;
-	CalculateQuadraticRoots(fA, fB, fC - (float)_pPosition.y, fRootA, fRootB);
-
-	fRootA = Math::Clamp(fRootA);
-	fRootB = Math::Clamp(fRootB);
-
-	bool bIsRight = QuadraticInterpolation(_p0.x, _p1.x, _p2.x, fRootA) > (float)_pPosition.x && QuadraticInterpolation(_p0.x, _p1.x, _p2.x, fRootB) > (float)_pPosition.x;
-	//bool bIsRight = true;
-
-	int iSign = _p0.pointNumber > _p1.pointNumber ? -1 : 1;
-
-	iCount += IsValidIntersection(fRootA) && bIsRight ? Math::Clamp(0.5f + fRootA) * iSign : 0.0f;
-	iCount += IsValidIntersection(fRootB) && bIsRight ? Math::Clamp(0.5f + fRootB) * iSign : 0.0f;
-
-	return iCount;
-}
-
-bool FontProcessor::IsValidIntersection(float _fT) {
-	return (_fT >= -HC_EPSILON && _fT <= 1.0f + HC_EPSILON);
-}
-
-void FontProcessor::CalculateQuadraticRoots(float _fA, float _fB, float _fC, float& _fOutRootA, float& _fOutRootB) {
-	_fOutRootA = NAN;
-	_fOutRootB = NAN;
-
-	if (HC_FLOAT_COMPARE(_fA, 0.0f)) {
-		if (_fB != 0.0f) {
-			_fOutRootA = -_fC / _fB;
+			iCurrNdx += 2;
 		}
-	}
-	else {
-		float fDiscriminant = (_fB * _fB) - (4.0f * _fA * _fC);
 
-		if (fDiscriminant > -HC_EPSILON) {
-			float fSqrt = sqrtf(std::max(0.0f, fDiscriminant));
-			_fOutRootA = (-_fB + fSqrt) / (2.0f * _fA);
-			_fOutRootB = (-_fB - fSqrt) / (2.0f * _fA);
+		//Increment y by 1
+		y++;
+
+		//Remove edges from AET when Y = Ymax
+		for (int ndx = 0; ndx < vActiveEdges.size(); ++ndx) {
+			if (static_cast<int16_t>(vActiveEdges[ndx].m_vec2Max.y) == y) {
+				vActiveEdges.erase(vActiveEdges.begin() + ndx--);
+			}
+		}
+
+		//Update all the x values for the next scanline
+		for (auto& aTableEntry : vActiveEdges) {
+			//Get distance along line between max and min
+			float fProportion = (static_cast<float>(y) - aTableEntry.m_vec2Min.y) / (aTableEntry.m_vec2Max.y - aTableEntry.m_vec2Min.y);
+
+			//Interpolate the curve
+			Vec2F vec2InterpolatedPoint = BezierInterpolation(aTableEntry.m_vec2Min, aTableEntry.m_vec2ControlPoint, aTableEntry.m_vec2Max, fProportion);
+
+			//Save the X
+			aTableEntry.m_fCurrentX = vec2InterpolatedPoint.x;
 		}
 	}
 }
 
 FontProcessor::TTFPoint FontProcessor::BezierInterpolation(TTFPoint _p0, TTFPoint _p1, TTFPoint _p2, float _fT) {
 	return { (int16_t)QuadraticInterpolation(_p0.x, _p1.x, _p2.x, _fT), (int16_t)QuadraticInterpolation(_p0.y, _p1.y, _p2.y, _fT) };
+}
+
+Vec2F FontProcessor::BezierInterpolation(Vec2F _v0, Vec2F _v1, Vec2F _v2, float _fT) {
+	return Vec2F(QuadraticInterpolation(_v0.x, _v1.x, _v2.x, _fT), QuadraticInterpolation(_v0.y, _v1.y, _v2.y, _fT));
 }
 
 float FontProcessor::QuadraticInterpolation(float _f0, float _f1, float _f2, float _fT) {

@@ -4,6 +4,7 @@
 
 #include <HellfireControl/Util/Util.hpp>
 #include <HellfireControl/Core/File.hpp>
+#include <HellfireControl/Math/Math.hpp>
 
 #include <Windows.h>
 #include <gdiplus.h>
@@ -56,9 +57,32 @@ private:
 		bool IsValid() const {
 			return m_p0.IsValid() && m_p1.IsValid() && m_p2.IsValid();
 		}
+
+		int GetMinYIndex() const {
+			return m_p0.y < m_p2.y ? 0 : 2;
+		}
+
+		bool IsHorizontal() const {
+			return m_p0.y == m_p1.y && m_p1.y == m_p2.y;
+		}
+	};
+		
+	struct TTFContour {
+		std::vector<TTFCurve> m_vCurves;
+		bool m_bIsHole = false;
 	};
 
-	typedef std::vector<TTFCurve> TTFContour;
+	struct TTFEdgeTableEntry {
+		Vec2F m_vec2Min;
+		Vec2F m_vec2ControlPoint;
+		Vec2F m_vec2Max;
+
+		float m_fCurrentX;
+
+		bool m_bDownward;
+
+		bool m_bHoleEdge;
+	};
 
 	struct TTFGlyphDescriptor {
 		int16_t m_i16ContourCount;
@@ -118,24 +142,26 @@ private:
 	static void RecreateImpliedPoints(std::vector<TTFPoint>& _vPoints, int _iPointOffset);
 	static void MakeContourCurvesMonotonic(TTFContour& _tContour);
 	static std::vector<TTFPoint> SplitCurveAtTurningPoint(const TTFCurve& _tCurve);
-	static void FlipImageVertically(std::vector<uint32_t>& _vBitmap, uint32_t _u32Width, uint32_t _u32Height);
+	static void CheckContourContained(TTFContour& _tContour, const TTFContour& _tPossibleOuter);
+	static bool CheckCurveOutlineIntersection(const TTFContour& _tContourA, const TTFContour& _tContourB);
+	static bool CheckPointInContour(const TTFPoint& _tPoint, const TTFContour& _tPossibleOuter);
+	static bool CheckLineIntersection(const TTFCurve& _tCurveA, const TTFCurve& _tCurveB);
 
 	static void CreateGlyphBitmaps(const std::vector<TTFGlyphData>& _vGlyphs, uint16_t _u16PixelsPerEm);
+	static void FlipImageVertically(std::vector<uint32_t>& _vBitmap, uint32_t _u32Width, uint32_t _u32Height);
 
 	static PBITMAPINFO CreateBitmapInfoStruct(HWND hwnd, HBITMAP hBmp);
 	static void CreateBitmapFile(HWND hwnd, LPTSTR pszFile, PBITMAPINFO pbi, HBITMAP hBMP, HDC hDC);
 	static void SaveToFile(std::vector<uint32_t>& _vBitmap, uint32_t _u32BitmapWidth, uint32_t _u32BitmapHeight, int _iGlyphNumber);
 
 	static void PlotPixel(std::vector<uint32_t>& _vBitmap, int _iX, int _iY, uint32_t _u32Color, uint32_t _u32RowLength);
-	static void DrawPoint(std::vector<uint32_t>& _vBitmap, TTFPoint _pPosition, uint32_t _u32Width, uint32_t _u32Height);
-	static void DrawBresenhamLine(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pEnd, uint32_t _u32RowLength);
-	static void DrawBezierCurve(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pControl, TTFPoint _pEnd, int _iResolution, uint32_t _u32RowLength);
-	static void FillGlyph(std::vector<uint32_t>& _vBitmap, uint16_t _u16Width, uint16_t _u16Height, std::vector<TTFContour>& _vAllContours);
+	static void DrawPoint(std::vector<uint32_t>& _vBitmap, TTFPoint _pPosition, uint32_t _u32Width, uint32_t _u32Height, uint32_t _u32Color);
+	static void DrawBresenhamLine(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pEnd, uint32_t _u32Color, uint32_t _u32RowLength);
+	static void DrawBezierCurve(std::vector<uint32_t>& _vBitmap, TTFPoint _pStart, TTFPoint _pControl, TTFPoint _pEnd, uint32_t _u32Color, int _iResolution, uint32_t _u32RowLength);
+	static void FillGlyph(std::vector<uint32_t>& _vBitmap, uint16_t _u16Width, uint16_t _u16Height, uint32_t _u32Color, std::vector<TTFContour>& _vAllContours);
+	static void RasterizeContour(std::vector<uint32_t>& _vBitmap, const TTFContour& _tContour, uint16_t _u16Width, uint16_t _u16Height, uint32_t _u32Color);
 
-	static bool CheckValidPoint(TTFPoint _pPosition, std::vector<TTFContour>& _vAllContours);
-	static int GetHorizontalIntersectionCount(TTFPoint _pPosition, TTFPoint _p0, TTFPoint _p1, TTFPoint _p2);
-	static bool IsValidIntersection(float _fT);
-	static void CalculateQuadraticRoots(float _fA, float _fB, float _fC, float& _fOutRootA, float& _fOutRootB);
 	static TTFPoint BezierInterpolation(TTFPoint _p0, TTFPoint _p1, TTFPoint _p2, float _fT);
+	static Vec2F BezierInterpolation(Vec2F _v0, Vec2F _v1, Vec2F _v2, float _fT);
 	static float QuadraticInterpolation(float _f0, float _f1, float _f2, float _fT);
 };

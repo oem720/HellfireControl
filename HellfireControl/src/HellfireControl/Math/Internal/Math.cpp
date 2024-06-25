@@ -1374,11 +1374,11 @@ namespace Math {
 
 	RotorD Sqrt(const RotorD& _rVal) { return Sqrt(_rVal.m_vRot); }
 
-	RotorD Log10(const RotorD& _rVal) { return Log10(_rVal); }
+	RotorD Log10(const RotorD& _rVal) { return Log10(_rVal.m_vRot); }
 
-	RotorD Log2(const RotorD& _rVal) { return Log2(_rVal); }
+	RotorD Log2(const RotorD& _rVal) { return Log2(_rVal.m_vRot); }
 
-	RotorD Ln(const RotorD& _rVal) { return Ln(_rVal); }
+	RotorD Ln(const RotorD& _rVal) { return Ln(_rVal.m_vRot); }
 
 	RotorD Exp(const RotorD& _rVal) { return Exp(_rVal.m_vRot); }
 
@@ -1402,7 +1402,7 @@ namespace Math {
 	}
 
 	RotorD DampedOscillate(const RotorD& _rMin, const RotorD& _rMax, double _dPeriod, double _dTime, double _dDampingRatio = 0.2) {
-		return DampedOscillate(_rMin, _rMax, _dPeriod, _dTime, _dDampingRatio);
+		return DampedOscillate(_rMin.m_vRot, _rMax.m_vRot, _dPeriod, _dTime, _dDampingRatio);
 	}
 
 	RotorD SmoothStep(const RotorD& _rStart, const RotorD& _rEnd, double _dRatio) {

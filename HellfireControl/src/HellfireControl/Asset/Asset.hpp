@@ -9,5 +9,5 @@ class Asset
 protected:
 	//GUID m_gId;
 public:
-	virtual ~Asset() = 0;
+	virtual ~Asset() = 0 {};
 };

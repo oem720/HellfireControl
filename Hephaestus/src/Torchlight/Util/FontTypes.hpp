@@ -8,15 +8,16 @@
 typedef int16_t ShortFrac;		//Signed fraction
 typedef int32_t FixedPoint;		//Signed 16.16 Fixed Point
 typedef int16_t FWord;			//Signed integer in FUnits, smallest distance in em space
-typedef uint16_t uFWord;		//Unsigned FWord
+typedef uint16_t UFWord;		//Unsigned FWord
 typedef int16_t F2Dot14;		//16 bit signed fixed point number stored as 2.14
 typedef int64_t LongDateTime;	//Date in seconds from 12:00 Midnight, January 1st 1904.
+
+typedef uint32_t UTF8PaddedChar;
 
 struct TTFPoint {
 	int16_t x = _I16_MIN;
 	int16_t y = _I16_MIN;
 	bool onCurve = false;
-	float pointNumber = -1.0f;
 
 	bool IsValid() const {
 		return x != _I16_MIN && y != _I16_MIN;
@@ -45,10 +46,6 @@ struct TTFCurve {
 	bool IsHorizontal() const {
 		return m_p0.y == m_p1.y && m_p1.y == m_p2.y;
 	}
-
-	bool IsCollinear() const {
-		return (m_p1.y - m_p0.y) * (m_p2.x - m_p1.x) == (m_p2.y - m_p1.y) * (m_p1.x - m_p0.x);
-	}
 };
 
 struct TTFContour {
@@ -59,10 +56,16 @@ struct TTFEdgeTableEntry {
 	Vec2F m_vec2Min;
 	Vec2F m_vec2ControlPoint;
 	Vec2F m_vec2Max;
-
 	float m_fCurrentX;
-
 	bool m_bDownward;
+
+	struct CompareYLess {
+		bool operator()(const TTFEdgeTableEntry& _tLeft, const TTFEdgeTableEntry& _tRight) { return _tLeft.m_vec2Min.y < _tRight.m_vec2Min.y; }
+	};
+
+	struct CompareXLess {
+		bool operator()(const TTFEdgeTableEntry& _tLeft, const TTFEdgeTableEntry& _tRight) { return _tLeft.m_fCurrentX < _tRight.m_fCurrentX; }
+	};
 };
 
 struct TTFGlyphDescriptor {
@@ -91,7 +94,7 @@ public:
 
 class TTFCompoundGlyph final : public TTFGlyph {
 public:
-	union TTFCompoundGlyphArg {
+	struct TTFCompoundGlyphArg {
 		union {
 			int16_t i16;
 			uint16_t u16;
@@ -103,10 +106,17 @@ public:
 		};
 	};
 
-	uint16_t m_u16Flags = 0;
-	uint16_t m_u16GlyphIndex = 0;
-	TTFCompoundGlyphArg m_cgaArgument1 = { .i16 = 0 };
-	TTFCompoundGlyphArg m_cgaArgument2 = { .i16 = 0 };
+	struct TTFCompoundGlyphComponent {
+		uint16_t m_u16GlyphIndex = 0;
+		TTFCompoundGlyphArg m_cgaArgument1 = { .i16 = 0 };
+		TTFCompoundGlyphArg m_cgaArgument2 = { .i16 = 0 };
+		
+		float m_arrTransformData[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+		uint8_t m_u8Flags = 0;
+	};
+	
+	std::vector<TTFCompoundGlyphComponent> m_vComponents;
 
 	virtual ~TTFCompoundGlyph() {}
 };
@@ -125,6 +135,8 @@ struct TTFBitmap {
 		m_pPixels = new uint32_t[m_u32ArraySize](0x0);
 	}
 
+	TTFBitmap(TTFBitmap&& _bOther) noexcept : m_pPixels(std::exchange(_bOther.m_pPixels, nullptr)), m_u32Width(_bOther.m_u32Width), m_u32Height(_bOther.m_u32Height), m_u32ArraySize(_bOther.m_u32ArraySize){}
+
 	~TTFBitmap() {
 		delete[] m_pPixels;
 	}
@@ -132,4 +144,28 @@ struct TTFBitmap {
 	void PlotPixel(int _iX, int _iY, uint32_t _u32Color);
 
 	void FlipImageVertically();
+};
+
+enum TTFSimpleGlyphFlags : uint8_t {
+	ON_CURVE = 0,
+	IS_SINGLE_BYTE_X = 1,
+	IS_SINGLE_BYTE_Y = 2,
+	REPEAT = 3,
+	INSTRUCTION_X = 4,
+	INSTRUCTION_Y = 5
+};
+
+enum TTFComponentGlyphFlags : uint16_t {
+	ARGS_1_AND_2_ARE_WORDS = 1,
+	ARGS_ARE_XY_VALUES = 2,
+	ROUND_XY_TO_GRID = 4,
+	WE_HAVE_A_SCALE = 8,
+	MORE_COMPONENTS = 32,
+	WE_HAVE_AN_X_AND_Y_SCALE = 64,
+	WE_HAVE_A_TWO_BY_TWO = 128,
+	WE_HAVE_INSTRUCTIONS = 512,
+	USE_MY_METRICS = 1024,
+	OVERLAP_COMPOUND = 2048,
+	SCALED_COMPONENT_OFFSET = 4096,
+	UNSCALED_COMPONENT_OFFSET = 8192
 };

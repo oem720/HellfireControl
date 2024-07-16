@@ -34,7 +34,7 @@
 
 #define HC_SFINAE_REQUIRE_NUMERIC(_typename) typename = typename std::enable_if<std::disjunction<std::is_integral<_typename>, std::is_floating_point<_typename>>::value>::type
 #define HC_SFINAE_REQUIRE_INTEGER(_typename) typename = typename std::enable_if<std::is_integral<_typename>::value>::type
-#define HC_SFINAE_REQUIRE_FLOATING_POINT(_typename) typename = typename std::enable_if<std::is_floating_point<_typename>>::value>::type
+#define HC_SFINAE_REQUIRE_FLOATING_POINT(_typename) typename = typename std::enable_if<std::is_floating_point<_typename>::value>::type
 
 //Defines for standardized declarations
 #define HC_INLINE inline

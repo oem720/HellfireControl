@@ -44,9 +44,9 @@ void UICreationToolApplication::Run() {
 
 	Buffer uniformBuffer(BufferType::UNIFORM_BUFFER, &ubdData, sizeof(UniformBufferData), 1, m_prsRenderer->GetRenderContextID(CONTEXT_TYPE_3D));
 
-	//FontProcessor::ProcessFont("./Assets/Fonts/JetBrainsMono-Bold.ttf");
+	FontProcessor::ProcessFont("./Assets/Fonts/JetBrainsMono-Bold.ttf");
 	//FontProcessor::ProcessFont("./Assets/Fonts/Sniglet.ttf");
-	FontProcessor::ProcessFont("./Assets/Fonts/RobotoSlab-Bold.ttf");
+	//FontProcessor::ProcessFont("./Assets/Fonts/RobotoSlab-Bold.ttf");
 	//FontProcessor::ProcessFont("./Assets/Fonts/calibri.ttf");
 	//FontProcessor::ProcessFont("./Assets/Fonts/Envy Code R.ttf");
 

@@ -22,7 +22,7 @@ private:
 
 	static std::unique_ptr<TTFSimpleGlyph> ParseSimpleGlyph(File& _fFontFile, int16_t _i16ContourCount, uint32_t _u32MinX, uint32_t _u32MinY);
 	static std::unique_ptr<TTFCompoundGlyph> ParseCompoundGlyph(File& _fFontFile, uint16_t _u16MaxDepth);
-	static void ParseFlags(File& _fFontFile, std::vector<uint8_t>& _vFlags);
+	static void ParseCoordinateFlags(File& _fFontFile, std::vector<uint8_t>& _vFlags);
 	static void ParseCoordinates(File& _fFontFile, const std::vector<uint8_t>& _vFlags, std::vector<TTFPoint>& _vOutCoordinates, uint32_t _u32MinX, uint32_t _u32MinY);
 	static void ParseCoordinateValue(File& _fFontFile, const uint8_t _u8Flag, const uint8_t _u8VectorSize, const uint8_t _u8SignOrSkip, int16_t& _i16Coordinate, int & _iCoordAcc, uint32_t _u32Offset);
 	static std::vector<TTFContour> PackContours(const std::vector<TTFPoint>& _vPoints, const std::vector<uint16_t> _vContourEndPoints);

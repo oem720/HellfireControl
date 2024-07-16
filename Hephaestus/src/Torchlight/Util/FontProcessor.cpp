@@ -218,7 +218,7 @@ std::unique_ptr<TTFSimpleGlyph> FontProcessor::ParseSimpleGlyph(File& _fFontFile
 	int iNumPoints = 1 + (*std::max_element(vContourEndPts.begin(), vContourEndPts.end()));
 
 	std::vector<uint8_t> vFlags(iNumPoints);
-	ParseFlags(_fFontFile, vFlags);
+	ParseCoordinateFlags(_fFontFile, vFlags);
 
 	std::vector<TTFPoint> vPoints(iNumPoints);
 	ParseCoordinates(_fFontFile, vFlags, vPoints, _u32MinX, _u32MinY);
@@ -276,7 +276,7 @@ std::unique_ptr<TTFCompoundGlyph> FontProcessor::ParseCompoundGlyph(File& _fFont
 	return std::move(aCompoundGlyph);
 }
 
-void FontProcessor::ParseFlags(File& _fFontFile, std::vector<uint8_t>& _vFlags) {
+void FontProcessor::ParseCoordinateFlags(File& _fFontFile, std::vector<uint8_t>& _vFlags) {
 	for (int ndx = 0; ndx < _vFlags.size(); ++ndx) {
 		uint8_t u8Flag = FontUtil::ReadTTFValue<uint8_t>(_fFontFile);
 

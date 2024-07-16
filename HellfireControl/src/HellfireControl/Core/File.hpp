@@ -91,6 +91,8 @@ public:
 
 	[[nodiscard]] HC_INLINE bool IsBinary() const { return m_fofFlags & FILE_OPEN_FLAG_BINARY; }
 
+	[[nodiscard]] HC_INLINE size_t ReaderLocation() { return m_fofFlags & FILE_OPEN_FLAG_BLOB ? static_cast<size_t>(m_ptrBlobPointer - &m_vDataBlob[0]) : static_cast<size_t>(m_fStream.tellg()); }
+
 	void AdvanceBytes(int64_t _i64Distance);
 
 	void GoToByte(size_t _sLocation);

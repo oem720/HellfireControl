@@ -3,7 +3,7 @@
 
 namespace FontUtil {
 	TTFPoint QuadraticInterpolation(TTFPoint _p0, TTFPoint _p1, TTFPoint _p2, float _fT) {
-		return { (int16_t)QuadraticInterpolation(_p0.x, _p1.x, _p2.x, _fT), (int16_t)QuadraticInterpolation(_p0.y, _p1.y, _p2.y, _fT) };
+		return { QuadraticInterpolation(_p0.x, _p1.x, _p2.x, _fT), QuadraticInterpolation(_p0.y, _p1.y, _p2.y, _fT) };
 	}
 
 	Vec2F QuadraticInterpolation(Vec2F _v0, Vec2F _v1, Vec2F _v2, float _fT) {
@@ -107,7 +107,7 @@ namespace FontUtil {
 					_fFontFile.GoToByte(sBookmarkedLocation);
 				}
 
-				mCharMap[uCurrCode] = iGlyphNdx;
+				mCharMap[uCurrCode++] = iGlyphNdx;
 				bAddedMissingChar |= iGlyphNdx == 0;
 			}
 		}

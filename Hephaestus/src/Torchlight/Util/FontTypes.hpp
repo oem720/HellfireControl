@@ -15,12 +15,13 @@ typedef int64_t LongDateTime;	//Date in seconds from 12:00 Midnight, January 1st
 typedef uint32_t UTF8PaddedChar;
 
 struct TTFPoint {
-	int16_t x = _I16_MIN;
-	int16_t y = _I16_MIN;
-	bool onCurve = false;
+	float x = NAN;
+	float y = NAN;
+
+	bool m_bOnCurve = false;
 
 	bool IsValid() const {
-		return x != _I16_MIN && y != _I16_MIN;
+		return x != NAN && y != NAN;
 	}
 };
 
@@ -70,10 +71,10 @@ struct TTFEdgeTableEntry {
 
 struct TTFGlyphDescriptor {
 	int16_t m_i16ContourCount;
-	FWord m_fXMin;
-	FWord m_fYMin;
-	FWord m_fXMax;
-	FWord m_fYMax;
+	float m_fXMin;
+	float m_fYMin;
+	float m_fXMax;
+	float m_fYMax;
 };
 
 class TTFGlyph {

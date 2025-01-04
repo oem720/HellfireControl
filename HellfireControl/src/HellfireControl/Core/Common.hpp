@@ -11,7 +11,6 @@
 #include <thread>
 #include <fstream>
 #include <filesystem>
-#include <stdexcept>
 #include <functional>
 #include <chrono>
 #include <charconv>

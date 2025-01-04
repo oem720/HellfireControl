@@ -40,33 +40,18 @@ struct TTFCurve {
 		return m_p0.IsValid() && m_p1.IsValid() && m_p2.IsValid();
 	}
 
-	int GetMinYIndex() const {
-		return m_p0.y < m_p2.y ? 0 : 2;
-	}
-
-	bool IsHorizontal() const {
-		return m_p0.y == m_p1.y && m_p1.y == m_p2.y;
-	}
+	TTFPoint operator[](uint8_t _u8Index) const { return m_arrPoints[_u8Index]; }
+	TTFPoint& operator[](uint8_t _u8Index) { return m_arrPoints[_u8Index]; }
 };
 
 struct TTFContour {
 	std::vector<TTFCurve> m_vCurves;
 };
 
-struct TTFEdgeTableEntry {
-	Vec2F m_vec2Min;
-	Vec2F m_vec2ControlPoint;
-	Vec2F m_vec2Max;
-	float m_fCurrentX;
+struct TTFEdge {
+	TTFCurve m_cCurve;
 	bool m_bDownward;
-
-	struct CompareYLess {
-		bool operator()(const TTFEdgeTableEntry& _tLeft, const TTFEdgeTableEntry& _tRight) { return _tLeft.m_vec2Min.y < _tRight.m_vec2Min.y; }
-	};
-
-	struct CompareXLess {
-		bool operator()(const TTFEdgeTableEntry& _tLeft, const TTFEdgeTableEntry& _tRight) { return _tLeft.m_fCurrentX < _tRight.m_fCurrentX; }
-	};
+	float m_fCurrentX;
 };
 
 struct TTFGlyphDescriptor {
@@ -87,7 +72,6 @@ public:
 
 class TTFSimpleGlyph final : public TTFGlyph {
 public:
-	//std::vector<uint8_t> m_vInstructions;
 	std::vector<TTFContour> m_vContours;
 
 	virtual ~TTFSimpleGlyph() {}
@@ -123,6 +107,7 @@ public:
 };
 
 typedef std::pair<TTFGlyphDescriptor, std::unique_ptr<TTFGlyph>> TTFGlyphData; //This alias joins the two blocks of glyph data together
+																			   //Note that the unique_ptr is a TTFGlyph, utilizing the ugly hack.
 
 struct TTFBitmap {
 	uint32_t* m_pPixels;
@@ -132,13 +117,13 @@ struct TTFBitmap {
 
 	TTFBitmap() = delete;
 
-	TTFBitmap(uint32_t _u32Width, uint32_t _u32Height) : m_u32Width(_u32Width), m_u32Height(_u32Height), m_u32ArraySize(_u32Width* _u32Height) {
+	TTFBitmap(uint32_t _u32Width, uint32_t _u32Height) : m_u32Width(_u32Width), m_u32Height(_u32Height), m_u32ArraySize(_u32Width * _u32Height) {
 		m_pPixels = new uint32_t[m_u32ArraySize](0x0);
 	}
 
 	TTFBitmap(TTFBitmap&& _bOther) noexcept : m_pPixels(std::exchange(_bOther.m_pPixels, nullptr)), m_u32Width(_bOther.m_u32Width), m_u32Height(_bOther.m_u32Height), m_u32ArraySize(_bOther.m_u32ArraySize){}
 
-	~TTFBitmap() {
+	~TTFBitmap() { 
 		delete[] m_pPixels;
 	}
 

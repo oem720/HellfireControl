@@ -35,6 +35,11 @@ namespace FontUtil {
 	float QuadraticInterpolation(float _f0, float _f1, float _f2, float _fT);
 	float GetQuadraticX(float _f0, float _f1, float _f2, float _fY);
 	void QuadraticFormula(float _fA, float _fB, float _fC, Vec2F& _v2Roots);
+
+	void RecreateImpliedPoints(std::vector<TTFPoint>& _vPoints, int _iPointOffset);
+	void MakeContourCurvesMonotonic(TTFContour& _tContour);
+	std::vector<TTFPoint> SplitCurveAtTurningPoint(const TTFCurve& _tCurve);
+
 	std::map<UTF8PaddedChar, int> ReadTTFFormat0(File& _fFontFile);
 	std::map<UTF8PaddedChar, int> ReadTTFFormat2(File& _fFontFile);
 	std::map<UTF8PaddedChar, int> ReadTTFFormat4(File& _fFontFile);

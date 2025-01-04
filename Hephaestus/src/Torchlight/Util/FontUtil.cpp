@@ -46,6 +46,82 @@ namespace FontUtil {
 		}
 	}
 
+	/// <summary>
+/// Credit to Sebastian Lague: https://github.com/SebLague/Text-Rendering/tree/main
+/// </summary>
+	void RecreateImpliedPoints(std::vector<TTFPoint>& _vPoints, int _iPointOffset) {
+		std::vector<TTFPoint> vNewPoints;
+		for (int ndx = 0; ndx < _vPoints.size(); ++ndx) {
+			TTFPoint curr = _vPoints[(ndx + _iPointOffset) % _vPoints.size()];
+			TTFPoint next = _vPoints[(ndx + _iPointOffset + 1) % _vPoints.size()];
+			vNewPoints.push_back(curr);
+
+			if (curr.m_bOnCurve == next.m_bOnCurve && ndx < _vPoints.size()) {
+				TTFPoint mid = { (curr.x + next.x) / 2, (curr.y + next.y) / 2 };
+				vNewPoints.push_back(mid);
+			}
+		}
+		_vPoints = vNewPoints;
+	}
+
+	/// <summary>
+	/// Credit to Sebastian Lague: https://github.com/SebLague/Text-Rendering/tree/main
+	/// </summary>
+	void MakeContourCurvesMonotonic(TTFContour& _tContour) {
+		TTFContour tMonotonicContour;
+
+		for (auto& aCurve : _tContour.m_vCurves) {
+			TTFCurve tMonotonicCurveA = {};
+			TTFCurve tMonotonicCurveB = {};
+
+			tMonotonicCurveA.m_p0 = aCurve.m_p0; //First point will always be valid.
+
+			if (aCurve.m_p1.y < std::min(aCurve.m_p0.y, aCurve.m_p2.y) || aCurve.m_p1.y > std::min(aCurve.m_p0.y, aCurve.m_p2.y)) {
+				auto aSplit = SplitCurveAtTurningPoint(aCurve);
+
+				tMonotonicCurveA = { tMonotonicCurveA.m_p0, aSplit[0], aSplit[1] };
+				tMonotonicCurveB = { aSplit[1], aSplit[2], aSplit[3] };
+			}
+			else {
+				tMonotonicCurveA.m_p1 = aCurve.m_p1;
+				tMonotonicCurveA.m_p2 = aCurve.m_p2;
+			}
+
+			if (tMonotonicCurveA.IsValid()) { tMonotonicContour.m_vCurves.push_back(tMonotonicCurveA); }
+			if (tMonotonicCurveB.IsValid()) { tMonotonicContour.m_vCurves.push_back(tMonotonicCurveB); }
+		}
+	}
+
+	/// <summary>
+	/// Credit to Sebastian Lague: https://github.com/SebLague/Text-Rendering/tree/main
+	/// </summary>
+	std::vector<TTFPoint> SplitCurveAtTurningPoint(const TTFCurve& _tCurve) {
+		Vec2F p0(_tCurve.m_p0.x, _tCurve.m_p0.y);
+		Vec2F p1(_tCurve.m_p1.x, _tCurve.m_p1.y);
+		Vec2F p2(_tCurve.m_p2.x, _tCurve.m_p2.y);
+
+		Vec2F a = p0 - (2.0f * p1) + p2;
+		Vec2F b = 2 * (p1 - p0);
+		Vec2F c = p0;
+
+		float fT = -b.y / (2.0f * a.y);
+
+		Vec2F vec2TurningPoint = (a * (fT * fT)) + (b * fT) + c;
+
+		float fP1AX = p0.x + b.x * ((vec2TurningPoint.y - p0.y) / b.y);
+
+		float fP1BX = p2.x + (2.0f * a.x + b.x) * ((vec2TurningPoint.y - p2.y) / (2.0f * a.y + b.y));
+
+		std::vector<TTFPoint> vPoints(4);
+
+		vPoints[0] = { fP1AX, vec2TurningPoint.y };
+		vPoints[1] = { vec2TurningPoint.x, vec2TurningPoint.y };
+		vPoints[2] = { fP1BX, vec2TurningPoint.y };
+		vPoints[3] = { _tCurve.m_p2 };
+
+		return vPoints;
+	}
+
 	std::map<UTF8PaddedChar, int> ReadTTFFormat4(File& _fFontFile) {
 		std::map<UTF8PaddedChar, int> mCharMap;
 

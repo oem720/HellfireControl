@@ -1,6 +1,8 @@
 
 #include <Torchlight/Util/FontProcessor.hpp>
 
+#include <HellfireControl/Math/Math.hpp>
+
 #include <Torchlight/Util/FontHelper.hpp>
 
 using namespace FontUtil;
@@ -379,7 +381,7 @@ void FontProcessor::RasterizeGlyphBitmap(TTFBitmap& _bBitmap, Vec2F _v2TrueDimen
 
 	for (const auto& aContour : _vAllContours) {
 		for (const auto& aCurve : aContour.m_vCurves) {
-			if (!aCurve.IsValid()) {
+			if (!aCurve.IsValid() || (aCurve.m_p0.y == aCurve.m_p1.y && aCurve.m_p1.y == aCurve.m_p2.y)) {
 				continue;
 			}
 
@@ -405,10 +407,10 @@ void FontProcessor::RasterizeGlyphBitmap(TTFBitmap& _bBitmap, Vec2F _v2TrueDimen
 	);
 
 	std::vector<TTFEdge> vActiveEdges;
-	//Because we don't know the exact amount of color per pixel due to our sampling technique,
-	//we keep a count of the amount of times each fragment has been "hit" in order to average
-	//the color out per pixel in the final image.
-	std::vector<uint32_t> vFragmentHitCounts(0, _bBitmap.m_u32ArraySize);
+	
+	//This is the bitmap that is scaled to work with the data directly. It is not scaled to the proper
+	//glyph size.
+	TTFBitmap bFullBitmap(static_cast<uint32_t>(_v2TrueDimensions.x), static_cast<uint32_t>(_v2TrueDimensions.y));	
 
 	uint32_t u32Scanline = 0;
 	while (u32Scanline < static_cast<uint32_t>(_v2TrueDimensions.y) && !(vEdges.empty() && vActiveEdges.empty())) {
@@ -434,7 +436,7 @@ void FontProcessor::RasterizeGlyphBitmap(TTFBitmap& _bBitmap, Vec2F _v2TrueDimen
 			for (const auto& aEdge : vActiveEdges) {
 				//Here we cast to float to ensure that X values don't slip through the cracks.
 				//This helps with precision in the smaller glyphs
-				if (static_cast<float>(iX) > aEdge.m_fCurrentX) {
+				if (static_cast<float>(iX) >= aEdge.m_fCurrentX) {
 					continue;
 				}
 
@@ -442,8 +444,8 @@ void FontProcessor::RasterizeGlyphBitmap(TTFBitmap& _bBitmap, Vec2F _v2TrueDimen
 			}
 
 			if (iIntersectionCount != 0) {
-				//Determine which *actual* pixel corresponds to the virtual pixels we're working with.
-				//We're going to be incrementing the hit count for that fragment here.
+				//We plot to the fully scaled bitmap so we can up/downscale later on.
+				bFullBitmap.PlotPixel(iX, u32Scanline, HC_FONT_BASE_COLOR);
 			}
 		}
 
@@ -452,7 +454,7 @@ void FontProcessor::RasterizeGlyphBitmap(TTFBitmap& _bBitmap, Vec2F _v2TrueDimen
 		for (int ndx = 0; ndx < vActiveEdges.size(); ++ndx) {
 			//Once again, we use the floats for more precision. This may or may not be a bad idea, given floating point
 			//imprecision at small values, but it's better than truncating and losing some precision.
-			if (GetMaxCurveY(vActiveEdges[ndx].m_cCurve) <= static_cast<float>(u32Scanline)) {
+			if (GetMaxCurveY(vActiveEdges[ndx].m_cCurve) < static_cast<float>(u32Scanline)) {
 				vActiveEdges.erase(vActiveEdges.begin() + ndx--);
 			}
 		}
@@ -466,10 +468,7 @@ void FontProcessor::RasterizeGlyphBitmap(TTFBitmap& _bBitmap, Vec2F _v2TrueDimen
 		}
 	}
 
-	for (int ndx = 0; ndx < vFragmentHitCounts.size(); ++ndx) {
-		//Here we find the average coverage of the pixel based on the virtual pixels calculated.
-		//The goal is to prevent issues in smaller glyphs by having a large virtual resolution.
-	}
+	int x = 0;
 }
 
 void FontProcessor::RasterizeGlyphSDF(TTFBitmap& _bBitmap, std::vector<TTFContour>& _vAllContours, bool _bIsMultiChannel) {

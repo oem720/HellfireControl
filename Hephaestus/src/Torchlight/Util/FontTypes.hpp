@@ -2,7 +2,7 @@
 
 #include <HellfireControl/Core/Common.hpp>
 
-#include <HellfireControl/Math/Vector.hpp>
+#include <HellfireControl/Math/Math.hpp>
 
 //TrueType Data Types
 typedef int16_t ShortFrac;		//Signed fraction
@@ -10,148 +10,100 @@ typedef int32_t FixedPoint;		//Signed 16.16 Fixed Point
 typedef int16_t FWord;			//Signed integer in FUnits, smallest distance in em space
 typedef uint16_t UFWord;		//Unsigned FWord
 typedef int16_t F2Dot14;		//16 bit signed fixed point number stored as 2.14
-typedef int64_t LongDateTime;	//Date in seconds from 12:00 Midnight, January 1st 1904.
+
+enum TTFVertexFlags : uint8_t {
+	ON_CURVE = 0,
+	X_SHORT_VECTOR = 1,
+	Y_SHORT_VECTOR = 2,
+	REPEAT = 3,
+	X_SIGN_OR_SKIP = 4,
+	Y_SIGN_OR_SKIP = 5
+};
+
+//These are inspired by the STB implementation.
+enum class TTFVertexType : uint8_t {
+	CONTOUR_START,
+	LINE_SEGMENT,
+	QUADRATIC_CURVE,
+	CUBIC_CURVE
+};
 
 typedef uint32_t UTF8PaddedChar;
 
-struct TTFPoint {
-	float x = NAN;
-	float y = NAN;
-
-	bool m_bOnCurve = false;
-
-	bool IsValid() const {
-		return x != NAN && y != NAN;
-	}
+struct TTFCharacterRange {
+	UTF8PaddedChar m_cFirstChar;
+	uint32_t m_u32Count;
 };
 
-struct TTFCurve {
+typedef std::map<UTF8PaddedChar, uint32_t> TTFCharacterMap;
+
+struct TTFTag {
 	union {
-		TTFPoint m_arrPoints[3];
-
-		struct {
-			TTFPoint m_p0;
-			TTFPoint m_p1;
-			TTFPoint m_p2;
-		};
+		uint32_t m_u32TagInt;
+		char m_pTagStr[5] = { 0, 0, 0, 0, 0 };
 	};
+
+	TTFTag() : m_pTagStr{ 0, 0, 0, 0, 0 } {}
+
+	TTFTag(const char* _pTag) {
+		memcpy_s(m_pTagStr, 4, _pTag, 4);
+	}
+
+	TTFTag(uint32_t _u32Tag) :
+		m_u32TagInt(_u32Tag) {}
+
+	bool operator==(const TTFTag& _other) const {
+		return m_u32TagInt == _other.m_u32TagInt;
+	}
+
+	bool operator<(const TTFTag& _other) const {
+		return strcmp(m_pTagStr, _other.m_pTagStr) < 0;
+	}
+
+	bool operator>(const TTFTag& _other) const {
+		return strcmp(m_pTagStr, _other.m_pTagStr) > 0;
+	}
+};
+
+struct TTFTableDirectoryEntry {
+	uint32_t m_u32Checksum = 0;
+	uint32_t m_u32Offset = 0;
+	uint32_t m_u32Length = 0;
 
 	bool IsValid() const {
-		return m_p0.IsValid() && m_p1.IsValid() && m_p2.IsValid();
+		return !(m_u32Checksum == 0 && m_u32Offset == 0 && m_u32Length == 0);
 	}
-
-	TTFPoint operator[](uint8_t _u8Index) const { return m_arrPoints[_u8Index]; }
-	TTFPoint& operator[](uint8_t _u8Index) { return m_arrPoints[_u8Index]; }
 };
 
-struct TTFContour {
-	std::vector<TTFCurve> m_vCurves;
+struct TTFFontInfo {
+	TTFTableDirectoryEntry	m_tdeLoca,
+							m_tdeHead,
+							m_tdeGlyf,
+							m_tdeHHea,
+							m_tdeHMtx,
+							m_tdeCMap,
+							m_tdeMaxP,
+							m_tdeKern,
+							m_tdeGPos;
+
+	uint16_t m_u16GlyphCount = UINT16_MAX;
+	int16_t m_i16IndexToLocFormat = 0;
+	uint16_t m_u16UnitsPerEm = 0;
+	uint16_t m_u16NumOfLongHorMetrics = 0;
+	float m_fScaleFactor = 0.0f;
+	TTFCharacterMap m_cmCMap;
 };
 
-struct TTFEdge {
-	TTFCurve m_cCurve;
-	bool m_bDownward;
-	float m_fCurrentX;
+struct TTFVertex {
+	Vec2F m_v2Vert;
+	uint8_t m_u8Flags = 0;
+	TTFVertexType m_vtType = TTFVertexType::CONTOUR_START;
 };
 
-struct TTFGlyphDescriptor {
-	int16_t m_i16ContourCount;
-	float m_fXMin;
-	float m_fYMin;
-	float m_fXMax;
-	float m_fYMax;
-};
-
-class TTFGlyph {
-	//This is a hack to have an interface for holding glyph data. This will allow
-	//the function that parses glyphs to return a list of glyph data without caring
-	//what kind of glyph data is contained within.
-public:
-	virtual ~TTFGlyph() = 0 {};
-};
-
-class TTFSimpleGlyph final : public TTFGlyph {
-public:
-	std::vector<TTFContour> m_vContours;
-
-	virtual ~TTFSimpleGlyph() {}
-};
-
-class TTFCompoundGlyph final : public TTFGlyph {
-public:
-	struct TTFCompoundGlyphArg {
-		union {
-			int16_t i16;
-			uint16_t u16;
-		};
-
-		union {
-			int8_t i8;
-			uint8_t u8;
-		};
-	};
-
-	struct TTFCompoundGlyphComponent {
-		uint16_t m_u16GlyphIndex = 0;
-		TTFCompoundGlyphArg m_cgaArgument1 = { .i16 = 0 };
-		TTFCompoundGlyphArg m_cgaArgument2 = { .i16 = 0 };
-		
-		float m_arrTransformData[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
-
-		uint8_t m_u8Flags = 0;
-	};
-	
-	std::vector<TTFCompoundGlyphComponent> m_vComponents;
-
-	virtual ~TTFCompoundGlyph() {}
-};
-
-typedef std::pair<TTFGlyphDescriptor, std::unique_ptr<TTFGlyph>> TTFGlyphData; //This alias joins the two blocks of glyph data together
-																			   //Note that the unique_ptr is a TTFGlyph, utilizing the ugly hack.
-
-struct TTFBitmap {
-	uint32_t* m_pPixels;
-	uint32_t m_u32Width;
-	uint32_t m_u32Height;
-	uint32_t m_u32ArraySize;
-
-	TTFBitmap() = delete;
-
-	TTFBitmap(uint32_t _u32Width, uint32_t _u32Height) : m_u32Width(_u32Width), m_u32Height(_u32Height), m_u32ArraySize(_u32Width * _u32Height) {
-		m_pPixels = new uint32_t[m_u32ArraySize](0x0);
-	}
-
-	TTFBitmap(TTFBitmap&& _bOther) noexcept : m_pPixels(std::exchange(_bOther.m_pPixels, nullptr)), m_u32Width(_bOther.m_u32Width), m_u32Height(_bOther.m_u32Height), m_u32ArraySize(_bOther.m_u32ArraySize){}
-
-	~TTFBitmap() { 
-		delete[] m_pPixels;
-	}
-
-	void PlotPixel(int _iX, int _iY, uint32_t _u32Color);
-
-	void FlipImageVertically();
-};
-
-enum TTFSimpleGlyphFlags : uint8_t {
-	ON_CURVE = 0,
-	IS_SINGLE_BYTE_X = 1,
-	IS_SINGLE_BYTE_Y = 2,
-	REPEAT = 3,
-	INSTRUCTION_X = 4,
-	INSTRUCTION_Y = 5
-};
-
-enum TTFComponentGlyphFlags : uint16_t {
-	ARGS_1_AND_2_ARE_WORDS = 1,
-	ARGS_ARE_XY_VALUES = 2,
-	ROUND_XY_TO_GRID = 4,
-	WE_HAVE_A_SCALE = 8,
-	MORE_COMPONENTS = 32,
-	WE_HAVE_AN_X_AND_Y_SCALE = 64,
-	WE_HAVE_A_TWO_BY_TWO = 128,
-	WE_HAVE_INSTRUCTIONS = 512,
-	USE_MY_METRICS = 1024,
-	OVERLAP_COMPOUND = 2048,
-	SCALED_COMPONENT_OFFSET = 4096,
-	UNSCALED_COMPONENT_OFFSET = 8192
+struct TTFGlyphInfo {
+	uint16_t m_u16AdvanceWidth = 0;
+	int16_t m_i16LeftSideBearing = 0;
+	Vec2F m_v2Min;
+	Vec2F m_v2Max;
+	std::vector<TTFVertex> m_vVerts;
 };

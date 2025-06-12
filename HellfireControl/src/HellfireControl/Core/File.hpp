@@ -83,7 +83,7 @@ public:
 
 	[[nodiscard]] HC_INLINE std::string GetFileName() const { return m_pthFilepath.filename().string(); }
 
-	[[nodiscard]] HC_INLINE std::vector<char> GetFileBlob() const { return m_vDataBlob; }
+	[[nodiscard]] HC_INLINE const std::vector<char>& GetFileBlob() { return m_vDataBlob; }
 
 	[[nodiscard]] HC_INLINE bool IsOpen() const { return m_fStream.is_open() || m_ptrBlobPointer; }
 

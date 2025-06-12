@@ -1,476 +1,382 @@
 
 #include <Torchlight/Util/FontProcessor.hpp>
 
-#include <HellfireControl/Math/Math.hpp>
+#ifdef HC_TESTING_FONT_GLYPH_RASTERIZATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <External/stb/stb_image_write.h>
+#define HC_TESTING_PATH(filename) (std::string("./Assets/Font/TestOutput/") + std::to_string((filename)) + std::string(".bmp")).c_str()
 
-#include <Torchlight/Util/FontHelper.hpp>
-
-using namespace FontUtil;
-using namespace FontHelper;
-
-#define HC_FONT_DPI 72
-#define HC_FONT_SCREEN_RESOLUTION 96
-#define HC_FONT_BASE_COLOR 0xFFFFFFFF
-
-Font FontProcessor::ProcessFont(const std::string& _strFilepath, uint16_t _u16FontSize, FontType _ftType) {
-	File fFontFile(_strFilepath, FILE_OPEN_FLAG_READ | FILE_OPEN_FLAG_BINARY);
-
-	std::map<std::string, uint32_t> mDataBlockLocations;
-
-	GetDataBlockOffsets(fFontFile, mDataBlockLocations);
-
-	std::vector<uint32_t> vGlyphOffsets;
-	uint16_t u16UnitsPerEm = 0;
-	uint16_t u16MaxRecursionDepth = 0;
-
-	GetGlyphOffsets(fFontFile, mDataBlockLocations, vGlyphOffsets, u16UnitsPerEm, u16MaxRecursionDepth);
-
-	std::vector<TTFGlyphData> vGlyphData(vGlyphOffsets.size());
-
-	uint32_t u32GlyphTableStart = mDataBlockLocations["glyf"];
-
-	for (int ndx = 0; ndx < vGlyphData.size(); ++ndx) {
-		fFontFile.GoToByte(u32GlyphTableStart + vGlyphOffsets[ndx]);
-
-		ParseGlyph(fFontFile, u16MaxRecursionDepth, vGlyphData[ndx]);
-	}
-		
-	std::map<UTF8PaddedChar, int> mCharacterMap; //The integer corresponds to the index of the glyph as stored in the list of glyph data.
-
-	ParseCharacterMap(fFontFile, mDataBlockLocations["cmap"], mCharacterMap);
-
-	std::vector<TTFBitmap> vBitmaps;
-
-	float fScale = static_cast<float>(_u16FontSize * HC_FONT_SCREEN_RESOLUTION) / static_cast<float>(HC_FONT_DPI * u16UnitsPerEm);
-
-	CreateGlyphBitmaps(vGlyphData, _ftType, fScale, vBitmaps);
-
-#if HC_TESTING_FONT_GLYPH_RASTERIZATION
-	for (int ndx = 0; ndx < vBitmaps.size(); ++ndx) {
-		FontUtil::SaveToFile(vBitmaps[ndx], ndx);
-	}
+#define STB_TRUETYPE_IMPLEMENTATION
+#include <External/stb/stb_truetype.h>
 #endif
 
-	TTFBitmap bCollatedTexture = CollateGlyphs(vBitmaps); //TODO: merge this whole step with rasterization to avoid needing an extra BLIT step
+Font FontProcessor::ProcessFont(const std::string& _strFilepath, uint16_t _u16FontHeightPts, FontType _ftType) {
+	File fFontFile(_strFilepath, FILE_OPEN_FLAG_READ | FILE_OPEN_FLAG_BINARY);
+	
+	TTFFontInfo fiInfo;
 
-	return PackIntoFontAsset(bCollatedTexture, mCharacterMap, vGlyphData);
-}
+	InitializeFont(fFontFile, static_cast<float>(_u16FontHeightPts) * (4.0f / 3.0f), fiInfo);
 
-void FontProcessor::GetDataBlockOffsets(File& _fFontFile, std::map<std::string, uint32_t>& _mOutDataBlockLocations) {
-	_fFontFile.AdvanceBytes(4); //Skip the "scalar type" entry in the table
-	uint16_t u16DirectorySize = FontUtil::ReadTTFValue<uint16_t>(_fFontFile); //Create our list for directory entries
-	_fFontFile.AdvanceBytes(6); //Skip over the next 3 16 bit values
+	TTFGlyphInfo giMissingChar = GetGlyphInfo(fFontFile, fiInfo, 0);
 
-	for (int count = 0; count < u16DirectorySize; ++count) {
-		union {
-			uint32_t u32Tag;
-			char arrTag[5] = { '\0', '\0', '\0', '\0', '\0' };
-		} tag;
+	for (const auto& aCodepoint : fiInfo.m_cmCMap) {
+		if (aCodepoint.second == HC_MISSING_CHAR_GLYPH_INDEX) {
+			continue;
+		}
 
-		_fFontFile >> tag.u32Tag;
-		_fFontFile.AdvanceBytes(4);
-
-		_mOutDataBlockLocations[tag.arrTag] = FontUtil::ReadTTFValue<uint32_t>(_fFontFile);
-		_fFontFile.AdvanceBytes(4);
+		TTFGlyphInfo giGlyph = GetGlyphInfo(fFontFile, fiInfo, aCodepoint.second);
 	}
+
+	return Font();
 }
 
-void FontProcessor::GetGlyphOffsets(File& _fFontFile, std::map<std::string, uint32_t>& _mDataBlockLocations, std::vector<uint32_t>& _vOutGlyphOffsets, uint16_t& _u16OutUnitsPerEm, uint16_t& _u16OutMaxComponentDepth) {
-	_fFontFile.GoToByte(_mDataBlockLocations["maxp"]); //Skip to the table that holds counts
-
-	_fFontFile.AdvanceBytes(4); //Skip over version info
-
-	uint16_t u16GlyphCount = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
-
-	_fFontFile.AdvanceBytes(24); //Skip over much of the table
-
-	_u16OutMaxComponentDepth = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
-
-	_fFontFile.GoToByte(_mDataBlockLocations["head"]);
-
-	_fFontFile.AdvanceBytes(18);
-
-	_u16OutUnitsPerEm = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
-
-	_fFontFile.AdvanceBytes(30);
-
-	bool bIsTwoByte = !FontUtil::ReadTTFValue<int16_t>(_fFontFile);
-
-	_fFontFile.GoToByte(_mDataBlockLocations["loca"]);
-	_vOutGlyphOffsets.resize(u16GlyphCount);
-
-	for (size_t ndx = 0; ndx < u16GlyphCount; ++ndx) {
-		_vOutGlyphOffsets[ndx] = (bIsTwoByte ? (FontUtil::ReadTTFValue<uint16_t>(_fFontFile) * 2u) : FontUtil::ReadTTFValue<uint32_t>(_fFontFile));
+void FontProcessor::InitializeFont(File& _fFontFile, float _fFontHeightPixels, TTFFontInfo& _fiInfo) {
+	if (!IsValidFont(_fFontFile)) {
+		throw std::runtime_error("ERROR! INVALID FONT PROVIDED!");
 	}
-}
 
-void FontProcessor::ParseGlyph(File& _fFontFile, uint16_t _u16MaxDepth, TTFGlyphData& _gdOutGlyphData) {
-	_gdOutGlyphData.first = {
-		.m_i16ContourCount = FontUtil::ReadTTFValue<int16_t>(_fFontFile),
-		.m_fXMin = static_cast<float>(FontUtil::ReadTTFValue<FWord>(_fFontFile)),
-		.m_fYMin = static_cast<float>(FontUtil::ReadTTFValue<FWord>(_fFontFile)),
-		.m_fXMax = static_cast<float>(FontUtil::ReadTTFValue<FWord>(_fFontFile)),
-		.m_fYMax = static_cast<float>(FontUtil::ReadTTFValue<FWord>(_fFontFile))
-	};
+	uint16_t u16TableCount = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
+	uint16_t u16SearchRange = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
+	uint16_t u16EntrySelector = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
+	uint16_t u16RangeShift = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
 
-	if (_gdOutGlyphData.first.m_i16ContourCount >= 0) {
-		_gdOutGlyphData.second = ParseSimpleGlyph(_fFontFile, _gdOutGlyphData.first.m_i16ContourCount, _gdOutGlyphData.first.m_fXMin, _gdOutGlyphData.first.m_fYMin);
+	_fiInfo.m_tdeLoca = FindTable(_fFontFile, u16TableCount, u16SearchRange, u16EntrySelector, u16RangeShift, "loca");
+	_fiInfo.m_tdeHead = FindTable(_fFontFile, u16TableCount, u16SearchRange, u16EntrySelector, u16RangeShift, "head");
+	_fiInfo.m_tdeGlyf = FindTable(_fFontFile, u16TableCount, u16SearchRange, u16EntrySelector, u16RangeShift, "glyf");
+	_fiInfo.m_tdeHHea = FindTable(_fFontFile, u16TableCount, u16SearchRange, u16EntrySelector, u16RangeShift, "hhea");
+	_fiInfo.m_tdeHMtx = FindTable(_fFontFile, u16TableCount, u16SearchRange, u16EntrySelector, u16RangeShift, "hmtx");
+	_fiInfo.m_tdeCMap = FindTable(_fFontFile, u16TableCount, u16SearchRange, u16EntrySelector, u16RangeShift, "cmap");
+	_fiInfo.m_tdeMaxP = FindTable(_fFontFile, u16TableCount, u16SearchRange, u16EntrySelector, u16RangeShift, "maxp");
+	_fiInfo.m_tdeKern = FindTable(_fFontFile, u16TableCount, u16SearchRange, u16EntrySelector, u16RangeShift, "kern");
+	_fiInfo.m_tdeGPos = FindTable(_fFontFile, u16TableCount, u16SearchRange, u16EntrySelector, u16RangeShift, "GPOS");
+
+	if (!_fiInfo.m_tdeCMap.IsValid() || !_fiInfo.m_tdeHead.IsValid() || !_fiInfo.m_tdeHMtx.IsValid()) {
+		throw std::runtime_error("ERROR: INVALID FONT SUPPLIED!");
+	}
+
+	if (_fiInfo.m_tdeGlyf.IsValid()) {
+		if (!_fiInfo.m_tdeLoca.IsValid()) {
+			throw std::runtime_error("ERROR: MALFORMED FONT SUPPLIED!");
+		}
 	}
 	else {
-		_gdOutGlyphData.second = ParseCompoundGlyph(_fFontFile, _u16MaxDepth);
+		//TODO Support CFF Fonts
 	}
-}
 
-void FontProcessor::ParseCharacterMap(File& _fFontFile, uint32_t _u32CMAPPosition, std::map<UTF8PaddedChar,int>& _mOutCharacterMap) {
-	_fFontFile.GoToByte(_u32CMAPPosition);
+	if (_fiInfo.m_tdeMaxP.IsValid()) {
+		_fFontFile.GoToByte(_fiInfo.m_tdeMaxP.m_u32Offset + sizeof(FixedPoint));
+		_fiInfo.m_u16GlyphCount = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
+	}
 
-	_fFontFile.AdvanceBytes(2); //Skip over the version
+	_fFontFile.GoToByte(_fiInfo.m_tdeHead.m_u32Offset + sizeof(FixedPoint) * 2 + sizeof(uint32_t) * 2 + sizeof(uint16_t));
+	_fiInfo.m_u16UnitsPerEm = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
+	_fFontFile.AdvanceBytes(sizeof(uint64_t) * 2 + sizeof(FWord) * 4 + sizeof(uint16_t) * 3);
+	_fiInfo.m_i16IndexToLocFormat = FontUtil::ReadTTFValue<int16_t>(_fFontFile);
 
-	uint16_t u16SubtableCount = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
+	_fFontFile.GoToByte(_fiInfo.m_tdeHHea.m_u32Offset + sizeof(FixedPoint));
+	FWord ascent = FontUtil::ReadTTFValue<FWord>(_fFontFile);
+	FWord descent = FontUtil::ReadTTFValue<FWord>(_fFontFile);
+	_fiInfo.m_fScaleFactor = _fFontHeightPixels / static_cast<float>(ascent - descent);
+	_fFontFile.AdvanceBytes(sizeof(FWord) * 6 + sizeof(int16_t) * 7);
+	_fiInfo.m_u16NumOfLongHorMetrics = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
 
+	_fFontFile.GoToByte(_fiInfo.m_tdeCMap.m_u32Offset + sizeof(uint16_t));
+	uint16_t u16CMapCount = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
 	int16_t i16UnicodeVersion = -1;
 	uint32_t u32TableOffset = 0;
 
-	for (int iCount = 0; iCount < u16SubtableCount; ++iCount) {
+	for (int iterations = 0; iterations < u16CMapCount; ++iterations) {
 		uint16_t u16PlatformID = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
 		uint16_t u16PlatformSpecificID = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
 		uint32_t u32Offset = FontUtil::ReadTTFValue<uint32_t>(_fFontFile);
-
-		if (u16PlatformID == 0) { //Base Unicode
+		
+		if (u16PlatformID == 0) {
 			if (u16PlatformSpecificID > i16UnicodeVersion) {
 				i16UnicodeVersion = u16PlatformSpecificID;
 				u32TableOffset = u32Offset;
 			}
 		}
-		else if (u16PlatformID == 3 && i16UnicodeVersion < 0) { //Windows (only use if no unicode found)
+		else if (u16PlatformID == 3 && i16UnicodeVersion < 0) {
 			u32TableOffset = u32Offset;
 		}
 	}
 
 	if (u32TableOffset == 0) {
-		throw std::runtime_error("ERROR: Font unsupported! Font must support Unicode or Windows encoding!");
+		throw std::runtime_error("ERROR: FONT CHARACTER MAP UNSUPPORTED!");
 	}
 
-	_fFontFile.GoToByte(_u32CMAPPosition + u32TableOffset); //Skip to the correct table
+	_fFontFile.GoToByte(_fiInfo.m_tdeCMap.m_u32Offset + u32TableOffset);
+	uint16_t u16TableFormat = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
 
-	uint16_t u16Format = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
-
-	switch (u16Format) {
+	switch (u16TableFormat) {
 	case 4:
-		_mOutCharacterMap = FontUtil::ReadTTFFormat4(_fFontFile);
+		_fiInfo.m_cmCMap = FontUtil::ReadCMapFormat4(_fFontFile);
 		break;
 	case 12:
-		_mOutCharacterMap = FontUtil::ReadTTFFormat12(_fFontFile);
-		break;
-	default:
-		throw std::runtime_error("ERROR: Not Implemented. Format: " + std::to_string(u16Format));
-		break;
+		_fiInfo.m_cmCMap = FontUtil::ReadCMapFormat12(_fFontFile);
 	}
 }
 
-void FontProcessor::CreateGlyphBitmaps(const std::vector<TTFGlyphData>& _vGlyphs, FontType _ftType, float _fScalingFactor, std::vector<TTFBitmap>& _vOutBitmaps) {
-	for (const auto& glyph : _vGlyphs) {
-		if (glyph.first.m_i16ContourCount <= 0) {
-			continue; //Skip Compound Glyphs, as they are dynamically assembled when drawing text
-		}
+bool FontProcessor::IsValidFont(File& _fFontFile) {
+	TTFTag tTag;
+	_fFontFile >> tTag.m_u32TagInt;
 
-		//Here, we actually scale the bitmap before rasterization. This is because the raw unscaled size is used for rasterization
-		//but the bitmap itself is scaled down, creating a downsampling effect.
-		TTFBitmap bBitmap(
-			static_cast<uint32_t>(std::ceilf((glyph.first.m_fXMax - glyph.first.m_fXMin) * _fScalingFactor)),
-			static_cast<uint32_t>(std::ceilf((glyph.first.m_fYMax - glyph.first.m_fYMin) * _fScalingFactor))
-		);
-
-		//This grossness comes straight from my desire to "simplify" certain data types. The glyph data block that follows the descriptor
-		//must be downcasted into a SimpleGlyph. It is impossible to actually get a compound glyph in this segment of code, but because of
-		//setup, this downcast is required anyway. TODO: simplify the simplification.
-		TTFSimpleGlyph* glyphData = (TTFSimpleGlyph*)glyph.second.get();
-
-		if (_ftType == FONT_BITMAP) {
-			RasterizeGlyphBitmap(bBitmap, Vec2F(glyph.first.m_fXMax - glyph.first.m_fXMin, glyph.first.m_fYMax - glyph.first.m_fYMin), glyphData->m_vContours, _fScalingFactor);
-		}
-		else {
-			RasterizeGlyphSDF(bBitmap, glyphData->m_vContours, _ftType == FONT_MULTI_CHANNEL_SDF);
-		}
-
-		//We can thank Windows' flipped Y for this.
-		bBitmap.FlipImageVertically();
-
-		_vOutBitmaps.push_back(std::move(bBitmap));
-	}
+	return	tTag == 0x31000000U ||	//TrueType 1 (Tag: 1000)
+			tTag == "OTTO" ||		//OpenType with CFF
+			tTag == 256U ||			//OpenType 1 (Tag: 0100)
+			tTag == "true";			//Apple TrueType
 }
 
-TTFBitmap FontProcessor::CollateGlyphs(std::vector<TTFBitmap>& _vBitmaps) {
-	return TTFBitmap(1, 1);
-}
+TTFTableDirectoryEntry FontProcessor::FindTable(File& _fFontFile, uint16_t _u16TableCount, uint16_t _u16SearchRange, uint16_t _u16EntrySelector, uint16_t _u16RangeShift, TTFTag _tTag) {
+	TTFTableDirectoryEntry tdeEntry;
+	TTFTag tCurrentTag;
+	size_t sDirectoryStart = sizeof(uint32_t) + (sizeof(uint16_t) * 4);
 
-Font FontProcessor::PackIntoFontAsset(TTFBitmap& _bFontAtlas, std::map<UTF8PaddedChar,int> _mCharacterMap, std::vector<TTFGlyphData>& _vGlyphData) {
-	return Font();
-}
+	_fFontFile.GoToByte(sDirectoryStart + _u16SearchRange); //Advance to the first item at the _u16RangeShift value.
 
-std::unique_ptr<TTFSimpleGlyph> FontProcessor::ParseSimpleGlyph(File& _fFontFile, int16_t _i16ContourCount, uint32_t _u32MinX, uint32_t _u32MinY) {
-	auto aSimpleGlyph = std::make_unique<TTFSimpleGlyph>();
+	_fFontFile >> tCurrentTag.m_u32TagInt;
 
-	if (_i16ContourCount == 0) {
-		return aSimpleGlyph; //No data to read...
+	if (_tTag == tCurrentTag) {
+		tdeEntry.m_u32Checksum = FontUtil::ReadTTFValue<uint32_t>(_fFontFile);
+		tdeEntry.m_u32Offset = FontUtil::ReadTTFValue<uint32_t>(_fFontFile);
+		tdeEntry.m_u32Length = FontUtil::ReadTTFValue<uint32_t>(_fFontFile);
+		return tdeEntry;
 	}
 
-	std::vector<uint16_t> vContourEndPts(_i16ContourCount);
+	if (_tTag < tCurrentTag) { //We can binary search, thanks to being within the defined area
+		int iOffset = _u16SearchRange >> 1;
+		for (int iterations = 0; iterations < _u16EntrySelector; ++iterations) {
+			_fFontFile.GoToByte(sDirectoryStart + iOffset);
 
-	for (int ndx = 0; ndx < _i16ContourCount; ++ndx) {
-		vContourEndPts[ndx] = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
+			_fFontFile >> tCurrentTag.m_u32TagInt;
+
+			if (_tTag == tCurrentTag) {
+				tdeEntry.m_u32Checksum = FontUtil::ReadTTFValue<uint32_t>(_fFontFile);
+				tdeEntry.m_u32Offset = FontUtil::ReadTTFValue<uint32_t>(_fFontFile);
+				tdeEntry.m_u32Length = FontUtil::ReadTTFValue<uint32_t>(_fFontFile);
+				break;
+			}
+			
+			iOffset += (_tTag < tCurrentTag) ? -(_u16SearchRange >> (2 + iterations)) : (_u16SearchRange >> (2 + iterations));
+		}
+	}
+	else if (_tTag > tCurrentTag) { //We have to linear search, since we are outside the defined area
+		_fFontFile.AdvanceBytes(sizeof(uint32_t) * 3); //Skip over the first item we checked.
+
+		int iItemCount = (_u16RangeShift / 16) - 1;
+
+		for (int iterations = 0; iterations < iItemCount; ++iterations) {
+			_fFontFile >> tCurrentTag.m_u32TagInt;
+
+			if (_tTag == tCurrentTag) {
+				tdeEntry.m_u32Checksum = FontUtil::ReadTTFValue<uint32_t>(_fFontFile);
+				tdeEntry.m_u32Offset = FontUtil::ReadTTFValue<uint32_t>(_fFontFile);
+				tdeEntry.m_u32Length = FontUtil::ReadTTFValue<uint32_t>(_fFontFile);
+				break;
+			}
+			_fFontFile.AdvanceBytes(sizeof(uint32_t) * 3);
+		}
 	}
 
-	_fFontFile.AdvanceBytes(FontUtil::ReadTTFValue<int16_t>(_fFontFile));
-
-	//Get the largest contour end point index and add 1 (1 based count). This will equal the count of points
-	int iNumPoints = 1 + (*std::max_element(vContourEndPts.begin(), vContourEndPts.end()));
-
-	std::vector<uint8_t> vFlags(iNumPoints);
-	ParseCoordinateFlags(_fFontFile, vFlags);
-
-	std::vector<TTFPoint> vPoints(iNumPoints);
-	ParseCoordinates(_fFontFile, vFlags, _u32MinX, _u32MinY, vPoints);
-
-	aSimpleGlyph->m_vContours = PackContours(vPoints, vContourEndPts);
-
-	return std::move(aSimpleGlyph);
+	return tdeEntry;
 }
 
-std::unique_ptr<TTFCompoundGlyph> FontProcessor::ParseCompoundGlyph(File& _fFontFile, uint16_t _u16MaxDepth) {
-	auto aCompoundGlyph = std::make_unique<TTFCompoundGlyph>();
+TTFGlyphInfo FontProcessor::GetGlyphInfo(File& _fFontFile, const TTFFontInfo& _fiInfo, uint32_t _u32GlyphIndex) {
+	TTFGlyphInfo giGlyph;
 
-	uint16_t u16Flags = 0;
-	do { //Keep looping until the flag that there are no more is found.
-		u16Flags = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
+	if (_u32GlyphIndex < _fiInfo.m_u16NumOfLongHorMetrics) {
+		_fFontFile.GoToByte(_fiInfo.m_tdeHMtx.m_u32Offset + sizeof(uint16_t) * 2 * _u32GlyphIndex);
+	}
+	else {
+		_fFontFile.GoToByte(_fiInfo.m_tdeHMtx.m_u32Offset + sizeof(uint16_t) * 2 * (_fiInfo.m_u16NumOfLongHorMetrics - 1));
+	}
 
-		TTFCompoundGlyph::TTFCompoundGlyphComponent cgcComponent = {};
+	giGlyph.m_u16AdvanceWidth = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
+	giGlyph.m_i16LeftSideBearing = FontUtil::ReadTTFValue<int16_t>(_fFontFile);
 
-		cgcComponent.m_u16GlyphIndex = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
+	uint32_t u32Offset;
+	uint32_t u32Length;
+	if (_fiInfo.m_i16IndexToLocFormat == 0) {
+		_fFontFile.GoToByte(_fiInfo.m_tdeLoca.m_u32Offset + (_u32GlyphIndex * sizeof(uint16_t)));
+		u32Offset = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
+		u32Length = FontUtil::ReadTTFValue<uint16_t>(_fFontFile) - u32Offset;
+	}
+	else {
+		_fFontFile.GoToByte(_fiInfo.m_tdeLoca.m_u32Offset + (_u32GlyphIndex * sizeof(uint32_t)));
+		u32Offset = FontUtil::ReadTTFValue<uint32_t>(_fFontFile);
+		u32Length = FontUtil::ReadTTFValue<uint32_t>(_fFontFile) - u32Offset;
+	}
 
-		bool bSigned = u16Flags & ARGS_ARE_XY_VALUES;
+	if (u32Length == 0) {
+		return giGlyph; //If there was no data for this glyph, exit.
+	}
 
-		if (u16Flags & ARGS_1_AND_2_ARE_WORDS) {
-			bSigned ? cgcComponent.m_cgaArgument1.i16 = FontUtil::ReadTTFValue<int16_t>(_fFontFile) : cgcComponent.m_cgaArgument1.u16 = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
-			bSigned ? cgcComponent.m_cgaArgument2.i16 = FontUtil::ReadTTFValue<int16_t>(_fFontFile) : cgcComponent.m_cgaArgument2.u16 = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
+	_fFontFile.GoToByte(_fiInfo.m_tdeGlyf.m_u32Offset + u32Offset);
+
+	int16_t i16ContourCount = FontUtil::ReadTTFValue<int16_t>(_fFontFile);
+
+	//Compiler confusion...? The compiler evaluates these in backwards order when used in the constructor directly.
+	//They have to be in separate variables to prevent this. I don't understand...?
+	FWord wMinX = FontUtil::ReadTTFValue<FWord>(_fFontFile);
+	FWord wMinY = FontUtil::ReadTTFValue<FWord>(_fFontFile);
+	FWord wMaxX = FontUtil::ReadTTFValue<FWord>(_fFontFile);
+	FWord wMaxY = FontUtil::ReadTTFValue<FWord>(_fFontFile);
+
+	giGlyph.m_v2Min = Vec2F(wMinX, wMinY);
+	giGlyph.m_v2Max = Vec2F(wMaxX, wMaxY);
+
+	if (i16ContourCount > 0) {
+		std::vector<uint16_t> vEndPoints(i16ContourCount);
+
+		for (int iNdx = 0; iNdx < i16ContourCount; ++iNdx) {
+			vEndPoints[iNdx] = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
 		}
-		else {
-			bSigned ? cgcComponent.m_cgaArgument1.i8 = FontUtil::ReadTTFValue<int16_t>(_fFontFile) : cgcComponent.m_cgaArgument1.u8 = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
-			bSigned ? cgcComponent.m_cgaArgument2.i8 = FontUtil::ReadTTFValue<int16_t>(_fFontFile) : cgcComponent.m_cgaArgument2.u8 = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
-		}
 
-		if (u16Flags & WE_HAVE_A_SCALE) {
-			cgcComponent.m_arrTransformData[0] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
-			cgcComponent.m_arrTransformData[3] = cgcComponent.m_arrTransformData[0];
-		}
-		else if (u16Flags & WE_HAVE_AN_X_AND_Y_SCALE) {
-			cgcComponent.m_arrTransformData[0] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
-			cgcComponent.m_arrTransformData[3] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
-		}
-		else if (u16Flags & WE_HAVE_A_TWO_BY_TWO) {
-			cgcComponent.m_arrTransformData[0] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
-			cgcComponent.m_arrTransformData[1] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
-			cgcComponent.m_arrTransformData[2] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
-			cgcComponent.m_arrTransformData[3] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
-		}
+		//TODO: Eventually implement a proper interpreter to use the instructions in the font file. Skip for now.
+		_fFontFile.AdvanceBytes(FontUtil::ReadTTFValue<uint16_t>(_fFontFile));
 
-		cgcComponent.m_u8Flags |= u16Flags & USE_MY_METRICS ? 0x1 : 0;
-		cgcComponent.m_u8Flags |= u16Flags & SCALED_COMPONENT_OFFSET ? 0x2 : 0;
-		cgcComponent.m_u8Flags |= u16Flags & UNSCALED_COMPONENT_OFFSET ? 0x4 : 0;
-		cgcComponent.m_u8Flags |= u16Flags & ARGS_ARE_XY_VALUES ? 0x8 : 0;
+		size_t sVertexCount = (*std::max_element(vEndPoints.begin(), vEndPoints.end())) + 1;
 
-		aCompoundGlyph->m_vComponents.push_back(cgcComponent);
-	} while (u16Flags & MORE_COMPONENTS);
+		std::vector<uint8_t> vFlags = GetCoordinateFlags(_fFontFile, sVertexCount);
 
-	return std::move(aCompoundGlyph);
+		std::vector<Vec2F> vCoords = GetCoordinates(_fFontFile, sVertexCount, vFlags);
+
+		giGlyph.m_vVerts = PackVertices(vEndPoints, vCoords, vFlags);
+	}
+	else if (i16ContourCount < 0) {
+
+	}
+
+	return giGlyph;
 }
 
-void FontProcessor::ParseCoordinateFlags(File& _fFontFile, std::vector<uint8_t>& _vFlags) {
-	for (int ndx = 0; ndx < _vFlags.size(); ++ndx) {
+std::vector<uint8_t> FontProcessor::GetCoordinateFlags(File& _fFontFile, size_t sVertexCount)
+{
+	std::vector<uint8_t> vFlags(sVertexCount);
+
+	for (int iNdx = 0; iNdx < sVertexCount; ++iNdx) {
 		uint8_t u8Flag = FontUtil::ReadTTFValue<uint8_t>(_fFontFile);
 
-		_vFlags[ndx] = u8Flag;
+		vFlags[iNdx] = u8Flag;
 
 		if (Util::IsBitSet(u8Flag, REPEAT)) {
 			uint8_t u8RepeatCount = FontUtil::ReadTTFValue<uint8_t>(_fFontFile);
 
-			for (int iFlagCount = 0; iFlagCount < u8RepeatCount; ++iFlagCount) {
-				_vFlags[++ndx] = u8Flag;
+			for (int iCount = 0; iCount < u8RepeatCount; ++iCount) {
+				vFlags[++iNdx] = u8Flag;
 			}
 		}
 	}
+
+	return vFlags;
 }
 
-void FontProcessor::ParseCoordinates(File& _fFontFile, const std::vector<uint8_t>& _vFlags, uint32_t _u32MinX, uint32_t _u32MinY, std::vector<TTFPoint>& _vOutCoordinates) {
-	std::vector<int16_t> vXCoords(_vOutCoordinates.size());
-	std::vector<int16_t> vYCoords(_vOutCoordinates.size());
+std::vector<Vec2F> FontProcessor::GetCoordinates(File& _fFontFile, const size_t sVertexCount, const std::vector<uint8_t>& vFlags)
+{
+	std::vector<Vec2F> vVertices(sVertexCount);
 
-	int iCoordValue = 0;
-	for (int ndx = 0; ndx < _vOutCoordinates.size(); ++ndx) {
-		ParseCoordinateValue(_fFontFile, _vFlags[ndx], IS_SINGLE_BYTE_X, INSTRUCTION_X, _u32MinX, iCoordValue, vXCoords[ndx]);
+	int32_t i16XAcc = 0;
 
-		_vOutCoordinates[ndx].m_bOnCurve = Util::IsBitSet(_vFlags[ndx], ON_CURVE);
-	}
-
-	iCoordValue = 0;
-	for (int ndx = 0; ndx < _vOutCoordinates.size(); ++ndx) {
-		ParseCoordinateValue(_fFontFile, _vFlags[ndx], IS_SINGLE_BYTE_Y, INSTRUCTION_Y, _u32MinY, iCoordValue, vYCoords[ndx]);
-	}
-
-	for (int ndx = 0; ndx < _vOutCoordinates.size(); ++ndx) {
-		_vOutCoordinates[ndx].x = static_cast<float>(vXCoords[ndx]);
-		_vOutCoordinates[ndx].y = static_cast<float>(vYCoords[ndx]);
-	}
-}
-
-void FontProcessor::ParseCoordinateValue(File& _fFontFile, const uint8_t _u8Flag, const uint8_t _u8VectorSize, const uint8_t _u8SignOrSkip, uint32_t _u32Offset, int& _iCoordAcc, int16_t& _i16OutCoordinate) {
-	if (Util::IsBitSet(_u8Flag, _u8VectorSize)) {
-		int iOffset = FontUtil::ReadTTFValue<uint8_t>(_fFontFile);
-		_iCoordAcc += Util::IsBitSet(_u8Flag, _u8SignOrSkip) ? iOffset : -iOffset;
-	}
-	else if (!Util::IsBitSet(_u8Flag, _u8SignOrSkip)) {
-		_iCoordAcc += FontUtil::ReadTTFValue<int16_t>(_fFontFile);
-	}
-
-	_i16OutCoordinate = _iCoordAcc - _u32Offset;
-}
-
-std::vector<TTFContour> FontProcessor::PackContours(const std::vector<TTFPoint>& _vPoints, const std::vector<uint16_t> _vContourEndPoints) {
-	std::vector<TTFContour> vContours;
-
-	int iContourStart = 0;
-	for (int ndx = 0; ndx < _vContourEndPoints.size(); ++ndx) {
-		std::vector<TTFPoint> vContourPoints;
-		TTFContour tContour;
-
-		int iNumPointsInContour = _vContourEndPoints[ndx] - iContourStart + 1;
-
-		vContourPoints.insert(vContourPoints.end(), _vPoints.begin() + iContourStart, _vPoints.begin() + iContourStart + iNumPointsInContour);
-
-		int iPointOffset = GetPointOffset(vContourPoints);
-
-		RecreateImpliedPoints(vContourPoints, iPointOffset);
-
-		for (int sNdx = iPointOffset; sNdx < vContourPoints.size(); sNdx += 2) {
-			tContour.m_vCurves.push_back({ vContourPoints[sNdx],
-			vContourPoints[(sNdx + 1) % vContourPoints.size()],
-			vContourPoints[(sNdx + 2) % vContourPoints.size()] });
+	for (int iNdx = 0; iNdx < sVertexCount; ++iNdx) {
+		uint8_t u8Flag = vFlags[iNdx];
+		if (Util::IsBitSet(u8Flag, X_SHORT_VECTOR)) {
+			int16_t i16Coord = FontUtil::ReadTTFValue<uint8_t>(_fFontFile);
+			i16XAcc += Util::IsBitSet(u8Flag, X_SIGN_OR_SKIP) ? i16Coord : -i16Coord;
 		}
-
-		MakeContourCurvesMonotonic(tContour);
-
-		vContours.push_back(tContour);
-
-		iContourStart = _vContourEndPoints[ndx] + 1;
+		else if (!Util::IsBitSet(u8Flag, X_SIGN_OR_SKIP)) {
+			i16XAcc += FontUtil::ReadTTFValue<int16_t>(_fFontFile);
+		}
+		vVertices[iNdx].x = static_cast<float>(i16XAcc);
 	}
 
-	return vContours;
-}
+	int16_t i16YAcc = 0;
 
-int FontProcessor::GetPointOffset(const std::vector<TTFPoint>& _vPoints) {
-	int iPointOffset;
-	for (iPointOffset = 0; iPointOffset < _vPoints.size(); ++iPointOffset) {
-		if (_vPoints[iPointOffset].m_bOnCurve) break;
+	for (int iNdx = 0; iNdx < sVertexCount; ++iNdx) {
+		uint8_t u8Flag = vFlags[iNdx];
+		if (Util::IsBitSet(u8Flag, Y_SHORT_VECTOR)) {
+			int16_t i16Coord = FontUtil::ReadTTFValue<uint8_t>(_fFontFile);
+			i16YAcc += Util::IsBitSet(u8Flag, Y_SIGN_OR_SKIP) ? i16Coord : -i16Coord;
+		}
+		else if (!Util::IsBitSet(u8Flag, Y_SIGN_OR_SKIP)) {
+			i16YAcc += FontUtil::ReadTTFValue<int16_t>(_fFontFile);
+		}
+		vVertices[iNdx].y = static_cast<float>(i16YAcc);
 	}
 
-	return iPointOffset;
+	return vVertices;
 }
 
-void FontProcessor::RasterizeGlyphBitmap(TTFBitmap& _bBitmap, Vec2F _v2TrueDimensions, std::vector<TTFContour>& _vAllContours, float _fScalingFactor) {
-	std::vector<TTFEdge> vEdges;
+std::vector<TTFVertex> FontProcessor::PackVertices(const std::vector<uint16_t>& _vContourEndPoints, const std::vector<Vec2F>& _vCoordinates, const std::vector<uint8_t>& _vFlags) {
+	std::vector<TTFVertex> vVertices;
 
-	for (const auto& aContour : _vAllContours) {
-		for (const auto& aCurve : aContour.m_vCurves) {
-			if (!aCurve.IsValid() || (aCurve.m_p0.y == aCurve.m_p1.y && aCurve.m_p1.y == aCurve.m_p2.y)) {
-				continue;
+	int iStartPoint = 0;
+	for (int iNdx = 0; iNdx < _vContourEndPoints.size(); ++iNdx) {
+		int iNumCoordCount = _vContourEndPoints[iNdx] - iStartPoint + 1;
+
+		std::vector<Vec2F> vContourCoords;
+		std::vector<uint8_t> vContourFlags;
+
+		vContourCoords.insert(vContourCoords.end(), _vCoordinates.begin() + iStartPoint, _vCoordinates.begin() + iStartPoint + iNumCoordCount);
+		vContourFlags.insert(vContourFlags.end(), _vFlags.begin() + iStartPoint, _vFlags.begin() + iStartPoint + iNumCoordCount);
+
+		std::vector<TTFVertex> vPackedContourVertices = PackContourVertices(vContourCoords, vContourFlags);
+
+		vVertices.insert(vVertices.end(), vPackedContourVertices.begin(), vPackedContourVertices.end());
+
+		iStartPoint = _vContourEndPoints[iNdx] + 1;
+	}
+
+	return vVertices;
+}
+
+std::vector<TTFVertex> FontProcessor::PackContourVertices(const std::vector<Vec2F>& _vContourCoords, const std::vector<uint8_t>& _vContourFlags) {
+	std::vector<TTFVertex> vPackedVertices;
+
+	//First we find our starting point for the contour. This is equivalent to the first on-curve point,
+	//which is not guaranteed to be the first point
+	int iContourStart;
+	for (iContourStart = 0; iContourStart < _vContourCoords.size(); ++iContourStart) {
+		if (Util::IsBitSet(_vContourFlags[iContourStart], ON_CURVE)) {
+			break;
+		}
+	}
+
+	//Next, we add all our vertices to the list in the new order. This order is the same as before, except all points
+	//before the starting point have now been shifted to the end.
+	int iAddedVertexCount = 0;
+	int iContourIndex = iContourStart;
+	while (iAddedVertexCount != _vContourCoords.size()) {
+		vPackedVertices.push_back({ _vContourCoords[iContourIndex], _vContourFlags[iContourIndex], TTFVertexType::CONTOUR_START });
+		iContourIndex = (iContourIndex + 1) % _vContourCoords.size();
+		iAddedVertexCount++;
+	}
+
+	//Finally, we decompress the vertices by adding back in implied points and setting line segments. The first point of every contour
+	//is always set to CONTOUR_START
+	bool bPrevOffCurve = false;
+	for (int iNdx = 1; iNdx < vPackedVertices.size(); ++iNdx) {
+		if (!Util::IsBitSet(vPackedVertices[iNdx].m_u8Flags, ON_CURVE)) {
+			vPackedVertices[iNdx].m_vtType = TTFVertexType::QUADRATIC_CURVE; //TODO: When CFF fonts are supported, check whether or not it's cubic.
+			if (bPrevOffCurve) {
+				//TODO: When CFF fonts are supported, check whether or not it's cubic.
+				vPackedVertices.insert(vPackedVertices.begin() + iNdx++, {
+					Math::Lerp(vPackedVertices[iNdx - 1].m_v2Vert, vPackedVertices[iNdx].m_v2Vert, 0.5f),
+					(1 << ON_CURVE),
+					TTFVertexType::QUADRATIC_CURVE }
+				);
 			}
-
-			bool bDownward = aCurve.m_p0.y > aCurve.m_p2.y;
-
-			TTFEdge eEdge = {
-				.m_cCurve = aCurve,
-				.m_bDownward = bDownward,
-				.m_fCurrentX = aCurve[bDownward ? 2 : 0].x
-			};
-
-			vEdges.push_back(eEdge);
+			bPrevOffCurve = true;
+		}
+		else {
+			if (bPrevOffCurve) {
+				vPackedVertices[iNdx].m_vtType = TTFVertexType::QUADRATIC_CURVE; //TODO: When CFF fonts are supported, check whether or not it's cubic.
+			}
+			else {
+				vPackedVertices[iNdx].m_vtType = TTFVertexType::LINE_SEGMENT;
+			}
+			bPrevOffCurve = false;
 		}
 	}
 
-	//Sorting on Y here makes it easier to determine when a scanline has reached each curve.
-	//While not strictly necessary, it does make the algorithm much MUCH more efficient by allowing
-	//an early out.
-	std::sort(vEdges.begin(), vEdges.end(), 
-		[](TTFEdge _left, TTFEdge _right) {
-			return GetMinCurveY(_left.m_cCurve) < GetMinCurveY(_right.m_cCurve);
-		}
-	);
-
-	std::vector<TTFEdge> vActiveEdges;
-	
-	//This is the bitmap that is scaled to work with the data directly. It is not scaled to the proper
-	//glyph size.
-	TTFBitmap bFullBitmap(static_cast<uint32_t>(_v2TrueDimensions.x), static_cast<uint32_t>(_v2TrueDimensions.y));	
-
-	uint32_t u32Scanline = 0;
-	while (u32Scanline < static_cast<uint32_t>(_v2TrueDimensions.y) && !(vEdges.empty() && vActiveEdges.empty())) {
-		for (int ndx = 0; ndx < vEdges.size(); ++ndx) {
-			//Because the list is sorted on Y, we can break out of this loop early the moment an edge fails to
-			//meet qualification to join the active edges.
-			if (static_cast<uint32_t>(GetMinCurveY(vEdges[ndx].m_cCurve)) > u32Scanline) {
-				break;
-			}
-
-			vActiveEdges.push_back(vEdges[ndx]);
-			vEdges.erase(vEdges.begin() + ndx--);
-		}
-
-		if (vActiveEdges.size() == 0) {
-			++u32Scanline;
-			continue;
-		}
-
-		for (int iX = 0; iX < static_cast<uint32_t>(_v2TrueDimensions.x); ++iX) {
-			int iIntersectionCount = 0;
-
-			for (const auto& aEdge : vActiveEdges) {
-				//Here we cast to float to ensure that X values don't slip through the cracks.
-				//This helps with precision in the smaller glyphs
-				if (static_cast<float>(iX) >= aEdge.m_fCurrentX) {
-					continue;
-				}
-
-				iIntersectionCount += aEdge.m_bDownward ? -1 : 1;
-			}
-
-			if (iIntersectionCount != 0) {
-				//We plot to the fully scaled bitmap so we can up/downscale later on.
-				bFullBitmap.PlotPixel(iX, u32Scanline, HC_FONT_BASE_COLOR);
-			}
-		}
-
-		++u32Scanline;
-
-		for (int ndx = 0; ndx < vActiveEdges.size(); ++ndx) {
-			//Once again, we use the floats for more precision. This may or may not be a bad idea, given floating point
-			//imprecision at small values, but it's better than truncating and losing some precision.
-			if (GetMaxCurveY(vActiveEdges[ndx].m_cCurve) < static_cast<float>(u32Scanline)) {
-				vActiveEdges.erase(vActiveEdges.begin() + ndx--);
-			}
-		}
-
-		for (auto& aEdge : vActiveEdges) {
-			float fT = GetQuadraticX(GetMinCurveY(aEdge.m_cCurve), aEdge.m_cCurve.m_p1.y, GetMaxCurveY(aEdge.m_cCurve), static_cast<float>(u32Scanline));
-
-			int iCurveMinNdx = GetCurveMinIndex(aEdge.m_cCurve);
-
-			aEdge.m_fCurrentX = QuadraticInterpolation(aEdge.m_cCurve[iCurveMinNdx].x, aEdge.m_cCurve.m_p1.x, aEdge.m_cCurve[iCurveMinNdx == 0 ? 2 : 0].x, fT);
-		}
-	}
-
-	int x = 0;
-}
-
-void FontProcessor::RasterizeGlyphSDF(TTFBitmap& _bBitmap, std::vector<TTFContour>& _vAllContours, bool _bIsMultiChannel) {
-
+	return vPackedVertices;
 }

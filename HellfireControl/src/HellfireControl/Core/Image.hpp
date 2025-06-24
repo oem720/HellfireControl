@@ -4,16 +4,20 @@
 
 class File;
 
-class Image {
-private:
-	std::unique_ptr<uint32_t[]> m_pPixels;
+struct PixelRGB {
+	uint8_t R = 0;
+	uint8_t G = 0;
+	uint8_t B = 0;
+};
+
+struct Image {
+	std::unique_ptr<PixelRGB[]> m_pPixels;
 	uint32_t m_u32PixelCount;
 	uint32_t m_u32Width;
 	uint32_t m_u32Height;
 
-public:
 	Image(uint32_t _u32Width, uint32_t _u32Height) :
-		m_pPixels(std::make_unique<uint32_t[]>(_u32Width * _u32Height)),
+		m_pPixels(std::make_unique<PixelRGB[]>(_u32Width * _u32Height)),
 		m_u32PixelCount(_u32Width * _u32Height),
 		m_u32Width(_u32Width),
 		m_u32Height(_u32Height) {}
@@ -24,7 +28,7 @@ public:
 		m_u32Width(_other.m_u32Width),
 		m_u32Height(_other.m_u32Height) {}
 
-	void PlotPixel(int _iX, int _iY, uint32_t _u32Color, bool _bFlipY = true);
+	void PlotPixel(int _iX, int _iY, PixelRGB _pColor);
 
 	void ReflectHorizontal();
 
@@ -34,5 +38,5 @@ public:
 
 	[[nodiscard]] HC_INLINE uint32_t GetHeight() const { return m_u32Height; }
 
-	[[nodiscard]] HC_INLINE const std::unique_ptr<uint32_t[]>& GetPixelData() { return m_pPixels; }
+	[[nodiscard]] HC_INLINE const std::unique_ptr<PixelRGB[]>& GetPixelData() { return m_pPixels; }
 };

@@ -12,6 +12,12 @@ namespace Math {
 		return (_fVal >= 0.0f ? _fLowerBound : _fUpperBound) + fmodf(_fVal, _fUpperBound - _fLowerBound);
 	}
 
+	float Abs(float _fVal) { return fabsf(_fVal); }
+
+	float Ceiling(float _fVal) { return ceilf(_fVal); }
+
+	float Floor(float _fVal) { return floorf(_fVal); }
+
 	float Pow(float _fBase, float _fExp) { return powf(_fBase, _fExp); }
 
 	float Sqrt(float _fVal) { return sqrtf(_fVal); }
@@ -136,6 +142,10 @@ namespace Math {
 			Wrap(_vVal.y, _vLowerBound.y, _vUpperBound.y));
 	}
 
+	Vec2F Ceiling(Vec2F _fVal) { return Vec2F(Ceiling(_fVal.x), Ceiling(_fVal.y)); }
+
+	Vec2F Floor(Vec2F _fVal) { return Vec2F(Floor(_fVal.x), Floor(_fVal.x)); }
+
 	Vec2F Pow(const Vec2F& _vBase, float _fExp) { return Vec2F(Pow(_vBase[0], _fExp), Pow(_vBase[1], _fExp)); }
 
 	Vec2F Sqrt(const Vec2F& _vVal) { return Vec2F(Sqrt(_vVal[0]), Sqrt(_vVal[1])); }
@@ -249,6 +259,10 @@ namespace Math {
 			Wrap(_vVal.y, _vLowerBound.y, _vUpperBound.y),
 			Wrap(_vVal.z, _vLowerBound.z, _vUpperBound.z));
 	}
+
+	Vec3F Ceiling(Vec3F _fVal) { return Vec3F(Ceiling(_fVal.x), Ceiling(_fVal.y), Ceiling(_fVal.z)); }
+
+	Vec3F Floor(Vec3F _fVal) { return Vec3F(Floor(_fVal.x), Floor(_fVal.y), Floor(_fVal.z)); }
 
 	Vec3F Pow(const Vec3F& _vBase, float _fExp) { return Vec3F(Pow(_vBase[0], _fExp), Pow(_vBase[1], _fExp), Pow(_vBase[1], _fExp)); }
 
@@ -369,6 +383,10 @@ namespace Math {
 			Wrap(_vVal.w, _vLowerBound.w, _vUpperBound.w));
 	}
 
+	Vec4F Ceiling(Vec4F _fVal) { return Vec4F(Ceiling(_fVal.x), Ceiling(_fVal.y), Ceiling(_fVal.z), Ceiling(_fVal.w)); }
+
+	Vec4F Floor(Vec4F _fVal) { return Vec4F(Floor(_fVal.x), Floor(_fVal.y), Floor(_fVal.z), Floor(_fVal.w)); }
+
 	Vec4F Pow(const Vec4F& _vBase, float _fExp) { return Vec4F(Pow(_vBase[0], _fExp), Pow(_vBase[1], _fExp), Pow(_vBase[1], _fExp), Pow(_vBase[2], _fExp)); }
 
 	Vec4F Sqrt(const Vec4F& _vVal) { return Vec4F(Sqrt(_vVal[0]), Sqrt(_vVal[1]), Sqrt(_vVal[2]), Sqrt(_vVal[3])); }
@@ -474,6 +492,10 @@ namespace Math {
 			Wrap(_mVal[3], _mLowerBound[3], _mUpperBound[3]));
 	}
 
+	MatrixF Ceiling(MatrixF _fVal) { return MatrixF(Ceiling(_fVal.m_vRow0), Ceiling(_fVal.m_vRow1), Ceiling(_fVal.m_vRow2), Ceiling(_fVal.m_vRow3)); }
+
+	MatrixF Floor(MatrixF _fVal) { return MatrixF(Floor(_fVal.m_vRow0), Floor(_fVal.m_vRow1), Floor(_fVal.m_vRow2), Floor(_fVal.m_vRow3)); }
+
 	MatrixF Pow(const MatrixF& _mBase, float _fExp) { return MatrixF(Pow(_mBase[0], _fExp), Pow(_mBase[1], _fExp), Pow(_mBase[2], _fExp), Pow(_mBase[3], _fExp)); }
 
 	MatrixF Sqrt(const MatrixF& _mVal) { return MatrixF(Sqrt(_mVal[0]), Sqrt(_mVal[1]), Sqrt(_mVal[2]), Sqrt(_mVal[3])); }
@@ -575,6 +597,10 @@ namespace Math {
 	QuaternionF Wrap(const QuaternionF& _qVal, const QuaternionF& _qLowerBound, const QuaternionF& _qUpperBound) {
 		return QuaternionF(Wrap(_qVal.m_vQuat, _qLowerBound.m_vQuat, _qUpperBound.m_vQuat));
 	}
+
+	QuaternionF Ceiling(QuaternionF _fVal) { return QuaternionF(Ceiling(_fVal.m_vQuat)); }
+
+	QuaternionF Floor(QuaternionF _fVal) { return QuaternionF(Floor(_fVal.m_vQuat)); }
 
 	QuaternionF Pow(const QuaternionF& _qBase, float _fExp) { return Pow(_qBase.m_vQuat, _fExp); }
 
@@ -1284,6 +1310,10 @@ namespace Math {
 	RotorF Wrap(const RotorF& _rVal, const RotorF& _rLowerBound, const RotorF& _rUpperBound) {
 		return RotorF(Wrap(_rVal.m_vRot, _rLowerBound.m_vRot, _rUpperBound.m_vRot));
 	}
+
+	RotorF Ceiling(RotorF _fVal) { return RotorF(Ceiling(_fVal.m_vRot)); }
+
+	RotorF Floor(RotorF _fVal) { return RotorF(Floor(_fVal.m_vRot)); }
 
 	RotorF Pow(const RotorF& _rBase, float _fExp) { return Pow(_rBase.m_vRot, _fExp); }
 

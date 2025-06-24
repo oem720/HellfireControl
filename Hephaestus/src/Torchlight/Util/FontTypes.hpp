@@ -20,6 +20,19 @@ enum TTFVertexFlags : uint8_t {
 	Y_SIGN_OR_SKIP = 5
 };
 
+enum TTFCompoundGlyphFlags : uint8_t {
+	ARG_1_AND_2_ARE_WORDS = 0,
+	ARGS_ARE_XY_VALUES = 1,
+	ROUND_XY_TO_GRID = 2,
+	WE_HAVE_A_SCALE = 3,
+	MORE_COMPONENTS = 5,
+	WE_HAVE_AN_X_AND_Y_SCALE = 6,
+	WE_HAVE_A_TWO_BY_TWO = 7,
+	WE_HAVE_INSTRUCTIONS = 8,
+	USE_MY_METRICS = 9,
+	OVERLAP_COMPOUND = 10
+};
+
 //These are inspired by the STB implementation.
 enum class TTFVertexType : uint8_t {
 	CONTOUR_START,
@@ -106,4 +119,17 @@ struct TTFGlyphInfo {
 	Vec2F m_v2Min;
 	Vec2F m_v2Max;
 	std::vector<TTFVertex> m_vVerts;
+};
+
+struct TTFBakedGlyphInfo {
+	Vec4F m_v4BoundingBox;
+	float m_AdvanceWidth = 0.0f;
+};
+
+struct TTFEdge {
+	Vec2F m_v2Min;
+	Vec2F m_v2Max;
+	float m_fSlope = 0.0f;
+	float m_fXCurrent = 0.0f;
+	bool m_bDownward = false;
 };

@@ -45,6 +45,12 @@ namespace Math {
 	/// </returns>
 	[[nodiscard]] float Wrap(float _fVal, float _fLowerBound, float _fUpperBound);
 
+	[[nodiscard]] float Abs(float _fVal);
+
+	[[nodiscard]] float Ceiling(float _fVal);
+
+	[[nodiscard]] float Floor(float _fVal);
+
 	/// <summary>
 	/// Raises _fBase to the power of _fExp (equivalent to std::powf).
 	/// </summary>
@@ -295,6 +301,10 @@ namespace Math {
 	/// Vec2F: Constrained vector
 	/// </returns>
 	[[nodiscard]] Vec2F Wrap(const Vec2F& _vVal, const Vec2F& _vLowerBound, const Vec2F& _vUpperBound);
+
+	[[nodiscard]] Vec2F Ceiling(Vec2F _fVal);
+
+	[[nodiscard]] Vec2F Floor(Vec2F _fVal);
 
 	/// <summary>
 	/// Raises each component of _vBase to the power _fExp.
@@ -547,6 +557,10 @@ namespace Math {
 	/// </returns>
 	[[nodiscard]] Vec3F Wrap(const Vec3F& _vVal, const Vec3F& _vLowerBound, const Vec3F& _vUpperBound);
 
+	[[nodiscard]] Vec3F Ceiling(Vec3F _fVal);
+
+	[[nodiscard]] Vec3F Floor(Vec3F _fVal);
+
 	/// <summary>
 	/// Raises each component of _vBase to the power _fExp.
 	/// </summary>
@@ -797,6 +811,10 @@ namespace Math {
 	/// Vec4F: Constrained vector
 	/// </returns>
 	[[nodiscard]] Vec4F Wrap(const Vec4F& _vVal, const Vec4F& _vLowerBound, const Vec4F& _vUpperBound);
+
+	[[nodiscard]] Vec4F Ceiling(Vec4F _fVal);
+
+	[[nodiscard]] Vec4F Floor(Vec4F _fVal);
 
 	/// <summary>
 	/// Raises each component of _vBase to the power _fExp.
@@ -1049,6 +1067,10 @@ namespace Math {
 	/// </returns>
 	[[nodiscard]] MatrixF Wrap(const MatrixF& _mVal, const MatrixF& _mLowerBound, const MatrixF& _mUpperBound);
 
+	[[nodiscard]] MatrixF Ceiling(MatrixF _fVal);
+
+	[[nodiscard]] MatrixF Floor(MatrixF _fVal);
+
 	/// <summary>
 	/// Raises each component of _mBase to the power _fExp.
 	/// </summary>
@@ -1299,6 +1321,10 @@ namespace Math {
 	/// QuaternionF: Constrained quaternion
 	/// </returns>
 	[[nodiscard]] QuaternionF Wrap(const QuaternionF& _qVal, const QuaternionF& _qLowerBound, const QuaternionF& _qUpperBound);
+
+	[[nodiscard]] QuaternionF Ceiling(QuaternionF _fVal);
+
+	[[nodiscard]] QuaternionF Floor(QuaternionF _fVal);
 
 	/// <summary>
 	/// Raises each component of _qBase to the power _fExp.
@@ -3024,6 +3050,10 @@ namespace Math {
 	/// RotorF: Constrained rotor
 	/// </returns>
 	[[nodiscard]] RotorF Wrap(const RotorF& _rVal, const RotorF& _rLowerBound, const RotorF& _rUpperBound);
+
+	[[nodiscard]] RotorF Ceiling(RotorF _fVal);
+
+	[[nodiscard]] RotorF Floor(RotorF _fVal);
 
 	/// <summary>
 	/// Raises each component of _rBase to the power _fExp.

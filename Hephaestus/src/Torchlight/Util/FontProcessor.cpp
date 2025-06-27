@@ -35,7 +35,7 @@ Font FontProcessor::ProcessFont(const std::string& _strFilepath, uint16_t _u16Fo
 	float spacing = 0;
 	for (int count = 0; count < 5; ++count) {
 		testGlyphInfo = DrawGlyph(iBitmap, testGlyph, Vec2F(spacing, 0.0f), fiInfo.m_fScaleFactor * (1 << count));
-		spacing += Math::Ceiling(testGlyphInfo.m_AdvanceWidth);
+		spacing += Math::Ceiling(testGlyphInfo.m_v4BoundingBox.z - testGlyphInfo.m_v4BoundingBox.x);
 	}
 	
 	stbi_write_bmp(HC_TESTING_PATH("HC_FONT"), iBitmap.GetWidth(), iBitmap.GetHeight(), 3, iBitmap.GetPixelData().get());
@@ -493,7 +493,7 @@ Vec2F FontProcessor::GetFontAtlasSize(std::vector<TTFGlyphInfo>& vGlyphData, TTF
 }
 
 TTFBakedGlyphInfo FontProcessor::DrawGlyph(Image& _iBitmap, const TTFGlyphInfo& _tGlyphData, const Vec2F& _v2Location, const float _fScale) {
-	Vec4F v4BoundingBox = CalculateScaledBoundingVolume(_v2Location, _tGlyphData.m_v2Min.y, _tGlyphData.m_v2Max.y, _tGlyphData.m_u16AdvanceWidth, _fScale);
+	Vec4F v4BoundingBox = CalculateScaledBoundingVolume(_v2Location, _tGlyphData.m_v2Min, _tGlyphData.m_v2Max, _fScale);
 
 	std::vector<TTFEdge> vEdges = PackAndFlattenContours(_tGlyphData, v4BoundingBox, _fScale);
 
@@ -534,7 +534,7 @@ TTFBakedGlyphInfo FontProcessor::DrawGlyph(Image& _iBitmap, const TTFGlyphInfo& 
 
 			for (const auto& aEdge : vActiveEdges) {
 				//We check for infinite slope to skip horizontal lines. Those are infinite because we have an inverted slope.
-				if (iScanlineX > aEdge.m_fXCurrent || std::isinf(aEdge.m_fSlope)) {
+				if (static_cast<float>(iScanlineX) + 0.5f > aEdge.m_fXCurrent || std::isinf(aEdge.m_fSlope)) {
 					continue;
 				}
 
@@ -560,20 +560,19 @@ TTFBakedGlyphInfo FontProcessor::DrawGlyph(Image& _iBitmap, const TTFGlyphInfo& 
 				continue;
 			}
 
-			//vActiveEdges[iNdx].m_fXCurrent = (fScanlineY - vActiveEdges[iNdx].m_v2Min.y) / vActiveEdges[iNdx].m_fSlope;
-			//vActiveEdges[iNdx].m_fXCurrent = (fScanlineY / vActiveEdges[iNdx].m_fSlope);
 			vActiveEdges[iNdx].m_fXCurrent += vActiveEdges[iNdx].m_fSlope;
 		}
 	}
 
 	return {
 		.m_v4BoundingBox = v4BoundingBox,
-		.m_AdvanceWidth = Math::Ceiling(static_cast<float>(_tGlyphData.m_u16AdvanceWidth) * _fScale)
+		.m_fAdvanceWidth = Math::Ceiling(static_cast<float>(_tGlyphData.m_u16AdvanceWidth) * _fScale),
+		.m_fLeftSideBearing = Math::Ceiling(static_cast<float>(_tGlyphData.m_i16LeftSideBearing) * _fScale)
 	};
 }
 
-Vec4F FontProcessor::CalculateScaledBoundingVolume(const Vec2F& _v2Location, const float _fYMin, const float _fYMax, const uint16_t _u16AdvanceWidth, const float _fScale) {
-	return Vec4F(_v2Location, Math::Ceiling(Vec2F(_v2Location.x + (static_cast<float>(_u16AdvanceWidth) * _fScale), (_fYMax - _fYMin) * _fScale)));
+Vec4F FontProcessor::CalculateScaledBoundingVolume(const Vec2F& _v2Location, const Vec2F& _v2Min, const Vec2F& _v2Max, const float _fScale) {
+	return Vec4F(_v2Location, Math::Ceiling(Vec2F(_v2Location.x + ((_v2Max.x - _v2Min.x) * _fScale), _v2Location.y + ((_v2Max.y - _v2Min.y) * _fScale))));
 }
 
 std::vector<TTFEdge> FontProcessor::PackAndFlattenContours(const TTFGlyphInfo& _tGlyphData, const Vec4F& _v4BoundingBox, const float _fScale) {
@@ -591,6 +590,10 @@ std::vector<TTFEdge> FontProcessor::PackAndFlattenContours(const TTFGlyphInfo& _
 
 	std::vector<TTFEdge> vPackedEdges;
 
+	//Here we define the shift value. The Y is not flipped here because it is already being negated during the
+	//flip and shift calculation.
+	Vec2F v2Shift(-_tGlyphData.m_v2Min.x, _tGlyphData.m_v2Min.y);
+
 	//Then we flatten the contours into straight lines and pack those lines into edges.
 	int iNdxOffset = 1;
 	for (auto& aContour : vContours) {
@@ -600,7 +603,7 @@ std::vector<TTFEdge> FontProcessor::PackAndFlattenContours(const TTFGlyphInfo& _
 			switch (aContour[iAdvanceNdx].m_vtType) {
 			case TTFVertexType::CONTOUR_START:
 			case TTFVertexType::LINE_SEGMENT:
-				vPackedEdges.push_back(ConstructEdge(aContour[iNdx].m_v2Vert, aContour[iAdvanceNdx].m_v2Vert, _v4BoundingBox.XW(), _fScale));
+				vPackedEdges.push_back(ConstructEdge(aContour[iNdx].m_v2Vert, aContour[iAdvanceNdx].m_v2Vert, _v4BoundingBox.XW(), v2Shift, _fScale));
 				
 				iNdxOffset = 1;
 				break;
@@ -612,7 +615,7 @@ std::vector<TTFEdge> FontProcessor::PackAndFlattenContours(const TTFGlyphInfo& _
 
 				std::vector<Vec2F> vFlattenedCurve = FlattenQuadraticCurve(aContour[iP0Ndx], aContour[iP1Ndx], aContour[iP2Ndx]);
 
-				std::vector<TTFEdge> vFlattenedEdges = ConstructFlattenedEdgeList(vFlattenedCurve, _v4BoundingBox.XW(), _fScale);
+				std::vector<TTFEdge> vFlattenedEdges = ConstructFlattenedEdgeList(vFlattenedCurve, _v4BoundingBox.XW(), v2Shift, _fScale);
 
 				vPackedEdges.insert(vPackedEdges.end(), vFlattenedEdges.begin(), vFlattenedEdges.end());
 				
@@ -637,9 +640,9 @@ std::vector<TTFEdge> FontProcessor::PackAndFlattenContours(const TTFGlyphInfo& _
 	return vPackedEdges;
 }
 
-TTFEdge FontProcessor::ConstructEdge(const Vec2F& _vMin, const Vec2F& _vMax, const Vec2F& _v2PointShift, const float _fScale) {
-	Vec2F vMin = (_vMin * Vec2F(1.0f, -1.0f) * _fScale) + _v2PointShift;
-	Vec2F vMax = (_vMax * Vec2F(1.0f, -1.0f) * _fScale) + _v2PointShift;
+TTFEdge FontProcessor::ConstructEdge(const Vec2F& _vMin, const Vec2F& _vMax, const Vec2F& _v2BoundingBoxShift, const Vec2F& _v2GlyphMinShift, const float _fScale) {
+	Vec2F vMin = (_vMin * Vec2F(1.0f, -1.0f) * _fScale) + _v2BoundingBoxShift + (_v2GlyphMinShift * _fScale);
+	Vec2F vMax = (_vMax * Vec2F(1.0f, -1.0f) * _fScale) + _v2BoundingBoxShift + (_v2GlyphMinShift * _fScale);
 	bool bDownward = false;
 
 	if (vMin.y > vMax.y) {
@@ -658,11 +661,11 @@ TTFEdge FontProcessor::ConstructEdge(const Vec2F& _vMin, const Vec2F& _vMax, con
 	};
 }
 
-std::vector<TTFEdge> FontProcessor::ConstructFlattenedEdgeList(const std::vector<Vec2F>& _vVerts, const Vec2F& _v2PointShift, const float _fScale) {
+std::vector<TTFEdge> FontProcessor::ConstructFlattenedEdgeList(const std::vector<Vec2F>& _vVerts, const Vec2F& _v2BoundingBoxShift, const Vec2F& _v2GlyphMinShift, const float _fScale) {
 	std::vector<TTFEdge> vEdges;
 
 	for (int iNdx = 0; iNdx < _vVerts.size() - 1; ++iNdx) {
-		vEdges.push_back(ConstructEdge(_vVerts[iNdx], _vVerts[iNdx + 1], _v2PointShift, _fScale));
+		vEdges.push_back(ConstructEdge(_vVerts[iNdx], _vVerts[iNdx + 1], _v2BoundingBoxShift, _v2GlyphMinShift, _fScale));
 	}
 
 	return vEdges;

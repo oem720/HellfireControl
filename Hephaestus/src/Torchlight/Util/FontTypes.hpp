@@ -123,7 +123,8 @@ struct TTFGlyphInfo {
 
 struct TTFBakedGlyphInfo {
 	Vec4F m_v4BoundingBox;
-	float m_AdvanceWidth = 0.0f;
+	float m_fAdvanceWidth = 0.0f;
+	float m_fLeftSideBearing = 0.0f;
 };
 
 struct TTFEdge {

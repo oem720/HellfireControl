@@ -24,9 +24,9 @@ private:
 	static std::vector<TTFVertex> PackContourVertices(const std::vector<Vec2F>& _vContourCoords, const std::vector<uint8_t>& _vContourFlags);
 	static Vec2F GetFontAtlasSize(std::vector<TTFGlyphInfo>& vGlyphData, TTFFontInfo& fiInfo);
 	static TTFBakedGlyphInfo DrawGlyph(Image& _iBitmap, const TTFGlyphInfo& _tGlyphData, const Vec2F& _v2Location, const float _fScale);
-	static Vec4F CalculateScaledBoundingVolume(const Vec2F& _v2Location, const float _fYMin, const float _fYMax, const uint16_t _u16AdvanceWidth, const float _fScale);
+	static Vec4F CalculateScaledBoundingVolume(const Vec2F& _v2Location, const Vec2F& _v2Min, const Vec2F& _v2Max, const float _fScale);
 	static std::vector<TTFEdge> PackAndFlattenContours(const TTFGlyphInfo& _tGlyphData, const Vec4F& _v4BoundingBox, const float _fScale);
-	static TTFEdge ConstructEdge(const Vec2F& _vMin, const Vec2F& _vMax, const Vec2F& _v2PointShift, const float _fScale);
-	static std::vector<TTFEdge> ConstructFlattenedEdgeList(const std::vector<Vec2F>& _vVerts, const Vec2F& _v2PointShift, const float _fScale);
+	static TTFEdge ConstructEdge(const Vec2F& _vMin, const Vec2F& _vMax, const Vec2F& _v2PointShift, const Vec2F& _v2GlyphMinShift, const float _fScale);
+	static std::vector<TTFEdge> ConstructFlattenedEdgeList(const std::vector<Vec2F>& _vVerts, const Vec2F & _v2BoundingBoxShift, const Vec2F& _v2GlyphMinShift, const float _fScale);
 	static std::vector<Vec2F> FlattenQuadraticCurve(const TTFVertex & _vP0, const TTFVertex & _vP1, const TTFVertex & _vP2);
 };

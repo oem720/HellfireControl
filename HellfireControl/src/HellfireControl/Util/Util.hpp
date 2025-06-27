@@ -11,7 +11,7 @@ namespace Util {
 
 	template<typename T, HC_SFINAE_REQUIRE_INTEGER(T)>
 	bool IsBitSet(T _value, uint8_t _u8BitToCheck) {
-		return ((_value >> _u8BitToCheck) & 0x1);
+		return _value & (1 << _u8BitToCheck);
 	}
 
 	template<typename T, HC_SFINAE_REQUIRE_INTEGER(T)>

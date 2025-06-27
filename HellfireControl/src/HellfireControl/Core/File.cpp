@@ -75,6 +75,11 @@ void File::GoToByte(size_t _sLocation){
 		m_ptrBlobPointer = (&m_vDataBlob[0]) + _sLocation;
 	}
 	else {
+		if (m_fStream.fail()) {
+			//TODO: more robust error handling.
+			m_fStream.clear();
+		}
+
 		m_fStream.seekg(_sLocation);
 	}
 }
@@ -128,6 +133,9 @@ void File::OpenFile(int _iFlags) {
 	if (!m_fStream.is_open()) {
 		throw std::runtime_error("ERROR: Failed to open file! Filepath: " + m_pthFilepath.string());
 	}
+
+	//TODO: more robust error handling.
+	m_fStream.exceptions(std::ios_base::badbit);
 }
 
 void File::ExtractFileBlob() {

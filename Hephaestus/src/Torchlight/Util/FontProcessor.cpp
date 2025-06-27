@@ -29,13 +29,13 @@ Font FontProcessor::ProcessFont(const std::string& _strFilepath, uint16_t _u16Fo
 
 	Image iBitmap(static_cast<uint32_t>(v2BitmapSize.x), static_cast<uint32_t>(v2BitmapSize.y));
 
-	TTFGlyphInfo missingChar = GetGlyphInfo(fFontFile, fiInfo, fiInfo.m_cmCMap[0xFFFF]);
+	TTFGlyphInfo testGlyph = GetGlyphInfo(fFontFile, fiInfo, fiInfo.m_cmCMap[0x014E]);
 
-	TTFBakedGlyphInfo missingCharInfo;
+	TTFBakedGlyphInfo testGlyphInfo;
 	float spacing = 0;
 	for (int count = 0; count < 5; ++count) {
-		missingCharInfo = DrawGlyph(iBitmap, missingChar, Vec2F(spacing, 0.0f), fiInfo.m_fScaleFactor * (1 << count));
-		spacing += Math::Ceiling(missingCharInfo.m_AdvanceWidth);
+		testGlyphInfo = DrawGlyph(iBitmap, testGlyph, Vec2F(spacing, 0.0f), fiInfo.m_fScaleFactor * (1 << count));
+		spacing += Math::Ceiling(testGlyphInfo.m_AdvanceWidth);
 	}
 	
 	stbi_write_bmp(HC_TESTING_PATH("HC_FONT"), iBitmap.GetWidth(), iBitmap.GetHeight(), 3, iBitmap.GetPixelData().get());
@@ -45,7 +45,7 @@ Font FontProcessor::ProcessFont(const std::string& _strFilepath, uint16_t _u16Fo
 	unsigned char* pixels = new unsigned char[iBitmap.GetWidth() * iBitmap.GetHeight()];
 	stbtt_bakedchar* chars = new stbtt_bakedchar[vGlyphData.size()];
 
-	stbtt_BakeFontBitmap(reinterpret_cast<const unsigned char*>(temp.GetFileBlob().data()), 0, static_cast<float>(_u16FontHeightPts) * (4.0f / 3.0f), pixels, iBitmap.GetWidth(), iBitmap.GetHeight(), 0, vGlyphData.size(), chars);
+	stbtt_BakeFontBitmap(reinterpret_cast<const unsigned char*>(temp.GetFileBlob().data()), 0, static_cast<float>(_u16FontHeightPts) * (4.0f / 3.0f), pixels, iBitmap.GetWidth(), iBitmap.GetHeight(), 0x014E, vGlyphData.size(), chars);
 
 	stbi_write_bmp(HC_TESTING_PATH("STB_FONT"), iBitmap.GetWidth(), iBitmap.GetHeight(), 1, pixels);
 
@@ -219,7 +219,7 @@ TTFGlyphInfo FontProcessor::GetGlyphInfo(File& _fFontFile, const TTFFontInfo& _f
 	if (_fiInfo.m_i16IndexToLocFormat == 0) {
 		_fFontFile.GoToByte(_fiInfo.m_tdeLoca.m_u32Offset + (_u32GlyphIndex * sizeof(uint16_t)));
 		u32Offset = FontUtil::ReadTTFValue<uint16_t>(_fFontFile) * 2;
-		u32Length = (FontUtil::ReadTTFValue<uint16_t>(_fFontFile) * 2)- u32Offset;
+		u32Length = (FontUtil::ReadTTFValue<uint16_t>(_fFontFile) * 2) - u32Offset;
 	}
 	else {
 		_fFontFile.GoToByte(_fiInfo.m_tdeLoca.m_u32Offset + (_u32GlyphIndex * sizeof(uint32_t)));
@@ -269,7 +269,68 @@ TTFGlyphInfo FontProcessor::GetGlyphInfo(File& _fFontFile, const TTFFontInfo& _f
 			uint16_t u16Flags = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
 		
 			bMoreComponents = Util::IsBitSet(u16Flags, MORE_COMPONENTS);
-		
+
+			uint16_t u16GlyphIndex = FontUtil::ReadTTFValue<uint16_t>(_fFontFile);
+
+			float pfTransform[6] = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f };
+
+			if (Util::IsBitSet(u16Flags, ARGS_ARE_XY_VALUES)) {
+				if (Util::IsBitSet(u16Flags, ARG_1_AND_2_ARE_WORDS)) {
+					pfTransform[4] = static_cast<float>(FontUtil::ReadTTFValue<int16_t>(_fFontFile));
+					pfTransform[5] = static_cast<float>(FontUtil::ReadTTFValue<int16_t>(_fFontFile));
+				}
+				else {
+					pfTransform[4] = static_cast<float>(FontUtil::ReadTTFValue<int8_t>(_fFontFile));
+					pfTransform[5] = static_cast<float>(FontUtil::ReadTTFValue<int8_t>(_fFontFile));
+				}
+			}
+			else {
+				throw std::logic_error("NOT IMPLEMENTED!");
+			}
+
+			if (Util::IsBitSet(u16Flags, WE_HAVE_A_SCALE)) {
+				pfTransform[0] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
+				pfTransform[3] = pfTransform[0];
+			}
+			else if (Util::IsBitSet(u16Flags, WE_HAVE_AN_X_AND_Y_SCALE)) {
+				pfTransform[0] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
+				pfTransform[3] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
+			}
+			else if (Util::IsBitSet(u16Flags, WE_HAVE_A_TWO_BY_TWO)) {
+				pfTransform[0] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
+				pfTransform[1] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
+				pfTransform[2] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
+				pfTransform[3] = FontUtil::ConvertToFloatingPoint<float>(FontUtil::ReadTTFValue<F2Dot14>(_fFontFile));
+			}
+
+			float fXScale = Math::Sqrt(pfTransform[0] * pfTransform[0] + pfTransform[1] * pfTransform[1]);
+			float fYScale = Math::Sqrt(pfTransform[2] * pfTransform[2] + pfTransform[3] * pfTransform[3]);
+
+			size_t sCurentLocation = _fFontFile.ReaderLocation();
+
+			//Get the sub glyph's info (maybe check for infinite recursion?)
+			TTFGlyphInfo giSubGlyph = GetGlyphInfo(_fFontFile, _fiInfo, u16GlyphIndex);
+
+			//Return to the original location of this glyph you moron!
+			_fFontFile.GoToByte(sCurentLocation);
+
+			//Transform vertices
+			if (giSubGlyph.m_vVerts.size() == 0) {
+				continue;
+			}
+
+			for (auto& aVert : giSubGlyph.m_vVerts) {
+				float fOriginalX = aVert.m_v2Vert.x;
+				float fOriginalY = aVert.m_v2Vert.y;
+
+				aVert.m_v2Vert = Vec2F(
+					(fXScale * (pfTransform[0] * fOriginalX + pfTransform[2] * fOriginalY + pfTransform[4])),
+					(fYScale * (pfTransform[1] * fOriginalX + pfTransform[3] * fOriginalY + pfTransform[5]))
+				);
+			}
+
+			//Add the verts to the glyph vertex list
+			giGlyph.m_vVerts.insert(giGlyph.m_vVerts.end(), giSubGlyph.m_vVerts.begin(), giSubGlyph.m_vVerts.end());
 		} while (bMoreComponents);
 	}
 
@@ -445,7 +506,7 @@ TTFBakedGlyphInfo FontProcessor::DrawGlyph(Image& _iBitmap, const TTFGlyphInfo& 
 	while (fScanlineY < v4BoundingBox.w + HC_EPSILON && (vEdges.size() > 0 || vActiveEdges.size() > 0)) {
 		//First check for active edges
 		for (int iNdx = 0; iNdx < vEdges.size(); ++iNdx) {
-			if (vEdges[iNdx].m_v2Min.y > (fScanlineY - 0.5f)) {
+			if (vEdges[iNdx].m_v2Min.y > fScanlineY + 0.5f) {
 				break;
 			}
 
@@ -489,7 +550,7 @@ TTFBakedGlyphInfo FontProcessor::DrawGlyph(Image& _iBitmap, const TTFGlyphInfo& 
 
 		//Check active edge Y and remove those that are below the bottom of the pixel.
 		for (int iNdx = 0; iNdx < vActiveEdges.size(); ++iNdx) {
-			if (vActiveEdges[iNdx].m_v2Max.y <= (fScanlineY - 0.5f)) {
+			if (vActiveEdges[iNdx].m_v2Max.y <= (fScanlineY + 0.5f)) {
 				vActiveEdges.erase(vActiveEdges.begin() + iNdx--);
 				continue;
 			}
@@ -525,65 +586,134 @@ std::vector<TTFEdge> FontProcessor::PackAndFlattenContours(const TTFGlyphInfo& _
 			iContourCount++;
 		}
 
-		TTFVertex vVert = _tGlyphData.m_vVerts[iNdx];
-		
-		//First we need to flip the point over the X axis and then scale
-		vVert.m_v2Vert *= Vec2F(1, -1) * _fScale;
-		//This is followed by shifting it upward by the bottom Y and then left by the top X
-		vVert.m_v2Vert += _v4BoundingBox.XW();
-
-
-		vContours[iContourCount - 1].push_back(vVert);
+		vContours[iContourCount - 1].push_back(_tGlyphData.m_vVerts[iNdx]);
 	}
 
-	//Then we flatten the contours into straight lines.
+	std::vector<TTFEdge> vPackedEdges;
+
+	//Then we flatten the contours into straight lines and pack those lines into edges.
+	int iNdxOffset = 1;
 	for (auto& aContour : vContours) {
-		for (int iNdx = 0; iNdx < aContour.size() - 1; ++iNdx) {
-			switch (aContour[(iNdx + 1) % aContour.size()].m_vtType) {
+		for (int iNdx = 0; iNdx < aContour.size(); iNdx += iNdxOffset) {
+			int iAdvanceNdx = (iNdx + 1) % aContour.size();
+
+			switch (aContour[iAdvanceNdx].m_vtType) {
 			case TTFVertexType::CONTOUR_START:
 			case TTFVertexType::LINE_SEGMENT:
-				continue; //We can skip processing here.
+				vPackedEdges.push_back(ConstructEdge(aContour[iNdx].m_v2Vert, aContour[iAdvanceNdx].m_v2Vert, _v4BoundingBox.XW(), _fScale));
 				
-			case TTFVertexType::QUADRATIC_CURVE:
-
+				iNdxOffset = 1;
 				break;
+
+			case TTFVertexType::QUADRATIC_CURVE: {
+				int iP0Ndx = iNdx;
+				int iP1Ndx = iAdvanceNdx;
+				int iP2Ndx = (iNdx + 2) % aContour.size();
+
+				std::vector<Vec2F> vFlattenedCurve = FlattenQuadraticCurve(aContour[iP0Ndx], aContour[iP1Ndx], aContour[iP2Ndx]);
+
+				std::vector<TTFEdge> vFlattenedEdges = ConstructFlattenedEdgeList(vFlattenedCurve, _v4BoundingBox.XW(), _fScale);
+
+				vPackedEdges.insert(vPackedEdges.end(), vFlattenedEdges.begin(), vFlattenedEdges.end());
+				
+				iNdxOffset = 2;
+			}	break;
+
 			case TTFVertexType::CUBIC_CURVE:
-				
+				//TODO: Support cubics when adding CFF support!
+				throw std::runtime_error("TODO: Support cubics when adding CFF support!");
 				break;
 			}
 		}
 	}
 
-	//Finally, we pack the newly flattened contours into the edge list and sort.
-	std::vector<TTFEdge> vPackedVertices;
-	for (const auto& aContour : vContours) {
-		for (int iNdx = 0; iNdx < aContour.size(); ++iNdx) {
-			Vec2F vMin = aContour[iNdx].m_v2Vert;
-			Vec2F vMax = aContour[(iNdx + 1) % aContour.size()].m_v2Vert;
-			bool bDownward = false;
-
-			if (vMin.y > vMax.y) {
-				Vec2F vTemp = vMin;
-				vMin = vMax;
-				vMax = vTemp;
-				bDownward = true;
-			}
-
-			vPackedVertices.push_back({
-				.m_v2Min = vMin,
-				.m_v2Max = vMax,
-				.m_fSlope = (vMax.x - vMin.x) / (vMax.y - vMin.y),
-				.m_fXCurrent = vMin.x,
-				.m_bDownward = bDownward
-			});
-		}
-	}
-
+	//Finally, we sort the edges on Y
 	std::sort(
-		vPackedVertices.begin(),
-		vPackedVertices.end(),
+		vPackedEdges.begin(),
+		vPackedEdges.end(),
 		[](const TTFEdge& _left, const TTFEdge& _right) { return _left.m_v2Min.y < _right.m_v2Min.y; }
 	);
 
-	return vPackedVertices;
+	return vPackedEdges;
+}
+
+TTFEdge FontProcessor::ConstructEdge(const Vec2F& _vMin, const Vec2F& _vMax, const Vec2F& _v2PointShift, const float _fScale) {
+	Vec2F vMin = (_vMin * Vec2F(1.0f, -1.0f) * _fScale) + _v2PointShift;
+	Vec2F vMax = (_vMax * Vec2F(1.0f, -1.0f) * _fScale) + _v2PointShift;
+	bool bDownward = false;
+
+	if (vMin.y > vMax.y) {
+		Vec2F vTemp = vMin;
+		vMin = vMax;
+		vMax = vTemp;
+		bDownward = true;
+	}
+
+	return {
+		.m_v2Min = vMin,
+		.m_v2Max = vMax,
+		.m_fSlope = (vMax.x - vMin.x) / (vMax.y - vMin.y),
+		.m_fXCurrent = vMin.x,
+		.m_bDownward = bDownward
+	};
+}
+
+std::vector<TTFEdge> FontProcessor::ConstructFlattenedEdgeList(const std::vector<Vec2F>& _vVerts, const Vec2F& _v2PointShift, const float _fScale) {
+	std::vector<TTFEdge> vEdges;
+
+	for (int iNdx = 0; iNdx < _vVerts.size() - 1; ++iNdx) {
+		vEdges.push_back(ConstructEdge(_vVerts[iNdx], _vVerts[iNdx + 1], _v2PointShift, _fScale));
+	}
+
+	return vEdges;
+}
+
+static float ApproximateInteger(float _fX) {
+	const float fD = 0.67f;
+	return _fX / (1 - fD + Math::Pow(Math::Pow(fD, 4) + 0.25f * _fX * _fX, 0.25f));
+}
+
+static float ApproximateIntegerInv(float _fX) {
+	const float fB = 0.39f;
+	return _fX * (1 - fB + Math::Sqrt(fB * fB + 0.25f * _fX * _fX));
+}
+
+constexpr float g_fFlatnessFactor = 0.5f;
+
+std::vector<Vec2F> FontProcessor::FlattenQuadraticCurve(const TTFVertex& _vP0, const TTFVertex& _vP1, const TTFVertex& _vP2) {
+	Vec2F v2P0 = _vP0.m_v2Vert;
+	Vec2F v2P1 = _vP1.m_v2Vert;
+	Vec2F v2P2 = _vP2.m_v2Vert;
+
+	float fDDX = 2.0f * v2P1.x - v2P0.x - v2P2.x;
+	float fDDY = 2.0f * v2P1.y - v2P0.y - v2P2.y;
+	float fCross = (v2P2.x - v2P0.x) * fDDY - (v2P2.y - v2P0.y) * fDDX;
+	float fX0 = (v2P1.x - v2P0.x) * fDDX + (v2P1.y - v2P0.y) * fDDY / fCross;
+	float fX2 = (v2P2.x - v2P1.x) * fDDX + (v2P2.y - v2P1.y) * fDDY / fCross;
+	float fScale = Math::Abs(fCross) / (std::hypot(fDDX, fDDY) * Math::Abs(fX2 - fX0));
+
+	float fA0 = ApproximateInteger(fX0);
+	float fA2 = ApproximateInteger(fX2);
+	
+	int iCount = static_cast<int>(Math::Ceiling(0.5f * Math::Abs(fA2 - fA0) * Math::Sqrt(fScale / g_fFlatnessFactor)));
+
+	float fU0 = ApproximateIntegerInv(fA0);
+	float fU2 = ApproximateIntegerInv(fA2);
+
+	std::vector<Vec2F> vFlattenedCurve;
+	vFlattenedCurve.reserve(iCount + 1);
+
+	vFlattenedCurve.push_back(v2P0);
+
+	for (int iNum = 1; iNum < iCount; ++iNum) {
+		float fU = ApproximateIntegerInv(fA0 + ((fA2 - fA0) * iNum) / iCount);
+		float fT = (fU - fU0) / (fU2 - fU0);
+		float fMT = 1.0f - fT;
+
+		vFlattenedCurve.push_back((v2P0 * fMT * fMT) + (2.0f * v2P1 * fT * fMT) + (v2P2 * fT * fT));
+	}
+
+	vFlattenedCurve.push_back(v2P2);
+
+	return vFlattenedCurve;
 }

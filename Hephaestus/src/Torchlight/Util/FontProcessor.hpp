@@ -28,5 +28,5 @@ private:
 	static std::vector<TTFEdge> PackAndFlattenContours(const TTFGlyphInfo& _tGlyphData, const Vec4F& _v4BoundingBox, const float _fScale);
 	static TTFEdge ConstructEdge(const Vec2F& _vMin, const Vec2F& _vMax, const Vec2F& _v2PointShift, const Vec2F& _v2GlyphMinShift, const float _fScale);
 	static std::vector<TTFEdge> ConstructFlattenedEdgeList(const std::vector<Vec2F>& _vVerts, const Vec2F & _v2BoundingBoxShift, const Vec2F& _v2GlyphMinShift, const float _fScale);
-	static std::vector<Vec2F> FlattenQuadraticCurve(const TTFVertex & _vP0, const TTFVertex & _vP1, const TTFVertex & _vP2);
+	static std::vector<Vec2F> FlattenQuadraticCurve(const TTFVertex & _vP0, const TTFVertex & _vP1, const TTFVertex & _vP2, const float _fScale);
 };

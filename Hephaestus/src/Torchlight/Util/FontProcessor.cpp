@@ -526,19 +526,45 @@ TTFBakedGlyphInfo FontProcessor::DrawGlyph(Image& _iBitmap, const TTFGlyphInfo& 
 			[](const TTFEdge& _left, const TTFEdge& _right) { return _left.m_fXCurrent < _right.m_fXCurrent; }
 		);
 
+		//Find any edges that actively terminate in this scanline and add them to a list
+		std::set<int> vEdgeIndices;
+		for (int iNdx = 0; iNdx < vActiveEdges.size(); ++iNdx) {
+			if (vActiveEdges[iNdx].m_v2Max.y <= (fScanlineY + 0.5f + HC_EPSILON)) {
+				vEdgeIndices.insert(iNdx);
+			}
+		}
+
+		//Now remove all those edges that do not have shared vertices in this pixel shared vertices
+		for (auto aIter = vEdgeIndices.begin(); aIter != vEdgeIndices.end();) {
+			auto it = std::find_if(vActiveEdges.begin(), vActiveEdges.end(),
+				[&](const TTFEdge& _val) { return _val.m_v2Min == vActiveEdges[*aIter].m_v2Max; });
+
+			if (it == vActiveEdges.end()) {
+				aIter = vEdgeIndices.erase(aIter);
+			}
+			else {
+				++aIter;
+			}
+		}
+
 		//Fill pixels between the X values. This needs to include the antialiasing step.
 		//Because we have packed the bounding box into a Vec4, to grab the bounds, use the x and z values
 		//The end value is clamped to the edge of the bitmap and is always overestimated based on the bounding box.
 		for (int iScanlineX = iScanlineXStart; iScanlineX <= iScanlineXEnd; ++iScanlineX) {
 			int iIntersectionCount = 0;
 
-			for (const auto& aEdge : vActiveEdges) {
+			for (int iNdx = 0; iNdx < vActiveEdges.size(); ++iNdx) {
 				//We check for infinite slope to skip horizontal lines. Those are infinite because we have an inverted slope.
-				if (static_cast<float>(iScanlineX) + 0.5f > aEdge.m_fXCurrent || std::isinf(aEdge.m_fSlope)) {
+				if (static_cast<float>(iScanlineX) + 0.5f > vActiveEdges[iNdx].m_fXCurrent || std::isinf(vActiveEdges[iNdx].m_fSlope)) {
 					continue;
 				}
 
-				iIntersectionCount += aEdge.m_bDownward ? -1 : 1;
+				//Next we check for vertices and skip if we're processing an edge considered to be duplicated
+				if (vEdgeIndices.contains(iNdx)) {
+					continue;
+				}
+
+				iIntersectionCount += vActiveEdges[iNdx].m_bDownward ? -1 : 1;
 			}
 
 			if (iIntersectionCount != 0) {
@@ -613,7 +639,7 @@ std::vector<TTFEdge> FontProcessor::PackAndFlattenContours(const TTFGlyphInfo& _
 				int iP1Ndx = iAdvanceNdx;
 				int iP2Ndx = (iNdx + 2) % aContour.size();
 
-				std::vector<Vec2F> vFlattenedCurve = FlattenQuadraticCurve(aContour[iP0Ndx], aContour[iP1Ndx], aContour[iP2Ndx]);
+				std::vector<Vec2F> vFlattenedCurve = FlattenQuadraticCurve(aContour[iP0Ndx], aContour[iP1Ndx], aContour[iP2Ndx], _fScale);
 
 				std::vector<TTFEdge> vFlattenedEdges = ConstructFlattenedEdgeList(vFlattenedCurve, _v4BoundingBox.XW(), v2Shift, _fScale);
 
@@ -683,7 +709,7 @@ static float ApproximateIntegerInv(float _fX) {
 
 constexpr float g_fFlatnessFactor = 0.5f;
 
-std::vector<Vec2F> FontProcessor::FlattenQuadraticCurve(const TTFVertex& _vP0, const TTFVertex& _vP1, const TTFVertex& _vP2) {
+std::vector<Vec2F> FontProcessor::FlattenQuadraticCurve(const TTFVertex& _vP0, const TTFVertex& _vP1, const TTFVertex& _vP2, const float _fScale) {
 	Vec2F v2P0 = _vP0.m_v2Vert;
 	Vec2F v2P1 = _vP1.m_v2Vert;
 	Vec2F v2P2 = _vP2.m_v2Vert;
@@ -698,7 +724,7 @@ std::vector<Vec2F> FontProcessor::FlattenQuadraticCurve(const TTFVertex& _vP0, c
 	float fA0 = ApproximateInteger(fX0);
 	float fA2 = ApproximateInteger(fX2);
 	
-	int iCount = static_cast<int>(Math::Ceiling(0.5f * Math::Abs(fA2 - fA0) * Math::Sqrt(fScale / g_fFlatnessFactor)));
+	int iCount = static_cast<int>(Math::Ceiling(0.5f * Math::Abs(fA2 - fA0) * Math::Sqrt((fScale / g_fFlatnessFactor) * _fScale)));
 
 	float fU0 = ApproximateIntegerInv(fA0);
 	float fU2 = ApproximateIntegerInv(fA2);

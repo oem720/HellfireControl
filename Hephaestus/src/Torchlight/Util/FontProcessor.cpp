@@ -697,11 +697,13 @@ std::vector<TTFEdge> FontProcessor::ConstructFlattenedEdgeList(const std::vector
 	return vEdges;
 }
 
+//Credit to Raph Levien: https://raphlinus.github.io/graphics/curves/2019/12/23/flatten-quadbez.html
 static float ApproximateInteger(float _fX) {
 	const float fD = 0.67f;
 	return _fX / (1 - fD + Math::Pow(Math::Pow(fD, 4) + 0.25f * _fX * _fX, 0.25f));
 }
 
+//Credit to Raph Levien: https://raphlinus.github.io/graphics/curves/2019/12/23/flatten-quadbez.html
 static float ApproximateIntegerInv(float _fX) {
 	const float fB = 0.39f;
 	return _fX * (1 - fB + Math::Sqrt(fB * fB + 0.25f * _fX * _fX));
@@ -709,6 +711,7 @@ static float ApproximateIntegerInv(float _fX) {
 
 constexpr float g_fFlatnessFactor = 0.5f;
 
+//Credit to Raph Levien: https://raphlinus.github.io/graphics/curves/2019/12/23/flatten-quadbez.html
 std::vector<Vec2F> FontProcessor::FlattenQuadraticCurve(const TTFVertex& _vP0, const TTFVertex& _vP1, const TTFVertex& _vP2, const float _fScale) {
 	Vec2F v2P0 = _vP0.m_v2Vert;
 	Vec2F v2P1 = _vP1.m_v2Vert;
@@ -724,6 +727,8 @@ std::vector<Vec2F> FontProcessor::FlattenQuadraticCurve(const TTFVertex& _vP0, c
 	float fA0 = ApproximateInteger(fX0);
 	float fA2 = ApproximateInteger(fX2);
 	
+	//Naive multiplication by the scale here. There's likely a better way to accomplish this same effect mathematically, likely doing the
+	//flattening after scaling the glyphs down. But for now, this hack works, and I will leave it as-is.
 	int iCount = static_cast<int>(Math::Ceiling(0.5f * Math::Abs(fA2 - fA0) * Math::Sqrt((fScale / g_fFlatnessFactor) * _fScale)));
 
 	float fU0 = ApproximateIntegerInv(fA0);

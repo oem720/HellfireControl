@@ -41,8 +41,6 @@ enum class TTFVertexType : uint8_t {
 	CUBIC_CURVE
 };
 
-typedef uint32_t UTF8PaddedChar;
-
 struct TTFCharacterRange {
 	UTF8PaddedChar m_cFirstChar;
 	uint32_t m_u32Count;
@@ -124,7 +122,8 @@ struct TTFGlyphInfo {
 struct TTFBakedGlyphInfo {
 	Vec4F m_v4BoundingBox;
 	float m_fAdvanceWidth = 0.0f;
-	float m_fLeftSideBearing = 0.0f;
+	float m_fHorizontalShift = 0.0f;
+	float m_fVerticalShift = 0.0f;
 };
 
 struct TTFEdge {

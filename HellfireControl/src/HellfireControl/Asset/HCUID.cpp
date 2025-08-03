@@ -1,5 +1,5 @@
 
-#include <HellfireControl/Asset/GUID.hpp>
+#include <HellfireControl/Asset/HCUID.hpp>
 
 #include <HellfireControl/Core/File.hpp>
 
@@ -22,25 +22,25 @@ uint64_t HashString(const std::string& _strValue) {
 	return u64Hash;
 }
 
-GUID::GUID() {
+HCUID::HCUID() {
 	upper = 0;
 	lower = 0;
 }
 
-bool GUID::operator==(const GUID& _gOther) const {
+bool HCUID::operator==(const HCUID& _gOther) const {
 	return upper == _gOther.upper && lower == _gOther.lower;
 }
 
-bool GUID::operator!=(const GUID& _gOther) const {
+bool HCUID::operator!=(const HCUID& _gOther) const {
 	return upper != _gOther.upper || lower != _gOther.lower;
 }
 
-GUID::operator std::string() const {
+HCUID::operator std::string() const {
 	return AsString();
 }
 
-GUID GUID::ConstructRandom() {
-	GUID gId;
+HCUID HCUID::ConstructRandom() {
+	HCUID gId;
 
 	uint64_t u64Time = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count());
 
@@ -50,8 +50,8 @@ GUID GUID::ConstructRandom() {
 	return gId;
 }
 
-GUID GUID::ConstructFromFilepath(const std::string& _strFilepath) {
-	GUID gId;
+HCUID HCUID::ConstructFromFilepath(const std::string& _strFilepath) {
+	HCUID gId;
 
 	gId.upper = HashString(_strFilepath);
 	gId.lower = HashLong(gId.upper);
@@ -59,8 +59,8 @@ GUID GUID::ConstructFromFilepath(const std::string& _strFilepath) {
 	return gId;
 }
 
-GUID GUID::ConstructFromGUIDString(const std::string& _strGUID) {
-	GUID gId;
+HCUID HCUID::ConstructFromGUIDString(const std::string& _strGUID) {
+	HCUID gId;
 
 	uint32_t u32NextByte = 0;
 
@@ -71,7 +71,7 @@ GUID GUID::ConstructFromGUIDString(const std::string& _strGUID) {
 		}
 
 		if (u32NextByte >= 16 || !CheckValidHexChar(_strGUID[leftNdx]) || !CheckValidHexChar(_strGUID[leftNdx])) {
-			std::cerr << "WARNING: Attempted to parse bad GUID!\n";
+			std::cerr << "WARNING: Attempted to parse bad HCUID!\n";
 
 			gId.upper = 0;
 			gId.lower = 0;
@@ -83,7 +83,7 @@ GUID GUID::ConstructFromGUIDString(const std::string& _strGUID) {
 	}
 
 	if (u32NextByte < 16) {
-		std::cerr << "WARNING: Attempted to parse bad GUID!\n";
+		std::cerr << "WARNING: Attempted to parse bad HCUID!\n";
 
 		gId.upper = 0;
 		gId.lower = 0;
@@ -92,7 +92,7 @@ GUID GUID::ConstructFromGUIDString(const std::string& _strGUID) {
 	return gId;
 }
 
-std::string GUID::AsString() const {
+std::string HCUID::AsString() const {
 	std::stringstream ssString;
 
 	ssString << *this;
@@ -100,11 +100,11 @@ std::string GUID::AsString() const {
 	return ssString.str();
 }
 
-bool GUID::IsValid() const {
+bool HCUID::IsValid() const {
 	return (upper > 0 && lower > 0) && (lower == HashLong(upper));
 }
 
-uint8_t GUID::HexDigitToChar(char _cDigit) {
+uint8_t HCUID::HexDigitToChar(char _cDigit) {
 	if (_cDigit > 47 && _cDigit < 58) {
 		return _cDigit - 48;
 	}
@@ -121,17 +121,17 @@ uint8_t GUID::HexDigitToChar(char _cDigit) {
 	return 0;
 }
 
-uint8_t GUID::HexPairToChar(char _cLeft, char _cRight) {
+uint8_t HCUID::HexPairToChar(char _cLeft, char _cRight) {
 	return HexDigitToChar(_cLeft) * 16 + HexDigitToChar(_cRight);
 }
 
-bool GUID::CheckValidHexChar(char _cDigit) {
+bool HCUID::CheckValidHexChar(char _cDigit) {
 	return (_cDigit > 47 && _cDigit < 58) ||
 		(_cDigit > 64 && _cDigit < 71) ||
 		(_cDigit > 96 && _cDigit < 103);
 }
 
-std::ostream& operator<<(std::ostream& _sStream, const GUID& _gID) {
+std::ostream& operator<<(std::ostream& _sStream, const HCUID& _gID) {
 	std::ios_base::fmtflags fFormat(_sStream.flags());
 
 	_sStream << std::hex << std::setfill('0');
@@ -149,36 +149,6 @@ std::ostream& operator<<(std::ostream& _sStream, const GUID& _gID) {
 	return _sStream;
 }
 
-File& operator<<(File& _fFile, const GUID& _gID) {
-	//Disgusting hack to get GUIDs to print as a string.
-	if (_fFile.IsBinary()) {
-		_fFile << _gID.upper;
-		_fFile << _gID.lower;
-	}
-	else {
-		_fFile << _gID.AsString();
-	}
-
-	return _fFile;
-}
-
-File& operator>>(File& _fFile, GUID& _gID) {
-
-	if (_fFile.IsBinary()) {
-		_fFile >> _gID.upper;
-		_fFile >> _gID.lower;
-	}
-	else {
-		std::string strGUID;
-
-		_fFile >> strGUID;
-
-		_gID = GUID::ConstructFromGUIDString(strGUID);
-	}
-
-	return _fFile;
-}
-
-bool operator<(const GUID& _gLeft, const GUID& _gRight) {
+bool operator<(const HCUID& _gLeft, const HCUID& _gRight) {
 	return _gLeft.upper < _gRight.upper && _gLeft.lower < _gRight.lower;
 }

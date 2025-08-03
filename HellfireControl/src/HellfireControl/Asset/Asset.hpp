@@ -1,13 +1,12 @@
 #pragma once
 
 #include <HellfireControl/Core/Common.hpp>
+#include <HellfireControl/Core/File.hpp>
 
-//#include <HellfireControl/Asset/GUID.hpp>
+#include <HellfireControl/Asset/HCUID.hpp>
 
 class Asset
 {
 protected:
-	//GUID m_gId;
-public:
-	virtual ~Asset() = 0 {};
+	HCUID m_gId;
 };

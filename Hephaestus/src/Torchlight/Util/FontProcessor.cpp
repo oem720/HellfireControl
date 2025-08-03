@@ -27,9 +27,9 @@ Font FontProcessor::ProcessFont(const std::string& _strFilepath, uint16_t _u16Fo
 
 	Vec2F v2BitmapSize = GetFontAtlasSize(vGlyphData, fiInfo);
 
-	Image iBitmap(static_cast<uint32_t>(v2BitmapSize.x), static_cast<uint32_t>(v2BitmapSize.y));
+	ImageRGB8 iBitmap(static_cast<uint32_t>(v2BitmapSize.x), static_cast<uint32_t>(v2BitmapSize.y));
 
-	TTFGlyphInfo testGlyph = GetGlyphInfo(fFontFile, fiInfo, fiInfo.m_cmCMap[0x014E]);
+	TTFGlyphInfo testGlyph = GetGlyphInfo(fFontFile, fiInfo, fiInfo.m_cmCMap[0x1E9E]);
 
 	TTFBakedGlyphInfo testGlyphInfo;
 	float spacing = 0;
@@ -492,7 +492,7 @@ Vec2F FontProcessor::GetFontAtlasSize(std::vector<TTFGlyphInfo>& vGlyphData, TTF
 	return Vec2F(static_cast<float>(u32Width), static_cast<float>(u32Height));
 }
 
-TTFBakedGlyphInfo FontProcessor::DrawGlyph(Image& _iBitmap, const TTFGlyphInfo& _tGlyphData, const Vec2F& _v2Location, const float _fScale) {
+TTFBakedGlyphInfo FontProcessor::DrawGlyph(ImageRGB8& _iBitmap, const TTFGlyphInfo& _tGlyphData, const Vec2F& _v2Location, const float _fScale) {
 	Vec4F v4BoundingBox = CalculateScaledBoundingVolume(_v2Location, _tGlyphData.m_v2Min, _tGlyphData.m_v2Max, _fScale);
 
 	std::vector<TTFEdge> vEdges = PackAndFlattenContours(_tGlyphData, v4BoundingBox, _fScale);
@@ -593,7 +593,7 @@ TTFBakedGlyphInfo FontProcessor::DrawGlyph(Image& _iBitmap, const TTFGlyphInfo& 
 	return {
 		.m_v4BoundingBox = v4BoundingBox,
 		.m_fAdvanceWidth = Math::Ceiling(static_cast<float>(_tGlyphData.m_u16AdvanceWidth) * _fScale),
-		.m_fLeftSideBearing = Math::Ceiling(static_cast<float>(_tGlyphData.m_i16LeftSideBearing) * _fScale)
+		.m_fHorizontalShift = Math::Ceiling(static_cast<float>(_tGlyphData.m_i16LeftSideBearing) * _fScale)
 	};
 }
 

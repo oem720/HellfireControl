@@ -59,6 +59,8 @@
 #include <set>
 #include <limits>
 
+typedef uint32_t UTF8PaddedChar;
+
 //Generic Platform Handles
 typedef uint64_t WindowHandleGeneric;
 

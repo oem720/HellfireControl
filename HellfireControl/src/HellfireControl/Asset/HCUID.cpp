@@ -70,7 +70,7 @@ HCUID HCUID::ConstructFromGUIDString(const std::string& _strGUID) {
 			rightNdx++; //If we hit a -, nudge one character
 		}
 
-		if (u32NextByte >= 16 || !CheckValidHexChar(_strGUID[leftNdx]) || !CheckValidHexChar(_strGUID[leftNdx])) {
+		if (u32NextByte >= 16 || !CheckValidHexChar(_strGUID[leftNdx]) || !CheckValidHexChar(_strGUID[rightNdx])) {
 			std::cerr << "WARNING: Attempted to parse bad HCUID!\n";
 
 			gId.upper = 0;

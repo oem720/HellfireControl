@@ -7,10 +7,18 @@ enum FileOpenFlag : uint8_t {
 	FILE_OPEN_FLAG_BINARY = 2U,
 	FILE_OPEN_FLAG_READ = 4U,
 	FILE_OPEN_FLAG_WRITE = 8U,
-	FILE_OPEN_FLAG_BLOB = 16U,
-	FILE_OPEN_FLAG_APPEND = 32U,
-	FILE_OPEN_FLAG_BEGIN_AT_END = 64U,
-	FILE_OPEN_FLAG_DEFAULT = 45U
+	FILE_OPEN_FLAG_APPEND = 16U,
+	FILE_OPEN_FLAG_BEGIN_AT_END = 32U,
+	FILE_OPEN_FLAG_DEFAULT = FILE_OPEN_FLAG_ASCII | FILE_OPEN_FLAG_READ
+};
+
+enum FileDelimiter : char {
+	FILE_DELIMITER_SPACE = ' ',
+	FILE_DELIMITER_NEWLINE = '\n',
+	FILE_DELIMITER_TAB = '\t',
+	FILE_DELIMITER_COMMA = ',',
+	FILE_DELIMITER_SEMICOLON = ';',
+	FILE_DELIMITER_QUOTE = '\"'
 };
 
 class File {
@@ -19,10 +27,6 @@ private:
 
 	std::fstream m_fStream;
 
-	std::vector<char> m_vDataBlob;
-
-	char* m_ptrBlobPointer = nullptr;
-
 	uint8_t m_fofFlags = FILE_OPEN_FLAG_DEFAULT;
 
 	uint32_t m_u32ASCIIScopeCounter = 0U;
@@ -30,18 +34,6 @@ private:
 	int ResolveFileFlags();
 
 	void OpenFile(int _iFlags);
-
-	void ExtractFileBlob();
-
-	std::string ParseLine(const std::function<const bool(char&)>& _funcCondition);
-
-	void ReadBinary(void* _ptrvDest, size_t _sNumBytes);
-
-	void WriteBinary(const void* _ptrvSrc, size_t _sNumBytes);
-
-	void ReadASCII(std::string& _strDest);
-
-	void WriteASCII(const std::string& _strVal);
 
 	template<typename T, HC_SFINAE_REQUIRE_NUMERIC(T)>
 	HC_INLINE void ConvertToNumericValue(const std::string& _strVal, T& _output) {
@@ -73,27 +65,31 @@ public:
 
 	void ChangeOpenFile(const std::string& _strFilename, uint8_t _fofFlags = FILE_OPEN_FLAG_DEFAULT);
 
-	void SignalStartOfStructure();
-
-	void SignalEndOfStructure();
-
 	void Close();
 
 	[[nodiscard]] HC_INLINE std::string GetFileExtension() const { return m_pthFilepath.extension().string(); }
 
 	[[nodiscard]] HC_INLINE std::string GetFileName() const { return m_pthFilepath.filename().string(); }
 
-	[[nodiscard]] HC_INLINE const std::vector<char>& GetFileBlob() { return m_vDataBlob; }
+	[[nodiscard]] HC_INLINE bool IsOpen() const { return m_fStream.is_open(); }
 
-	[[nodiscard]] HC_INLINE bool IsOpen() const { return m_fStream.is_open() || m_ptrBlobPointer; }
-
-	[[nodiscard]] HC_INLINE bool AtEOF() const { return m_fStream.eof() || m_ptrBlobPointer == m_vDataBlob.end()._Ptr; }
+	[[nodiscard]] HC_INLINE bool AtEOF() const { return m_fStream.eof(); }
 
 	[[nodiscard]] HC_INLINE bool IsBinary() const { return m_fofFlags & FILE_OPEN_FLAG_BINARY; }
 
-	[[nodiscard]] HC_INLINE size_t ReaderLocation() { return m_fofFlags & FILE_OPEN_FLAG_BLOB ? static_cast<size_t>(m_ptrBlobPointer - &m_vDataBlob[0]) : static_cast<size_t>(m_fStream.tellg()); }
+	[[nodiscard]] HC_INLINE size_t ReaderLocation() { return static_cast<size_t>(m_fStream.tellg()); }
+
+	[[nodiscard]] std::vector<uint8_t> ExtractFileBlob();
 
 	void AdvanceBytes(int64_t _i64Distance);
 
 	void GoToByte(size_t _sLocation);
+
+	void Write(const void* _pData, size_t _sBytes);
+
+	void Read(void* _pData, size_t _sBytes);
+
+	void WriteLine(const void* _pData, size_t _sBytes, FileDelimiter _fdDelim);
+	
+	void ReadLine(void* _pData, size_t _sBytes, FileDelimiter _fdDelim);
 };

@@ -19,6 +19,8 @@
 #define HC_CONVERT_TO_VERSION_NO(_variant, _major, _minor, _patch)  ((((uint64_t)(_variant)) << 29U) | (((uint64_t)(_major)) << 22U) | (((uint64_t)(_minor)) << 12U) | ((uint64_t)(_patch)))
 //Engine Version No.
 #define HC_ENGINE_VERSION HC_CONVERT_TO_VERSION_NO(1, 1, 0, 0)
+//File Format Version No.
+#define HC_FILE_FORMAT_VERSION_NUMBER(major, minor) (static_cast<uint16_t>((major)) << 8) | static_cast<uint16_t>((minor))
 
 //Defines for commonly used math functions
 #define HC_PI 3.14159265358979323846f

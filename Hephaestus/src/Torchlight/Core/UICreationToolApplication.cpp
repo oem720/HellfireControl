@@ -7,7 +7,7 @@
 
 #include <HellfireControl/Asset/Font.hpp>
 
-#include <Torchlight/Util/FontProcessor.hpp>
+#include <HellfireControl/Asset/Converters/Font/FontProcessor.hpp>
 
 void UICreationToolApplication::Start() {
 	m_wWindow = Window(m_strApplicationName, WINDOWED, Vec2F(800, 600), Vec2F(0, 0));
@@ -44,12 +44,18 @@ void UICreationToolApplication::Run() {
 
 	Buffer uniformBuffer(BufferType::UNIFORM_BUFFER, &ubdData, sizeof(UniformBufferData), 1, m_prsRenderer->GetRenderContextID(CONTEXT_TYPE_3D));
 
-	FontProcessor::ProcessFont("./Assets/Fonts/JetBrainsMono-Bold.ttf", 15);
-	//FontProcessor::ProcessFont("./Assets/Fonts/arial.ttf", 32);
-	//FontProcessor::ProcessFont("./Assets/Fonts/Sniglet.ttf");
-	//FontProcessor::ProcessFont("./Assets/Fonts/RobotoSlab-Bold.ttf", 60);
-	//FontProcessor::ProcessFont("./Assets/Fonts/calibri.ttf");
-	//FontProcessor::ProcessFont("./Assets/Fonts/Envy Code R.ttf");
+	Font fFont = FontProcessor::ProcessFont("./Assets/Fonts/JetBrainsMono-Bold.ttf", 15);
+	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/JetBrainsMono-Bold.hcgrf", fFont);
+	fFont = FontProcessor::ProcessFont("./Assets/Fonts/arial.ttf", 32);
+	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/arial.hcgrf", fFont);
+	fFont = FontProcessor::ProcessFont("./Assets/Fonts/Sniglet.ttf");
+	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/sniglet.hcgrf", fFont);
+	fFont = FontProcessor::ProcessFont("./Assets/Fonts/RobotoSlab-Bold.ttf", 60);
+	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/RobotoSlab-Bold.hcgrf", fFont);
+	//Font fFont = FontProcessor::ProcessFont("./Assets/Fonts/calibri.ttf");
+	//FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/calibri.hcgrf", fFont);
+	fFont = FontProcessor::ProcessFont("./Assets/Fonts/Envy Code R.ttf");
+	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/Envy_Code_R.hcgrf", fFont);
 
 	while (!m_wWindow.CloseRequested()) {
 		m_wWindow.PollEvents();

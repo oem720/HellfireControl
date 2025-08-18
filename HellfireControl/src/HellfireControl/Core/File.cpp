@@ -1,21 +1,12 @@
 
 #include <HellfireControl/Core/File.hpp>
 
-#define HC_DELIMITER_WHITESPACE ' '
-#define HC_DELIMITER_TAB '\t'
-#define HC_DELIMITER_NEWLINE '\n'
-#define HC_DELIMITER_STR_SEP '\"'
-
 File::File(const std::string& _strFilename, uint8_t _fofFlags) {
 	m_pthFilepath = _strFilename;
 
 	m_fofFlags = _fofFlags;
 
 	OpenFile(ResolveFileFlags());
-
-	if (m_fofFlags & FILE_OPEN_FLAG_BLOB) {
-		ExtractFileBlob();
-	}
 }
 
 File::~File() {
@@ -32,65 +23,57 @@ void File::ChangeOpenFile(const std::string& _strFilename, uint8_t _fofFlags) {
 	m_fofFlags = _fofFlags;
 
 	OpenFile(ResolveFileFlags());
-
-	if (m_fofFlags & FILE_OPEN_FLAG_BLOB) {
-		ExtractFileBlob();
-	}
-}
-
-void File::SignalStartOfStructure() {
-	if (m_fofFlags & FILE_OPEN_FLAG_BINARY) {
-		return; //Ignore the command when in binary mode.
-	}
-
-	for (int iCount = 0; iCount < m_u32ASCIIScopeCounter; ++iCount) {
-		m_fStream << "\t"; //Add a tab for every scope currently active
-	}
-
-	m_u32ASCIIScopeCounter++; //Increment the scope counter
-}
-
-void File::SignalEndOfStructure() {
-	if (m_fofFlags & FILE_OPEN_FLAG_BINARY || m_u32ASCIIScopeCounter == 0) {
-		return; //Ignore the command when in binary mode or when there is no active scope.
-	}
-
-	m_fStream.seekg(-1, std::ios_base::cur); //Go back one character.
-
-	m_fStream << "\n"; //Insert new line character
-
-	m_u32ASCIIScopeCounter--; //Decrement the scope counter.
 }
 
 void File::Close() {
 	m_fStream.close();
-	m_vDataBlob.clear();
 
 	m_pthFilepath = "";
 	m_fofFlags = 0;
 }
 
-void File::GoToByte(size_t _sLocation){
-	if (m_fofFlags & FILE_OPEN_FLAG_BLOB) {
-		m_ptrBlobPointer = (&m_vDataBlob[0]) + _sLocation;
+void File::GoToByte(size_t _sLocation){	
+	if (m_fStream.fail()) {
+		//TODO: more robust error handling.
+		m_fStream.clear();
 	}
-	else {
-		if (m_fStream.fail()) {
-			//TODO: more robust error handling.
-			m_fStream.clear();
-		}
 
-		m_fStream.seekg(_sLocation);
+	m_fStream.seekg(_sLocation);
+}
+
+void File::Write(const void* _pData, size_t _sBytes) {
+	m_fStream.write(reinterpret_cast<const char*>(_pData), _sBytes);
+}
+
+void File::Read(void* _pData, size_t _sBytes) {
+	m_fStream.read(reinterpret_cast<char*>(_pData), _sBytes);
+}
+
+void File::WriteLine(const void* _pData, size_t _sBytes, FileDelimiter _fdDelim) {
+	if (_fdDelim == FILE_DELIMITER_QUOTE) {
+		m_fStream << _fdDelim; //Put a quote at the front as well, denotes a string in text files.
 	}
+
+	m_fStream.write(reinterpret_cast<const char*>(_pData), _sBytes);
+
+	m_fStream << _fdDelim;
+}
+
+void File::ReadLine(void* _pData, size_t _sBytes, FileDelimiter _fdDelim) {
+	std::string dataBuffer;
+
+	std::getline(m_fStream, dataBuffer, static_cast<char>(_fdDelim));
+
+	memcpy_s(_pData, _sBytes, dataBuffer.c_str(), dataBuffer.size());
 }
 
 void File::AdvanceBytes(int64_t _i64Distance) {
-	if (m_fofFlags & FILE_OPEN_FLAG_BLOB) { 
-		m_ptrBlobPointer += _i64Distance;
+	if (m_fStream.fail()) {
+		//TODO: more robust error handling.
+		m_fStream.clear();
 	}
-	else {
-		m_fStream.seekg(m_fStream.tellg() + _i64Distance);
-	}
+
+	m_fStream.seekg(m_fStream.tellg() + _i64Distance);
 }
 
 int File::ResolveFileFlags() {
@@ -116,14 +99,6 @@ int File::ResolveFileFlags() {
 		iOpenFlags |= std::ios_base::ate;
 	}
 
-	if (m_fofFlags & FILE_OPEN_FLAG_BLOB) { //Blobs require that no writing be enabled and that they must always begin at end.
-		iOpenFlags &= ~(std::ios_base::out | std::ios_base::app);
-		iOpenFlags |= (std::ios_base::in | std::ios_base::ate);
-
-		m_fofFlags &= ~(FILE_OPEN_FLAG_WRITE | FILE_OPEN_FLAG_APPEND); //Thanks to implementaiton-defined values, this must be separate.
-		m_fofFlags |= (FILE_OPEN_FLAG_READ | FILE_OPEN_FLAG_BEGIN_AT_END);
-	}
-
 	return iOpenFlags;
 }
 
@@ -138,72 +113,16 @@ void File::OpenFile(int _iFlags) {
 	m_fStream.exceptions(std::ios_base::badbit);
 }
 
-void File::ExtractFileBlob() {
+std::vector<uint8_t> File::ExtractFileBlob() {
+	std::vector<uint8_t> vBlob;
+
 	size_t sFileSize = static_cast<size_t>(m_fStream.tellg());
-	m_vDataBlob.resize(sFileSize);
+	vBlob.resize(sFileSize);
 
 	m_fStream.seekg(0);
-	m_fStream.read(m_vDataBlob.data(), sFileSize);
+	m_fStream.read(reinterpret_cast<char*>(vBlob.data()), sFileSize);
 
 	m_fStream.close();
 
-	m_ptrBlobPointer = &m_vDataBlob[0];
-}
-
-std::string File::ParseLine(const std::function<const bool(char&)>& _funcCondition) {
-	bool bInQuotes = false;
-	char cNext;
-
-	std::string strOutput;
-
-	while (_funcCondition(cNext)) {
-		if (cNext == HC_DELIMITER_TAB && !bInQuotes) {
-			continue;
-		}
-
-		if ((cNext == HC_DELIMITER_WHITESPACE || cNext == HC_DELIMITER_NEWLINE) && !bInQuotes) {
-			break;
-		}
-
-		if (cNext == HC_DELIMITER_STR_SEP) {
-			bInQuotes = !bInQuotes;
-			continue;
-		}
-
-		strOutput.push_back(cNext);
-	}
-
-	return strOutput;
-}
-
-void File::ReadBinary(void* _ptrvDest, size_t _sNumBytes) {
-	if (m_fofFlags & FILE_OPEN_FLAG_BLOB) {
-		if ((m_ptrBlobPointer + _sNumBytes > m_vDataBlob.end()._Ptr)) {
-			std::cerr << "WARNING: Attempted to read past the file memory bounds!";
-			return;
-		}
-
-		memcpy(_ptrvDest, m_ptrBlobPointer, _sNumBytes); //Memcpy from the blob.
-
-		m_ptrBlobPointer += _sNumBytes; //Advance the read pointer
-	}
-	else {
-		m_fStream.read(reinterpret_cast<char*>(_ptrvDest), _sNumBytes);
-	}
-}
-
-void File::WriteBinary(const void* _ptrvSrc, size_t _sNumBytes) {
-	m_fStream.write(reinterpret_cast<const char*>(_ptrvSrc), _sNumBytes);
-}
-
-void File::ReadASCII(std::string& _strDest) {
-	std::function<const bool(char&)> funcTuple = (m_fofFlags & FILE_OPEN_FLAG_BLOB) ?
-		std::function<const bool(char&)>([&](char& _cNext) -> const bool { return (_cNext = *m_ptrBlobPointer++, m_ptrBlobPointer != m_vDataBlob.end()._Ptr); }) :
-		std::function<const bool(char&)>([&](char& _cNext) -> const bool { return (m_fStream.get(_cNext), !m_fStream.eof()); });
-
-	_strDest = ParseLine(funcTuple);
-}
-
-void File::WriteASCII(const std::string& _strVal) {
-	m_fStream << _strVal << HC_DELIMITER_WHITESPACE;
+	return vBlob;
 }

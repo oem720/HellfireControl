@@ -9,12 +9,16 @@
 
 #include <HellfireControl/Asset/Converters/Font/FontProcessor.hpp>
 
+#include <HellfireControl/Asset/AssetManager.hpp>
+
 void UICreationToolApplication::Start() {
 	m_wWindow = Window(m_strApplicationName, WINDOWED, Vec2F(800, 600), Vec2F(0, 0));
 
 	m_prsRenderer = RenderingSubsystem::GetInstance();
+	m_pamManager = AssetManager::GetInstance();
 
 	m_prsRenderer->Init(m_strApplicationName, m_wWindow.GetNativeWindowHandle(), CONTEXT_TYPE_3D);
+	m_pamManager->Init();
 
 	const std::vector<VertexSimple> vVertices = {
 		{ Vec3F(-0.5f, -0.5f, 0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(1.0f, 0.0f) },
@@ -44,7 +48,7 @@ void UICreationToolApplication::Run() {
 
 	Buffer uniformBuffer(BufferType::UNIFORM_BUFFER, &ubdData, sizeof(UniformBufferData), 1, m_prsRenderer->GetRenderContextID(CONTEXT_TYPE_3D));
 
-	Font fFont = FontProcessor::ProcessFont("./Assets/Fonts/JetBrainsMono-Bold.ttf", 15);
+	/*Font fFont = FontProcessor::ProcessFont("./Assets/Fonts/JetBrainsMono-Bold.ttf", 15);
 	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/JetBrainsMono-Bold.hcgrf", fFont);
 	fFont = FontProcessor::ProcessFont("./Assets/Fonts/arial.ttf", 32);
 	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/arial.hcgrf", fFont);
@@ -52,10 +56,12 @@ void UICreationToolApplication::Run() {
 	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/sniglet.hcgrf", fFont);
 	fFont = FontProcessor::ProcessFont("./Assets/Fonts/RobotoSlab-Bold.ttf", 60);
 	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/RobotoSlab-Bold.hcgrf", fFont);
-	//Font fFont = FontProcessor::ProcessFont("./Assets/Fonts/calibri.ttf");
-	//FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/calibri.hcgrf", fFont);
+	fFont = FontProcessor::ProcessFont("./Assets/Fonts/calibri.ttf");
+	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/calibri.hcgrf", fFont);
 	fFont = FontProcessor::ProcessFont("./Assets/Fonts/Envy Code R.ttf");
-	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/Envy_Code_R.hcgrf", fFont);
+	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/Envy_Code_R.hcgrf", fFont);*/
+
+	auto asset = m_pamManager->GetAsset(HCUID::ConstructFromGUIDString("62b0-7ce3-1ea9-4122-505b-8c0d-596a-c0b7"));
 
 	while (!m_wWindow.CloseRequested()) {
 		m_wWindow.PollEvents();
@@ -70,6 +76,7 @@ void UICreationToolApplication::Run() {
 
 void UICreationToolApplication::End() {
 	m_prsRenderer->Cleanup();
+	m_pamManager->Cleanup();
 
 	m_wWindow.Cleanup();
 }

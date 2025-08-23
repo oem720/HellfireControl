@@ -91,7 +91,7 @@ TTFTableDirectoryEntry FindTable(File& _fFontFile, uint16_t _u16TableCount, uint
 CharacterMap ReadCMapFormat4(File& _fFontFile);
 CharacterMap ReadCMapFormat12(File& _fFontFile);
 
-FontInfo FontParser::InitializeFont(File& _fFontFile, float _fFontHeightPoints) {
+FontInfo FontTTFParser::InitializeFont(File& _fFontFile, float _fFontHeightPoints) {
 	if (!IsValidFont(_fFontFile)) {
 		throw std::runtime_error("ERROR! INVALID FONT PROVIDED!");
 	}
@@ -181,7 +181,7 @@ FontInfo FontParser::InitializeFont(File& _fFontFile, float _fFontHeightPoints) 
     return fiInfo;
 }
 
-GlyphInfo FontParser::GetGlyphInfo(File& _fFontFile, const FontInfo& _fiInfo, uint32_t _u32GlyphIndex) {
+GlyphInfo FontTTFParser::GetGlyphInfo(File& _fFontFile, const FontInfo& _fiInfo, uint32_t _u32GlyphIndex) {
 	GlyphInfo giGlyph;
 
 	if (_u32GlyphIndex < _fiInfo.m_u16NumOfLongHorMetrics) {
@@ -317,7 +317,7 @@ GlyphInfo FontParser::GetGlyphInfo(File& _fFontFile, const FontInfo& _fiInfo, ui
 	return giGlyph;
 }
 
-std::vector<uint8_t> FontParser::GetCoordinateFlags(File& _fFontFile, size_t sVertexCount)
+std::vector<uint8_t> FontTTFParser::GetCoordinateFlags(File& _fFontFile, size_t sVertexCount)
 {
 	std::vector<uint8_t> vFlags(sVertexCount);
 
@@ -338,7 +338,7 @@ std::vector<uint8_t> FontParser::GetCoordinateFlags(File& _fFontFile, size_t sVe
 	return vFlags;
 }
 
-std::vector<Vec2F> FontParser::GetCoordinates(File& _fFontFile, const size_t sVertexCount, const std::vector<uint8_t>& vFlags)
+std::vector<Vec2F> FontTTFParser::GetCoordinates(File& _fFontFile, const size_t sVertexCount, const std::vector<uint8_t>& vFlags)
 {
 	std::vector<Vec2F> vVertices(sVertexCount);
 
@@ -373,8 +373,12 @@ std::vector<Vec2F> FontParser::GetCoordinates(File& _fFontFile, const size_t sVe
 	return vVertices;
 }
 
-std::vector<TTFVertex> FontParser::PackVertices(const std::vector<uint16_t>& _vContourEndPoints, const std::vector<Vec2F>& _vCoordinates, const std::vector<uint8_t>& _vFlags) {
+std::vector<TTFVertex> FontTTFParser::PackVertices(const std::vector<uint16_t>& _vContourEndPoints, const std::vector<Vec2F>& _vCoordinates, const std::vector<uint8_t>& _vFlags) {
 	std::vector<TTFVertex> vVertices;
+
+	if (_vCoordinates.size() < 2) {
+		return vVertices;
+	}
 
 	int iStartPoint = 0;
 	for (int iNdx = 0; iNdx < _vContourEndPoints.size(); ++iNdx) {
@@ -396,7 +400,7 @@ std::vector<TTFVertex> FontParser::PackVertices(const std::vector<uint16_t>& _vC
 	return vVertices;
 }
 
-std::vector<TTFVertex> FontParser::PackContourVertices(const std::vector<Vec2F>& _vContourCoords, const std::vector<uint8_t>& _vContourFlags) {
+std::vector<TTFVertex> FontTTFParser::PackContourVertices(const std::vector<Vec2F>& _vContourCoords, const std::vector<uint8_t>& _vContourFlags) {
 	std::vector<TTFVertex> vPackedVertices;
 
 	//First we find our starting point for the contour. This is equivalent to the first on-curve point,

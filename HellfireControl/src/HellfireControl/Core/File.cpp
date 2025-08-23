@@ -6,6 +6,8 @@ File::File(const std::string& _strFilename, uint8_t _fofFlags) {
 
 	m_fofFlags = _fofFlags;
 
+	m_bNewFile = !std::filesystem::exists(_strFilename);
+
 	OpenFile(ResolveFileFlags());
 }
 
@@ -39,6 +41,7 @@ void File::GoToByte(size_t _sLocation){
 	}
 
 	m_fStream.seekg(_sLocation);
+	m_fStream.clear();
 }
 
 void File::Write(const void* _pData, size_t _sBytes) {
@@ -67,6 +70,20 @@ void File::ReadLine(void* _pData, size_t _sBytes, FileDelimiter _fdDelim) {
 	memcpy_s(_pData, _sBytes, dataBuffer.c_str(), dataBuffer.size());
 }
 
+void File::WriteLine(const std::string& _strData, FileDelimiter _fdDelim) {
+	if (_fdDelim == FILE_DELIMITER_QUOTE) {
+		m_fStream << _fdDelim; //Put a quote at the front as well, denotes a string in text files.
+	}
+
+	m_fStream.write(_strData.data(), _strData.size());
+
+	m_fStream << _fdDelim;
+}
+
+void File::ReadLine(std::string& _strData, FileDelimiter _fdDelim) {
+	std::getline(m_fStream, _strData, static_cast<char>(_fdDelim));
+}
+
 void File::AdvanceBytes(int64_t _i64Distance) {
 	if (m_fStream.fail()) {
 		//TODO: more robust error handling.
@@ -74,6 +91,7 @@ void File::AdvanceBytes(int64_t _i64Distance) {
 	}
 
 	m_fStream.seekg(m_fStream.tellg() + _i64Distance);
+	m_fStream.clear();
 }
 
 int File::ResolveFileFlags() {
@@ -103,6 +121,20 @@ int File::ResolveFileFlags() {
 }
 
 void File::OpenFile(int _iFlags) {
+	if (_iFlags & (std::ios_base::out | std::ios_base::in) && !std::filesystem::exists(m_pthFilepath)) {
+		//Here we manually create a new empty file. This is because R/W files do not get created
+		//properly, while simple W files do. This is a bit of a hack, but whatever.
+		std::fstream fNewFile(m_pthFilepath, std::ios_base::out);
+
+		if (!fNewFile.is_open()) {
+			throw std::runtime_error("ERROR: Failed to create new file! Filepath: " + m_pthFilepath.string());
+		}
+
+		fNewFile.close();
+
+		m_bNewFile = true;
+	}
+
 	m_fStream = std::fstream(m_pthFilepath, _iFlags);
 
 	if (!m_fStream.is_open()) {

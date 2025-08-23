@@ -5,8 +5,7 @@
 
 #include <HellfireControl/Asset/HCUID.hpp>
 
-class Asset
-{
-protected:
-	HCUID m_gId;
+class Asset {
+public:
+	virtual void Initialize() = 0;
 };

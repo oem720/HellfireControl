@@ -58,7 +58,7 @@ struct GlyphInfo {
 	std::vector<TTFVertex> m_vVerts;
 };
 
-class FontParser {
+class FontTTFParser {
 public:
 	static FontInfo InitializeFont(File& _fFontFile, float _fFontHeightPoints);
 	static GlyphInfo GetGlyphInfo(File& _fFontFile, const FontInfo& _fiInfo, uint32_t _u32GlyphIndex);

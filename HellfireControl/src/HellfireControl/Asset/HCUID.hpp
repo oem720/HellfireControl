@@ -34,10 +34,6 @@ public:
 
 	HCUID& operator=(HCUID&& _gOther) = default;
 
-	bool operator==(const HCUID& _gOther) const;
-
-	bool operator!=(const HCUID& _gOther) const;
-
 	operator std::string() const;
 
 	static HCUID ConstructRandom();

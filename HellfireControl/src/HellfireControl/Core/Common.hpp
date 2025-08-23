@@ -46,6 +46,7 @@
 #define HC_USE_SIMD 0
 #define HC_ENABLE_DOUBLE_PRECISION 1
 #define HC_USE_ROTOR 1
+#define HC_EDITOR 1
 
 #define HC_USE_VULKAN 1
 #define HC_USE_OPENGL 0

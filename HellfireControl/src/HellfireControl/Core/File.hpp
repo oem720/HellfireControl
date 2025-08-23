@@ -29,7 +29,7 @@ private:
 
 	uint8_t m_fofFlags = FILE_OPEN_FLAG_DEFAULT;
 
-	uint32_t m_u32ASCIIScopeCounter = 0U;
+	bool m_bNewFile = false;
 
 	int ResolveFileFlags();
 
@@ -57,7 +57,7 @@ private:
 	}
 
 public:
-	File() = delete;
+	File() {}
 
 	File(const std::string& _strFilename, uint8_t _fofFlags = FILE_OPEN_FLAG_DEFAULT);
 
@@ -70,6 +70,8 @@ public:
 	[[nodiscard]] HC_INLINE std::string GetFileExtension() const { return m_pthFilepath.extension().string(); }
 
 	[[nodiscard]] HC_INLINE std::string GetFileName() const { return m_pthFilepath.filename().string(); }
+
+	[[nodiscard]] HC_INLINE bool IsNewlyCreated() const { return m_bNewFile; }
 
 	[[nodiscard]] HC_INLINE bool IsOpen() const { return m_fStream.is_open(); }
 
@@ -92,4 +94,8 @@ public:
 	void WriteLine(const void* _pData, size_t _sBytes, FileDelimiter _fdDelim);
 	
 	void ReadLine(void* _pData, size_t _sBytes, FileDelimiter _fdDelim);
+
+	void WriteLine(const std::string& _strData, FileDelimiter _fdDelim);
+
+	void ReadLine(std::string& _strData, FileDelimiter _fdDelim);
 };

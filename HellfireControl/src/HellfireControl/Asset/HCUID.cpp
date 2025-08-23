@@ -27,14 +27,6 @@ HCUID::HCUID() {
 	lower = 0;
 }
 
-bool HCUID::operator==(const HCUID& _gOther) const {
-	return upper == _gOther.upper && lower == _gOther.lower;
-}
-
-bool HCUID::operator!=(const HCUID& _gOther) const {
-	return upper != _gOther.upper || lower != _gOther.lower;
-}
-
 HCUID::operator std::string() const {
 	return AsString();
 }
@@ -150,5 +142,5 @@ std::ostream& operator<<(std::ostream& _sStream, const HCUID& _gID) {
 }
 
 bool operator<(const HCUID& _gLeft, const HCUID& _gRight) {
-	return _gLeft.upper < _gRight.upper && _gLeft.lower < _gRight.lower;
+	return _gLeft.upper < _gRight.upper;
 }

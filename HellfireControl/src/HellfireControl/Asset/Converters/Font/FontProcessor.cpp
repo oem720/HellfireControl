@@ -4,17 +4,21 @@
 #include <HellfireControl/Asset/Converters/Font/FontParser.hpp>
 #include <HellfireControl/Asset/Converters/Font/FontRasterizer.hpp>
 
+#include <HellfireControl/Asset/AssetManifest.hpp>
+
 #include <HellfireControl/Core/Image.hpp>
 
 Font FontProcessor::ProcessFont(const std::string& _strFilepath, uint16_t _u16FontSize, FontType _ftType) {
 	File fFontFile(_strFilepath, FILE_OPEN_FLAG_READ | FILE_OPEN_FLAG_BINARY);
 
-	FontInfo fiInfo = FontParser::InitializeFont(fFontFile, static_cast<float>(_u16FontSize));
+	FontInfo fiInfo = FontTTFParser::InitializeFont(fFontFile, static_cast<float>(_u16FontSize));
 
 	std::map<UTF8PaddedChar, GlyphInfo> mGlyphData;
 
+	uint16_t spaceIndex = fiInfo.m_cmCMap[static_cast<UTF8PaddedChar>(' ')];
+
 	for (const auto& aGlyphPair : fiInfo.m_cmCMap) {
-		mGlyphData[aGlyphPair.first] = FontParser::GetGlyphInfo(fFontFile, fiInfo, aGlyphPair.second);
+		mGlyphData[aGlyphPair.first] = FontTTFParser::GetGlyphInfo(fFontFile, fiInfo, aGlyphPair.second);
 	}
 
 	std::vector<ImageRGB8> vBitmaps;
@@ -46,39 +50,13 @@ enum HCGRFFlags : uint8_t {
 	SEGMENTED_ATLAS = (1 << 4)
 };
 
-constexpr uint32_t HC_GRF_MAGIC_NUMBER = 1179797320U;
-
-struct HCGRFHeader {
-	uint32_t m_u32MagicNumber;
-	uint16_t m_u16Version;
-	uint8_t m_u8Flags;
-	uint8_t m_u8DirectorySize;
-};
-
-struct HCGRFTableDirectoryEntry {
-	char m_cTag[4];
-	uint32_t m_u32Offset;
-};
-
-struct HCGRFCMapEntry {
-	uint32_t m_u32StartCode;
-	uint32_t m_u32CodeCount;
-	uint32_t m_u32GlyphIndex;
-};
-
-struct HCGRFImageDescriptor {
-	uint32_t m_u32ImageWidth;
-	uint32_t m_u32ImageHeight;
-	uint8_t m_u8NumChannels;
-};
-
 void OrderBoundingVolumes(std::map<UTF8PaddedChar, BakedGlyphBoxInfo>& _mMap, std::vector<HCGRFCMapEntry>& _vOutMap, std::vector<BakedGlyphBoxInfo>& _vOutOrderedBVs);
 
 HCUID FontProcessor::SaveFontToDisk(const std::string& _strFilepath, const Font& _fFontData) {
 	File fFileDest(_strFilepath, FILE_OPEN_FLAG_WRITE | FILE_OPEN_FLAG_BINARY);
 
 	HCGRFHeader hHeader = {
-		.m_u32MagicNumber = HC_GRF_MAGIC_NUMBER,
+		.m_u32MagicNumber = HC_FONT_IDENTIFIER,
 		.m_u16Version = HC_FILE_FORMAT_VERSION_NUMBER(0, 1),
 		.m_u8Flags = IS_BITMAP,
 		.m_u8DirectorySize = 3
@@ -114,8 +92,13 @@ HCUID FontProcessor::SaveFontToDisk(const std::string& _strFilepath, const Font&
 
 	fFileDest.Close();
 
-	//TODO: Add this GUID to the asset manifest before returning it.
-	return HCUID::ConstructFromFilepath(_strFilepath);
+	HCUID gId = HCUID::ConstructFromFilepath(_strFilepath);
+
+	std::cout << gId << std::endl;
+
+	AssetManifest::GetInstance()->SetManifestEntry(gId, _strFilepath);
+
+	return gId;
 }
 
 void OrderBoundingVolumes(std::map<UTF8PaddedChar, BakedGlyphBoxInfo>& _mMap, std::vector<HCGRFCMapEntry>& _vOutMap, std::vector<BakedGlyphBoxInfo>& _vOutOrderedBVs) {

@@ -87,6 +87,8 @@ public:
 
 	void GoToByte(size_t _sLocation);
 
+	HC_INLINE void GoToStart() { GoToByte(0); }
+
 	void Write(const void* _pData, size_t _sBytes);
 
 	void Read(void* _pData, size_t _sBytes);

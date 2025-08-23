@@ -49,19 +49,24 @@ void UICreationToolApplication::Run() {
 	Buffer uniformBuffer(BufferType::UNIFORM_BUFFER, &ubdData, sizeof(UniformBufferData), 1, m_prsRenderer->GetRenderContextID(CONTEXT_TYPE_3D));
 
 	/*Font fFont = FontProcessor::ProcessFont("./Assets/Fonts/JetBrainsMono-Bold.ttf", 15);
-	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/JetBrainsMono-Bold.hcgrf", fFont);
+	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/JetBrainsMono-Bold15.hcgrf", fFont);
 	fFont = FontProcessor::ProcessFont("./Assets/Fonts/arial.ttf", 32);
-	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/arial.hcgrf", fFont);
+	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/arial32.hcgrf", fFont);
 	fFont = FontProcessor::ProcessFont("./Assets/Fonts/Sniglet.ttf");
-	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/sniglet.hcgrf", fFont);
+	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/sniglet12.hcgrf", fFont);
 	fFont = FontProcessor::ProcessFont("./Assets/Fonts/RobotoSlab-Bold.ttf", 60);
-	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/RobotoSlab-Bold.hcgrf", fFont);
+	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/RobotoSlab-Bold60.hcgrf", fFont);
 	fFont = FontProcessor::ProcessFont("./Assets/Fonts/calibri.ttf");
-	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/calibri.hcgrf", fFont);
+	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/calibri12.hcgrf", fFont);
 	fFont = FontProcessor::ProcessFont("./Assets/Fonts/Envy Code R.ttf");
-	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/Envy_Code_R.hcgrf", fFont);*/
+	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/Envy_Code_R12.hcgrf", fFont);*/
 
-	auto asset = m_pamManager->GetAsset(HCUID::ConstructFromGUIDString("62b0-7ce3-1ea9-4122-505b-8c0d-596a-c0b7"));
+	auto aJetBrains = m_pamManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/JetBrainsMono-Bold15.hcgrf"));
+	auto aArial = m_pamManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/arial32.hcgrf"));
+	auto aSniglet = m_pamManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/sniglet12.hcgrf"));
+	auto aRobotoSlab = m_pamManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/RobotoSlab-Bold60.hcgrf"));
+	auto aCalibri = m_pamManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/calibri12.hcgrf"));
+	auto aEnvyCode = m_pamManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/Envy_Code_R12.hcgrf"));
 
 	while (!m_wWindow.CloseRequested()) {
 		m_wWindow.PollEvents();

@@ -1,38 +1,8 @@
 #pragma once
 
-#include <HellfireControl/Asset/AssetCommon.hpp>
+#include <HellfireControl/Asset/Converters/Font/FontCommon.hpp>
 
 #include <HellfireControl/Asset/Font.hpp>
-
-struct HCGRFHeader {
-	uint32_t m_u32MagicNumber;
-	uint16_t m_u16Version;
-	uint8_t m_u8Flags;
-	uint8_t m_u8DirectorySize;
-};
-
-struct HCGRFTableDirectoryEntry {
-	char m_cTag[4];
-	uint32_t m_u32Offset;
-};
-
-struct HCGRFCMapEntry {
-	uint32_t m_u32StartCode;
-	uint32_t m_u32CodeCount;
-	uint32_t m_u32GlyphIndex;
-};
-
-struct HCGRFImageDescriptor {
-	uint32_t m_u32ImageWidth;
-	uint32_t m_u32ImageHeight;
-	uint8_t m_u8NumChannels;
-};
-
-
-struct CharacterRange {
-	UTF8PaddedChar m_cFirstChar;
-	uint32_t m_u32Count;
-};
 
 class FontProcessor {
 public:

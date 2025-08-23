@@ -1,8 +1,6 @@
 #pragma once
 
-#include <HellfireControl/Core/Common.hpp>
-#include <HellfireControl/Math/Math.hpp>
-#include <HellfireControl/Core/File.hpp>
+#include <HellfireControl/Asset/Converters/Font/FontCommon.hpp>
 
 struct TTFTableDirectoryEntry {
 	uint32_t m_u32Checksum = 0;
@@ -34,20 +32,6 @@ struct FontInfo {
 	float m_fFontSize = 0.0f; //TEMPORARY!!!!
 	float m_fScaleFactor = 0.0f;
 	CharacterMap m_cmCMap;
-};
-
-//These are inspired by the STB implementation.
-enum class TTFVertexType : uint8_t {
-	CONTOUR_START,
-	LINE_SEGMENT,
-	QUADRATIC_CURVE,
-	CUBIC_CURVE
-};
-
-struct TTFVertex {
-	Vec2F m_v2Vert;
-	uint8_t m_u8Flags = 0;
-	TTFVertexType m_vtType = TTFVertexType::CONTOUR_START;
 };
 
 struct GlyphInfo {

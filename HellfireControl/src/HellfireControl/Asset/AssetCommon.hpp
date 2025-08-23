@@ -1,18 +1,13 @@
 #pragma once
 
 #include <HellfireControl/Core/Common.hpp>
+#include <HellfireControl/Core/File.hpp>
 #include <HellfireControl/Math/Math.hpp>
 #include <HellfireControl/Asset/Asset.hpp>
 
 class AssetParser {
 public:
 	virtual std::shared_ptr<Asset> Parse(File& _fAssetFile) const = 0;
-};
-
-enum FontType : uint8_t {
-	FONT_BITMAP = 0,
-	FONT_SINGLE_CHANNEL_SDF = 1,
-	FONT_MULTI_CHANNEL_SDF = 2
 };
 
 struct BakedGlyphBoxInfo {

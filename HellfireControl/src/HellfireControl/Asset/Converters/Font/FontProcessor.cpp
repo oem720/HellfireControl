@@ -42,14 +42,6 @@ Font FontProcessor::ProcessFont(const std::string& _strFilepath, std::vector<Cha
 	return Font();
 }
 
-enum HCGRFFlags : uint8_t {
-	IS_COMPRESSED = (1 << 0),
-	IS_BITMAP = (1 << 1),
-	IS_SINGLE_CHANNEL = (1 << 2),
-	IS_MULTI_CHANNEL = (1 << 3),
-	SEGMENTED_ATLAS = (1 << 4)
-};
-
 void OrderBoundingVolumes(std::map<UTF8PaddedChar, BakedGlyphBoxInfo>& _mMap, std::vector<HCGRFCMapEntry>& _vOutMap, std::vector<BakedGlyphBoxInfo>& _vOutOrderedBVs);
 
 HCUID FontProcessor::SaveFontToDisk(const std::string& _strFilepath, const Font& _fFontData) {
@@ -66,17 +58,21 @@ HCUID FontProcessor::SaveFontToDisk(const std::string& _strFilepath, const Font&
 	std::vector<HCGRFCMapEntry> vCMap;
 	std::vector<BakedGlyphBoxInfo> vOrderedBVs;
 	OrderBoundingVolumes(mCharacterMapCopy, vCMap, vOrderedBVs);
+	uint32_t u32SegmentCount = vCMap.size();
+	uint32_t u32BoundingVolumeCount = vOrderedBVs.size();
 
 	//TODO: Change this to be based on the settings of the font. This may include the GAST table as well.
 	HCGRFTableDirectoryEntry tdeCmap = { .m_cTag = {'c', 'm', 'a', 'p'}, .m_u32Offset = sizeof(HCGRFHeader) + (sizeof(HCGRFTableDirectoryEntry) * 3) };
-	HCGRFTableDirectoryEntry tdeUvbv = { .m_cTag = {'u', 'v', 'b', 'v'}, .m_u32Offset = tdeCmap.m_u32Offset + static_cast<uint32_t>(vCMap.size() * sizeof(HCGRFCMapEntry)) };
-	HCGRFTableDirectoryEntry tdeImag = { .m_cTag = {'i', 'm', 'a', 'g'}, .m_u32Offset = tdeUvbv.m_u32Offset + static_cast<uint32_t>(vOrderedBVs.size() * sizeof(BakedGlyphBoxInfo)) };
+	HCGRFTableDirectoryEntry tdeUvbv = { .m_cTag = {'u', 'v', 'b', 'v'}, .m_u32Offset = tdeCmap.m_u32Offset + static_cast<uint32_t>(vCMap.size() * sizeof(HCGRFCMapEntry)) + sizeof(uint32_t)};
+	HCGRFTableDirectoryEntry tdeImag = { .m_cTag = {'i', 'm', 'a', 'g'}, .m_u32Offset = tdeUvbv.m_u32Offset + static_cast<uint32_t>(vOrderedBVs.size() * sizeof(BakedGlyphBoxInfo)) + sizeof(uint32_t) };
 
 	fFileDest.Write(&hHeader, sizeof(HCGRFHeader));
 	fFileDest.Write(&tdeCmap, sizeof(HCGRFTableDirectoryEntry));
 	fFileDest.Write(&tdeUvbv, sizeof(HCGRFTableDirectoryEntry));
 	fFileDest.Write(&tdeImag, sizeof(HCGRFTableDirectoryEntry));
+	fFileDest.Write(&u32SegmentCount, sizeof(uint32_t));
 	fFileDest.Write(vCMap.data(), sizeof(HCGRFCMapEntry) * vCMap.size());
+	fFileDest.Write(&u32BoundingVolumeCount, sizeof(uint32_t));
 	fFileDest.Write(vOrderedBVs.data(), sizeof(BakedGlyphBoxInfo) * vOrderedBVs.size());
 	
 	for (const ImageRGB8& aImage : _fFontData.m_vAtlases) {

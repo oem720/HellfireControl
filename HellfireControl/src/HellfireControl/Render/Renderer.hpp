@@ -24,6 +24,10 @@ private:
 
 	RenderingSubsystem() {}
 public:
+	RenderingSubsystem(RenderingSubsystem& _other) = delete;
+
+	void operator=(const RenderingSubsystem& _other) = delete;
+
 	static RenderingSubsystem* GetInstance();
 
 	void Init(const std::string& _strAppName, uint64_t _u64WindowHandle, uint8_t _u8ActiveContextIDs);

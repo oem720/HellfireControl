@@ -6,8 +6,12 @@
 
 namespace Util {
     [[nodiscard]] std::wstring ConvertToWString(const std::string& _strConvert) {
-        return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(_strConvert);
+        return std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t>().from_bytes(_strConvert);
     }
+
+	[[nodiscard]] std::string ConvertFromWString(const std::wstring& _strConvert) {
+		return std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t>().to_bytes(_strConvert);
+	}
 
 	[[nodiscard]] std::vector<char> ReadFile(const std::string& _strFilename) {
 		std::ifstream fFile(_strFilename, std::ios::ate | std::ios::binary);

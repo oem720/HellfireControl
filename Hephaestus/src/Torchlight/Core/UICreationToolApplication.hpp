@@ -3,12 +3,14 @@
 #include <HellfireControl/Core/Application.hpp>
 
 class RenderingSubsystem;
+class AssetManager;
 
 struct BufferHandleGeneric;
 
 class UICreationToolApplication : public Application {
 private:
 	RenderingSubsystem* m_prsRenderer = nullptr;
+	AssetManager* m_pamManager = nullptr;
 
 	void Start();
 

@@ -101,8 +101,8 @@ std::vector<std::string> RenderingSubsystem::GetShaderFileNames(uint8_t _rctType
 	switch (_rctType) {
 	case CONTEXT_TYPE_3D: {
 		return {
-			"../../Assets/Shaders/Vulkan/test_vert.spv",
-			"../../Assets/Shaders/Vulkan/test_frag.spv"
+			"./Assets/Shaders/Vulkan/test_vert.spv",
+			"./Assets/Shaders/Vulkan/test_frag.spv"
 		};
 	} break;
 	}

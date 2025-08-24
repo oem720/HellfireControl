@@ -21,6 +21,9 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio")
         string(REPLACE "/" "\\" _source_path_msvc "${_source_path_msvc}")
         source_group("${_source_path_msvc}" FILES "${_source}")
     endforeach()
+
+    set_property(TARGET Torchlight PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+
 endif()
 
 target_include_directories(Torchlight PUBLIC src)
@@ -29,7 +32,7 @@ target_include_directories(Torchlight PUBLIC ../HellfireControl/src)
 if(WIN32)
 	target_include_directories(Torchlight PUBLIC $ENV{VULKAN_SDK}/Include/)
 	target_link_directories(Torchlight PUBLIC $ENV{VULKAN_SDK}/Lib/)
-	target_link_libraries(Torchlight PUBLIC vulkan-1.lib)
+	target_link_libraries(Torchlight PUBLIC vulkan-1.lib;comctl32.lib;propsys.lib;shlwapi.lib)
 endif(WIN32)
 
 target_link_libraries(Torchlight PUBLIC HellfireCore)

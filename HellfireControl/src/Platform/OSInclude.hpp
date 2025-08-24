@@ -14,6 +14,10 @@
 #include <Platform/Windows/WinVkSurface.hpp>
 #endif
 
+#ifdef HC_INCLUDE_FILE_DIALOG
+#include <Platform/Windows/WinFileDialog.hpp>
+#endif
+
 #else
 
 #endif

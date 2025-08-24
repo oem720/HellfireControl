@@ -145,7 +145,6 @@ void PlatformRenderer::BeginRenderPass() {
 	};
 
 	vkCmdBeginRenderPass(cbBuffer, &rpbiBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
 }
 
 void PlatformRenderer::Draw(uint32_t _u32ContextID) {
@@ -601,7 +600,7 @@ void PlatformRenderer::CreateFramebuffers() {
 
 void PlatformRenderer::CreateTextureImage() {
 	int iWidth, iHeight, iChannels;
-	stbi_uc* pPixels = stbi_load("../../Assets/Textures/debug_fallback.png", &iWidth, &iHeight, &iChannels, STBI_rgb_alpha);
+	stbi_uc* pPixels = stbi_load("./Assets/Textures/debug_fallback.png", &iWidth, &iHeight, &iChannels, STBI_rgb_alpha);
 
 	VkDeviceSize dsSize = static_cast<uint64_t>(iWidth) * static_cast<uint64_t>(iHeight) * 4U;
 

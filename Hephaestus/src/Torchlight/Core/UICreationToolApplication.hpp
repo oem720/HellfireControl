@@ -2,24 +2,19 @@
 
 #include <HellfireControl/Core/Application.hpp>
 
-class RenderingSubsystem;
+class RenderManager;
 class AssetManager;
-
-struct BufferHandleGeneric;
 
 class UICreationToolApplication : public Application {
 private:
-	RenderingSubsystem* m_prsRenderer = nullptr;
-	AssetManager* m_pamManager = nullptr;
+	RenderManager* m_prmRenderManager = nullptr;
+	AssetManager* m_pamAssetManager = nullptr;
 
 	void Start();
 
 	void End();
 
-	void UpdateUniformBuffer(const BufferHandleGeneric& _bhgHandle);
-
 public:
-
 	UICreationToolApplication() : Application("Torchlight", AppType::WINDOWED) {}
 
 	void Run();

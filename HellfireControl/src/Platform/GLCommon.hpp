@@ -11,6 +11,8 @@
 
 #define HC_MAX_FRAMES_IN_FLIGHT 3
 
+#define HC_INCLUDE_SURFACE_VK
+
 #include <vulkan/vulkan.h>
 
 #elif HC_USE_OPENGL && !HC_USE_VULKAN

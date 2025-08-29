@@ -1,52 +1,26 @@
 
 #include <Torchlight/Core/UICreationToolApplication.hpp>
 
-#include <Platform/Vulkan/VkUtil.hpp> //Hack to get hard coded values working. This will be fixed when vertices are moved to their own file.
+#include <HellfireControl/Render/RenderManager.hpp>
 
-#include <HellfireControl/Render/Renderer.hpp>
+#include <HellfireControl/Asset/AssetManager.hpp>
 
 #include <HellfireControl/Asset/Font.hpp>
 
 #include <HellfireControl/Asset/Converters/Font/FontProcessor.hpp>
 
-#include <HellfireControl/Asset/AssetManager.hpp>
-
 void UICreationToolApplication::Start() {
 	m_wWindow = Window(m_strApplicationName, WINDOWED, Vec2F(800, 600), Vec2F(0, 0));
 
-	m_prsRenderer = RenderingSubsystem::GetInstance();
-	m_pamManager = AssetManager::GetInstance();
+	m_prmRenderManager = RenderManager::GetInstance();
+	m_pamAssetManager = AssetManager::GetInstance();
 
-	m_prsRenderer->Init(m_strApplicationName, m_wWindow.GetNativeWindowHandle(), CONTEXT_TYPE_3D);
-	m_pamManager->Init();
-
-	const std::vector<VertexSimple> vVertices = {
-		{ Vec3F(-0.5f, -0.5f, 0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(1.0f, 0.0f) },
-		{ Vec3F(0.5f, -0.5f, 0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(0.0f, 0.0f) },
-		{ Vec3F(0.5f, 0.5f, 0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(0.0f, 1.0f) },
-		{ Vec3F(-0.5f, 0.5f, 0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(1.0f, 1.0f) },
-
-		{ Vec3F(-0.5f, -0.5f, -0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(1.0f, 0.0f) },
-		{ Vec3F(0.5f, -0.5f, -0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(0.0f, 0.0f) },
-		{ Vec3F(0.5f, 0.5f, -0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(0.0f, 1.0f) },
-		{ Vec3F(-0.5f, 0.5f, -0.25f), Vec3F(1.0f, 1.0f, 1.0f), Vec2F(1.0f, 1.0f) }
-	};
-
-	const std::vector<uint16_t> vIndices = {
-		0, 1, 2, 2, 3, 0,
-		4, 5, 6, 6, 7, 4
-	};
-
-	Buffer vertexBuffer(BufferType::VERTEX_BUFFER, vVertices.data(), sizeof(VertexSimple), vVertices.size(), m_prsRenderer->GetRenderContextID(CONTEXT_TYPE_3D));
-	Buffer indexBuffer(BufferType::INDEX_BUFFER, vIndices.data(), sizeof(uint16_t), vIndices.size(), m_prsRenderer->GetRenderContextID(CONTEXT_TYPE_3D));
+	m_prmRenderManager->Init(m_strApplicationName, HC_ENGINE_VERSION, m_wWindow.GetNativeWindowHandle());
+	m_pamAssetManager->Init();
 }
 
 void UICreationToolApplication::Run() {
 	this->Start();
-
-	UniformBufferData ubdData = {};
-
-	Buffer uniformBuffer(BufferType::UNIFORM_BUFFER, &ubdData, sizeof(UniformBufferData), 1, m_prsRenderer->GetRenderContextID(CONTEXT_TYPE_3D));
 
 	/*Font fFont = FontProcessor::ProcessFont("./Assets/Fonts/JetBrainsMono-Bold.ttf", 15);
 	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/JetBrainsMono-Bold15.hcgrf", fFont);
@@ -61,43 +35,23 @@ void UICreationToolApplication::Run() {
 	fFont = FontProcessor::ProcessFont("./Assets/Fonts/Envy Code R.ttf");
 	FontProcessor::SaveFontToDisk("./Assets/Fonts/TestOutput/Envy_Code_R12.hcgrf", fFont);*/
 
-	auto aJetBrains = m_pamManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/JetBrainsMono-Bold15.hcgrf"));
-	auto aArial = m_pamManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/arial32.hcgrf"));
-	auto aSniglet = m_pamManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/sniglet12.hcgrf"));
-	auto aRobotoSlab = m_pamManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/RobotoSlab-Bold60.hcgrf"));
-	auto aCalibri = m_pamManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/calibri12.hcgrf"));
-	auto aEnvyCode = m_pamManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/Envy_Code_R12.hcgrf"));
+	auto aJetBrains = m_pamAssetManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/JetBrainsMono-Bold15.hcgrf"));
+	auto aArial = m_pamAssetManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/arial32.hcgrf"));
+	auto aSniglet = m_pamAssetManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/sniglet12.hcgrf"));
+	auto aRobotoSlab = m_pamAssetManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/RobotoSlab-Bold60.hcgrf"));
+	auto aCalibri = m_pamAssetManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/calibri12.hcgrf"));
+	auto aEnvyCode = m_pamAssetManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/Envy_Code_R12.hcgrf"));
 
-	while (!m_wWindow.CloseRequested()) {
+	/*while (!m_wWindow.CloseRequested()) {
 		m_wWindow.PollEvents();
-
-		UpdateUniformBuffer(uniformBuffer.GetBufferHandle()); //TEMPORARY ! ! !
-
-		m_prsRenderer->RenderFrame();
-	}
+	}*/
 
 	this->End();
 }
 
 void UICreationToolApplication::End() {
-	m_prsRenderer->Cleanup();
-	m_pamManager->Cleanup();
+	m_pamAssetManager->Cleanup();
+	m_prmRenderManager->Cleanup();
 
 	m_wWindow.Cleanup();
-}
-
-void UICreationToolApplication::UpdateUniformBuffer(const BufferHandleGeneric& _bhgHandle) {
-	static auto aStartTime = std::chrono::high_resolution_clock::now();
-	auto aCurrentTime = std::chrono::high_resolution_clock::now();
-	float fTime = std::chrono::duration<float, std::chrono::seconds::period>(aCurrentTime - aStartTime).count();
-
-	Vec2F v2RenderableArea = m_prsRenderer->GetRenderableExtents();
-
-	UniformBufferData ubdData = {
-		.m_mModel = RotateZGlobalDeg(fTime * HC_DEG2RAD(90.0f) * 15.0f, IdentityF()),
-		.m_mView = Inverse(LookAtLH(Vec3F(1.0f, 1.0f, 1.0f), Vec3F(0.0f, 0.0f, 0.0f), Vec3F(0.0f, 0.0f, 1.0f))),
-		.m_mProj = ProjectionF(v2RenderableArea.x / v2RenderableArea.y, HC_DEG2RAD(45.0f), 0.1f, 10.0f)
-	};
-
-	Buffer(_bhgHandle).Update(&ubdData, sizeof(UniformBufferData), 1);
 }

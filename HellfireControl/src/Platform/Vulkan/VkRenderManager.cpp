@@ -10,9 +10,6 @@
 #include <HellfireControl/Core/Window.hpp>
 
 #pragma region Static Members
-RenderManager* RenderManager::m_prsInstancePtr = nullptr;
-bool RenderManager::m_bFramebufferInvalid = false;
-
 uint32_t VkRenderManager::m_u32CurrentFrame = 0;
 std::array<VkClearValue, 2> VkRenderManager::m_arrClearValues = {};
 
@@ -74,8 +71,8 @@ void RenderManager::InitPlatformObjects(const std::string& _strAppName, uint32_t
 	VkRenderManager::CreateSyncObjects();
 }
 
-void RenderFrame() {
-
+void RenderManager::PresentFrame() {
+	//TODO: Run the final renderpass where we collate the inputs
 }
 
 void RenderManager::CleanupPlatformObjects() {

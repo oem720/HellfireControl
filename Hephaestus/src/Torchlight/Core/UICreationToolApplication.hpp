@@ -4,11 +4,13 @@
 
 class RenderManager;
 class AssetManager;
+class UIManager;
 
 class UICreationToolApplication : public Application {
 private:
 	RenderManager* m_prmRenderManager = nullptr;
 	AssetManager* m_pamAssetManager = nullptr;
+	UIManager* m_pumUIManager = nullptr;
 
 	void Start();
 

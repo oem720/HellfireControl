@@ -9,6 +9,8 @@
 
 //Required Includes (will not be replaced)
 #include <thread>
+#include <condition_variable>
+#include <mutex>
 #include <fstream>
 #include <filesystem>
 #include <functional>
@@ -21,6 +23,8 @@
 #define HC_ENGINE_VERSION HC_CONVERT_TO_VERSION_NO(1, 1, 0, 0)
 //File Format Version No.
 #define HC_FILE_FORMAT_VERSION_NUMBER(major, minor) (static_cast<uint16_t>((major)) << 8) | static_cast<uint16_t>((minor))
+//Engine ref tag
+#define HC_CREATE_32BIT_TAG(char1, char2, char3, char4) (static_cast<uint32_t>(char4) << 24) | (static_cast<uint32_t>(char3) << 16) | (static_cast<uint32_t>(char2) << 8) | static_cast<uint32_t>(char1)
 
 //Defines for commonly used math functions
 #define HC_PI 3.14159265358979323846f
@@ -32,7 +36,10 @@
 #define HC_DEG2RAD(_val) ((_val) * HC_PI / 180.0f)
 #define HC_FLOAT_COMPARE(_val1, _val2) fabsf(_val1 - _val2) < HC_EPSILON
 #define HC_DOUBLE_COMPARE(_val1, _val2) fabs(_val1 - _val2) < HC_EPSILON
+#define HC_MAX(_val1, _val2) (_val1 > _val2) ? _val1 : _val2
+#define HC_MIN(_val1, _val2) (_val1 < _val2) ? _val1 : _val2
 
+//SFINAE
 #define HC_SFINAE_REQUIRE_NUMERIC(_typename) typename = typename std::enable_if<std::disjunction<std::is_integral<_typename>, std::is_floating_point<_typename>>::value>::type
 #define HC_SFINAE_REQUIRE_INTEGER(_typename) typename = typename std::enable_if<std::is_integral<_typename>::value>::type
 #define HC_SFINAE_REQUIRE_FLOATING_POINT(_typename) typename = typename std::enable_if<std::is_floating_point<_typename>::value>::type
@@ -42,11 +49,12 @@
 #define HC_VECTORCALL __vectorcall
 #define HC_ALIGNAS(_val) alignas((_val))
 
-//Defines for engine conditionals
+//Engine Level Defines
 #define HC_USE_SIMD 0
 #define HC_ENABLE_DOUBLE_PRECISION 1
 #define HC_USE_ROTOR 1
 #define HC_EDITOR 1
+#define HC_ABSOLUTE_THREAD_MAX 100
 
 #define HC_USE_VULKAN 1
 #define HC_USE_OPENGL 0
@@ -56,10 +64,11 @@
 #include <vector>
 #include <array>
 #include <list>
+#include <queue>
 #include <map>
 #include <unordered_map>
-#include <optional>
 #include <set>
+#include <optional>
 #include <limits>
 
 typedef uint32_t UTF8PaddedChar;
@@ -67,7 +76,7 @@ typedef uint32_t UTF8PaddedChar;
 //Generic Platform Handles
 typedef uint64_t WindowHandleGeneric;
 
-//TODO Move all enums to their own file!
+//TODO: Move all enums to their own file!
 enum DialogAllowedFileTypes : uint64_t {
 	JPEG = 0x1,
 	PNG = 0x2,

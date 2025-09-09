@@ -19,6 +19,6 @@ struct BakedGlyphBoxInfo {
 };
 
 enum AssetMagicNumbers : uint32_t {
-	HC_MANIFEST_IDENTIFIER = 1229865293U,
-	HC_FONT_IDENTIFIER = 1179797320U,
+	HC_MANIFEST_IDENTIFIER = HC_CREATE_32BIT_TAG('M', 'A', 'N', 'I'),
+	HC_FONT_IDENTIFIER = HC_CREATE_32BIT_TAG('H', 'G', 'R', 'F'),
 };

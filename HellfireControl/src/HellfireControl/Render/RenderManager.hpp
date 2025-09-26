@@ -8,6 +8,8 @@
 
 #include <HellfireControl/Render/Renderer.hpp>
 
+constexpr int g_iMaxRenderLayerComplexity = 10;
+
 class RenderManager {
 private:
 	WindowHandleGeneric m_whgWindowHandle = 0;
@@ -22,7 +24,7 @@ private:
 
 	static RenderManager* m_prsInstancePtr;
 
-	void InitPlatformObjects(const std::string& _strAppName, uint32_t _u32AppVersion, const Vec4F& _v4ClearColor);
+	void InitPlatformObjects(const std::string& _strAppName, uint32_t _u32AppVersion);
 
 	void PresentFrame();
 
@@ -30,15 +32,13 @@ private:
 
 	std::shared_ptr<Job> RecursiveInitRenderJobs(uint32_t _u32RenderId, int _iDepthLimit, int _iDepth = 0);
 
-	void ExecuteRenderThread(uint32_t _u32RendererTag);
-
 	void CleanupPlatformObjects();
 
 	static void WindowEventHandler(WindowHandleGeneric _whgHandle, const WindowCallbackMessage& _wcmMessage);
 
 	static void MarkSwapchainInvalid() { m_bFramebufferInvalid = true; }
 
-	RenderManager() : m_jmRenderJobManager(HC_MAX(4, (std::thread::hardware_concurrency() >> 2))) {}
+	RenderManager() : m_jmRenderJobManager(HC_MAX(2, (std::thread::hardware_concurrency() >> 2))) {}
 
 public:
 	RenderManager(RenderManager& _other) = delete;
@@ -49,7 +49,7 @@ public:
 
 	void AddRenderer(std::unique_ptr<Renderer> _pRenderer);
 
-	void Init(const std::string& _strAppName, uint32_t _u32AppVersion, WindowHandleGeneric _whgWindowHandle, const Vec4F& _v4ClearColor = Vec4F());
+	void Init(const std::string& _strAppName, uint32_t _u32AppVersion, WindowHandleGeneric _whgWindowHandle);
 
 	void RenderFrame();
 

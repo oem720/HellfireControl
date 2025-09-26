@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.23)
 project(HellfireControl)
 
+include(buildfuncs.cmake)
+
 ADD_DEFINITIONS(-DUNICODE)
 ADD_DEFINITIONS(-D_UNICODE)
 

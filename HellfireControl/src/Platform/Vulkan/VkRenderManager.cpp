@@ -4,6 +4,7 @@
 #if HC_USE_VULKAN
 #include <Platform/Vulkan/VkRenderManager.hpp>
 #include <Platform/Vulkan/VkUtil.hpp>
+#include <Platform/Vulkan/VkRenderer.hpp>
 
 #include <Platform/OSInclude.hpp>
 
@@ -11,7 +12,6 @@
 
 #pragma region Static Members
 uint32_t VkRenderManager::m_u32CurrentFrame = 0;
-std::array<VkClearValue, 2> VkRenderManager::m_arrClearValues = {};
 
 VkInstance VkRenderManager::m_iInstance = VK_NULL_HANDLE;
 VkPhysicalDevice VkRenderManager::m_pdPhysicalDevice = VK_NULL_HANDLE;
@@ -24,30 +24,21 @@ VkCommandPool VkRenderManager::m_cpCommandPool = VK_NULL_HANDLE;
 VkImage VkRenderManager::m_iDepth = VK_NULL_HANDLE;
 VkImageView VkRenderManager::m_ivDepthView = VK_NULL_HANDLE;
 VkDeviceMemory VkRenderManager::m_dmDepthMem = VK_NULL_HANDLE;
-VkRenderPass VkRenderManager::m_rpRenderPass = VK_NULL_HANDLE;
 
 VkFormat VkRenderManager::m_fFormat = {};
 VkExtent2D VkRenderManager::m_eExtent = {};
 
 std::vector<VkImage> VkRenderManager::m_vSwapchainImages = {};
 std::vector<VkImageView> VkRenderManager::m_vSwapchainImageViews = {};
-std::vector<VkFramebuffer> VkRenderManager::m_vSwapchainFramebuffers = {};
 std::vector<VkSemaphore> VkRenderManager::m_vImageAvailableSemaphores = {};
 std::vector<VkSemaphore> VkRenderManager::m_vRenderFinishedSemaphores = {};
 std::vector<VkFence> VkRenderManager::m_vInFlightFences = {};
+
+std::map<uint32_t, std::shared_ptr<VkRenderer>> VkRenderManager::m_mRenderers = {};
 #pragma endregion
 
 #pragma region Engine Interface
-void RenderManager::InitPlatformObjects(const std::string& _strAppName, uint32_t _u32AppVersion, const Vec4F& _v4ClearColor) {
-	VkRenderManager::m_arrClearValues = { 
-		VkClearValue{
-			.color = { _v4ClearColor.x, _v4ClearColor.y, _v4ClearColor.z, _v4ClearColor.w }
-		},
-		VkClearValue{
-			.depthStencil = { 1.0f, 0 }
-		}
-	};
-
+void RenderManager::InitPlatformObjects(const std::string& _strAppName, uint32_t _u32AppVersion) {
 	VkRenderManager::CreateInstance(_strAppName, _u32AppVersion);
 
 	PlatformSurface::CreatePlatformSurface(m_whgWindowHandle, VkRenderManager::m_iInstance, VkRenderManager::m_sSurface);
@@ -63,10 +54,6 @@ void RenderManager::InitPlatformObjects(const std::string& _strAppName, uint32_t
 	VkRenderManager::CreateCommandPool();
 
 	VkRenderManager::CreateDepthResources();
-
-	VkRenderManager::CreateFinalRenderPass();
-
-	VkRenderManager::CreateSwapchainFramebuffers();
 
 	VkRenderManager::CreateSyncObjects();
 }
@@ -87,8 +74,6 @@ void RenderManager::CleanupPlatformObjects() {
 	}
 
 	vkDestroyCommandPool(VkRenderManager::m_dDeviceHandle, VkRenderManager::m_cpCommandPool, nullptr);
-
-	vkDestroyRenderPass(VkRenderManager::m_dDeviceHandle, VkRenderManager::m_rpRenderPass, nullptr);
 
 	vkDestroyDevice(VkRenderManager::m_dDeviceHandle, nullptr);
 
@@ -313,109 +298,6 @@ void VkRenderManager::CreateDepthResources() {
 	SubmitSingleUseCommandBuffer(cbTemp);
 }
 
-void VkRenderManager::CreateFinalRenderPass() {
-	std::array<VkAttachmentDescription, 2> arrAttachments = {
-		VkAttachmentDescription {
-			.flags = 0,
-			.format = m_fFormat,
-			.samples = VK_SAMPLE_COUNT_1_BIT,
-			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-			.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-			.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-			.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-			.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-		},
-		VkAttachmentDescription {
-			.flags = 0,
-			.format = VkUtil::FindDepthFormat(m_pdPhysicalDevice),
-			.samples = VK_SAMPLE_COUNT_1_BIT,
-			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-			.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-			.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-			.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-			.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-			.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-		}
-	};
-
-	VkAttachmentReference arColorRef = {
-		.attachment = 0,
-		.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-	};
-
-	VkAttachmentReference arDepthRef = {
-		.attachment = 1,
-		.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-	};
-
-	VkSubpassDescription sdSubpassDesc = {
-		.flags = 0,
-		.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-		.inputAttachmentCount = 0,
-		.pInputAttachments = nullptr,
-		.colorAttachmentCount = 1,
-		.pColorAttachments = &arColorRef,
-		.pResolveAttachments = 0,
-		.pDepthStencilAttachment = &arDepthRef,
-		.preserveAttachmentCount = 0,
-		.pPreserveAttachments = nullptr
-	};
-
-	VkSubpassDependency sdSubpassDependency = {
-		.srcSubpass = VK_SUBPASS_EXTERNAL,
-		.dstSubpass = 0,
-		.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-		.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-		.srcAccessMask = 0,
-		.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-		.dependencyFlags = 0
-	};
-
-	VkRenderPassCreateInfo rpciRenderPassInfo = {
-		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.attachmentCount = static_cast<uint32_t>(arrAttachments.size()),
-		.pAttachments = arrAttachments.data(),
-		.subpassCount = 1,
-		.pSubpasses = &sdSubpassDesc,
-		.dependencyCount = 1,
-		.pDependencies = &sdSubpassDependency
-	};
-
-	if (vkCreateRenderPass(m_dDeviceHandle, &rpciRenderPassInfo, nullptr, &m_rpRenderPass) != VK_SUCCESS) {
-		throw std::runtime_error("ERROR: Failed to create render pass!");
-	}
-}
-
-void VkRenderManager::CreateSwapchainFramebuffers() {
-	m_vSwapchainFramebuffers.resize(m_vSwapchainImageViews.size());
-
-	for (int ndx = 0; ndx < m_vSwapchainImageViews.size(); ++ndx) {
-		std::array<VkImageView, 2> arrAttachments = {
-			m_vSwapchainImageViews[ndx],
-			m_ivDepthView
-		};
-
-		VkFramebufferCreateInfo fciFramebufferInfo = {
-			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-			.pNext = nullptr,
-			.flags = 0,
-			.renderPass = m_rpRenderPass,
-			.attachmentCount = static_cast<uint32_t>(arrAttachments.size()),
-			.pAttachments = arrAttachments.data(),
-			.width = m_eExtent.width,
-			.height = m_eExtent.height,
-			.layers = 1
-		};
-
-		if (vkCreateFramebuffer(m_dDeviceHandle, &fciFramebufferInfo, nullptr, &m_vSwapchainFramebuffers[ndx]) != VK_SUCCESS) {
-			throw std::runtime_error("ERROR: Failed to create framebuffers!");
-		}
-	}
-}
-
 void VkRenderManager::CreateSyncObjects() {
 	m_vImageAvailableSemaphores.resize(HC_MAX_FRAMES_IN_FLIGHT);
 	m_vRenderFinishedSemaphores.resize(HC_MAX_FRAMES_IN_FLIGHT);
@@ -495,10 +377,6 @@ void VkRenderManager::CleanupSwapchain() {
 
 	vkFreeMemory(m_dDeviceHandle, m_dmDepthMem, nullptr);
 
-	for (auto aFramebuffer : m_vSwapchainFramebuffers) {
-		vkDestroyFramebuffer(m_dDeviceHandle, aFramebuffer, nullptr);
-	}
-
 	for (auto aView : m_vSwapchainImageViews) {
 		vkDestroyImageView(m_dDeviceHandle, aView, nullptr);
 	}
@@ -528,8 +406,6 @@ void VkRenderManager::RecreateSwapchain(WindowHandleGeneric _whgHandle) {
 	CreateSwapchainImageViews();
 
 	CreateDepthResources();
-
-	CreateSwapchainFramebuffers();
 
 	m_u32CurrentFrame = 0;
 }

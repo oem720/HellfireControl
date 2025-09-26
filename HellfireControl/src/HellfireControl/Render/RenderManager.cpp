@@ -31,16 +31,12 @@ void RenderManager::AddRenderer(std::unique_ptr<Renderer> _pRenderer) {
 	m_mRenderers[_pRenderer->GetTag()] = std::move(_pRenderer);
 }
 
-void RenderManager::Init(const std::string& _strAppName, uint32_t _u32AppVersion, WindowHandleGeneric _whgWindowHandle, const Vec4F& _v4ClearColor) {
+void RenderManager::Init(const std::string& _strAppName, uint32_t _u32AppVersion, WindowHandleGeneric _whgWindowHandle) {
 	m_whgWindowHandle = _whgWindowHandle;
 
 	Window(_whgWindowHandle).RegisterEventCallback(WindowEventHandler);
 
-	InitPlatformObjects(_strAppName, _u32AppVersion, _v4ClearColor);
-
-	for (auto& aRenderer : m_mRenderers) {
-		aRenderer.second->Init();
-	}
+	InitPlatformObjects(_strAppName, _u32AppVersion);
 
 	InitRenderJobs();
 }
@@ -65,7 +61,7 @@ void RenderManager::InitRenderJobs() {
 			continue;
 		}
 
-		RecursiveInitRenderJobs(aRenderer.first, 10); //We do this in a loop because we need to ensure that all render jobs are hit.
+		RecursiveInitRenderJobs(aRenderer.first, g_iMaxRenderLayerComplexity); //We do this in a loop because we need to ensure that all render jobs are hit.
 	}
 }
 
@@ -78,7 +74,9 @@ std::shared_ptr<Job> RenderManager::RecursiveInitRenderJobs(uint32_t _u32RenderI
 		return m_mRenderJobs[_u32RenderId];
 	}
 
-	std::shared_ptr<Job> pJob = std::make_shared<Job>([this, _u32RenderId]() { ExecuteRenderThread(_u32RenderId); }, std::vector<std::shared_ptr<Job>>());
+	m_mRenderers[_u32RenderId]->Init();
+
+	std::shared_ptr<Job> pJob = std::make_shared<Job>([this, _u32RenderId]() { m_mRenderers[_u32RenderId]->Render(); }, std::vector<std::shared_ptr<Job>>());
 
 	//Now we need to create the dependencies
 	for (const uint32_t& u32Dependency : m_mRenderers[_u32RenderId]->GetDependencies()) {
@@ -90,11 +88,11 @@ std::shared_ptr<Job> RenderManager::RecursiveInitRenderJobs(uint32_t _u32RenderI
 	return pJob;
 }
 
-void RenderManager::ExecuteRenderThread(uint32_t _u32RendererTag) {
-	m_mRenderers[_u32RendererTag]->Render();
-}
-
 void RenderManager::Cleanup() {
+	for (const auto& aRenderer : m_mRenderers) {
+		aRenderer.second->Cleanup();
+	}
+
 	CleanupPlatformObjects();
 
 	delete m_prsInstancePtr;

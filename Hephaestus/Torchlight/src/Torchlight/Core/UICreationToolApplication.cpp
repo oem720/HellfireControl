@@ -19,19 +19,6 @@ void UICreationToolApplication::Start() {
 	m_pamAssetManager->Init();
 	m_pumUIManager->Init();
 
-	//Manual render layer creation for testing.
-	std::unique_ptr<Renderer> TestRenderer1 = std::make_unique<Renderer>(1, std::vector<uint32_t>(), 0);
-	std::unique_ptr<Renderer> TestRenderer2 = std::make_unique<Renderer>(2, std::vector<uint32_t>(), 0);
-	std::unique_ptr<Renderer> TestRenderer3 = std::make_unique<Renderer>(3, std::vector<uint32_t>(), 0);
-	std::unique_ptr<Renderer> TestRenderer4 = std::make_unique<Renderer>(4, std::vector<uint32_t>(), 0);
-	std::unique_ptr<Renderer> TestRenderer5 = std::make_unique<Renderer>(5, std::vector<uint32_t>(), 0);
-
-	m_prmRenderManager->AddRenderer(std::move(TestRenderer4));
-	m_prmRenderManager->AddRenderer(std::move(TestRenderer2));
-	m_prmRenderManager->AddRenderer(std::move(TestRenderer5));
-	m_prmRenderManager->AddRenderer(std::move(TestRenderer1));
-	m_prmRenderManager->AddRenderer(std::move(TestRenderer3));
-
 	m_prmRenderManager->Init(m_strApplicationName, HC_ENGINE_VERSION, m_wWindow.GetNativeWindowHandle());
 }
 
@@ -58,11 +45,11 @@ void UICreationToolApplication::Run() {
 	auto aCalibri = m_pamAssetManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/calibri12.hcgrf"));
 	auto aEnvyCode = m_pamAssetManager->GetAsset(HCUID::ConstructFromFilepath("./Assets/Fonts/TestOutput/Envy_Code_R12.hcgrf"));
 
-	/*while (!m_wWindow.CloseRequested()) {
-		m_wWindow.PollEvents();
-	}*/
+	//while (!m_wWindow.CloseRequested()) {
+	//	m_wWindow.PollEvents();
 
-	m_prmRenderManager->RenderFrame();
+	//	
+	//}
 
 	this->End();
 }

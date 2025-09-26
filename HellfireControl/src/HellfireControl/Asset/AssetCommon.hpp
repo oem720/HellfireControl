@@ -21,4 +21,5 @@ struct BakedGlyphBoxInfo {
 enum AssetMagicNumbers : uint32_t {
 	HC_MANIFEST_IDENTIFIER = HC_CREATE_32BIT_TAG('M', 'A', 'N', 'I'),
 	HC_FONT_IDENTIFIER = HC_CREATE_32BIT_TAG('H', 'G', 'R', 'F'),
+	HC_SHADER_IDENTIFIER = HC_CREATE_32BIT_TAG('S', 'H', 'A', 'D')
 };

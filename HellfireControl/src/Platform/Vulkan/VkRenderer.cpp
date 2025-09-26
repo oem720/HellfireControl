@@ -6,11 +6,11 @@
 #include <Platform/Vulkan/VkRenderManager.hpp>
 
 void Renderer::Init() {
-
+	
 }
 
 void Renderer::Render() {
-	std::cout << "Running render layer: " << m_u32Tag << "\n";
+	
 }
 
 void Renderer::Cleanup() {

@@ -37,17 +37,17 @@ void TestBlock::ExecuteTests() {
 	Console::Print("\nTesting of block \"" + m_strBlockName + "\" complete. Outputting results:\n");
 	
 	Console::Print("Successful tests: "); 
-	Console::Print(std::to_string(m_u32SuccessfulTests), m_u32SuccessfulTests == m_vTests.size() ? Console::GREEN : Console::RED); //Print the number of tests that passed
+	Console::Print(std::to_string(m_u32SuccessfulTests), m_u32SuccessfulTests == m_vTests.size() ? GREEN : RED); //PrintDebugMessage the number of tests that passed
 	Console::Print(" out of " + std::to_string(m_vTests.size()) + "\n");
 
 	Console::Print("Average time to execute (ns): ");
-	Console::Print(std::to_string(m_fAverageExecutionTimeNs) + " ns\n", Console::YELLOW); //Print time in ns
+	Console::Print(std::to_string(m_fAverageExecutionTimeNs) + " ns\n", YELLOW); //PrintDebugMessage time in ns
 
 	Console::Print("Average time to execute (ms): ");
-	Console::Print(std::to_string(GetAverageExecutionTimeMilliseconds()) + " ms\n", Console::YELLOW); //Print time in ms
+	Console::Print(std::to_string(GetAverageExecutionTimeMilliseconds()) + " ms\n", YELLOW); //PrintDebugMessage time in ms
 
 	Console::Print("Average time to execute (s): ");
-	Console::Print(std::to_string(GetAverageExecutionTimeSeconds()) + " s\n", Console::YELLOW); //Print time in s
+	Console::Print(std::to_string(GetAverageExecutionTimeSeconds()) + " s\n", YELLOW); //PrintDebugMessage time in s
 }
 
 void TestBlock::ClearResults() {

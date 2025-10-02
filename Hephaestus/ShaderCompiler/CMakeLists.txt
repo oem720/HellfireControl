@@ -6,4 +6,4 @@ link_core(ShaderCompiler)
 
 link_vulkan_sdk(ShaderCompiler)
 
-move_working_directory_to_project_root(ShaderCompiler)
+link_vulkan_shader_comp(ShaderCompiler)

@@ -59,11 +59,26 @@ function(link_vulkan_sdk EXEC_NAME)
 	if(WIN32)
 		target_include_directories(${EXEC_NAME} PUBLIC $ENV{VULKAN_SDK}/Include/)
 		target_link_directories(${EXEC_NAME} PUBLIC $ENV{VULKAN_SDK}/Lib/)
-		target_link_libraries(${EXEC_NAME} PUBLIC vulkan-1.lib;comctl32.lib;propsys.lib;shlwapi.lib)
+		target_link_libraries(${EXEC_NAME} PUBLIC vulkan-1.lib;slang.lib;spirv-cross-c.lib;dxcompiler.lib;comctl32.lib;propsys.lib;shlwapi.lib)
+		
 	else()
 		message(FATAL_ERROR "ERROR: Linux and Mac not yet supported! Fix me or pester Owen!")
 	endif()
 	message("-- Linking Vulkan SDK to ${EXEC_NAME} - done")
+endfunction()
+
+function(link_vulkan_shader_comp EXEC_NAME)
+	message("-- Linking Vulkan shader compilation tools to ${EXEC_NAME}")
+	if(WIN32)
+		target_link_libraries(${EXEC_NAME} PUBLIC slang.lib;spirv-cross-c.lib;dxcompiler.lib)
+		target_link_libraries(${EXEC_NAME} PUBLIC
+			$<$<CONFIG:Debug>:shaderc_combinedd.lib>
+			$<$<CONFIG:Release>:shaderc_combined.lib>
+		)
+	else()
+		message(FATAL_ERROR "ERROR: Linux and Mac not yet supported! Fix me or pester Owen!")
+	endif()
+	message("-- Linking Vulkan shader compilation tools to ${EXEC_NAME} - done")
 endfunction()
 
 function(move_working_directory_to_project_root EXEC_NAME)

@@ -90,8 +90,6 @@ HCUID FontProcessor::SaveFontToDisk(const std::string& _strFilepath, const Font&
 
 	HCUID gId = HCUID::ConstructFromFilepath(_strFilepath);
 
-	std::cout << gId << std::endl;
-
 	AssetManifest::GetInstance()->SetManifestEntry(gId, _strFilepath);
 
 	return gId;

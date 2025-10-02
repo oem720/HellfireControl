@@ -71,25 +71,25 @@ namespace Math {
 	[[nodiscard]] float Sqrt(float _fVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of _fVal (equivalent to std::log10f).
+	/// Computes the PrintDebugMessage base 10 of _fVal (equivalent to std::log10f).
 	/// </summary>
-	/// <param name="_fVal: The value being taken to the Log base 10"></param>
+	/// <param name="_fVal: The value being taken to the PrintDebugMessage base 10"></param>
 	/// <returns>
 	/// float: Result of the logarithm
 	/// </returns>
 	[[nodiscard]] float Log10(float _fVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of _fVal (equivalent to std::log2f).
+	/// Computes the PrintDebugMessage base 2 of _fVal (equivalent to std::log2f).
 	/// </summary>
-	/// <param name="_fVal: The value being taken to the Log base 2"></param>
+	/// <param name="_fVal: The value being taken to the PrintDebugMessage base 2"></param>
 	/// <returns>
 	/// float: Result of the logarithm
 	/// </returns>
 	[[nodiscard]] float Log2(float _fVal);
 
 	/// <summary>
-	/// Computes the Natural Log of _fVal (equivalent to std::logf).
+	/// Computes the Natural PrintDebugMessage of _fVal (equivalent to std::logf).
 	/// </summary>
 	/// <param name="_fVal: The value being taken to the Natrual Logarithm"></param>
 	/// <returns>
@@ -326,29 +326,29 @@ namespace Math {
 	[[nodiscard]] Vec2F Sqrt(const Vec2F& _vVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of each component of _vVal.
+	/// Computes the PrintDebugMessage base 10 of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute Log base 10"></param>
+	/// <param name="_vVal: The vector containing each value to compute PrintDebugMessage base 10"></param>
 	/// <returns>
-	/// Vec2F: Result of the Log base 10
+	/// Vec2F: Result of the PrintDebugMessage base 10
 	/// </returns>
 	[[nodiscard]] Vec2F Log10(const Vec2F& _vVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of each component of _vVal.
+	/// Computes the PrintDebugMessage base 2 of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute Log base 2"></param>
+	/// <param name="_vVal: The vector containing each value to compute PrintDebugMessage base 2"></param>
 	/// <returns>
-	/// Vec2F: Result of the Log base 2
+	/// Vec2F: Result of the PrintDebugMessage base 2
 	/// </returns>
 	[[nodiscard]] Vec2F Log2(const Vec2F& _vVal);
 
 	/// <summary>
-	/// Computes the Natural Log of each component of _vVal.
+	/// Computes the Natural PrintDebugMessage of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute the Natural Log"></param>
+	/// <param name="_vVal: The vector containing each value to compute the Natural PrintDebugMessage"></param>
 	/// <returns>
-	/// Vec2F: Result of the Natural Log.
+	/// Vec2F: Result of the Natural PrintDebugMessage.
 	/// </returns>
 	[[nodiscard]] Vec2F Ln(const Vec2F& _vVal);
 
@@ -581,29 +581,29 @@ namespace Math {
 	[[nodiscard]] Vec3F Sqrt(const Vec3F& _vVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of each component of _vVal.
+	/// Computes the PrintDebugMessage base 10 of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute Log base 10"></param>
+	/// <param name="_vVal: The vector containing each value to compute PrintDebugMessage base 10"></param>
 	/// <returns>
-	/// Vec3F: Result of the Log base 10
+	/// Vec3F: Result of the PrintDebugMessage base 10
 	/// </returns>
 	[[nodiscard]] Vec3F Log10(const Vec3F& _vVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of each component of _vVal.
+	/// Computes the PrintDebugMessage base 2 of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute Log base 2"></param>
+	/// <param name="_vVal: The vector containing each value to compute PrintDebugMessage base 2"></param>
 	/// <returns>
-	/// Vec3F: Result of the Log base 2
+	/// Vec3F: Result of the PrintDebugMessage base 2
 	/// </returns>
 	[[nodiscard]] Vec3F Log2(const Vec3F& _vVal);
 
 	/// <summary>
-	/// Computes the Natural Log of each component of _vVal.
+	/// Computes the Natural PrintDebugMessage of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute the Natural Log"></param>
+	/// <param name="_vVal: The vector containing each value to compute the Natural PrintDebugMessage"></param>
 	/// <returns>
-	/// Vec3F: Result of the Natural Log.
+	/// Vec3F: Result of the Natural PrintDebugMessage.
 	/// </returns>
 	[[nodiscard]] Vec3F Ln(const Vec3F& _vVal);
 
@@ -836,29 +836,29 @@ namespace Math {
 	[[nodiscard]] Vec4F Sqrt(const Vec4F& _vVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of each component of _vVal.
+	/// Computes the PrintDebugMessage base 10 of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute Log base 10"></param>
+	/// <param name="_vVal: The vector containing each value to compute PrintDebugMessage base 10"></param>
 	/// <returns>
-	/// Vec4F: Result of the Log base 10
+	/// Vec4F: Result of the PrintDebugMessage base 10
 	/// </returns>
 	[[nodiscard]] Vec4F Log10(const Vec4F& _vVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of each component of _vVal.
+	/// Computes the PrintDebugMessage base 2 of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute Log base 2"></param>
+	/// <param name="_vVal: The vector containing each value to compute PrintDebugMessage base 2"></param>
 	/// <returns>
-	/// Vec4F: Result of the Log base 2
+	/// Vec4F: Result of the PrintDebugMessage base 2
 	/// </returns>
 	[[nodiscard]] Vec4F Log2(const Vec4F& _vVal);
 
 	/// <summary>
-	/// Computes the Natural Log of each component of _vVal.
+	/// Computes the Natural PrintDebugMessage of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute the Natural Log"></param>
+	/// <param name="_vVal: The vector containing each value to compute the Natural PrintDebugMessage"></param>
 	/// <returns>
-	/// Vec4F: Result of the Natural Log.
+	/// Vec4F: Result of the Natural PrintDebugMessage.
 	/// </returns>
 	[[nodiscard]] Vec4F Ln(const Vec4F& _vVal);
 
@@ -1091,29 +1091,29 @@ namespace Math {
 	[[nodiscard]] MatrixF Sqrt(const MatrixF& _mVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of each component of _mVal.
+	/// Computes the PrintDebugMessage base 10 of each component of _mVal.
 	/// </summary>
-	/// <param name="_mVal: The matrix containing each value to compute Log base 10"></param>
+	/// <param name="_mVal: The matrix containing each value to compute PrintDebugMessage base 10"></param>
 	/// <returns>
-	/// MatrixF: Result of the Log base 10
+	/// MatrixF: Result of the PrintDebugMessage base 10
 	/// </returns>
 	[[nodiscard]] MatrixF Log10(const MatrixF& _mVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of each component of _mVal.
+	/// Computes the PrintDebugMessage base 2 of each component of _mVal.
 	/// </summary>
-	/// <param name="_mVal: The matrix containing each value to compute Log base 2"></param>
+	/// <param name="_mVal: The matrix containing each value to compute PrintDebugMessage base 2"></param>
 	/// <returns>
-	/// MatrixF: Result of the Log base 2
+	/// MatrixF: Result of the PrintDebugMessage base 2
 	/// </returns>
 	[[nodiscard]] MatrixF Log2(const MatrixF& _mVal);
 
 	/// <summary>
-	/// Computes the Natural Log of each component of _mVal.
+	/// Computes the Natural PrintDebugMessage of each component of _mVal.
 	/// </summary>
-	/// <param name="_mVal: The matrix containing each value to compute the Natural Log"></param>
+	/// <param name="_mVal: The matrix containing each value to compute the Natural PrintDebugMessage"></param>
 	/// <returns>
-	/// MatrixF: Result of the Natural Log.
+	/// MatrixF: Result of the Natural PrintDebugMessage.
 	/// </returns>
 	[[nodiscard]] MatrixF Ln(const MatrixF& _mVal);
 
@@ -1346,29 +1346,29 @@ namespace Math {
 	[[nodiscard]] QuaternionF Sqrt(const QuaternionF& _qVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of each component of _qVal.
+	/// Computes the PrintDebugMessage base 10 of each component of _qVal.
 	/// </summary>
-	/// <param name="_qVal: The quaternion containing each value to compute Log base 10"></param>
+	/// <param name="_qVal: The quaternion containing each value to compute PrintDebugMessage base 10"></param>
 	/// <returns>
-	/// QuaternionF: Result of the Log base 10
+	/// QuaternionF: Result of the PrintDebugMessage base 10
 	/// </returns>
 	[[nodiscard]] QuaternionF Log10(const QuaternionF& _qVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of each component of _qVal.
+	/// Computes the PrintDebugMessage base 2 of each component of _qVal.
 	/// </summary>
-	/// <param name="_qVal: The quaternion containing each value to compute Log base 2"></param>
+	/// <param name="_qVal: The quaternion containing each value to compute PrintDebugMessage base 2"></param>
 	/// <returns>
-	/// QuaternionF: Result of the Log base 2
+	/// QuaternionF: Result of the PrintDebugMessage base 2
 	/// </returns>
 	[[nodiscard]] QuaternionF Log2(const QuaternionF& _qVal);
 
 	/// <summary>
-	/// Computes the Natural Log of each component of _qVal.
+	/// Computes the Natural PrintDebugMessage of each component of _qVal.
 	/// </summary>
-	/// <param name="_qVal: The quaternion containing each value to compute the Natural Log"></param>
+	/// <param name="_qVal: The quaternion containing each value to compute the Natural PrintDebugMessage"></param>
 	/// <returns>
-	/// QuaternionF: Result of the Natural Log.
+	/// QuaternionF: Result of the Natural PrintDebugMessage.
 	/// </returns>
 	[[nodiscard]] QuaternionF Ln(const QuaternionF& _qVal);
 
@@ -1564,25 +1564,25 @@ namespace Math {
 	[[nodiscard]] double Sqrt(double _dVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of _dVal (equivalent to std::log10).
+	/// Computes the PrintDebugMessage base 10 of _dVal (equivalent to std::log10).
 	/// </summary>
-	/// <param name="_dVal: The value being taken to the Log base 10"></param>
+	/// <param name="_dVal: The value being taken to the PrintDebugMessage base 10"></param>
 	/// <returns>
 	/// double: Result of the logarithm
 	/// </returns>
 	[[nodiscard]] double Log10(double _dVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of _dVal (equivalent to std::log2).
+	/// Computes the PrintDebugMessage base 2 of _dVal (equivalent to std::log2).
 	/// </summary>
-	/// <param name="_dVal: The value being taken to the Log base 2"></param>
+	/// <param name="_dVal: The value being taken to the PrintDebugMessage base 2"></param>
 	/// <returns>
 	/// double: Result of the logarithm
 	/// </returns>
 	[[nodiscard]] double Log2(double _dVal);
 
 	/// <summary>
-	/// Computes the Natural Log of _dVal (equivalent to std::log).
+	/// Computes the Natural PrintDebugMessage of _dVal (equivalent to std::log).
 	/// </summary>
 	/// <param name="_dVal: The value being taken to the Natrual Logarithm"></param>
 	/// <returns>
@@ -1815,29 +1815,29 @@ namespace Math {
 	[[nodiscard]] Vec2D Sqrt(const Vec2D& _vVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of each component of _vVal.
+	/// Computes the PrintDebugMessage base 10 of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute Log base 10"></param>
+	/// <param name="_vVal: The vector containing each value to compute PrintDebugMessage base 10"></param>
 	/// <returns>
-	/// Vec2D: Result of the Log base 10
+	/// Vec2D: Result of the PrintDebugMessage base 10
 	/// </returns>
 	[[nodiscard]] Vec2D Log10(const Vec2D& _vVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of each component of _vVal.
+	/// Computes the PrintDebugMessage base 2 of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute Log base 2"></param>
+	/// <param name="_vVal: The vector containing each value to compute PrintDebugMessage base 2"></param>
 	/// <returns>
-	/// Vec2D: Result of the Log base 2
+	/// Vec2D: Result of the PrintDebugMessage base 2
 	/// </returns>
 	[[nodiscard]] Vec2D Log2(const Vec2D& _vVal);
 
 	/// <summary>
-	/// Computes the Natural Log of each component of _vVal.
+	/// Computes the Natural PrintDebugMessage of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute the Natural Log"></param>
+	/// <param name="_vVal: The vector containing each value to compute the Natural PrintDebugMessage"></param>
 	/// <returns>
-	/// Vec2D: Result of the Natural Log.
+	/// Vec2D: Result of the Natural PrintDebugMessage.
 	/// </returns>
 	[[nodiscard]] Vec2D Ln(const Vec2D& _vVal);
 
@@ -2066,29 +2066,29 @@ namespace Math {
 	[[nodiscard]] Vec3D Sqrt(const Vec3D& _vVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of each component of _vVal.
+	/// Computes the PrintDebugMessage base 10 of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute Log base 10"></param>
+	/// <param name="_vVal: The vector containing each value to compute PrintDebugMessage base 10"></param>
 	/// <returns>
-	/// Vec3D: Result of the Log base 10
+	/// Vec3D: Result of the PrintDebugMessage base 10
 	/// </returns>
 	[[nodiscard]] Vec3D Log10(const Vec3D& _vVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of each component of _vVal.
+	/// Computes the PrintDebugMessage base 2 of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute Log base 2"></param>
+	/// <param name="_vVal: The vector containing each value to compute PrintDebugMessage base 2"></param>
 	/// <returns>
-	/// Vec3D: Result of the Log base 2
+	/// Vec3D: Result of the PrintDebugMessage base 2
 	/// </returns>
 	[[nodiscard]] Vec3D Log2(const Vec3D& _vVal);
 
 	/// <summary>
-	/// Computes the Natural Log of each component of _vVal.
+	/// Computes the Natural PrintDebugMessage of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute the Natural Log"></param>
+	/// <param name="_vVal: The vector containing each value to compute the Natural PrintDebugMessage"></param>
 	/// <returns>
-	/// Vec3D: Result of the Natural Log.
+	/// Vec3D: Result of the Natural PrintDebugMessage.
 	/// </returns>
 	[[nodiscard]] Vec3D Ln(const Vec3D& _vVal);
 
@@ -2317,29 +2317,29 @@ namespace Math {
 	[[nodiscard]] Vec4D Sqrt(const Vec4D& _vVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of each component of _vVal.
+	/// Computes the PrintDebugMessage base 10 of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute Log base 10"></param>
+	/// <param name="_vVal: The vector containing each value to compute PrintDebugMessage base 10"></param>
 	/// <returns>
-	/// Vec4D: Result of the Log base 10
+	/// Vec4D: Result of the PrintDebugMessage base 10
 	/// </returns>
 	[[nodiscard]] Vec4D Log10(const Vec4D& _vVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of each component of _vVal.
+	/// Computes the PrintDebugMessage base 2 of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute Log base 2"></param>
+	/// <param name="_vVal: The vector containing each value to compute PrintDebugMessage base 2"></param>
 	/// <returns>
-	/// Vec4D: Result of the Log base 2
+	/// Vec4D: Result of the PrintDebugMessage base 2
 	/// </returns>
 	[[nodiscard]] Vec4D Log2(const Vec4D& _vVal);
 
 	/// <summary>
-	/// Computes the Natural Log of each component of _vVal.
+	/// Computes the Natural PrintDebugMessage of each component of _vVal.
 	/// </summary>
-	/// <param name="_vVal: The vector containing each value to compute the Natural Log"></param>
+	/// <param name="_vVal: The vector containing each value to compute the Natural PrintDebugMessage"></param>
 	/// <returns>
-	/// Vec4D: Result of the Natural Log.
+	/// Vec4D: Result of the Natural PrintDebugMessage.
 	/// </returns>
 	[[nodiscard]] Vec4D Ln(const Vec4D& _vVal);
 
@@ -2568,29 +2568,29 @@ namespace Math {
 	[[nodiscard]] MatrixD Sqrt(const MatrixD& _mVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of each component of _mVal.
+	/// Computes the PrintDebugMessage base 10 of each component of _mVal.
 	/// </summary>
-	/// <param name="_mVal: The matrix containing each value to compute Log base 10"></param>
+	/// <param name="_mVal: The matrix containing each value to compute PrintDebugMessage base 10"></param>
 	/// <returns>
-	/// MatrixD: Result of the Log base 10
+	/// MatrixD: Result of the PrintDebugMessage base 10
 	/// </returns>
 	[[nodiscard]] MatrixD Log10(const MatrixD& _mVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of each component of _mVal.
+	/// Computes the PrintDebugMessage base 2 of each component of _mVal.
 	/// </summary>
-	/// <param name="_mVal: The matrix containing each value to compute Log base 2"></param>
+	/// <param name="_mVal: The matrix containing each value to compute PrintDebugMessage base 2"></param>
 	/// <returns>
-	/// MatrixD: Result of the Log base 2
+	/// MatrixD: Result of the PrintDebugMessage base 2
 	/// </returns>
 	[[nodiscard]] MatrixD Log2(const MatrixD& _mVal);
 
 	/// <summary>
-	/// Computes the Natural Log of each component of _mVal.
+	/// Computes the Natural PrintDebugMessage of each component of _mVal.
 	/// </summary>
-	/// <param name="_mVal: The matrix containing each value to compute the Natural Log"></param>
+	/// <param name="_mVal: The matrix containing each value to compute the Natural PrintDebugMessage"></param>
 	/// <returns>
-	/// MatrixD: Result of the Natural Log.
+	/// MatrixD: Result of the Natural PrintDebugMessage.
 	/// </returns>
 	[[nodiscard]] MatrixD Ln(const MatrixD& _mVal);
 
@@ -2819,29 +2819,29 @@ namespace Math {
 	[[nodiscard]] QuaternionD Sqrt(const QuaternionD& _qVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of each component of _qVal.
+	/// Computes the PrintDebugMessage base 10 of each component of _qVal.
 	/// </summary>
-	/// <param name="_qVal: The quaternion containing each value to compute Log base 10"></param>
+	/// <param name="_qVal: The quaternion containing each value to compute PrintDebugMessage base 10"></param>
 	/// <returns>
-	/// QuaternionD: Result of the Log base 10
+	/// QuaternionD: Result of the PrintDebugMessage base 10
 	/// </returns>
 	[[nodiscard]] QuaternionD Log10(const QuaternionD& _qVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of each component of _qVal.
+	/// Computes the PrintDebugMessage base 2 of each component of _qVal.
 	/// </summary>
-	/// <param name="_qVal: The quaternion containing each value to compute Log base 2"></param>
+	/// <param name="_qVal: The quaternion containing each value to compute PrintDebugMessage base 2"></param>
 	/// <returns>
-	/// QuaternionD: Result of the Log base 2
+	/// QuaternionD: Result of the PrintDebugMessage base 2
 	/// </returns>
 	[[nodiscard]] QuaternionD Log2(const QuaternionD& _qVal);
 
 	/// <summary>
-	/// Computes the Natural Log of each component of _qVal.
+	/// Computes the Natural PrintDebugMessage of each component of _qVal.
 	/// </summary>
-	/// <param name="_qVal: The quaternion containing each value to compute the Natural Log"></param>
+	/// <param name="_qVal: The quaternion containing each value to compute the Natural PrintDebugMessage"></param>
 	/// <returns>
-	/// QuaternionD: Result of the Natural Log.
+	/// QuaternionD: Result of the Natural PrintDebugMessage.
 	/// </returns>
 	[[nodiscard]] QuaternionD Ln(const QuaternionD& _qVal);
 
@@ -3075,29 +3075,29 @@ namespace Math {
 	[[nodiscard]] RotorF Sqrt(const RotorF& _rVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of each component of _rVal.
+	/// Computes the PrintDebugMessage base 10 of each component of _rVal.
 	/// </summary>
-	/// <param name="_rVal: The rotor containing each value to compute Log base 10"></param>
+	/// <param name="_rVal: The rotor containing each value to compute PrintDebugMessage base 10"></param>
 	/// <returns>
-	/// RotorF: Result of the Log base 10
+	/// RotorF: Result of the PrintDebugMessage base 10
 	/// </returns>
 	[[nodiscard]] RotorF Log10(const RotorF& _rVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of each component of _rVal.
+	/// Computes the PrintDebugMessage base 2 of each component of _rVal.
 	/// </summary>
-	/// <param name="_rVal: The rotor containing each value to compute Log base 2"></param>
+	/// <param name="_rVal: The rotor containing each value to compute PrintDebugMessage base 2"></param>
 	/// <returns>
-	/// RotorF: Result of the Log base 2
+	/// RotorF: Result of the PrintDebugMessage base 2
 	/// </returns>
 	[[nodiscard]] RotorF Log2(const RotorF& _rVal);
 
 	/// <summary>
-	/// Computes the Natural Log of each component of _rVal.
+	/// Computes the Natural PrintDebugMessage of each component of _rVal.
 	/// </summary>
-	/// <param name="_rVal: The rotor containing each value to compute the Natural Log"></param>
+	/// <param name="_rVal: The rotor containing each value to compute the Natural PrintDebugMessage"></param>
 	/// <returns>
-	/// RotorF: Result of the Natural Log.
+	/// RotorF: Result of the Natural PrintDebugMessage.
 	/// </returns>
 	[[nodiscard]] RotorF Ln(const RotorF& _rVal);
 
@@ -3325,29 +3325,29 @@ namespace Math {
 	[[nodiscard]] RotorD Sqrt(const RotorD& _rVal);
 
 	/// <summary>
-	/// Computes the Log base 10 of each component of _rVal.
+	/// Computes the PrintDebugMessage base 10 of each component of _rVal.
 	/// </summary>
-	/// <param name="_rVal: The rotor containing each value to compute Log base 10"></param>
+	/// <param name="_rVal: The rotor containing each value to compute PrintDebugMessage base 10"></param>
 	/// <returns>
-	/// RotorD: Result of the Log base 10
+	/// RotorD: Result of the PrintDebugMessage base 10
 	/// </returns>
 	[[nodiscard]] RotorD Log10(const RotorD& _rVal);
 
 	/// <summary>
-	/// Computes the Log base 2 of each component of _rVal.
+	/// Computes the PrintDebugMessage base 2 of each component of _rVal.
 	/// </summary>
-	/// <param name="_rVal: The rotor containing each value to compute Log base 2"></param>
+	/// <param name="_rVal: The rotor containing each value to compute PrintDebugMessage base 2"></param>
 	/// <returns>
-	/// RotorD: Result of the Log base 2
+	/// RotorD: Result of the PrintDebugMessage base 2
 	/// </returns>
 	[[nodiscard]] RotorD Log2(const RotorD& _rVal);
 
 	/// <summary>
-	/// Computes the Natural Log of each component of _rVal.
+	/// Computes the Natural PrintDebugMessage of each component of _rVal.
 	/// </summary>
-	/// <param name="_rVal: The rotor containing each value to compute the Natural Log"></param>
+	/// <param name="_rVal: The rotor containing each value to compute the Natural PrintDebugMessage"></param>
 	/// <returns>
-	/// RotorD: Result of the Natural Log.
+	/// RotorD: Result of the Natural PrintDebugMessage.
 	/// </returns>
 	[[nodiscard]] RotorD Ln(const RotorD& _rVal);
 

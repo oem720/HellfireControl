@@ -53,11 +53,11 @@ void UnitTesterApplication::Run() {
 	Console::Print("\n\nOverall Results\n---------------\n");
 
 	Console::Print("Successful tests: ");
-	Console::Print(std::to_string(u32Successes), u32Successes == u32TotalTests ? Console::GREEN : Console::RED);
+	Console::Print(std::to_string(u32Successes), u32Successes == u32TotalTests ? GREEN : RED);
 	Console::Print(" out of " + std::to_string(u32TotalTests) + "\n");
 
 	Console::Print("Overall Average Speed: ");
-	Console::Print(std::to_string(m_fAverageExecutionTimeMs), Console::YELLOW);
+	Console::Print(std::to_string(m_fAverageExecutionTimeMs), YELLOW);
 	Console::Print(" ms\n");
 
 	this->End();
@@ -70,15 +70,15 @@ void UnitTesterApplication::End() {
 void UnitTesterApplication::DisplayProfiledResults() {
 	//Display fastest/slowest time for execution and the function names.
 	Console::Print("Fastest function: ");
-	Console::Print("\"" + m_strFastestFuncName + "\"", Console::GREEN);
+	Console::Print("\"" + m_strFastestFuncName + "\"", GREEN);
 	Console::Print(" -- ");
-	Console::Print(std::to_string(m_fFastestExecutionTimeMs), Console::GREEN);
+	Console::Print(std::to_string(m_fFastestExecutionTimeMs), GREEN);
 	Console::Print(" milliseconds");
 
 	Console::Print("\nSlowest function: ");
-	Console::Print("\"" + m_strSlowestFuncName + "\"", Console::RED);
+	Console::Print("\"" + m_strSlowestFuncName + "\"", RED);
 	Console::Print(" -- ");
-	Console::Print(std::to_string(m_fSlowestExecutionTimeMs), Console::RED);
+	Console::Print(std::to_string(m_fSlowestExecutionTimeMs), RED);
 	Console::Print(" milliseconds\n");
 
 	//Write the function names to profiler file along with execution times.

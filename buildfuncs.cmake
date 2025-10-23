@@ -59,7 +59,7 @@ function(link_vulkan_sdk EXEC_NAME)
 	if(WIN32)
 		target_include_directories(${EXEC_NAME} PUBLIC $ENV{VULKAN_SDK}/Include/)
 		target_link_directories(${EXEC_NAME} PUBLIC $ENV{VULKAN_SDK}/Lib/)
-		target_link_libraries(${EXEC_NAME} PUBLIC vulkan-1.lib;slang.lib;spirv-cross-c.lib;dxcompiler.lib;comctl32.lib;propsys.lib;shlwapi.lib)
+		target_link_libraries(${EXEC_NAME} PUBLIC vulkan-1.lib;comctl32.lib;propsys.lib;shlwapi.lib)
 		
 	else()
 		message(FATAL_ERROR "ERROR: Linux and Mac not yet supported! Fix me or pester Owen!")
@@ -70,10 +70,19 @@ endfunction()
 function(link_vulkan_shader_comp EXEC_NAME)
 	message("-- Linking Vulkan shader compilation tools to ${EXEC_NAME}")
 	if(WIN32)
-		target_link_libraries(${EXEC_NAME} PUBLIC slang.lib;spirv-cross-c.lib;dxcompiler.lib)
+		target_link_libraries(${EXEC_NAME} PUBLIC slang.lib)
 		target_link_libraries(${EXEC_NAME} PUBLIC
 			$<$<CONFIG:Debug>:shaderc_combinedd.lib>
+			$<$<CONFIG:Debug>:dxcompilerd.lib>
+			$<$<CONFIG:Debug>:spirv-cross-cored.lib>
+			$<$<CONFIG:Debug>:spirv-cross-reflectd.lib>
+			$<$<CONFIG:Debug>:SPIRV-Tools-optd.lib>
+			
 			$<$<CONFIG:Release>:shaderc_combined.lib>
+			$<$<CONFIG:Release>:dxcompiler.lib>
+			$<$<CONFIG:Release>:spirv-cross-core.lib>
+			$<$<CONFIG:Release>:spirv-cross-reflect.lib>
+			$<$<CONFIG:Release>:SPIRV-Tools-opt.lib>
 		)
 	else()
 		message(FATAL_ERROR "ERROR: Linux and Mac not yet supported! Fix me or pester Owen!")

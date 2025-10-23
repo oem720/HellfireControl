@@ -1,19 +1,14 @@
 
 #include <ShaderCompiler/Core/ShaderCompApplication.hpp>
 
+#include <ShaderCompiler/Compilers/GLSLCompiler.hpp>
+#include <ShaderCompiler/Compilers/HLSLCompiler.hpp>
+#include <ShaderCompiler/Compilers/SlangCompiler.hpp>
+
+#include <HellfireControl/Util/Util.hpp>
 #include <HellfireControl/Core/Console.hpp>
 
-#include <atlbase.h>
-#include <shaderc/shaderc.hpp>
-#include <slang/slang.h>
-#include <dxc/dxcapi.h>
-#include <spirv_cross/spirv_cross.hpp>
-
-std::vector<std::function<std::vector<uint8_t>(const std::filesystem::path&)>> ShaderCompApplication::m_vShaderCompilers = {
-	ShaderCompApplication::CompileGLSL,
-	ShaderCompApplication::CompileHLSL,
-	ShaderCompApplication::CompileSlang
-};
+std::vector<std::unique_ptr<ShaderCompiler>> ShaderCompApplication::m_vShaderCompilers;
 
 std::vector<std::array<size_t, 3>> ShaderCompApplication::m_vShaderCompilerOrders = {
 	{ SHADER_FORMAT_GLSL, SHADER_FORMAT_HLSL, SHADER_FORMAT_SLANG }, // GLSL
@@ -21,19 +16,153 @@ std::vector<std::array<size_t, 3>> ShaderCompApplication::m_vShaderCompilerOrder
 	{ SHADER_FORMAT_SLANG, SHADER_FORMAT_HLSL, SHADER_FORMAT_GLSL }  // Slang
 };
 
-static shaderc_compiler_t g_scCompiler = nullptr;
-static shaderc_compile_options_t g_scoOptions = nullptr;
+std::map<HCShaderFormat, std::string> ShaderCompApplication::m_mShaderFormatNames = {
+	{SHADER_FORMAT_GLSL, "GLSL"},
+	{SHADER_FORMAT_HLSL, "HLSL"},
+	{SHADER_FORMAT_SLANG, "Slang"},
+	{SHADER_FORMAT_INVALID, "INVALID"},
+};
+
+std::map<HCShaderFormat, std::string> ShaderCompApplication::m_mShaderCompilerNames = {
+	{SHADER_FORMAT_GLSL, "ShaderC"},
+	{SHADER_FORMAT_HLSL, "DXC"},
+	{SHADER_FORMAT_SLANG, "SlangC"},
+	{SHADER_FORMAT_INVALID, "INVALID"},
+};
+
+std::map<HCShaderStageType, std::string> ShaderCompApplication::m_mShaderStageNames = {
+	{SHADER_STAGE_VERTEX, "Vertex"},
+	{SHADER_STAGE_FRAGMENT, "Fragment/Pixel"},
+	{SHADER_STAGE_GEOMETRY, "Geometry"},
+	{SHADER_STAGE_TESSELLATION_CONTROL, "Tessellation Control/Hull"},
+	{SHADER_STAGE_TESSELLATION_EVALUATION, "Tessellation Evaluation/Domain"},
+	{SHADER_STAGE_COMPUTE, "Compute"},
+	{SHADER_STAGE_TASK, "Task"},
+	{SHADER_STAGE_MESH, "Mesh"},
+	{SHADER_STAGE_RAYGEN, "Ray Generation"},
+	{SHADER_STAGE_ANY_HIT, "Ray Any Hit"},
+	{SHADER_STAGE_CLOSEST_HIT, "Ray Closest Hit"},
+	{SHADER_STAGE_MISS, "Ray Miss"},
+	{SHADER_STAGE_INTERSECTION, "Ray Intersection"},
+	{SHADER_STAGE_CALLABLE, "Ray Callable"},
+	{SHADER_STAGE_INVALID, "INVALID"}
+};
+
+std::map<HCShaderStageType, std::string> ShaderCompApplication::m_mShaderStageFilenames = {
+	{SHADER_STAGE_VERTEX, "vert"},
+	{SHADER_STAGE_FRAGMENT, "frag"},
+	{SHADER_STAGE_GEOMETRY, "geom"},
+	{SHADER_STAGE_TESSELLATION_CONTROL, "tesc"},
+	{SHADER_STAGE_TESSELLATION_EVALUATION, "tese"},
+	{SHADER_STAGE_COMPUTE, "comp"},
+	{SHADER_STAGE_TASK, "task"},
+	{SHADER_STAGE_MESH, "mesh"},
+	{SHADER_STAGE_RAYGEN, "rgen"},
+	{SHADER_STAGE_ANY_HIT, "rahit"},
+	{SHADER_STAGE_CLOSEST_HIT, "rchit"},
+	{SHADER_STAGE_MISS, "rmiss"},
+	{SHADER_STAGE_INTERSECTION, "rint"},
+	{SHADER_STAGE_CALLABLE, "rcall"},
+	{SHADER_STAGE_INVALID, "INVALID"}
+};
+
+std::map<HCShaderStageType, std::string> ShaderCompApplication::m_mGLSLShaderAttributeNames = {
+	{SHADER_STAGE_VERTEX, "vertex"},
+	{SHADER_STAGE_FRAGMENT, "fragment"},
+	{SHADER_STAGE_GEOMETRY, "geometry"},
+	{SHADER_STAGE_TESSELLATION_CONTROL, "tesscontrol"},
+	{SHADER_STAGE_TESSELLATION_EVALUATION, "tessevaluation"},
+	{SHADER_STAGE_COMPUTE, "compute"},
+	{SHADER_STAGE_TASK, "task"},
+	{SHADER_STAGE_MESH, "mesh"},
+	{SHADER_STAGE_RAYGEN, "raygen"},
+	{SHADER_STAGE_ANY_HIT, "anyhit"},
+	{SHADER_STAGE_CLOSEST_HIT, "closesthit"},
+	{SHADER_STAGE_MISS, "miss"},
+	{SHADER_STAGE_INTERSECTION, "intersection"},
+	{SHADER_STAGE_CALLABLE, "callable"}
+};
+
+std::map<HCShaderStageType, std::string> ShaderCompApplication::m_mHLSLShaderAttributeNames = {
+	{SHADER_STAGE_VERTEX, "vertex"},
+	{SHADER_STAGE_FRAGMENT, "pixel"},
+	{SHADER_STAGE_GEOMETRY, "geometry"},
+	{SHADER_STAGE_TESSELLATION_CONTROL, "hull"},
+	{SHADER_STAGE_TESSELLATION_EVALUATION, "domain"},
+	{SHADER_STAGE_COMPUTE, "compute"},
+	{SHADER_STAGE_TASK, "amplification"},
+	{SHADER_STAGE_MESH, "mesh"},
+	{SHADER_STAGE_RAYGEN, "raygeneration"},
+	{SHADER_STAGE_ANY_HIT, "anyhit"},
+	{SHADER_STAGE_CLOSEST_HIT, "closesthit"},
+	{SHADER_STAGE_MISS, "miss"},
+	{SHADER_STAGE_INTERSECTION, "intersection"},
+	{SHADER_STAGE_CALLABLE, "callable"}
+};
 
 void ShaderCompApplication::Start() {
-	//ShaderC Init
-	{
-		g_scCompiler = shaderc_compiler_initialize();
-		g_scoOptions = shaderc_compile_options_initialize();
+	if (m_vArgs.size() == 0) {
+		m_bUseMenu = true;
+	}
 
-		shaderc_compile_options_set_target_env(g_scoOptions, shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_4);
-		shaderc_compile_options_set_optimization_level(g_scoOptions, shaderc_optimization_level_performance);
-		shaderc_compile_options_set_source_language(g_scoOptions, shaderc_source_language_glsl);
-		shaderc_compile_options_set_generate_debug_info(g_scoOptions);
+	HCShaderFormat sfType = SHADER_FORMAT_INVALID;
+	HCShaderStageType sstStage = SHADER_STAGE_INVALID;
+	std::string strEntryPoint = "main";
+
+	bool bEntryPointNext = false;
+
+	for (const auto& aArg : m_vArgs) {
+		if (bEntryPointNext) {
+			strEntryPoint = aArg;
+			bEntryPointNext = false;
+			continue;
+		}
+
+		if (HCShaderFormat sfTemp = ParseShaderType(aArg); sfTemp != SHADER_FORMAT_INVALID) {
+			sfType = sfTemp;
+			continue;
+		}
+		
+		if (HCShaderStageType sstTemp = ParseShaderStage(aArg); sstTemp != SHADER_STAGE_INVALID) {
+			sstStage = sstTemp;
+			continue;
+		}
+
+		if (aArg == "-entry" || aArg == "-e") {
+			bEntryPointNext = true;
+			continue;
+		}
+
+		if(aArg == "-menu" || aArg == "-m") {
+			m_bUseMenu = true;
+			continue;
+		}
+
+		if(std::filesystem::exists(aArg) && std::filesystem::is_regular_file(aArg)) {
+			HCUncompiledShader ucsShader = {
+				.m_pthFilename = std::filesystem::path(aArg).filename(),
+				.m_vFileBlob = File(aArg, FILE_OPEN_FLAG_BLOB).ExtractFileBlob(),
+				.m_sfFormat = sfType,
+				.m_sstStage = sstStage
+			};
+
+			if(sfType == SHADER_FORMAT_INVALID) {
+				Console::DebugWarn("Type argument unspecified for shader \"" + aArg + "\". Inferring type from file extension...");
+				ucsShader.m_sfFormat = InferShaderFormat(ucsShader.m_pthFilename);
+				Console::DebugWarn("Shader type for shader \"" + aArg + "\" inferred as : " + m_mShaderFormatNames[ucsShader.m_sfFormat]);
+			}
+
+			if(sstStage == SHADER_STAGE_INVALID) {
+				Console::DebugWarn("Stage argument unspecified for shader \"" + aArg + "\". Inferring from file name or contained code...");
+				ucsShader.m_sstStage = InferShaderStage(ucsShader.m_pthFilename, ucsShader.m_vFileBlob);
+				Console::DebugWarn("Shader stage for shader \"" + aArg + "\" inferred as : " + m_mShaderStageNames[ucsShader.m_sstStage]);
+			}
+
+			m_vUncompiledShaders.push_back(ucsShader);
+			continue;
+		}
+		
+		Console::DebugWarn("Unrecognized argument: \"" + aArg + "\". Ignoring...");
 	}
 }
 
@@ -46,14 +175,8 @@ void ShaderCompApplication::Run() {
 }
 
 void ShaderCompApplication::End() {
-	//ShaderC Cleanup
-	{
-		shaderc_compile_options_release(g_scoOptions);
-		shaderc_compiler_release(g_scCompiler);
-	}
-
 	for (const auto& aShader : m_vCompiledShaders) {
-		File fShaderAsset(aShader.m_strFilepath, FILE_OPEN_FLAG_WRITE | FILE_OPEN_FLAG_BINARY);
+		/*File fShaderAsset(aShader.m_pthFilepath.string(), FILE_OPEN_FLAG_WRITE | FILE_OPEN_FLAG_BINARY);
 
 		uint32_t u32VarCount = aShader.m_vShaderVars.size();
 		uint32_t u32CodeSize = aShader.m_vCodeBlob.size();
@@ -66,32 +189,17 @@ void ShaderCompApplication::End() {
 		fShaderAsset.Write(&u32VarCount, sizeof(uint32_t));
 		fShaderAsset.Write(aShader.m_vShaderVars.data(), sizeof(HCShaderVar) * u32VarCount);
 
-		fShaderAsset.Close();
+		fShaderAsset.Close();*/
 	}
 }
 
 void ShaderCompApplication::CommandLineRoutine() {
-	HCShaderFormat sfType = SHADER_FORMAT_INVALID;
-
-	for (const auto& aArg : m_vArgs) {
-		std::vector<uint8_t> vCompiledBlob;
-
-		if ((sfType = ParseShaderType(aArg)) != SHADER_FORMAT_INVALID) {
-			continue;
+	for(const auto& aShader : m_vUncompiledShaders) {
+		HCCompiledShader csShader = CompileShader(aShader);
+		
+		if (csShader.m_vCodeBlob.size() > 0) {
+			m_vCompiledShaders.push_back(csShader);
 		}
-		else if (std::filesystem::exists(aArg)) {
-			vCompiledBlob = CompileShader(aArg, sfType);
-		}
-		else {
-			Console::DebugWarn("Invalid argument detected! Execution has not ended, but the compiler may not work as expected!");
-		}
-
-		if (vCompiledBlob.empty()) {
-			Console::DebugFail("Failed to compile shader: " + aArg);
-			continue;
-		}
-
-		m_vCompiledShaders.push_back(CreateCompiledShader(aArg, vCompiledBlob));
 	}
 }
 
@@ -99,85 +207,35 @@ void ShaderCompApplication::MenuRoutine() {
 
 }
 
-std::vector<uint8_t> ShaderCompApplication::CompileShader(const std::filesystem::path& _strPath, HCShaderFormat _sfType) {
-	Console::DebugInfo("Attempting to compile shader: " + _strPath.filename().string());
+void ShaderCompApplication::InitializeCompilers() {
+	m_vShaderCompilers.push_back(std::make_unique<GLSLCompiler>());
+	m_vShaderCompilers.push_back(std::make_unique<HLSLCompiler>());
+	m_vShaderCompilers.push_back(std::make_unique<SlangCompiler>());
+}
 
-	if (_sfType == SHADER_FORMAT_INVALID) {
-		_sfType = InferShaderType(_strPath);
+HCCompiledShader ShaderCompApplication::CompileShader(const HCUncompiledShader& _ucsShader) {
+	HCCompiledShader csResult;
 
-		Console::DebugWarn("Type argument unspecified! Shader type inferred as: " + ShaderFormatToString(_sfType));
-	}
-
-	std::vector<uint8_t> vCompiledBlob;
-
-	for (const size_t aCompilerIndex : m_vShaderCompilerOrders[_sfType]) {
-		Console::DebugInfo("Attemping to compile with compiler: " + ShaderCompilerToString(static_cast<HCShaderFormat>(aCompilerIndex)));
-
+	for (const uint8_t u8Compiler : m_vShaderCompilerOrders[_ucsShader.m_sfFormat]) {
+		Console::DebugInfo("Attempting to compile shader \"" + _ucsShader.m_pthFilename.string() + "\" using compiler: " + m_mShaderCompilerNames[static_cast<HCShaderFormat>(u8Compiler)]);
 		try {
-			vCompiledBlob = m_vShaderCompilers[aCompilerIndex](_strPath);
-			if (!vCompiledBlob.empty()) {
-				Console::DebugSuccess("Successfully compiled shader: " + _strPath.filename().string());
-				break;
-			}
+			csResult = m_vShaderCompilers[u8Compiler]->Compile(_ucsShader);
 		}
 		catch (const std::exception& e) {
-			Console::DebugError("Shader compilation error:\n\n" + std::string(e.what()));
+			Console::DebugError("Error occurred when compiling shader! Error:\n\n" + std::string(e.what()));
+			Console::DebugFail("Failed to compile shader \"" + _ucsShader.m_pthFilename.string() + "\" using compiler: " +
+				m_mShaderCompilerNames[static_cast<HCShaderFormat>(u8Compiler)] + ". Falling back to next compiler...");
+			continue;
 		}
 
-		Console::DebugFail("Shader compilation failed with compiler: " + ShaderCompilerToString(static_cast<HCShaderFormat>(aCompilerIndex)));
+		Console::DebugSuccess("Successfully compiled shader \"" + _ucsShader.m_pthFilename.string() + "\" using compiler: " + m_mShaderCompilerNames[static_cast<HCShaderFormat>(u8Compiler)]);
+		break;
 	}
 
-	return vCompiledBlob;
+	return csResult;
 }
 
-HCCompiledShader ShaderCompApplication::CreateCompiledShader(const std::filesystem::path& _strPath, const std::vector<uint8_t>& _vCodeBlob) {
-
-	return HCCompiledShader();
-}
-
-std::vector<uint8_t> ShaderCompApplication::CompileGLSL(const std::filesystem::path& _strPath) {
-	File fFile(_strPath.string(), FILE_OPEN_FLAG_BLOB);
-
-	std::vector<uint8_t> vShaderSource = fFile.ExtractFileBlob();
-
-	std::string strShaderSource(vShaderSource.begin(), vShaderSource.end());
-
-	shaderc_compilation_result_t scrResult = shaderc_compile_into_spv(
-		g_scCompiler,
-		strShaderSource.c_str(),
-		strShaderSource.size(),
-		shaderc_glsl_infer_from_source,
-		_strPath.filename().string().data(),
-		"main",
-		g_scoOptions
-	);
-
-	if (shaderc_result_get_compilation_status(scrResult) != shaderc_compilation_status_success) {
-		std::string strError = shaderc_result_get_error_message(scrResult);
-		shaderc_result_release(scrResult);
-		throw std::runtime_error(strError);
-	}
-
-	std::vector<uint8_t> vCompiledBlob(shaderc_result_get_length(scrResult));
-
-	std::memcpy(vCompiledBlob.data(), shaderc_result_get_bytes(scrResult), vCompiledBlob.size());
-
-	shaderc_result_release(scrResult);
-
-	return vCompiledBlob;
-}
-
-std::vector<uint8_t> ShaderCompApplication::CompileHLSL(const std::filesystem::path& _strPath) {
-
-	return std::vector<uint8_t>();
-}
-
-std::vector<uint8_t> ShaderCompApplication::CompileSlang(const std::filesystem::path& _strPath) {
-
-	return std::vector<uint8_t>();
-}
-
-HCShaderFormat ShaderCompApplication::InferShaderType(const std::filesystem::path& _strPath) {
+HCShaderFormat ShaderCompApplication::InferShaderFormat(const std::filesystem::path& _strPath) {
 	std::filesystem::path pthExtension = _strPath.extension();
 
 	if (pthExtension == ".hlsl" || pthExtension == ".fx" || pthExtension == ".fxh") {
@@ -188,6 +246,36 @@ HCShaderFormat ShaderCompApplication::InferShaderType(const std::filesystem::pat
 	}
 
 	return SHADER_FORMAT_GLSL; //Default to GLSL if the extensions don't match HLSL or Slang
+}
+
+HCShaderStageType ShaderCompApplication::InferShaderStage(const std::filesystem::path& _pthFilename, const std::vector<uint8_t>& _vFileBlob) {
+	std::string strFilename = _pthFilename.string();
+
+	std::transform(strFilename.begin(), strFilename.end(), strFilename.begin(), [](unsigned char cChar) { return std::tolower(cChar); });
+
+	for (uint8_t u8Type = SHADER_STAGE_VERTEX; u8Type < SHADER_STAGE_INVALID; ++u8Type) {
+		HCShaderStageType sstType = static_cast<HCShaderStageType>(u8Type);
+
+		if (strFilename.find(m_mShaderStageFilenames[sstType]) != std::string::npos) {
+			return sstType;
+		}
+	}
+	
+	std::string strSource(_vFileBlob.begin(), _vFileBlob.end());
+
+	for (uint8_t u8Type = SHADER_STAGE_VERTEX; u8Type < SHADER_STAGE_INVALID; ++u8Type) {
+		HCShaderStageType sstType = static_cast<HCShaderStageType>(u8Type);
+
+		std::string strGLSLAttribute = "#pragma shader_stage(" + m_mGLSLShaderAttributeNames[sstType] + ")";
+
+		std::string strHLSLAttribute = "[shader(\"" + m_mHLSLShaderAttributeNames[sstType] + "\")]";
+
+		if (strSource.find(strGLSLAttribute) != std::string::npos || strSource.find(strHLSLAttribute) != std::string::npos) {
+			return sstType;
+		}
+	}
+
+	return SHADER_STAGE_INVALID;
 }
 
 HCShaderFormat ShaderCompApplication::ParseShaderType(const std::string& _strArg) {
@@ -203,44 +291,26 @@ HCShaderFormat ShaderCompApplication::ParseShaderType(const std::string& _strArg
 	return SHADER_FORMAT_INVALID;
 }
 
-std::string ShaderCompApplication::ShaderCompilerToString(HCShaderFormat _sfType) {
-	std::string strName;
+HCShaderStageType ShaderCompApplication::ParseShaderStage(const std::string& _strArg) {
+	std::string strArgCopy = _strArg;
 
-	switch (_sfType) {
-	case SHADER_FORMAT_GLSL:
-		strName = "ShaderC";
-		break;
-	case SHADER_FORMAT_HLSL:
-		strName = "DXC";
-		break;
-	case SHADER_FORMAT_SLANG:
-		strName = "SlangC";
-		break;
-	default:
-		strName = "Invalid";
-		break;
-	};
+	//Force it to lowercase to make it casing agnostic
+	std::transform(strArgCopy.begin(), strArgCopy.end(), strArgCopy.begin(), [](unsigned char cChar) { return std::tolower(cChar); });
 
-	return strName;
-}
+	if (strArgCopy == "-vert" || strArgCopy == "-vertex") return SHADER_STAGE_VERTEX;
+	if (strArgCopy == "-frag" || strArgCopy == "-fragment" || strArgCopy == "-pix" || strArgCopy == "-pixel") return SHADER_STAGE_FRAGMENT;
+	if (strArgCopy == "-geom" || strArgCopy == "-geometry") return SHADER_STAGE_GEOMETRY;
+	if (strArgCopy == "-tesc" || strArgCopy == "-tesscontrol" || strArgCopy == "-hull") return SHADER_STAGE_TESSELLATION_CONTROL;
+	if (strArgCopy == "-tese" || strArgCopy == "-tessevaluation" || strArgCopy == "-dom" || strArgCopy == "-domain") return SHADER_STAGE_TESSELLATION_EVALUATION;
+	if (strArgCopy == "-comp" || strArgCopy == "-compute") return SHADER_STAGE_COMPUTE;
+	if (strArgCopy == "-task") return SHADER_STAGE_TASK;
+	if (strArgCopy == "-mesh") return SHADER_STAGE_MESH;
+	if (strArgCopy == "-rgen" || strArgCopy == "-raygen" || strArgCopy == "-raygeneration") return SHADER_STAGE_RAYGEN;
+	if (strArgCopy == "-rahit" || strArgCopy == "-anyhit" || strArgCopy == "-rayanyhit") return SHADER_STAGE_ANY_HIT;
+	if (strArgCopy == "-rchit" || strArgCopy == "-closesthit" || strArgCopy == "-rayclosesthit") return SHADER_STAGE_CLOSEST_HIT;
+	if (strArgCopy == "-rmiss" || strArgCopy == "-miss" || strArgCopy == "-raymiss") return SHADER_STAGE_MISS;
+	if (strArgCopy == "-rint" || strArgCopy == "-intersection" || strArgCopy == "-rayintersection") return SHADER_STAGE_INTERSECTION;
+	if (strArgCopy == "-rcall" || strArgCopy == "-callable" || strArgCopy == "-raycallable") return SHADER_STAGE_CALLABLE;
 
-std::string ShaderCompApplication::ShaderFormatToString(HCShaderFormat _sfType) {
-	std::string strName;
-
-	switch (_sfType) {
-	case SHADER_FORMAT_GLSL:
-		strName = "GLSL";
-		break;
-	case SHADER_FORMAT_HLSL:
-		strName = "HLSL";
-		break;
-	case SHADER_FORMAT_SLANG:
-		strName = "Slang";
-		break;
-	default:
-		strName = "Invalid";
-		break;
-	};
-
-	return strName;
+	return SHADER_STAGE_INVALID;
 }

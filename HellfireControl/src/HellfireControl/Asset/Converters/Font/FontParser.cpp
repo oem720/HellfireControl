@@ -215,7 +215,7 @@ GlyphInfo FontTTFParser::GetGlyphInfo(File& _fFontFile, const FontInfo& _fiInfo,
 
 	int16_t i16ContourCount = ReadTTFValue<int16_t>(_fFontFile);
 
-	//Compiler confusion...? The compiler evaluates these in backwards order when used in the constructor directly.
+	//ShaderCompiler confusion...? The compiler evaluates these in backwards order when used in the constructor directly.
 	//They have to be in separate variables to prevent this. I don't understand...?
 	FWord wMinX = ReadTTFValue<FWord>(_fFontFile);
 	FWord wMinY = ReadTTFValue<FWord>(_fFontFile);

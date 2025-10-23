@@ -22,13 +22,13 @@ void Console::PlatformPrint(const std::string& _strMessage) {
 		}
 	}
 
-	printf(_strMessage.c_str());
+	std::cout << _strMessage;
 }
 
 void Console::PlatformPrintLine(const std::string& _strMessage) {
 	PlatformPrint(_strMessage);
 
-	printf("\n");
+	std::cout << std::endl;
 }
 
 bool WinConsole::InitConsole() {

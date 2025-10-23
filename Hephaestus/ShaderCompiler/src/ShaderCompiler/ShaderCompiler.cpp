@@ -4,13 +4,7 @@
 #include <ShaderCompiler/Core/ShaderCompApplication.hpp>
 
 int main(int argc, char* argv[]) {
-	std::vector<std::string> vArgs(argc - 1);
-
-	for (int iNdx = 1; iNdx < argc; ++iNdx) {
-		vArgs[iNdx - 1] = std::string(argv[iNdx]);
-	}
-
-	ShaderCompApplication appShader(vArgs);
+	ShaderCompApplication appShader(argc, argv);
 
 	try {
 		appShader.Run();

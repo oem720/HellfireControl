@@ -46,11 +46,17 @@ struct HCCompiledShader {
 	std::filesystem::path m_pthFilepath;
 	uint32_t m_u32MagicNumber = HC_SHADER_IDENTIFIER;
 	HCShaderStageType m_sstType = SHADER_STAGE_INVALID;
-	std::vector<HCShaderVar> m_vShaderVars;
+	std::vector<std::unique_ptr<HCShaderVar>> m_vShaderVars;
 	std::vector<uint32_t> m_vCodeBlob;
 };
 
 class ShaderCompiler {
+private:
+	static std::map<uint32_t, std::string> m_mImageFormatNames;
+	static std::map<uint32_t, std::string> m_mImageDimensions;
+	static std::map<uint16_t, std::string> m_mTypeNames;
+	static std::map<uint32_t, std::string> m_mBuiltinNames;
+
 public:
 	ShaderCompiler() {}
 
@@ -60,9 +66,9 @@ protected:
 	virtual void InitializeCompiler() = 0;
 	virtual void CleanupCompiler() = 0;
 
-	std::vector<HCShaderVar> ReflectSPIRV(const std::vector<uint32_t>& _vCodeBlob);
+	std::vector<std::unique_ptr<HCShaderVar>> ReflectSPIRV(const std::vector<uint32_t>& _vCodeBlob);
 	std::vector<uint32_t> OptimizeSPIRV(const std::vector<uint32_t>& _vCodeBlob);
 
 private:
-	std::vector<HCShaderVar> ParseShaderVars(const spirv_cross::Compiler& _cComp, const spirv_cross::ShaderResources& _srRes);
+	std::vector<std::unique_ptr<HCShaderVar>> ParseShaderVars(const spirv_cross::Compiler& _cComp, const spirv_cross::ShaderResources& _srRes);
 };

@@ -198,7 +198,7 @@ void ShaderCompApplication::CommandLineRoutine() {
 		HCCompiledShader csShader = CompileShader(aShader);
 		
 		if (csShader.m_vCodeBlob.size() > 0) {
-			m_vCompiledShaders.push_back(csShader);
+			m_vCompiledShaders.push_back(std::move(csShader));
 		}
 	}
 }
@@ -219,7 +219,7 @@ HCCompiledShader ShaderCompApplication::CompileShader(const HCUncompiledShader& 
 	for (const uint8_t u8Compiler : m_vShaderCompilerOrders[_ucsShader.m_sfFormat]) {
 		Console::DebugInfo("Attempting to compile shader \"" + _ucsShader.m_pthFilename.string() + "\" using compiler: " + m_mShaderCompilerNames[static_cast<HCShaderFormat>(u8Compiler)]);
 		try {
-			csResult = m_vShaderCompilers[u8Compiler]->Compile(_ucsShader);
+			csResult = std::move(m_vShaderCompilers[u8Compiler]->Compile(_ucsShader));
 		}
 		catch (const std::exception& e) {
 			Console::DebugError("Error occurred when compiling shader! Error:\n\n" + std::string(e.what()));

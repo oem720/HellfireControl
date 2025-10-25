@@ -8,6 +8,7 @@
 #include <stdexcept>
 
 //Required Includes (will not be replaced)
+#include <memory>
 #include <thread>
 #include <condition_variable>
 #include <mutex>

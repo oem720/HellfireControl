@@ -23,12 +23,16 @@ void Console::PlatformPrint(const std::string& _strMessage) {
 	}
 
 	std::cout << _strMessage;
+
+	std::cout.flush();
 }
 
 void Console::PlatformPrintLine(const std::string& _strMessage) {
 	PlatformPrint(_strMessage);
 
-	std::cout << std::endl;
+	std::cout << "\r\n";
+
+	std::cout.flush();
 }
 
 bool WinConsole::InitConsole() {

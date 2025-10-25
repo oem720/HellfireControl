@@ -10,9 +10,7 @@ void Console::PrintLine(const std::string& _strMessage, ConsoleColor _ccColor) {
 }
 
 void Console::PrintDebugMessage(const std::string& _strMessage, MessageType _mtType) {
-	PlatformPrint(GetMessagePrefix(_mtType));
-
-	PlatformPrintLine(_strMessage);
+	PlatformPrintLine(GetMessagePrefix(_mtType) + _strMessage);
 }
 
 std::string Console::GetMessagePrefix(MessageType _mtType) {

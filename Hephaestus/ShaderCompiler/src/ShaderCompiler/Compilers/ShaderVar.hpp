@@ -34,7 +34,8 @@ enum HCInputOutputType : uint16_t {
 	IO_UNSIGNED_INT = (1 << 7),
 	IO_HALF_FLOAT = (1 << 8),
 	IO_FLOAT = (1 << 9),
-	IO_DOUBLE_FLOAT = (1 << 10)
+	IO_DOUBLE_FLOAT = (1 << 10),
+	IO_MAX = 0x7FE
 };
 
 enum HCInterpolationType : uint8_t {
@@ -45,160 +46,104 @@ enum HCInterpolationType : uint8_t {
 	INTERP_SAMPLE = (1 << 3)
 };
 
-struct ShaderVarParameters {};
-
 struct HCShaderVar {
 	HCShaderVarType m_svtType;
-
 	std::string m_strVarName;
 
-	std::shared_ptr<ShaderVarParameters> m_pParameters;
+	/*HCShaderVar(const HCShaderVar& _svOther) = default;
+	HCShaderVar(HCShaderVar&& _svOther) noexcept : m_svtType(_svOther.m_svtType), m_strVarName(std::move(_svOther.m_strVarName)) {}*/
 };
 
-struct BufferParameters : public ShaderVarParameters {
+struct HCBufferVar : public HCShaderVar {
 	uint32_t m_u32Binding = 0;
 	uint32_t m_u32Set = 0;
 	uint32_t m_u32Size = 0;
 	uint32_t m_u32UnsizedArrayStride = 0;
-
-	BufferParameters(uint32_t _u32Binding, uint32_t _u32Set, uint32_t _u32Size, uint32_t _u32UnsizedArrayStride)
-		: m_u32Binding(_u32Binding)
-		, m_u32Set(_u32Set)
-		, m_u32Size(_u32Size)
-		, m_u32UnsizedArrayStride(_u32UnsizedArrayStride) {
-	}
 };
 
-struct PushConstantParameters : public ShaderVarParameters {
+struct HCPushConstantVar : public HCShaderVar {
 	uint32_t m_u32Offset = 0;
 	uint32_t m_u32Size = 0;
-
-	PushConstantParameters(uint32_t _u32Offset, uint32_t _u32Size)
-		: m_u32Offset(_u32Offset)
-		, m_u32Size(_u32Size) {
-	}
 };
 
-struct TexelBufferParameters : public ShaderVarParameters {
+struct HCTexelBufferVar : public HCShaderVar {
 	uint32_t m_u32Binding = 0;
 	uint32_t m_u32Set = 0;
 	uint32_t m_u32Format = 0;
-
-	TexelBufferParameters(uint32_t _u32Binding, uint32_t _u32Set, uint32_t _u32Format)
-		: m_u32Binding(_u32Binding)
-		, m_u32Set(_u32Set)
-		, m_u32Format(_u32Format) {
-	}
 };
 
-struct ImageParameters : public ShaderVarParameters {
+struct HCImageVar : public HCShaderVar {
 	uint32_t m_u32Binding = 0;
 	uint32_t m_u32Set = 0;
 	uint8_t m_u8Flags = 0;
 	uint32_t m_u32ArraySize = 0;
 	uint32_t m_u32Dimension = 0;
 	uint32_t m_u32Format = 0;
-
-	ImageParameters(uint32_t _u32Binding, uint32_t _u32Set, uint8_t _u8Flags, uint32_t _u32ArraySize, uint32_t _u32Dimension, uint32_t _u32Format)
-		: m_u32Binding(_u32Binding)
-		, m_u32Set(_u32Set)
-		, m_u8Flags(_u8Flags)
-		, m_u32ArraySize(_u32ArraySize)
-		, m_u32Dimension(_u32Dimension)
-		, m_u32Format(_u32Format) {}
 };
 
-struct SamplerParameters : public ShaderVarParameters {
+struct HCSamplerVar : public HCShaderVar {
 	uint32_t m_u32Binding = 0;
 	uint32_t m_u32Set = 0;
 	uint8_t m_u8Flags = 0;
 	uint32_t m_u32ArraySize = 0;
-
-	SamplerParameters(uint32_t _u32Binding, uint32_t _u32Set, uint8_t _u8Flags, uint32_t _u32ArraySize)
-		: m_u32Binding(_u32Binding)
-		, m_u32Set(_u32Set)
-		, m_u8Flags(_u8Flags)
-		, m_u32ArraySize(_u32ArraySize) {}
 };
 
-struct CombinedSamplerParameters : public ShaderVarParameters {
+struct HCCombinedSamplerVar : public HCShaderVar {
 	uint32_t m_u32Binding = 0;
 	uint32_t m_u32Set = 0;
 	uint8_t m_u8Flags = 0;
 	uint32_t m_u32ArraySize = 0;
 	uint32_t m_u32Dimension = 0;
 	uint32_t m_u32Format = 0;
-
-	CombinedSamplerParameters(uint32_t _u32Binding, uint32_t _u32Set, uint8_t _u8Flags, uint32_t _u32ArraySize, uint32_t _u32Dimension, uint32_t _u32Format)
-		: m_u32Binding(_u32Binding)
-		, m_u32Set(_u32Set)
-		, m_u8Flags(_u8Flags)
-		, m_u32ArraySize(_u32ArraySize)
-		, m_u32Dimension(_u32Dimension) 
-		, m_u32Format(_u32Format) {}
 };
 
-struct InputOutputParameters : public ShaderVarParameters {
+struct HCInputOutputVar : public HCShaderVar {
 	uint32_t m_u32Location = 0;
 	uint32_t m_u32Component = 0;
 	uint16_t m_u16Flags = 0;
 	uint32_t m_u32VecSize = 0;
 	uint32_t m_u32ColumnSize = 0;
 	uint32_t m_u32ArraySize = 0;
-	uint8_t m_u8InterpolationType = 0;	
-
-	InputOutputParameters(uint32_t _u32Location, uint32_t _u32Component, uint16_t _u16Flags, uint32_t _u32VecSize, uint32_t _u32ColumnSize, uint32_t _u32ArraySize, uint8_t _u8InterpolationType)
-		: m_u32Location(_u32Location)
-		, m_u32Component(_u32Component)
-		, m_u16Flags(_u16Flags)
-		, m_u32VecSize(_u32VecSize)
-		, m_u32ColumnSize(_u32ColumnSize)
-		, m_u32ArraySize(_u32ArraySize)
-		, m_u8InterpolationType(_u8InterpolationType) {}
+	uint8_t m_u8InterpolationType = 0;
 };
 
-struct BuiltinIOParameters : public ShaderVarParameters {
+struct HCBuiltinIOVar : public HCShaderVar {
 	uint32_t m_u32BuiltinEnum = 0;
-	uint32_t m_u32StorageClass = 0;
 	uint16_t m_u16Type = 0;
 	uint32_t m_u32VecSize = 0;
 	uint32_t m_u32ColumnSize = 0;
-
-	BuiltinIOParameters(uint32_t _u32BuiltinEnum, uint32_t _u32StorageClass, uint16_t _u16Type, uint32_t _u32VecSize, uint32_t _u32ColumnSize)
-		: m_u32BuiltinEnum(_u32BuiltinEnum)
-		, m_u32StorageClass(_u32StorageClass)
-		, m_u16Type(_u16Type)
-		, m_u32VecSize(_u32VecSize)
-		, m_u32ColumnSize(_u32ColumnSize) {}
 };
 
-struct SubpassInputParameters : public ShaderVarParameters {
+struct HCSubpassInputVar : public HCShaderVar {
 	uint32_t m_u32Binding = 0;
 	uint32_t m_u32Set = 0;
 	uint32_t m_u32InputAttachmentIndex = 0;
 	uint32_t m_u32Dimension = 0;
 	uint32_t m_u32Format = 0;
-
-	SubpassInputParameters(uint32_t _u32Binding,uint32_t _u32Set, uint32_t _u32InputAttachmentIndex, uint32_t _u32Dimension, uint32_t _u32Format)
-		: m_u32Binding(_u32Binding)
-		, m_u32Set(_u32Set)
-		, m_u32InputAttachmentIndex(_u32InputAttachmentIndex)
-		, m_u32Dimension(_u32Dimension)
-		, m_u32Format(_u32Format) {}
 };
 
-struct AccelerationStructureParameters : public ShaderVarParameters {
-
+struct HCAccelerationStructureVar : public HCShaderVar {
+	uint32_t m_u32Binding = 0;
+	uint32_t m_u32Set = 0;
+	uint8_t m_u8Flags = 0;
+	uint32_t m_u32ArraySize = 0;
 };
 
-struct ShaderRecordBufferParameters : public ShaderVarParameters {
-
+struct HCShaderRecordBufferVar : public HCShaderVar {
+	uint32_t m_u32Binding = 0;
+	uint32_t m_u32Set = 0;
+	uint8_t m_u8Flags = 0;
+	uint32_t m_u32ArraySize = 0;
 };
 
-struct AtomicCounterParameters : public ShaderVarParameters {
-
+struct HCAtomicCounterVar : public HCShaderVar {
+	uint32_t m_u32Binding = 0;
+	uint32_t m_u32Set = 0;
+	uint16_t m_u16Type = IO_INVALID;
+	uint32_t m_u32Offset = 0;
 };
 
-struct GLPlainUniformBufferParameters : public ShaderVarParameters {
-
+struct HCGLPlainUniformBufferVar : public HCShaderVar {
+	uint32_t m_u32Location = 0;
+	uint32_t m_u32Size = 0;
 };

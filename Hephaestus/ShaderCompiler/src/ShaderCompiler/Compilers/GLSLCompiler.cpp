@@ -59,7 +59,7 @@ HCCompiledShader GLSLCompiler::Compile(const HCUncompiledShader& _ucsShader) {
 	return {
 		.m_pthFilepath = std::filesystem::path(_ucsShader.m_pthFilename).replace_extension(".hcshd").string(),
 		.m_sstType = _ucsShader.m_sstStage,
-		.m_vShaderVars = ReflectSPIRV(vCodeBlob),
+		.m_vShaderVars = std::move(ReflectSPIRV(vCodeBlob)),
 		.m_vCodeBlob = OptimizeSPIRV(vCodeBlob),
 	};
 }

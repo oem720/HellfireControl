@@ -251,19 +251,19 @@ uint32_t SizeofBaseType(const spirv_cross::SPIRType::BaseType _btType) {
 	}
 }
 
-std::string ConstructInterpolationString(uint8_t _u8Flag) {
+std::string ConstructInterpolationString(uint16_t _u16Flag) {
 	std::string strInterpolatedString;
 
-	if ((_u8Flag & 3) == 0) strInterpolatedString += "Smooth ";
-	if (_u8Flag & INTERP_FLAT) strInterpolatedString += strInterpolatedString.empty() ? "Flat " : "| Flat ";
-	if (_u8Flag & INTERP_NO_PERSPECTIVE) strInterpolatedString += strInterpolatedString.empty() ? "No Perspective " : "| No Perspective ";
-	if (_u8Flag & INTERP_CENTROID) strInterpolatedString += strInterpolatedString.empty() ? "Centroid " : "| Centroid ";
-	if (_u8Flag & INTERP_SAMPLE) strInterpolatedString += strInterpolatedString.empty() ? "Sample " : "| Sample ";
+	if ((_u16Flag & INTERP_SMOOTH) == 0) strInterpolatedString += "Smooth ";
+	if (_u16Flag & INTERP_FLAT) strInterpolatedString += strInterpolatedString.empty() ? "Flat " : "| Flat ";
+	if (_u16Flag & INTERP_NO_PERSPECTIVE) strInterpolatedString += strInterpolatedString.empty() ? "No Perspective " : "| No Perspective ";
+	if (_u16Flag & INTERP_CENTROID) strInterpolatedString += strInterpolatedString.empty() ? "Centroid " : "| Centroid ";
+	if (_u16Flag & INTERP_SAMPLE) strInterpolatedString += strInterpolatedString.empty() ? "Sample " : "| Sample ";
 
 	return strInterpolatedString;
 }
 
-std::map<std::string, HCShaderVar> ShaderCompiler::ReflectSPIRV(const std::vector<uint32_t>& _vCodeBlob) {
+HCShaderVarTable ShaderCompiler::HCShaderVarTableReflectSPIRV(const std::vector<uint32_t>& _vCodeBlob) {
 	Console::DebugInfo("Gathering CPU-exposed shader variables...");
 
 	spirv_cross::Compiler cComp(const_cast<uint32_t*>(_vCodeBlob.data()), _vCodeBlob.size());
@@ -272,7 +272,20 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ReflectSPIRV(const std::vecto
 	spirv_cross::ShaderResources srRes = cComp.get_shader_resources();
 	cComp.set_enabled_interface_variables(std::move(active));
 
-	return ParseShaderVars(cComp, srRes);
+	std::map<std::string, HCShaderVar> vVars = ParseShaderVars(cComp, srRes);
+
+	HCShaderVarTable svtTable = {};
+
+	for (const auto& aPair : vVars) {
+		svtTable.m_vLabels.push_back({
+			.m_strVarName = aPair.first,
+			.m_u32Index = static_cast<uint32_t>(svtTable.m_vVars.size())
+		});
+
+		svtTable.m_vVars.push_back(aPair.second);
+	}
+
+	return svtTable;
 }
 
 std::vector<uint32_t> ShaderCompiler::OptimizeSPIRV(const std::vector<uint32_t>& _vCodeBlob) {
@@ -302,20 +315,23 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 	{
 		for (const auto& aBuffer : _srRes.uniform_buffers) {
 			HCShaderVar svUniform = {
-				.m_svtType = VAR_UNIFORM_BUFFER,
-				.m_u32Binding = _cComp.get_decoration(aBuffer.id, spv::DecorationBinding),
-				.m_u32Set = _cComp.get_decoration(aBuffer.id, spv::DecorationDescriptorSet),
-				.m_u32StaticSize = static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aBuffer.base_type_id))),
-				.m_u32UnsizedArrayStride = GetRuntimeArrayStride(_cComp, aBuffer)
+				.m_u16Type = VAR_UNIFORM_BUFFER,
+				.m_u16Flags = 0,
+				.m_arrData = {
+					_cComp.get_decoration(aBuffer.id, spv::DecorationBinding),
+					_cComp.get_decoration(aBuffer.id, spv::DecorationDescriptorSet),
+					static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aBuffer.base_type_id))),
+					GetRuntimeArrayStride(_cComp, aBuffer)
+				}
 			};
 
 			std::string strName = _cComp.get_name(aBuffer.id);
 		
 			Console::DebugInfo("Found Uniform Buffer: \"" + strName + "\". Parameters:\n"
-				+ "\tBinding: " + std::to_string(svUniform.m_u32Binding) + "\n"
-				+ "\tDescriptor Set: " + std::to_string(svUniform.m_u32Set) + "\n"
-				+ "\tStatic Size: " + std::to_string(svUniform.m_u32StaticSize) + " bytes\n"
-				+ "\tRuntime Array Stride: " + std::to_string(svUniform.m_u32UnsizedArrayStride) + " bytes"
+				+ "\tBinding: " + std::to_string(svUniform.m_arrData[0]) + "\n"
+				+ "\tDescriptor Set: " + std::to_string(svUniform.m_arrData[1]) + "\n"
+				+ "\tStatic Size: " + std::to_string(svUniform.m_arrData[2]) + " bytes\n"
+				+ "\tRuntime Array Stride: " + std::to_string(svUniform.m_arrData[3]) + " bytes"
 			);
 		
 			mShaderVars[strName] = svUniform;
@@ -323,20 +339,23 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 
 		for (const auto& aBuffer : _srRes.storage_buffers) {
 			HCShaderVar svStorage = {
-				.m_svtType = VAR_STORAGE_BUFFER,
-				.m_u32Binding = _cComp.get_decoration(aBuffer.id, spv::DecorationBinding),
-				.m_u32Set = _cComp.get_decoration(aBuffer.id, spv::DecorationDescriptorSet),
-				.m_u32StaticSize = static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aBuffer.base_type_id))),
-				.m_u32UnsizedArrayStride = GetRuntimeArrayStride(_cComp, aBuffer)
+				.m_u16Type = VAR_STORAGE_BUFFER,
+				.m_u16Flags = 0,
+				.m_arrData = {
+					_cComp.get_decoration(aBuffer.id, spv::DecorationBinding),
+					_cComp.get_decoration(aBuffer.id, spv::DecorationDescriptorSet),
+					static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aBuffer.base_type_id))),
+					GetRuntimeArrayStride(_cComp, aBuffer)
+				}
 			};
 
 			std::string strName = _cComp.get_name(aBuffer.id);
 		
 			Console::DebugInfo("Found Storage Buffer: \"" + strName + "\". Parameters:\n"
-				+ "\tBinding: " + std::to_string(svStorage.m_u32Binding) + "\n"
-				+ "\tDescriptor Set: " + std::to_string(svStorage.m_u32Set) + "\n"
-				+ "\tStatic Size: " + std::to_string(svStorage.m_u32StaticSize) + " bytes\n"
-				+ "\tRuntime Array Stride: " + std::to_string(svStorage.m_u32UnsizedArrayStride) + " bytes"
+				+ "\tBinding: " + std::to_string(svStorage.m_arrData[0]) + "\n"
+				+ "\tDescriptor Set: " + std::to_string(svStorage.m_arrData[1]) + "\n"
+				+ "\tStatic Size: " + std::to_string(svStorage.m_arrData[2]) + " bytes\n"
+				+ "\tRuntime Array Stride: " + std::to_string(svStorage.m_arrData[3]) + " bytes"
 			);
 		
 			mShaderVars[strName] = svStorage;
@@ -347,16 +366,19 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 	{
 		for (const auto& aPushConstant : _srRes.push_constant_buffers) {
 			HCShaderVar svPushConstant = {
-				.m_svtType = VAR_PUSH_CONSTANT_BUFFER,
-				.m_u32StaticSize = static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aPushConstant.base_type_id))),
-				.m_u32Offset = _cComp.get_decoration(aPushConstant.id, spv::DecorationOffset)
+				.m_u16Type = VAR_PUSH_CONSTANT_BUFFER,
+				.m_u16Flags = 0,
+				.m_arrData = {
+					_cComp.get_decoration(aPushConstant.id, spv::DecorationOffset),
+					static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aPushConstant.base_type_id)))
+				}
 			};
 
 			std::string strName = _cComp.get_name(aPushConstant.id);
 
 			Console::DebugInfo("Found Push Constant Buffer: \"" + strName + "\". Parameters:\n"
-				+ "\tOffset: " + std::to_string(svPushConstant.m_u32Offset) + "\n"
-				+ "\tSize: " + std::to_string(svPushConstant.m_u32StaticSize) + " bytes"
+				+ "\tOffset: " + std::to_string(svPushConstant.m_arrData[0]) + "\n"
+				+ "\tSize: " + std::to_string(svPushConstant.m_arrData[1]) + " bytes"
 			);
 
 			mShaderVars[strName] = svPushConstant;
@@ -374,16 +396,19 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 
 			if (stType.image.dim == spv::DimBuffer) {
 				svImageVar = {
-					.m_svtType = VAR_STORAGE_TEXEL_BUFFER,
-					.m_u32Binding = _cComp.get_decoration(aImage.id, spv::DecorationBinding),
-					.m_u32Set = _cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
-					.m_u32Format = static_cast<uint32_t>(stType.image.format)
+					.m_u16Type = VAR_STORAGE_TEXEL_BUFFER,
+					.m_u16Flags = 0,
+					.m_arrData = {
+						_cComp.get_decoration(aImage.id, spv::DecorationBinding),
+						_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
+						static_cast<uint32_t>(stType.image.format)
+					}
 				};
 
 				Console::DebugInfo("Found Storage Texel Buffer: \"" + strName + "\". Parameters:\n"
-					+ "\tBinding: " + std::to_string(svImageVar.m_u32Binding) + "\n"
-					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_u32Set) + "\n"
-					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_u32Format]
+					+ "\tBinding: " + std::to_string(svImageVar.m_arrData[0]) + "\n"
+					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_arrData[1]) + "\n"
+					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_arrData[2]]
 				);
 			}
 			else {
@@ -392,24 +417,26 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				uint16_t u16Flags = (stType.array.empty() ? 0 : 1) | (stType.image.ms ? 0 : (1 << 1));
 
 				svImageVar = {
-					.m_svtType = VAR_IMAGE_2D,
+					.m_u16Type = VAR_IMAGE_2D,
 					.m_u16Flags = u16Flags,
-					.m_u32Binding = _cComp.get_decoration(aImage.id, spv::DecorationBinding),
-					.m_u32Set = _cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
-					.m_u32Format = static_cast<uint32_t>(stType.image.format),
-					.m_u32Dimension = static_cast<uint32_t>(stType.image.dim),
-					.m_u32StaticArraySize = stType.array.empty() ? 0 : stType.array[0]
+					.m_arrData = {
+						_cComp.get_decoration(aImage.id, spv::DecorationBinding),
+						_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
+						stType.array.empty() ? 0 : stType.array[0],
+						static_cast<uint32_t>(stType.image.dim),
+						static_cast<uint32_t>(stType.image.format)
+					}
 				};
 
 				Console::DebugInfo("Found Image 2D: \"" + strName + "\". Parameters:\n"
-					+ "\tBinding: " + std::to_string(svImageVar.m_u32Binding) + "\n"
-					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_u32Set) + "\n"
+					+ "\tBinding: " + std::to_string(svImageVar.m_arrData[0]) + "\n"
+					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_arrData[1]) + "\n"
 					+ "\tIs Array: " + (svImageVar.m_u16Flags & 1 ? "true" : "false") + "\n"
-					+ "\tIs Unsized Array: " + ((svImageVar.m_u16Flags & 1) && svImageVar.m_u32StaticArraySize == 0 ? "true" : "false") + "\n"
+					+ "\tIs Unsized Array: " + ((svImageVar.m_u16Flags & 1) && svImageVar.m_arrData[2] == 0 ? "true" : "false") + "\n"
 					+ "\tIs Multisampled: " + (svImageVar.m_u16Flags & 2 ? "true" : "false") + "\n"
-					+ "\tArray Size (if not runtime): " + std::to_string(svImageVar.m_u32StaticArraySize) + "\n"
-					+ "\tDimensions: " + m_mImageDimensions[svImageVar.m_u32Dimension] + "\n"
-					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_u32Format]
+					+ "\tArray Size (if not runtime): " + std::to_string(svImageVar.m_arrData[2]) + "\n"
+					+ "\tDimensions: " + m_mImageDimensions[svImageVar.m_arrData[3]] + "\n"
+					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_arrData[4]]
 				);
 			}
 			
@@ -425,16 +452,19 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 
 			if (stType.image.dim == spv::DimBuffer) {
 				svImageVar = {
-					.m_svtType = VAR_UNIFORM_TEXEL_BUFFER,
-					.m_u32Binding = _cComp.get_decoration(aImage.id, spv::DecorationBinding),
-					.m_u32Set = _cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
-					.m_u32Format = static_cast<uint32_t>(stType.image.format)
+					.m_u16Type = VAR_UNIFORM_TEXEL_BUFFER,
+					.m_u16Flags = 0,
+					.m_arrData = {
+						_cComp.get_decoration(aImage.id, spv::DecorationBinding),
+						_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
+						static_cast<uint32_t>(stType.image.format)
+					}
 				};
 
 				Console::DebugInfo("Found Uniform Texel Buffer: \"" + strName + "\". Parameters:\n"
-					+ "\tBinding: " + std::to_string(svImageVar.m_u32Binding) + "\n"
-					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_u32Set) + "\n"
-					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_u32Format]
+					+ "\tBinding: " + std::to_string(svImageVar.m_arrData[0]) + "\n"
+					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_arrData[1]) + "\n"
+					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_arrData[2]]
 				);
 			}
 			else {
@@ -443,24 +473,26 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				uint16_t u16Flags = (stType.array.empty() ? 0 : 1) | (stType.image.ms ? 0 : (1 << 1));
 
 				svImageVar = {
-					.m_svtType = VAR_TEXTURE_2D,
+					.m_u16Type = VAR_TEXTURE_2D,
 					.m_u16Flags = u16Flags,
-					.m_u32Binding = _cComp.get_decoration(aImage.id, spv::DecorationBinding),
-					.m_u32Set = _cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
-					.m_u32Format = static_cast<uint32_t>(stType.image.format),
-					.m_u32Dimension = static_cast<uint32_t>(stType.image.dim),
-					.m_u32StaticArraySize = stType.array.empty() ? 0 : stType.array[0]
+					.m_arrData = {
+						_cComp.get_decoration(aImage.id, spv::DecorationBinding),
+						_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
+						stType.array.empty() ? 0 : stType.array[0],
+						static_cast<uint32_t>(stType.image.dim),
+						static_cast<uint32_t>(stType.image.format)
+					}
 				};
 
 				Console::DebugInfo("Found Texture 2D: \"" + strName + "\". Parameters:\n"
-					+ "\tBinding: " + std::to_string(svImageVar.m_u32Binding) + "\n"
-					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_u32Set) + "\n"
+					+ "\tBinding: " + std::to_string(svImageVar.m_arrData[0]) + "\n"
+					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_arrData[1]) + "\n"
 					+ "\tIs Array: " + (svImageVar.m_u16Flags & 1 ? "true" : "false") + "\n"
-					+ "\tIs Unsized Array: " + ((svImageVar.m_u16Flags & 1) && svImageVar.m_u32StaticArraySize == 0 ? "true" : "false") + "\n"
+					+ "\tIs Unsized Array: " + ((svImageVar.m_u16Flags & 1) && svImageVar.m_arrData[2] == 0 ? "true" : "false") + "\n"
 					+ "\tIs Multisampled: " + (svImageVar.m_u16Flags & 2 ? "true" : "false") + "\n"
-					+ "\tArray Size (if not runtime): " + std::to_string(svImageVar.m_u32StaticArraySize) + "\n"
-					+ "\tDimensions: " + m_mImageDimensions[svImageVar.m_u32Dimension] + "\n"
-					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_u32Format]
+					+ "\tArray Size (if not runtime): " + std::to_string(svImageVar.m_arrData[2]) + "\n"
+					+ "\tDimensions: " + m_mImageDimensions[svImageVar.m_arrData[3]] + "\n"
+					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_arrData[4]]
 				);
 			}
 			
@@ -476,21 +508,23 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 			uint16_t u16Flags = !stType.array.empty();
 
 			HCShaderVar svSampler = {
-				.m_svtType = VAR_SAMPLER,
+				.m_u16Type = VAR_SAMPLER,
 				.m_u16Flags = u16Flags,
-				.m_u32Binding = _cComp.get_decoration(aSampler.id, spv::DecorationBinding),
-				.m_u32Set = _cComp.get_decoration(aSampler.id, spv::DecorationDescriptorSet),
-				.m_u32StaticArraySize = stType.array.empty() ? 0 : stType.array[0]
+				.m_arrData = {
+					_cComp.get_decoration(aSampler.id, spv::DecorationBinding),
+					_cComp.get_decoration(aSampler.id, spv::DecorationDescriptorSet),
+					stType.array.empty() ? 0 : stType.array[0]
+				}
 			};
 
 			std::string strName = _cComp.get_name(aSampler.id);
 
 			Console::DebugInfo("Found Sampler: \"" + strName + "\". Parameters:\n"
-				+ "\tBinding: " + std::to_string(svSampler.m_u32Binding) + "\n"
-				+ "\tDescriptor Set: " + std::to_string(svSampler.m_u32Set) + "\n"
+				+ "\tBinding: " + std::to_string(svSampler.m_arrData[0]) + "\n"
+				+ "\tDescriptor Set: " + std::to_string(svSampler.m_arrData[1]) + "\n"
 				+ "\tIs Array: " + (svSampler.m_u16Flags & 1 ? "true" : "false") + "\n"
-				+ "\tIs Unsized Array: " + ((svSampler.m_u16Flags & 1) && svSampler.m_u32StaticArraySize == 0 ? "true" : "false") + "\n"
-				+ "\tArray Size (if not runtime): " + std::to_string(svSampler.m_u32StaticArraySize)
+				+ "\tIs Unsized Array: " + ((svSampler.m_u16Flags & 1) && svSampler.m_arrData[2] == 0 ? "true" : "false") + "\n"
+				+ "\tArray Size (if not runtime): " + std::to_string(svSampler.m_arrData[2])
 			);
 
 			mShaderVars[strName] = svSampler;
@@ -502,25 +536,27 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 			uint16_t u16Flags = !stType.array.empty();
 
 			HCShaderVar svCombinedSampler = {
-				.m_svtType = VAR_COMBINED_IMAGE_SAMPLER,
+				.m_u16Type = VAR_COMBINED_IMAGE_SAMPLER,
 				.m_u16Flags = u16Flags,
-				.m_u32Binding = _cComp.get_decoration(aSampler.id, spv::DecorationBinding),
-				.m_u32Set = _cComp.get_decoration(aSampler.id, spv::DecorationDescriptorSet),
-				.m_u32Format = static_cast<uint32_t>(stType.image.format),
-				.m_u32Dimension = static_cast<uint32_t>(stType.image.dim),
-				.m_u32StaticArraySize = stType.array.empty() ? 0 : stType.array[0]
+				.m_arrData = {
+					_cComp.get_decoration(aSampler.id, spv::DecorationBinding),
+					_cComp.get_decoration(aSampler.id, spv::DecorationDescriptorSet),
+					stType.array.empty() ? 0 : stType.array[0],
+					static_cast<uint32_t>(stType.image.dim),
+					static_cast<uint32_t>(stType.image.format)
+				}
 			};
 
 			std::string strName = _cComp.get_name(aSampler.id);
 
 			Console::DebugInfo("Found Combined Image Sampler: \"" + strName + "\". Parameters:\n"
-				+ "\tBinding: " + std::to_string(svCombinedSampler.m_u32Binding) + "\n"
-				+ "\tDescriptor Set: " + std::to_string(svCombinedSampler.m_u32Set) + "\n"
+				+ "\tBinding: " + std::to_string(svCombinedSampler.m_arrData[0]) + "\n"
+				+ "\tDescriptor Set: " + std::to_string(svCombinedSampler.m_arrData[1]) + "\n"
 				+ "\tIs Array: " + (svCombinedSampler.m_u16Flags & 1 ? "true" : "false") + "\n"
-				+ "\tIs Unsized Array: " + ((svCombinedSampler.m_u16Flags & 1) && svCombinedSampler.m_u32StaticArraySize == 0 ? "true" : "false") + "\n"
-				+ "\tArray Size (if not runtime): " + std::to_string(svCombinedSampler.m_u32StaticArraySize) + "\n"
-				+ "\tDimensions: " + m_mImageDimensions[svCombinedSampler.m_u32Dimension] + "\n"
-				+ "\tFormat: " + m_mImageFormatNames[svCombinedSampler.m_u32Format]
+				+ "\tIs Unsized Array: " + ((svCombinedSampler.m_u16Flags & 1) && svCombinedSampler.m_arrData[2] == 0 ? "true" : "false") + "\n"
+				+ "\tArray Size (if not runtime): " + std::to_string(svCombinedSampler.m_arrData[2]) + "\n"
+				+ "\tDimensions: " + m_mImageDimensions[svCombinedSampler.m_arrData[3]] + "\n"
+				+ "\tFormat: " + m_mImageFormatNames[svCombinedSampler.m_arrData[4]]
 			);
 			
 			mShaderVars[strName] = svCombinedSampler;
@@ -534,35 +570,35 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 
 			uint16_t u16Flags = !stType.array.empty() | TranslateBaseTypeToFlag(stType.basetype);
 
-			uint8_t u8InterpFlags = INTERP_SMOOTH;
-			u8InterpFlags |= _cComp.has_decoration(aInput.id, spv::DecorationFlat) ? INTERP_FLAT : 0;
-			u8InterpFlags |= _cComp.has_decoration(aInput.id, spv::DecorationNoPerspective) ? INTERP_NO_PERSPECTIVE : 0;
-			u8InterpFlags |= _cComp.has_decoration(aInput.id, spv::DecorationCentroid) ? INTERP_CENTROID : 0;
-			u8InterpFlags |= _cComp.has_decoration(aInput.id, spv::DecorationSample) ? INTERP_SAMPLE : 0;
+			u16Flags |= _cComp.has_decoration(aInput.id, spv::DecorationFlat) ? INTERP_FLAT : 0;
+			u16Flags |= _cComp.has_decoration(aInput.id, spv::DecorationNoPerspective) ? INTERP_NO_PERSPECTIVE : 0;
+			u16Flags |= _cComp.has_decoration(aInput.id, spv::DecorationCentroid) ? INTERP_CENTROID : 0;
+			u16Flags |= _cComp.has_decoration(aInput.id, spv::DecorationSample) ? INTERP_SAMPLE : 0;
 
 			HCShaderVar svInput = {
-				.m_svtType = VAR_STAGE_INPUT,
-				.m_u8InterpolationType = u8InterpFlags,
+				.m_u16Type = VAR_STAGE_INPUT,
 				.m_u16Flags = u16Flags,
-				.m_u32StaticArraySize = stType.array.empty() ? 0 : stType.array[0],
-				.m_u32VecSize = stType.vecsize,
-				.m_u32ColumnSize = stType.columns,
-				.m_u32Location = _cComp.get_decoration(aInput.id, spv::DecorationLocation),
-				.m_u32Component = _cComp.get_decoration(aInput.id, spv::DecorationComponent),
+				.m_arrData = {
+					_cComp.get_decoration(aInput.id, spv::DecorationLocation),
+					_cComp.get_decoration(aInput.id, spv::DecorationComponent),
+					stType.array.empty() ? 0 : stType.array[0],
+					stType.vecsize,
+					stType.columns
+				}
 			};
 
 			std::string strName = _cComp.get_name(aInput.id);
 
 			Console::DebugInfo("Found Input: \"" + strName + "\". Parameters:\n"
-				+ "\tLocation: " + std::to_string(svInput.m_u32Location) + "\n"
-				+ "\tComponent: " + std::to_string(svInput.m_u32Component) + "\n"
+				+ "\tLocation: " + std::to_string(svInput.m_arrData[0]) + "\n"
+				+ "\tComponent: " + std::to_string(svInput.m_arrData[1]) + "\n"
 				+ "\tIs Array: " + (svInput.m_u16Flags & 1 ? "true" : "false") + "\n"
-				+ "\tIs Unsized Array: " + ((svInput.m_u16Flags & 1) && svInput.m_u32StaticArraySize == 0 ? "true" : "false") + "\n"
-				+ "\tArray Size (if not runtime): " + std::to_string(svInput.m_u32StaticArraySize) + "\n"
+				+ "\tIs Unsized Array: " + ((svInput.m_u16Flags & 1) && svInput.m_arrData[2] == 0 ? "true" : "false") + "\n"
+				+ "\tArray Size (if not runtime): " + std::to_string(svInput.m_arrData[2]) + "\n"
 				+ "\tComponent Type: " + m_mTypeNames[svInput.m_u16Flags & IO_MAX] + "\n"
-				+ "\tVector width: " + std::to_string(svInput.m_u32VecSize) + "\n"
-				+ "\tColumn count: " + std::to_string(svInput.m_u32ColumnSize) + "\n"
-				+ "\tInterpolation method: " + ConstructInterpolationString(svInput.m_u8InterpolationType)
+				+ "\tVector width: " + std::to_string(svInput.m_arrData[3]) + "\n"
+				+ "\tColumn count: " + std::to_string(svInput.m_arrData[4]) + "\n"
+				+ "\tInterpolation method: " + ConstructInterpolationString(svInput.m_u16Flags)
 			);
 
 			mShaderVars[strName] = svInput;
@@ -572,20 +608,24 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aInput.resource.type_id);
 
 			HCShaderVar svBuiltinInput = {
-				.m_svtType = VAR_BUILTIN_STAGE_INPUT,
+				.m_u16Type = VAR_BUILTIN_STAGE_INPUT,
 				.m_u16Flags = TranslateBaseTypeToFlag(stType.basetype),
-				.m_u32VecSize = stType.vecsize,
-				.m_u32ColumnSize = stType.columns,
-				.m_u32BuiltinEnum = static_cast<uint32_t>(aInput.builtin)
+				.m_arrData = {
+					static_cast<uint32_t>(aInput.builtin),
+					stType.vecsize,
+					stType.columns
+				}
 			};
+
+			if (svBuiltinInput.m_u16Flags == IO_INVALID) continue;
 
 			std::string strName = _cComp.get_name(aInput.resource.id);
 
 			Console::DebugInfo("Found Built-in Input: \"" + strName + "\". Parameters:\n"
-				+ "\tBuilt-in: " + m_mBuiltinNames[svBuiltinInput.m_u32BuiltinEnum] + "\n"
+				+ "\tBuilt-in: " + m_mBuiltinNames[svBuiltinInput.m_arrData[0]] + "\n"
 				+ "\tComponent Type: " + m_mTypeNames[svBuiltinInput.m_u16Flags] + "\n"
-				+ "\tVector width: " + std::to_string(svBuiltinInput.m_u32VecSize) + "\n"
-				+ "\tColumn count: " + std::to_string(svBuiltinInput.m_u32ColumnSize)
+				+ "\tVector width: " + std::to_string(svBuiltinInput.m_arrData[1]) + "\n"
+				+ "\tColumn count: " + std::to_string(svBuiltinInput.m_arrData[2])
 			);
 
 			mShaderVars[strName] = svBuiltinInput;
@@ -595,22 +635,25 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aSubpassInput.type_id);
 
 			HCShaderVar svSubpassInput = {
-				.m_svtType = VAR_SUBPASS_INPUT,
-				.m_u32Binding = _cComp.get_decoration(aSubpassInput.id, spv::DecorationBinding),
-				.m_u32Set = _cComp.get_decoration(aSubpassInput.id, spv::DecorationDescriptorSet),
-				.m_u32Format = static_cast<uint32_t>(stType.image.format),
-				.m_u32Dimension = static_cast<uint32_t>(stType.image.dim),
-				.m_u32InputAttachmentIndex = _cComp.get_decoration(aSubpassInput.id, spv::DecorationInputAttachmentIndex)
+				.m_u16Type = VAR_SUBPASS_INPUT,
+				.m_u16Flags = 0,
+				.m_arrData = {
+					_cComp.get_decoration(aSubpassInput.id, spv::DecorationBinding),
+					_cComp.get_decoration(aSubpassInput.id, spv::DecorationDescriptorSet),
+					_cComp.get_decoration(aSubpassInput.id, spv::DecorationInputAttachmentIndex),
+					static_cast<uint32_t>(stType.image.dim),
+					static_cast<uint32_t>(stType.image.format)
+				}
 			};
 
 			std::string strName = _cComp.get_name(aSubpassInput.id);
 
 			Console::DebugInfo("Found Subpass Input: \"" + strName + "\". Parameters:\n"
-				+ "\tBinding: " + std::to_string(svSubpassInput.m_u32Binding) + "\n"
-				+ "\tDescriptor Set: " + std::to_string(svSubpassInput.m_u32Set) + "\n"
-				+ "\tInput Attachment Index: " + std::to_string(svSubpassInput.m_u32InputAttachmentIndex) + "\n"
-				+ "\tDimension: " + m_mImageDimensions[svSubpassInput.m_u32Dimension] + "\n"
-				+ "\tFormat: " + m_mImageFormatNames[svSubpassInput.m_u32Format]
+				+ "\tBinding: " + std::to_string(svSubpassInput.m_arrData[0]) + "\n"
+				+ "\tDescriptor Set: " + std::to_string(svSubpassInput.m_arrData[1]) + "\n"
+				+ "\tInput Attachment Index: " + std::to_string(svSubpassInput.m_arrData[2]) + "\n"
+				+ "\tDimension: " + m_mImageDimensions[svSubpassInput.m_arrData[3]] + "\n"
+				+ "\tFormat: " + m_mImageFormatNames[svSubpassInput.m_arrData[4]]
 			);
 
 			mShaderVars[strName] = svSubpassInput;
@@ -624,35 +667,35 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 
 			uint16_t u16Flags = !stType.array.empty() | TranslateBaseTypeToFlag(stType.basetype);
 
-			uint8_t u8InterpFlags = INTERP_SMOOTH;
-			u8InterpFlags |= _cComp.has_decoration(aOutput.id, spv::DecorationFlat) ? INTERP_FLAT : 0;
-			u8InterpFlags |= _cComp.has_decoration(aOutput.id, spv::DecorationNoPerspective) ? INTERP_NO_PERSPECTIVE : 0;
-			u8InterpFlags |= _cComp.has_decoration(aOutput.id, spv::DecorationCentroid) ? INTERP_CENTROID : 0;
-			u8InterpFlags |= _cComp.has_decoration(aOutput.id, spv::DecorationSample) ? INTERP_SAMPLE : 0;
+			u16Flags |= _cComp.has_decoration(aOutput.id, spv::DecorationFlat) ? INTERP_FLAT : 0;
+			u16Flags |= _cComp.has_decoration(aOutput.id, spv::DecorationNoPerspective) ? INTERP_NO_PERSPECTIVE : 0;
+			u16Flags |= _cComp.has_decoration(aOutput.id, spv::DecorationCentroid) ? INTERP_CENTROID : 0;
+			u16Flags |= _cComp.has_decoration(aOutput.id, spv::DecorationSample) ? INTERP_SAMPLE : 0;
 
 			HCShaderVar svOutput = {
-				.m_svtType = VAR_STAGE_OUTPUT,
-				.m_u8InterpolationType = u8InterpFlags,
+				.m_u16Type = VAR_STAGE_OUTPUT,
 				.m_u16Flags = u16Flags,
-				.m_u32StaticArraySize = stType.array.empty() ? 0 : stType.array[0],
-				.m_u32VecSize = stType.vecsize,
-				.m_u32ColumnSize = stType.columns,
-				.m_u32Location = _cComp.get_decoration(aOutput.id, spv::DecorationLocation),
-				.m_u32Component = _cComp.get_decoration(aOutput.id, spv::DecorationComponent)
+				.m_arrData = {
+					_cComp.get_decoration(aOutput.id, spv::DecorationLocation),
+					_cComp.get_decoration(aOutput.id, spv::DecorationComponent),
+					stType.array.empty() ? 0 : stType.array[0],
+					stType.vecsize,
+					stType.columns
+				}
 			};
 
 			std::string strName = _cComp.get_name(aOutput.id);
 
 			Console::DebugInfo("Found Output: \"" + strName + "\". Parameters:\n"
-				+ "\tLocation: " + std::to_string(svOutput.m_u32Location) + "\n"
-				+ "\tComponent: " + std::to_string(svOutput.m_u32Component) + "\n"
+				+ "\tLocation: " + std::to_string(svOutput.m_arrData[0]) + "\n"
+				+ "\tComponent: " + std::to_string(svOutput.m_arrData[1]) + "\n"
 				+ "\tIs Array: " + (svOutput.m_u16Flags & 1 ? "true" : "false") + "\n"
-				+ "\tIs Unsized Array: " + ((svOutput.m_u16Flags & 1) && svOutput.m_u32StaticArraySize == 0 ? "true" : "false") + "\n"
-				+ "\tArray Size (if not runtime): " + std::to_string(svOutput.m_u32StaticArraySize) + "\n"
+				+ "\tIs Unsized Array: " + ((svOutput.m_u16Flags & 1) && svOutput.m_arrData[2] == 0 ? "true" : "false") + "\n"
+				+ "\tArray Size (if not runtime): " + std::to_string(svOutput.m_arrData[2]) + "\n"
 				+ "\tComponent Type: " + m_mTypeNames[svOutput.m_u16Flags & IO_MAX] + "\n"
-				+ "\tVector width: " + std::to_string(svOutput.m_u32VecSize) + "\n"
-				+ "\tColumn count: " + std::to_string(svOutput.m_u32ColumnSize) + "\n"
-				+ "\tInterpolation method: " + ConstructInterpolationString(svOutput.m_u8InterpolationType)
+				+ "\tVector width: " + std::to_string(svOutput.m_arrData[3]) + "\n"
+				+ "\tColumn count: " + std::to_string(svOutput.m_arrData[4]) + "\n"
+				+ "\tInterpolation method: " + ConstructInterpolationString(svOutput.m_u16Flags)
 			);
 
 			mShaderVars[strName] = svOutput;
@@ -662,20 +705,24 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aOutput.resource.type_id);
 
 			HCShaderVar svBuiltinOutput = {
-				.m_svtType = VAR_BUILTIN_STAGE_INPUT,
+				.m_u16Type = VAR_BUILTIN_STAGE_INPUT,
 				.m_u16Flags = TranslateBaseTypeToFlag(stType.basetype),
-				.m_u32VecSize = stType.vecsize,
-				.m_u32ColumnSize = stType.columns,
-				.m_u32BuiltinEnum = static_cast<uint32_t>(aOutput.builtin)
+				.m_arrData = {
+					static_cast<uint32_t>(aOutput.builtin),
+					stType.vecsize,
+					stType.columns
+				}
 			};
+
+			if (svBuiltinOutput.m_u16Flags == IO_INVALID) continue;
 
 			std::string strName = _cComp.get_name(aOutput.resource.id);
 
 			Console::DebugInfo("Found Built-in Output: \"" + strName + "\". Parameters:\n"
-				+ "\tBuilt-in: " + m_mBuiltinNames[svBuiltinOutput.m_u32BuiltinEnum] + "\n"
+				+ "\tBuilt-in: " + m_mBuiltinNames[svBuiltinOutput.m_arrData[0]] + "\n"
 				+ "\tComponent Type: " + m_mTypeNames[svBuiltinOutput.m_u16Flags] + "\n"
-				+ "\tVector width: " + std::to_string(svBuiltinOutput.m_u32VecSize) + "\n"
-				+ "\tColumn count: " + std::to_string(svBuiltinOutput.m_u32ColumnSize)
+				+ "\tVector width: " + std::to_string(svBuiltinOutput.m_arrData[1]) + "\n"
+				+ "\tColumn count: " + std::to_string(svBuiltinOutput.m_arrData[2])
 			);
 
 			mShaderVars[strName] = svBuiltinOutput;
@@ -690,20 +737,22 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 			uint16_t u16Flags = !stType.array.empty();
 
 			HCShaderVar svAcceleration = {
-				.m_svtType = VAR_ACCELERATION_STRUCTURE,
+				.m_u16Type = VAR_ACCELERATION_STRUCTURE,
 				.m_u16Flags = u16Flags,
-				.m_u32Binding = _cComp.get_decoration(aAcceleration.id, spv::DecorationBinding),
-				.m_u32Set = _cComp.get_decoration(aAcceleration.id, spv::DecorationDescriptorSet),
-				.m_u32StaticArraySize = u16Flags == 0 ? 0 : stType.array[0]
+				.m_arrData = {
+					_cComp.get_decoration(aAcceleration.id, spv::DecorationBinding),
+					_cComp.get_decoration(aAcceleration.id, spv::DecorationDescriptorSet),
+					u16Flags == 0 ? 0 : stType.array[0]
+				}
 			};
 
 			std::string strName = _cComp.get_name(aAcceleration.id);
 
 			Console::DebugInfo("Found Acceleration Structure: \"" + strName + "\". Parameters:\n"
-				+ "\tBinding: " + std::to_string(svAcceleration.m_u32Binding) + "\n"
-				+ "\tSet: " + std::to_string(svAcceleration.m_u32Set) + "\n"
+				+ "\tBinding: " + std::to_string(svAcceleration.m_arrData[0]) + "\n"
+				+ "\tSet: " + std::to_string(svAcceleration.m_arrData[1]) + "\n"
 				+ "\tIs Array: " + (svAcceleration.m_u16Flags ? "true" : "false") + "\n"
-				+ "\tArray Size: " + std::to_string(svAcceleration.m_u32StaticArraySize)
+				+ "\tArray Size: " + std::to_string(svAcceleration.m_arrData[2])
 			);
 
 			mShaderVars[strName] = svAcceleration;
@@ -716,20 +765,22 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 			uint16_t u16Flags = !stType.array.empty();
 
 			HCShaderVar svRecordBuffer = {
-				.m_svtType = VAR_SHADER_RECORD_BUFFER,
+				.m_u16Type = VAR_SHADER_RECORD_BUFFER,
 				.m_u16Flags = u16Flags,
-				.m_u32Binding = _cComp.get_decoration(aShaderBuffer.id, spv::DecorationBinding),
-				.m_u32Set = _cComp.get_decoration(aShaderBuffer.id, spv::DecorationDescriptorSet),
-				.m_u32StaticArraySize = u16Flags == 0 ? 0 : stType.array[0]
+				.m_arrData = {
+					_cComp.get_decoration(aShaderBuffer.id, spv::DecorationBinding),
+					_cComp.get_decoration(aShaderBuffer.id, spv::DecorationDescriptorSet),
+					u16Flags == 0 ? 0 : stType.array[0]
+				}
 			};
 
 			std::string strName = _cComp.get_name(aShaderBuffer.id);
 
 			Console::DebugInfo("Found Shader Record Buffer: \"" + strName + "\". Parameters:\n"
-				+ "\tBinding: " + std::to_string(svRecordBuffer.m_u32Binding) + "\n"
-				+ "\tSet: " + std::to_string(svRecordBuffer.m_u32Set) + "\n"
+				+ "\tBinding: " + std::to_string(svRecordBuffer.m_arrData[0]) + "\n"
+				+ "\tSet: " + std::to_string(svRecordBuffer.m_arrData[1]) + "\n"
 				+ "\tIs Array: " + (svRecordBuffer.m_u16Flags ? "true" : "false") + "\n"
-				+ "\tArray Size: " + std::to_string(svRecordBuffer.m_u32StaticArraySize)
+				+ "\tArray Size: " + std::to_string(svRecordBuffer.m_arrData[2])
 			);
 
 			mShaderVars[strName] = svRecordBuffer;
@@ -737,20 +788,22 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 
 		for (const auto& aAtomicCounter : _srRes.atomic_counters) {
 			HCShaderVar svAtomicCounter = {
-				.m_svtType = VAR_ATOMIC_COUNTER,
+				.m_u16Type = VAR_ATOMIC_COUNTER,
 				.m_u16Flags = TranslateBaseTypeToFlag(_cComp.get_type(aAtomicCounter.type_id).basetype),
-				.m_u32Binding = _cComp.get_decoration(aAtomicCounter.id, spv::DecorationBinding),
-				.m_u32Set = _cComp.get_decoration(aAtomicCounter.id, spv::DecorationDescriptorSet),
-				.m_u32Offset = _cComp.get_decoration(aAtomicCounter.id, spv::DecorationOffset)
+				.m_arrData = {
+					_cComp.get_decoration(aAtomicCounter.id, spv::DecorationBinding),
+					_cComp.get_decoration(aAtomicCounter.id, spv::DecorationDescriptorSet),
+					_cComp.get_decoration(aAtomicCounter.id, spv::DecorationOffset)
+				}
 			};
 
 			std::string strName = _cComp.get_name(aAtomicCounter.id);
 
 			Console::DebugInfo("Found Atomic Counter: \"" + strName + "\". Parameters:\n"
-				+ "\tBinding: " + std::to_string(svAtomicCounter.m_u32Binding) + "\n"
-				+ "\tSet: " + std::to_string(svAtomicCounter.m_u32Set) + "\n"
+				+ "\tBinding: " + std::to_string(svAtomicCounter.m_arrData[0]) + "\n"
+				+ "\tSet: " + std::to_string(svAtomicCounter.m_arrData[1]) + "\n"
 				+ "\tBase Type: " + m_mTypeNames[svAtomicCounter.m_u16Flags] + "\n"
-				+ "\tOffset: " + std::to_string(svAtomicCounter.m_u32Offset)
+				+ "\tOffset: " + std::to_string(svAtomicCounter.m_arrData[2])
 			);
 
 			mShaderVars[strName] = svAtomicCounter;
@@ -775,16 +828,19 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 			}
 
 			HCShaderVar svPlainUniform = {
-				.m_svtType = VAR_GL_PLAIN_UNIFORM,
-				.m_u32StaticSize = u32Size,
-				.m_u32Location = _cComp.get_decoration(aGLBuffer.id, spv::DecorationLocation)
+				.m_u16Type = VAR_GL_PLAIN_UNIFORM,
+				.m_u16Flags = 0,
+				.m_arrData = {
+					_cComp.get_decoration(aGLBuffer.id, spv::DecorationLocation),
+					u32Size
+				}
 			};
 
 			std::string strName = _cComp.get_name(aGLBuffer.id);
 
 			Console::DebugInfo("Found Atomic Counter: \"" + strName + "\". Parameters:\n"
-				+ "\tLocation: " + std::to_string(svPlainUniform.m_u32Location) + "\n"
-				+ "\tSize: " + std::to_string(svPlainUniform.m_u32StaticSize)
+				+ "\tLocation: " + std::to_string(svPlainUniform.m_arrData[0]) + "\n"
+				+ "\tSize: " + std::to_string(svPlainUniform.m_arrData[1])
 			);
 
 			mShaderVars[strName] = svPlainUniform;

@@ -178,15 +178,21 @@ void ShaderCompApplication::End() {
 	for (const auto& aShader : m_vCompiledShaders) {
 		File fShaderAsset(aShader.m_pthFilepath.string(), FILE_OPEN_FLAG_WRITE | FILE_OPEN_FLAG_BINARY);
 
-		uint32_t u32VarCount = aShader.m_vShaderVars.size();
 		uint32_t u32CodeSize = aShader.m_vCodeBlob.size();
+		uint32_t u32VarCount = aShader.m_svtVars.m_vVars.size();
 
 		fShaderAsset.Write(&aShader.m_u32MagicNumber, sizeof(uint32_t));
 		fShaderAsset.Write(&aShader.m_sstType, sizeof(HCShaderStageType));
 		fShaderAsset.Write(&u32CodeSize, sizeof(uint32_t));
 		fShaderAsset.Write(aShader.m_vCodeBlob.data(), sizeof(uint8_t) * u32CodeSize);
+		fShaderAsset.Write(&u32VarCount, sizeof(uint32_t));
 
-		
+		for (const auto& aLabelEntry : aShader.m_svtVars.m_vLabels) {
+			fShaderAsset.Write(aLabelEntry.m_strVarName.c_str(), aLabelEntry.m_strVarName.size() + 1); //Fingers crossed this doesn't break it
+			fShaderAsset.Write(&aLabelEntry.m_u32Index, sizeof(uint32_t));
+		}
+
+		fShaderAsset.Write(aShader.m_svtVars.m_vVars.data(), sizeof(HCShaderVar) * u32VarCount);
 
 		fShaderAsset.Close();
 	}
@@ -197,7 +203,7 @@ void ShaderCompApplication::CommandLineRoutine() {
 		HCCompiledShader csShader = CompileShader(aShader);
 		
 		if (csShader.m_vCodeBlob.size() > 0) {
-			m_vCompiledShaders.push_back(std::move(csShader));
+			m_vCompiledShaders.push_back(csShader);
 		}
 	}
 }
@@ -218,7 +224,7 @@ HCCompiledShader ShaderCompApplication::CompileShader(const HCUncompiledShader& 
 	for (const uint8_t u8Compiler : m_vShaderCompilerOrders[_ucsShader.m_sfFormat]) {
 		Console::DebugInfo("Attempting to compile shader \"" + _ucsShader.m_pthFilename.string() + "\" using compiler: " + m_mShaderCompilerNames[static_cast<HCShaderFormat>(u8Compiler)]);
 		try {
-			csResult = std::move(m_vShaderCompilers[u8Compiler]->Compile(_ucsShader));
+			csResult = m_vShaderCompilers[u8Compiler]->Compile(_ucsShader);
 		}
 		catch (const std::exception& e) {
 			Console::DebugError("Error occurred when compiling shader! Error:\n\n" + std::string(e.what()));

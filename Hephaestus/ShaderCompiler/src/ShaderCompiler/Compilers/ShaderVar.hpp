@@ -38,46 +38,27 @@ enum HCInputOutputType : uint16_t {
 	IO_MAX = 0x7FE
 };
 
-enum HCInterpolationType : uint8_t {
+enum HCInterpolationType : uint16_t {
 	INTERP_SMOOTH = 0,
-	INTERP_FLAT = (1 << 0),
-	INTERP_NO_PERSPECTIVE = (1 << 1),
-	INTERP_CENTROID = (1 << 2),
-	INTERP_SAMPLE = (1 << 3)
+	INTERP_FLAT = (1 << 11),
+	INTERP_NO_PERSPECTIVE = (1 << 12),
+	INTERP_CENTROID = (1 << 13),
+	INTERP_SAMPLE = (1 << 14),
+	INTERP_MAX = 0x7800
 };
 
 struct HCShaderVar {
-	HCShaderVarType m_svtType;
+	uint16_t m_u16Type = 0;
+	uint16_t m_u16Flags = 0;
+	uint32_t m_arrData[8];
+};
 
-	//Flag values
-	uint8_t  m_u8InterpolationType = 0;
-	uint16_t m_u16Flags = 0; 
+struct HCShaderVarLabelEntry {
+	std::string m_strVarName;
+	uint32_t m_u32Index;
+};
 
-	//Common descriptor set / binding info
-	uint32_t m_u32Binding = 0;
-	uint32_t m_u32Set = 0;
-
-	//Common type / format info
-	uint32_t m_u32Format = 0;   
-	uint32_t m_u32Dimension = 0;
-
-	//Size / memory layout
-	uint32_t m_u32StaticSize = 0;  
-	uint32_t m_u32Offset = 0;
-	uint32_t m_u32UnsizedArrayStride = 0;
-	uint32_t m_u32StaticArraySize = 0;
-
-	//Array and vector/matrix info
-	uint32_t m_u32VecSize = 0;   
-	uint32_t m_u32ColumnSize = 0;
-
-	//Input/output specific
-	uint32_t m_u32Location = 0;
-	uint32_t m_u32Component = 0;
-
-	//Builtin IO
-	uint32_t m_u32BuiltinEnum = 0;
-
-	//Subpass input
-	uint32_t m_u32InputAttachmentIndex = 0;
+struct HCShaderVarTable {
+	std::vector<HCShaderVarLabelEntry> m_vLabels;
+	std::vector<HCShaderVar> m_vVars;
 };

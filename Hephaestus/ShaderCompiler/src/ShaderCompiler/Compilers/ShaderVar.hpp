@@ -48,102 +48,36 @@ enum HCInterpolationType : uint8_t {
 
 struct HCShaderVar {
 	HCShaderVarType m_svtType;
-	std::string m_strVarName;
 
-	/*HCShaderVar(const HCShaderVar& _svOther) = default;
-	HCShaderVar(HCShaderVar&& _svOther) noexcept : m_svtType(_svOther.m_svtType), m_strVarName(std::move(_svOther.m_strVarName)) {}*/
-};
+	//Flag values
+	uint8_t  m_u8InterpolationType = 0;
+	uint16_t m_u16Flags = 0; 
 
-struct HCBufferVar : public HCShaderVar {
+	//Common descriptor set / binding info
 	uint32_t m_u32Binding = 0;
 	uint32_t m_u32Set = 0;
-	uint32_t m_u32Size = 0;
-	uint32_t m_u32UnsizedArrayStride = 0;
-};
 
-struct HCPushConstantVar : public HCShaderVar {
+	//Common type / format info
+	uint32_t m_u32Format = 0;   
+	uint32_t m_u32Dimension = 0;
+
+	//Size / memory layout
+	uint32_t m_u32StaticSize = 0;  
 	uint32_t m_u32Offset = 0;
-	uint32_t m_u32Size = 0;
-};
+	uint32_t m_u32UnsizedArrayStride = 0;
+	uint32_t m_u32StaticArraySize = 0;
 
-struct HCTexelBufferVar : public HCShaderVar {
-	uint32_t m_u32Binding = 0;
-	uint32_t m_u32Set = 0;
-	uint32_t m_u32Format = 0;
-};
+	//Array and vector/matrix info
+	uint32_t m_u32VecSize = 0;   
+	uint32_t m_u32ColumnSize = 0;
 
-struct HCImageVar : public HCShaderVar {
-	uint32_t m_u32Binding = 0;
-	uint32_t m_u32Set = 0;
-	uint8_t m_u8Flags = 0;
-	uint32_t m_u32ArraySize = 0;
-	uint32_t m_u32Dimension = 0;
-	uint32_t m_u32Format = 0;
-};
-
-struct HCSamplerVar : public HCShaderVar {
-	uint32_t m_u32Binding = 0;
-	uint32_t m_u32Set = 0;
-	uint8_t m_u8Flags = 0;
-	uint32_t m_u32ArraySize = 0;
-};
-
-struct HCCombinedSamplerVar : public HCShaderVar {
-	uint32_t m_u32Binding = 0;
-	uint32_t m_u32Set = 0;
-	uint8_t m_u8Flags = 0;
-	uint32_t m_u32ArraySize = 0;
-	uint32_t m_u32Dimension = 0;
-	uint32_t m_u32Format = 0;
-};
-
-struct HCInputOutputVar : public HCShaderVar {
+	//Input/output specific
 	uint32_t m_u32Location = 0;
 	uint32_t m_u32Component = 0;
-	uint16_t m_u16Flags = 0;
-	uint32_t m_u32VecSize = 0;
-	uint32_t m_u32ColumnSize = 0;
-	uint32_t m_u32ArraySize = 0;
-	uint8_t m_u8InterpolationType = 0;
-};
 
-struct HCBuiltinIOVar : public HCShaderVar {
+	//Builtin IO
 	uint32_t m_u32BuiltinEnum = 0;
-	uint16_t m_u16Type = 0;
-	uint32_t m_u32VecSize = 0;
-	uint32_t m_u32ColumnSize = 0;
-};
 
-struct HCSubpassInputVar : public HCShaderVar {
-	uint32_t m_u32Binding = 0;
-	uint32_t m_u32Set = 0;
+	//Subpass input
 	uint32_t m_u32InputAttachmentIndex = 0;
-	uint32_t m_u32Dimension = 0;
-	uint32_t m_u32Format = 0;
-};
-
-struct HCAccelerationStructureVar : public HCShaderVar {
-	uint32_t m_u32Binding = 0;
-	uint32_t m_u32Set = 0;
-	uint8_t m_u8Flags = 0;
-	uint32_t m_u32ArraySize = 0;
-};
-
-struct HCShaderRecordBufferVar : public HCShaderVar {
-	uint32_t m_u32Binding = 0;
-	uint32_t m_u32Set = 0;
-	uint8_t m_u8Flags = 0;
-	uint32_t m_u32ArraySize = 0;
-};
-
-struct HCAtomicCounterVar : public HCShaderVar {
-	uint32_t m_u32Binding = 0;
-	uint32_t m_u32Set = 0;
-	uint16_t m_u16Type = IO_INVALID;
-	uint32_t m_u32Offset = 0;
-};
-
-struct HCGLPlainUniformBufferVar : public HCShaderVar {
-	uint32_t m_u32Location = 0;
-	uint32_t m_u32Size = 0;
 };

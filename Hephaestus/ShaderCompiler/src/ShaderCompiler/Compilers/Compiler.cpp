@@ -263,7 +263,7 @@ std::string ConstructInterpolationString(uint8_t _u8Flag) {
 	return strInterpolatedString;
 }
 
-std::vector<std::unique_ptr<HCShaderVar>> ShaderCompiler::ReflectSPIRV(const std::vector<uint32_t>& _vCodeBlob) {
+std::map<std::string, HCShaderVar> ShaderCompiler::ReflectSPIRV(const std::vector<uint32_t>& _vCodeBlob) {
 	Console::DebugInfo("Gathering CPU-exposed shader variables...");
 
 	spirv_cross::Compiler cComp(const_cast<uint32_t*>(_vCodeBlob.data()), _vCodeBlob.size());
@@ -295,187 +295,176 @@ std::vector<uint32_t> ShaderCompiler::OptimizeSPIRV(const std::vector<uint32_t>&
 	return vOptimizedBlob;
 }
 
-std::vector<std::unique_ptr<HCShaderVar>> ShaderCompiler::ParseShaderVars(const spirv_cross::Compiler& _cComp, const spirv_cross::ShaderResources& _srRes) {
-	std::vector<std::unique_ptr<HCShaderVar>> vShaderVars;
+std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_cross::Compiler& _cComp, const spirv_cross::ShaderResources& _srRes) {
+	std::map<std::string, HCShaderVar> mShaderVars;
 
 	//Uniform / Storage Buffers
 	{
 		for (const auto& aBuffer : _srRes.uniform_buffers) {
-			HCBufferVar svUniform = {
-				{
-					.m_svtType = VAR_UNIFORM_BUFFER,
-					.m_strVarName = _cComp.get_name(aBuffer.id) 
-				},
-				_cComp.get_decoration(aBuffer.id, spv::DecorationBinding),
-				_cComp.get_decoration(aBuffer.id, spv::DecorationDescriptorSet),
-				static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aBuffer.base_type_id))),
-				GetRuntimeArrayStride(_cComp, aBuffer)
+			HCShaderVar svUniform = {
+				.m_svtType = VAR_UNIFORM_BUFFER,
+				.m_u32Binding = _cComp.get_decoration(aBuffer.id, spv::DecorationBinding),
+				.m_u32Set = _cComp.get_decoration(aBuffer.id, spv::DecorationDescriptorSet),
+				.m_u32StaticSize = static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aBuffer.base_type_id))),
+				.m_u32UnsizedArrayStride = GetRuntimeArrayStride(_cComp, aBuffer)
 			};
+
+			std::string strName = _cComp.get_name(aBuffer.id);
 		
-			Console::DebugInfo("Found Uniform Buffer: \"" + svUniform.m_strVarName + "\". Parameters:\n"
+			Console::DebugInfo("Found Uniform Buffer: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svUniform.m_u32Binding) + "\n"
 				+ "\tDescriptor Set: " + std::to_string(svUniform.m_u32Set) + "\n"
-				+ "\tStatic Size: " + std::to_string(svUniform.m_u32Size) + " bytes\n"
-				+ "\tRuntime Array Stride: " + std::to_string(svUniform.m_u32UnsizedArrayStride) + " bytes\n"
+				+ "\tStatic Size: " + std::to_string(svUniform.m_u32StaticSize) + " bytes\n"
+				+ "\tRuntime Array Stride: " + std::to_string(svUniform.m_u32UnsizedArrayStride) + " bytes"
 			);
 		
-			vShaderVars.push_back(std::make_unique<HCBufferVar>(svUniform));
+			mShaderVars[strName] = svUniform;
 		}
 
 		for (const auto& aBuffer : _srRes.storage_buffers) {
-			HCBufferVar svStorage = {
-				{
-					.m_svtType = VAR_STORAGE_BUFFER,
-					.m_strVarName = _cComp.get_name(aBuffer.id)
-				},
-				_cComp.get_decoration(aBuffer.id, spv::DecorationBinding),
-				_cComp.get_decoration(aBuffer.id, spv::DecorationDescriptorSet),
-				static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aBuffer.base_type_id))),
-				GetRuntimeArrayStride(_cComp, aBuffer)
+			HCShaderVar svStorage = {
+				.m_svtType = VAR_STORAGE_BUFFER,
+				.m_u32Binding = _cComp.get_decoration(aBuffer.id, spv::DecorationBinding),
+				.m_u32Set = _cComp.get_decoration(aBuffer.id, spv::DecorationDescriptorSet),
+				.m_u32StaticSize = static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aBuffer.base_type_id))),
+				.m_u32UnsizedArrayStride = GetRuntimeArrayStride(_cComp, aBuffer)
 			};
 
-			Console::DebugInfo("Found Storage Buffer: \"" + svStorage.m_strVarName + "\". Parameters:\n"
+			std::string strName = _cComp.get_name(aBuffer.id);
+		
+			Console::DebugInfo("Found Storage Buffer: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svStorage.m_u32Binding) + "\n"
 				+ "\tDescriptor Set: " + std::to_string(svStorage.m_u32Set) + "\n"
-				+ "\tStatic Size: " + std::to_string(svStorage.m_u32Size) + " bytes\n"
-				+ "\tRuntime Array Stride: " + std::to_string(svStorage.m_u32UnsizedArrayStride) + " bytes\n"
+				+ "\tStatic Size: " + std::to_string(svStorage.m_u32StaticSize) + " bytes\n"
+				+ "\tRuntime Array Stride: " + std::to_string(svStorage.m_u32UnsizedArrayStride) + " bytes"
 			);
-
-			vShaderVars.push_back(std::make_unique<HCBufferVar>(svStorage));
+		
+			mShaderVars[strName] = svStorage;
 		}
 	}
 
 	//Push Constants
 	{
 		for (const auto& aPushConstant : _srRes.push_constant_buffers) {
-			HCPushConstantVar svPushConstant = {
-				{
-					.m_svtType = VAR_PUSH_CONSTANT_BUFFER,
-					.m_strVarName = _cComp.get_name(aPushConstant.id),
-				},
-				_cComp.get_decoration(aPushConstant.id, spv::DecorationOffset),
-				static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aPushConstant.base_type_id)))
+			HCShaderVar svPushConstant = {
+				.m_svtType = VAR_PUSH_CONSTANT_BUFFER,
+				.m_u32StaticSize = static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aPushConstant.base_type_id))),
+				.m_u32Offset = _cComp.get_decoration(aPushConstant.id, spv::DecorationOffset)
 			};
 
-			Console::DebugInfo("Found Push Constant Buffer: \"" + svPushConstant.m_strVarName + "\". Parameters:\n"
+			std::string strName = _cComp.get_name(aPushConstant.id);
+
+			Console::DebugInfo("Found Push Constant Buffer: \"" + strName + "\". Parameters:\n"
 				+ "\tOffset: " + std::to_string(svPushConstant.m_u32Offset) + "\n"
-				+ "\tSize: " + std::to_string(svPushConstant.m_u32Size) + " bytes\n"
+				+ "\tSize: " + std::to_string(svPushConstant.m_u32StaticSize) + " bytes"
 			);
 
-			vShaderVars.push_back(std::make_unique<HCPushConstantVar>(svPushConstant));
+			mShaderVars[strName] = svPushConstant;
 		}
 	}
 
 	//Storage / Separate Images
 	{
-		for(const auto& aImage : _srRes.storage_images) {
+		for (const auto& aImage : _srRes.storage_images) {
 			spirv_cross::SPIRType stType = _cComp.get_type(aImage.type_id);
 
+			HCShaderVar svImageVar;
+
+			std::string strName = _cComp.get_name(aImage.id);
+
 			if (stType.image.dim == spv::DimBuffer) {
-				HCTexelBufferVar svStorageTexel = {
-					{
-						.m_svtType = VAR_STORAGE_TEXEL_BUFFER,
-						.m_strVarName = _cComp.get_name(aImage.id)
-					},
-					_cComp.get_decoration(aImage.id, spv::DecorationBinding),
-					_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
-					static_cast<uint32_t>(stType.image.format)
+				svImageVar = {
+					.m_svtType = VAR_STORAGE_TEXEL_BUFFER,
+					.m_u32Binding = _cComp.get_decoration(aImage.id, spv::DecorationBinding),
+					.m_u32Set = _cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
+					.m_u32Format = static_cast<uint32_t>(stType.image.format)
 				};
 
-				Console::DebugInfo("Found Storage Texel Buffer: \"" + svStorageTexel.m_strVarName + "\". Parameters:\n"
-					+ "\tBinding: " + std::to_string(svStorageTexel.m_u32Binding) + "\n"
-					+ "\tDescriptor Set: " + std::to_string(svStorageTexel.m_u32Set) + "\n"
-					+ "\tFormat: " + m_mImageFormatNames[svStorageTexel.m_u32Format] + "\n"
+				Console::DebugInfo("Found Storage Texel Buffer: \"" + strName + "\". Parameters:\n"
+					+ "\tBinding: " + std::to_string(svImageVar.m_u32Binding) + "\n"
+					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_u32Set) + "\n"
+					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_u32Format]
 				);
-
-				vShaderVars.push_back(std::make_unique<HCTexelBufferVar>(svStorageTexel));
 			}
 			else {
 				const spirv_cross::SPIRType& stType = _cComp.get_type(aImage.type_id);
 
-				uint8_t u8Flags = (stType.array.empty() ? 0 : 1) | (stType.image.ms ? 0 : (1 << 1));
+				uint16_t u16Flags = (stType.array.empty() ? 0 : 1) | (stType.image.ms ? 0 : (1 << 1));
 
-				HCImageVar svImage = {
-					{
-						.m_svtType = VAR_IMAGE_2D,
-						.m_strVarName = _cComp.get_name(aImage.id),
-					},
-					_cComp.get_decoration(aImage.id, spv::DecorationBinding),
-					_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
-					u8Flags,
-					stType.array.empty() ? 0 : stType.array[0],
-					static_cast<uint32_t>(stType.image.dim),
-					static_cast<uint32_t>(stType.image.format)
+				svImageVar = {
+					.m_svtType = VAR_IMAGE_2D,
+					.m_u16Flags = u16Flags,
+					.m_u32Binding = _cComp.get_decoration(aImage.id, spv::DecorationBinding),
+					.m_u32Set = _cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
+					.m_u32Format = static_cast<uint32_t>(stType.image.format),
+					.m_u32Dimension = static_cast<uint32_t>(stType.image.dim),
+					.m_u32StaticArraySize = stType.array.empty() ? 0 : stType.array[0]
 				};
 
-				Console::DebugInfo("Found Image 2D: \"" + svImage.m_strVarName + "\". Parameters:\n"
-					+ "\tBinding: " + std::to_string(svImage.m_u32Binding) + "\n"
-					+ "\tDescriptor Set: " + std::to_string(svImage.m_u32Set) + "\n"
-					+ "\tIs Array: " + (svImage.m_u8Flags & 1 ? "true" : "false") + "\n"
-					+ "\tIs Unsized Array: " + ((svImage.m_u8Flags & 1) && svImage.m_u32ArraySize == 0 ? "true" : "false") + "\n"
-					+ "\tIs Multisampled: " + (svImage.m_u8Flags & 2 ? "true" : "false") + "\n"
-					+ "\tArray Size (if not runtime): " + std::to_string(svImage.m_u32ArraySize) + "\n"
-					+ "\tDimensions: " + m_mImageDimensions[svImage.m_u32Dimension] + "\n"
-					+ "\tFormat: " + m_mImageFormatNames[svImage.m_u32Format] + "\n"
+				Console::DebugInfo("Found Image 2D: \"" + strName + "\". Parameters:\n"
+					+ "\tBinding: " + std::to_string(svImageVar.m_u32Binding) + "\n"
+					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_u32Set) + "\n"
+					+ "\tIs Array: " + (svImageVar.m_u16Flags & 1 ? "true" : "false") + "\n"
+					+ "\tIs Unsized Array: " + ((svImageVar.m_u16Flags & 1) && svImageVar.m_u32StaticArraySize == 0 ? "true" : "false") + "\n"
+					+ "\tIs Multisampled: " + (svImageVar.m_u16Flags & 2 ? "true" : "false") + "\n"
+					+ "\tArray Size (if not runtime): " + std::to_string(svImageVar.m_u32StaticArraySize) + "\n"
+					+ "\tDimensions: " + m_mImageDimensions[svImageVar.m_u32Dimension] + "\n"
+					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_u32Format]
 				);
-
-				vShaderVars.push_back(std::make_unique<HCImageVar>(svImage));
 			}
+			
+			mShaderVars[strName] = svImageVar;
 		}
 
 		for (const auto& aImage : _srRes.separate_images) {
 			spirv_cross::SPIRType stType = _cComp.get_type(aImage.type_id);
 
+			HCShaderVar svImageVar;
+
+			std::string strName = _cComp.get_name(aImage.id);
+
 			if (stType.image.dim == spv::DimBuffer) {
-				HCTexelBufferVar svUniformTexel = {
-					{
-						.m_svtType = VAR_UNIFORM_TEXEL_BUFFER,
-						.m_strVarName = _cComp.get_name(aImage.id)
-					},
-					_cComp.get_decoration(aImage.id, spv::DecorationBinding),
-					_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
-					static_cast<uint32_t>(stType.image.format)
+				svImageVar = {
+					.m_svtType = VAR_UNIFORM_TEXEL_BUFFER,
+					.m_u32Binding = _cComp.get_decoration(aImage.id, spv::DecorationBinding),
+					.m_u32Set = _cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
+					.m_u32Format = static_cast<uint32_t>(stType.image.format)
 				};
 
-				Console::DebugInfo("Found Uniform Texel Buffer: \"" + svUniformTexel.m_strVarName + "\". Parameters:\n"
-					+ "\tBinding: " + std::to_string(svUniformTexel.m_u32Binding) + "\n"
-					+ "\tDescriptor Set: " + std::to_string(svUniformTexel.m_u32Set) + "\n"
-					+ "\tFormat: " + m_mImageFormatNames[svUniformTexel.m_u32Format] + "\n"
+				Console::DebugInfo("Found Uniform Texel Buffer: \"" + strName + "\". Parameters:\n"
+					+ "\tBinding: " + std::to_string(svImageVar.m_u32Binding) + "\n"
+					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_u32Set) + "\n"
+					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_u32Format]
 				);
-
-				vShaderVars.push_back(std::make_unique<HCTexelBufferVar>(svUniformTexel));
 			}
 			else {
 				const spirv_cross::SPIRType& stType = _cComp.get_type(aImage.type_id);
 
-				uint8_t u8Flags = (stType.array.empty() ? 0 : 1) | (stType.image.ms ? 0 : (1 << 1));
+				uint16_t u16Flags = (stType.array.empty() ? 0 : 1) | (stType.image.ms ? 0 : (1 << 1));
 
-				HCImageVar svImage = {
-					{
-						.m_svtType = VAR_TEXTURE_2D,
-						.m_strVarName = _cComp.get_name(aImage.id),
-					},
-					_cComp.get_decoration(aImage.id, spv::DecorationBinding),
-					_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
-					u8Flags,
-					stType.array.empty() ? 0 : stType.array[0],
-					static_cast<uint32_t>(stType.image.dim),
-					static_cast<uint32_t>(stType.image.format)
+				svImageVar = {
+					.m_svtType = VAR_TEXTURE_2D,
+					.m_u16Flags = u16Flags,
+					.m_u32Binding = _cComp.get_decoration(aImage.id, spv::DecorationBinding),
+					.m_u32Set = _cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
+					.m_u32Format = static_cast<uint32_t>(stType.image.format),
+					.m_u32Dimension = static_cast<uint32_t>(stType.image.dim),
+					.m_u32StaticArraySize = stType.array.empty() ? 0 : stType.array[0]
 				};
 
-				Console::DebugInfo("Found Texture 2D: \"" + svImage.m_strVarName + "\". Parameters:\n"
-					+ "\tBinding: " + std::to_string(svImage.m_u32Binding) + "\n"
-					+ "\tDescriptor Set: " + std::to_string(svImage.m_u32Set) + "\n"
-					+ "\tIs Array: " + (svImage.m_u8Flags & 1 ? "true" : "false") + "\n"
-					+ "\tIs Unsized Array: " + ((svImage.m_u8Flags & 1) && svImage.m_u32ArraySize == 0 ? "true" : "false") + "\n"
-					+ "\tIs Multisampled: " + (svImage.m_u8Flags & 2 ? "true" : "false") + "\n"
-					+ "\tArray Size (if not runtime): " + std::to_string(svImage.m_u32ArraySize) + "\n"
-					+ "\tDimensions: " + m_mImageDimensions[svImage.m_u32Dimension] + "\n"
-					+ "\tFormat: " + m_mImageFormatNames[svImage.m_u32Format] + "\n"
+				Console::DebugInfo("Found Texture 2D: \"" + strName + "\". Parameters:\n"
+					+ "\tBinding: " + std::to_string(svImageVar.m_u32Binding) + "\n"
+					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_u32Set) + "\n"
+					+ "\tIs Array: " + (svImageVar.m_u16Flags & 1 ? "true" : "false") + "\n"
+					+ "\tIs Unsized Array: " + ((svImageVar.m_u16Flags & 1) && svImageVar.m_u32StaticArraySize == 0 ? "true" : "false") + "\n"
+					+ "\tIs Multisampled: " + (svImageVar.m_u16Flags & 2 ? "true" : "false") + "\n"
+					+ "\tArray Size (if not runtime): " + std::to_string(svImageVar.m_u32StaticArraySize) + "\n"
+					+ "\tDimensions: " + m_mImageDimensions[svImageVar.m_u32Dimension] + "\n"
+					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_u32Format]
 				);
-
-				vShaderVars.push_back(std::make_unique<HCImageVar>(svImage));
 			}
+			
+			mShaderVars[strName] = svImageVar;
 		}
 	}
 
@@ -484,59 +473,57 @@ std::vector<std::unique_ptr<HCShaderVar>> ShaderCompiler::ParseShaderVars(const 
 		for (const auto& aSampler : _srRes.separate_samplers) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aSampler.type_id);
 
-			uint8_t u8Flags = !stType.array.empty();
+			uint16_t u16Flags = !stType.array.empty();
 
-			HCSamplerVar svSampler = {
-				{
-					.m_svtType = VAR_SAMPLER,
-					.m_strVarName = _cComp.get_name(aSampler.id)
-				},
-				_cComp.get_decoration(aSampler.id, spv::DecorationBinding),
-				_cComp.get_decoration(aSampler.id, spv::DecorationDescriptorSet),
-				u8Flags,
-				stType.array.empty() ? 0 : stType.array[0]
+			HCShaderVar svSampler = {
+				.m_svtType = VAR_SAMPLER,
+				.m_u16Flags = u16Flags,
+				.m_u32Binding = _cComp.get_decoration(aSampler.id, spv::DecorationBinding),
+				.m_u32Set = _cComp.get_decoration(aSampler.id, spv::DecorationDescriptorSet),
+				.m_u32StaticArraySize = stType.array.empty() ? 0 : stType.array[0]
 			};
 
-			Console::DebugInfo("Found Sampler: \"" + svSampler.m_strVarName + "\". Parameters:\n"
+			std::string strName = _cComp.get_name(aSampler.id);
+
+			Console::DebugInfo("Found Sampler: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svSampler.m_u32Binding) + "\n"
 				+ "\tDescriptor Set: " + std::to_string(svSampler.m_u32Set) + "\n"
-				+ "\tIs Array: " + (svSampler.m_u8Flags & 1 ? "true" : "false") + "\n"
-				+ "\tIs Unsized Array: " + ((svSampler.m_u8Flags & 1) && svSampler.m_u32ArraySize == 0 ? "true" : "false") + "\n"
-				+ "\tArray Size (if not runtime): " + std::to_string(svSampler.m_u32ArraySize) + "\n"
+				+ "\tIs Array: " + (svSampler.m_u16Flags & 1 ? "true" : "false") + "\n"
+				+ "\tIs Unsized Array: " + ((svSampler.m_u16Flags & 1) && svSampler.m_u32StaticArraySize == 0 ? "true" : "false") + "\n"
+				+ "\tArray Size (if not runtime): " + std::to_string(svSampler.m_u32StaticArraySize)
 			);
 
-			vShaderVars.push_back(std::make_unique<HCSamplerVar>(svSampler));
+			mShaderVars[strName] = svSampler;
 		}
 
 		for (const auto& aSampler : _srRes.sampled_images) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aSampler.type_id);
 
-			uint8_t u8Flags = !stType.array.empty();
+			uint16_t u16Flags = !stType.array.empty();
 
-			HCCombinedSamplerVar svCombinedSampler = {
-				{
-					.m_svtType = VAR_COMBINED_IMAGE_SAMPLER,
-					.m_strVarName = _cComp.get_name(aSampler.id)
-				},
-				_cComp.get_decoration(aSampler.id, spv::DecorationBinding),
-				_cComp.get_decoration(aSampler.id, spv::DecorationDescriptorSet),
-				u8Flags,
-				stType.array.empty() ? 0 : stType.array[0],
-				static_cast<uint32_t>(stType.image.dim),
-				static_cast<uint32_t>(stType.image.format)
+			HCShaderVar svCombinedSampler = {
+				.m_svtType = VAR_COMBINED_IMAGE_SAMPLER,
+				.m_u16Flags = u16Flags,
+				.m_u32Binding = _cComp.get_decoration(aSampler.id, spv::DecorationBinding),
+				.m_u32Set = _cComp.get_decoration(aSampler.id, spv::DecorationDescriptorSet),
+				.m_u32Format = static_cast<uint32_t>(stType.image.format),
+				.m_u32Dimension = static_cast<uint32_t>(stType.image.dim),
+				.m_u32StaticArraySize = stType.array.empty() ? 0 : stType.array[0]
 			};
 
-			Console::DebugInfo("Found Combined Image Sampler: \"" + svCombinedSampler.m_strVarName + "\". Parameters:\n"
+			std::string strName = _cComp.get_name(aSampler.id);
+
+			Console::DebugInfo("Found Combined Image Sampler: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svCombinedSampler.m_u32Binding) + "\n"
 				+ "\tDescriptor Set: " + std::to_string(svCombinedSampler.m_u32Set) + "\n"
-				+ "\tIs Array: " + (svCombinedSampler.m_u8Flags & 1 ? "true" : "false") + "\n"
-				+ "\tIs Unsized Array: " + ((svCombinedSampler.m_u8Flags & 1) && svCombinedSampler.m_u32ArraySize == 0 ? "true" : "false") + "\n"
-				+ "\tArray Size (if not runtime): " + std::to_string(svCombinedSampler.m_u32ArraySize) + "\n"
+				+ "\tIs Array: " + (svCombinedSampler.m_u16Flags & 1 ? "true" : "false") + "\n"
+				+ "\tIs Unsized Array: " + ((svCombinedSampler.m_u16Flags & 1) && svCombinedSampler.m_u32StaticArraySize == 0 ? "true" : "false") + "\n"
+				+ "\tArray Size (if not runtime): " + std::to_string(svCombinedSampler.m_u32StaticArraySize) + "\n"
 				+ "\tDimensions: " + m_mImageDimensions[svCombinedSampler.m_u32Dimension] + "\n"
-				+ "\tFormat: " + m_mImageFormatNames[svCombinedSampler.m_u32Format] + "\n"
+				+ "\tFormat: " + m_mImageFormatNames[svCombinedSampler.m_u32Format]
 			);
 			
-			vShaderVars.push_back(std::make_unique<HCCombinedSamplerVar>(svCombinedSampler));
+			mShaderVars[strName] = svCombinedSampler;
 		}
 	}
 
@@ -553,83 +540,80 @@ std::vector<std::unique_ptr<HCShaderVar>> ShaderCompiler::ParseShaderVars(const 
 			u8InterpFlags |= _cComp.has_decoration(aInput.id, spv::DecorationCentroid) ? INTERP_CENTROID : 0;
 			u8InterpFlags |= _cComp.has_decoration(aInput.id, spv::DecorationSample) ? INTERP_SAMPLE : 0;
 
-			HCInputOutputVar svInput = {
-				{
-					.m_svtType = VAR_STAGE_INPUT,
-					.m_strVarName = _cComp.get_name(aInput.id)
-				},
-				_cComp.get_decoration(aInput.id, spv::DecorationLocation),
-				_cComp.get_decoration(aInput.id, spv::DecorationComponent),
-				u16Flags,
-				stType.vecsize,
-				stType.columns,
-				stType.array.empty() ? 0 : stType.array[0],
-				u8InterpFlags
+			HCShaderVar svInput = {
+				.m_svtType = VAR_STAGE_INPUT,
+				.m_u8InterpolationType = u8InterpFlags,
+				.m_u16Flags = u16Flags,
+				.m_u32StaticArraySize = stType.array.empty() ? 0 : stType.array[0],
+				.m_u32VecSize = stType.vecsize,
+				.m_u32ColumnSize = stType.columns,
+				.m_u32Location = _cComp.get_decoration(aInput.id, spv::DecorationLocation),
+				.m_u32Component = _cComp.get_decoration(aInput.id, spv::DecorationComponent),
 			};
 
-			Console::DebugInfo("Found Input: \"" + svInput.m_strVarName + "\". Parameters:\n"
+			std::string strName = _cComp.get_name(aInput.id);
+
+			Console::DebugInfo("Found Input: \"" + strName + "\". Parameters:\n"
 				+ "\tLocation: " + std::to_string(svInput.m_u32Location) + "\n"
 				+ "\tComponent: " + std::to_string(svInput.m_u32Component) + "\n"
 				+ "\tIs Array: " + (svInput.m_u16Flags & 1 ? "true" : "false") + "\n"
-				+ "\tIs Unsized Array: " + ((svInput.m_u16Flags & 1) && svInput.m_u32ArraySize == 0 ? "true" : "false") + "\n"
-				+ "\tArray Size (if not runtime): " + std::to_string(svInput.m_u32ArraySize) + "\n"
+				+ "\tIs Unsized Array: " + ((svInput.m_u16Flags & 1) && svInput.m_u32StaticArraySize == 0 ? "true" : "false") + "\n"
+				+ "\tArray Size (if not runtime): " + std::to_string(svInput.m_u32StaticArraySize) + "\n"
 				+ "\tComponent Type: " + m_mTypeNames[svInput.m_u16Flags & IO_MAX] + "\n"
 				+ "\tVector width: " + std::to_string(svInput.m_u32VecSize) + "\n"
 				+ "\tColumn count: " + std::to_string(svInput.m_u32ColumnSize) + "\n"
-				+ "\tInterpolation method: " + ConstructInterpolationString(svInput.m_u8InterpolationType) + "\n"
+				+ "\tInterpolation method: " + ConstructInterpolationString(svInput.m_u8InterpolationType)
 			);
 
-			vShaderVars.push_back(std::make_unique<HCInputOutputVar>(svInput));
+			mShaderVars[strName] = svInput;
 		}
 
 		for (const auto& aInput : _srRes.builtin_inputs) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aInput.resource.type_id);
 
-			HCBuiltinIOVar svBuiltinInput = {
-				{
-					.m_svtType = VAR_BUILTIN_STAGE_INPUT,
-					.m_strVarName = _cComp.get_name(aInput.resource.id)
-				},
-				static_cast<uint32_t>(aInput.builtin),
-				TranslateBaseTypeToFlag(stType.basetype),
-				stType.vecsize,
-				stType.columns
+			HCShaderVar svBuiltinInput = {
+				.m_svtType = VAR_BUILTIN_STAGE_INPUT,
+				.m_u16Flags = TranslateBaseTypeToFlag(stType.basetype),
+				.m_u32VecSize = stType.vecsize,
+				.m_u32ColumnSize = stType.columns,
+				.m_u32BuiltinEnum = static_cast<uint32_t>(aInput.builtin)
 			};
 
-			Console::DebugInfo("Found Built-in Input: \"" + svBuiltinInput.m_strVarName + "\". Parameters:\n"
+			std::string strName = _cComp.get_name(aInput.resource.id);
+
+			Console::DebugInfo("Found Built-in Input: \"" + strName + "\". Parameters:\n"
 				+ "\tBuilt-in: " + m_mBuiltinNames[svBuiltinInput.m_u32BuiltinEnum] + "\n"
-				+ "\tComponent Type: " + m_mTypeNames[svBuiltinInput.m_u16Type] + "\n"
+				+ "\tComponent Type: " + m_mTypeNames[svBuiltinInput.m_u16Flags] + "\n"
 				+ "\tVector width: " + std::to_string(svBuiltinInput.m_u32VecSize) + "\n"
-				+ "\tColumn count: " + std::to_string(svBuiltinInput.m_u32ColumnSize) + "\n"
+				+ "\tColumn count: " + std::to_string(svBuiltinInput.m_u32ColumnSize)
 			);
 
-			vShaderVars.push_back(std::make_unique<HCBuiltinIOVar>(svBuiltinInput));
+			mShaderVars[strName] = svBuiltinInput;
 		}
 
 		for (const auto& aSubpassInput : _srRes.subpass_inputs) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aSubpassInput.type_id);
 
-			HCSubpassInputVar svSubpassInput = {
-				{
-					.m_svtType = VAR_SUBPASS_INPUT,
-					.m_strVarName = _cComp.get_name(aSubpassInput.id)
-				},
-				_cComp.get_decoration(aSubpassInput.id, spv::DecorationBinding),
-				_cComp.get_decoration(aSubpassInput.id, spv::DecorationDescriptorSet),
-				_cComp.get_decoration(aSubpassInput.id, spv::DecorationInputAttachmentIndex),
-				static_cast<uint32_t>(stType.image.dim),
-				static_cast<uint32_t>(stType.image.format)
+			HCShaderVar svSubpassInput = {
+				.m_svtType = VAR_SUBPASS_INPUT,
+				.m_u32Binding = _cComp.get_decoration(aSubpassInput.id, spv::DecorationBinding),
+				.m_u32Set = _cComp.get_decoration(aSubpassInput.id, spv::DecorationDescriptorSet),
+				.m_u32Format = static_cast<uint32_t>(stType.image.format),
+				.m_u32Dimension = static_cast<uint32_t>(stType.image.dim),
+				.m_u32InputAttachmentIndex = _cComp.get_decoration(aSubpassInput.id, spv::DecorationInputAttachmentIndex)
 			};
 
-			Console::DebugInfo("Found Subpass Input: \"" + svSubpassInput.m_strVarName + "\". Parameters:\n"
+			std::string strName = _cComp.get_name(aSubpassInput.id);
+
+			Console::DebugInfo("Found Subpass Input: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svSubpassInput.m_u32Binding) + "\n"
 				+ "\tDescriptor Set: " + std::to_string(svSubpassInput.m_u32Set) + "\n"
 				+ "\tInput Attachment Index: " + std::to_string(svSubpassInput.m_u32InputAttachmentIndex) + "\n"
 				+ "\tDimension: " + m_mImageDimensions[svSubpassInput.m_u32Dimension] + "\n"
-				+ "\tFormat: " + m_mImageFormatNames[svSubpassInput.m_u32Format] + "\n"
+				+ "\tFormat: " + m_mImageFormatNames[svSubpassInput.m_u32Format]
 			);
 
-			vShaderVars.push_back(std::make_unique<HCSubpassInputVar>(svSubpassInput));
+			mShaderVars[strName] = svSubpassInput;
 		}
 	}
 
@@ -646,57 +630,55 @@ std::vector<std::unique_ptr<HCShaderVar>> ShaderCompiler::ParseShaderVars(const 
 			u8InterpFlags |= _cComp.has_decoration(aOutput.id, spv::DecorationCentroid) ? INTERP_CENTROID : 0;
 			u8InterpFlags |= _cComp.has_decoration(aOutput.id, spv::DecorationSample) ? INTERP_SAMPLE : 0;
 
-			HCInputOutputVar svOutput = {
-				{
-					.m_svtType = VAR_STAGE_OUTPUT,
-					.m_strVarName = _cComp.get_name(aOutput.id)
-				},
-				_cComp.get_decoration(aOutput.id, spv::DecorationLocation),
-				_cComp.get_decoration(aOutput.id, spv::DecorationComponent),
-				u16Flags,
-				stType.vecsize,
-				stType.columns,
-				stType.array.empty() ? 0 : stType.array[0],
-				u8InterpFlags
+			HCShaderVar svOutput = {
+				.m_svtType = VAR_STAGE_OUTPUT,
+				.m_u8InterpolationType = u8InterpFlags,
+				.m_u16Flags = u16Flags,
+				.m_u32StaticArraySize = stType.array.empty() ? 0 : stType.array[0],
+				.m_u32VecSize = stType.vecsize,
+				.m_u32ColumnSize = stType.columns,
+				.m_u32Location = _cComp.get_decoration(aOutput.id, spv::DecorationLocation),
+				.m_u32Component = _cComp.get_decoration(aOutput.id, spv::DecorationComponent)
 			};
 
-			Console::DebugInfo("Found Output: \"" + svOutput.m_strVarName + "\". Parameters:\n"
+			std::string strName = _cComp.get_name(aOutput.id);
+
+			Console::DebugInfo("Found Output: \"" + strName + "\". Parameters:\n"
 				+ "\tLocation: " + std::to_string(svOutput.m_u32Location) + "\n"
 				+ "\tComponent: " + std::to_string(svOutput.m_u32Component) + "\n"
 				+ "\tIs Array: " + (svOutput.m_u16Flags & 1 ? "true" : "false") + "\n"
-				+ "\tIs Unsized Array: " + ((svOutput.m_u16Flags & 1) && svOutput.m_u32ArraySize == 0 ? "true" : "false") + "\n"
-				+ "\tArray Size (if not runtime): " + std::to_string(svOutput.m_u32ArraySize) + "\n"
+				+ "\tIs Unsized Array: " + ((svOutput.m_u16Flags & 1) && svOutput.m_u32StaticArraySize == 0 ? "true" : "false") + "\n"
+				+ "\tArray Size (if not runtime): " + std::to_string(svOutput.m_u32StaticArraySize) + "\n"
 				+ "\tComponent Type: " + m_mTypeNames[svOutput.m_u16Flags & IO_MAX] + "\n"
 				+ "\tVector width: " + std::to_string(svOutput.m_u32VecSize) + "\n"
 				+ "\tColumn count: " + std::to_string(svOutput.m_u32ColumnSize) + "\n"
-				+ "\tInterpolation method: " + ConstructInterpolationString(svOutput.m_u8InterpolationType) + "\n"
+				+ "\tInterpolation method: " + ConstructInterpolationString(svOutput.m_u8InterpolationType)
 			);
 
-			vShaderVars.push_back(std::make_unique<HCInputOutputVar>(svOutput));
+			mShaderVars[strName] = svOutput;
 		}
 
 		for (const auto& aOutput : _srRes.builtin_outputs) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aOutput.resource.type_id);
 
-			HCBuiltinIOVar svBuiltinOutput = {
-				{
-					.m_svtType = VAR_BUILTIN_STAGE_INPUT,
-					.m_strVarName = _cComp.get_name(aOutput.resource.id)
-				},
-				static_cast<uint32_t>(aOutput.builtin),
-				TranslateBaseTypeToFlag(stType.basetype),
-				stType.vecsize,
-				stType.columns
+			HCShaderVar svBuiltinOutput = {
+				.m_svtType = VAR_BUILTIN_STAGE_INPUT,
+				.m_u16Flags = TranslateBaseTypeToFlag(stType.basetype),
+				.m_u32VecSize = stType.vecsize,
+				.m_u32ColumnSize = stType.columns,
+				.m_u32BuiltinEnum = static_cast<uint32_t>(aOutput.builtin)
 			};
 
-			Console::DebugInfo("Found Built-in Output: \"" + svBuiltinOutput.m_strVarName + "\". Parameters:\n"
+			std::string strName = _cComp.get_name(aOutput.resource.id);
+
+			Console::DebugInfo("Found Built-in Output: \"" + strName + "\". Parameters:\n"
 				+ "\tBuilt-in: " + m_mBuiltinNames[svBuiltinOutput.m_u32BuiltinEnum] + "\n"
-				+ "\tComponent Type: " + m_mTypeNames[svBuiltinOutput.m_u16Type] + "\n"
+				+ "\tComponent Type: " + m_mTypeNames[svBuiltinOutput.m_u16Flags] + "\n"
 				+ "\tVector width: " + std::to_string(svBuiltinOutput.m_u32VecSize) + "\n"
-				+ "\tColumn count: " + std::to_string(svBuiltinOutput.m_u32ColumnSize) + "\n"
+				+ "\tColumn count: " + std::to_string(svBuiltinOutput.m_u32ColumnSize)
 			);
 
-			vShaderVars.push_back(std::make_unique<HCBuiltinIOVar>(svBuiltinOutput));
+			mShaderVars[strName] = svBuiltinOutput;
 		}
 	}
 
@@ -705,76 +687,73 @@ std::vector<std::unique_ptr<HCShaderVar>> ShaderCompiler::ParseShaderVars(const 
 		for (const auto& aAcceleration : _srRes.acceleration_structures) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aAcceleration.type_id);
 
-			uint8_t u8Flags = !stType.array.empty();
+			uint16_t u16Flags = !stType.array.empty();
 
-			HCAccelerationStructureVar svAcceleration = {
-				{
-					.m_svtType = VAR_ACCELERATION_STRUCTURE,
-					.m_strVarName = _cComp.get_name(aAcceleration.id)
-				},
-				_cComp.get_decoration(aAcceleration.id, spv::DecorationBinding),
-				_cComp.get_decoration(aAcceleration.id, spv::DecorationDescriptorSet),
-				u8Flags,
-				u8Flags == 0 ? 0 : stType.array[0]
+			HCShaderVar svAcceleration = {
+				.m_svtType = VAR_ACCELERATION_STRUCTURE,
+				.m_u16Flags = u16Flags,
+				.m_u32Binding = _cComp.get_decoration(aAcceleration.id, spv::DecorationBinding),
+				.m_u32Set = _cComp.get_decoration(aAcceleration.id, spv::DecorationDescriptorSet),
+				.m_u32StaticArraySize = u16Flags == 0 ? 0 : stType.array[0]
 			};
 
-			Console::DebugInfo("Found Acceleration Structure: \"" + svAcceleration.m_strVarName + "\". Parameters:\n"
+			std::string strName = _cComp.get_name(aAcceleration.id);
+
+			Console::DebugInfo("Found Acceleration Structure: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svAcceleration.m_u32Binding) + "\n"
 				+ "\tSet: " + std::to_string(svAcceleration.m_u32Set) + "\n"
-				+ "\tIs Array: " + (svAcceleration.m_u8Flags ? "true" : "false") + "\n"
-				+ "\tArray Size: " + std::to_string(svAcceleration.m_u32ArraySize) + "\n"
+				+ "\tIs Array: " + (svAcceleration.m_u16Flags ? "true" : "false") + "\n"
+				+ "\tArray Size: " + std::to_string(svAcceleration.m_u32StaticArraySize)
 			);
 
-			vShaderVars.push_back(std::make_unique<HCAccelerationStructureVar>(svAcceleration));
+			mShaderVars[strName] = svAcceleration;
 		}
 		//These two are the same. This is mostly because I don't fully understand either structure, so until I learn their true differences, I won't change this.
 		//Blame AI.
 		for (const auto& aShaderBuffer : _srRes.shader_record_buffers) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aShaderBuffer.type_id);
 
-			uint8_t u8Flags = !stType.array.empty();
+			uint16_t u16Flags = !stType.array.empty();
 
-			HCShaderRecordBufferVar svRecordBuffer = {
-				{
-					.m_svtType = VAR_SHADER_RECORD_BUFFER,
-					.m_strVarName = _cComp.get_name(aShaderBuffer.id)
-				},
-				_cComp.get_decoration(aShaderBuffer.id, spv::DecorationBinding),
-				_cComp.get_decoration(aShaderBuffer.id, spv::DecorationDescriptorSet),
-				u8Flags,
-				u8Flags == 0 ? 0 : stType.array[0]
+			HCShaderVar svRecordBuffer = {
+				.m_svtType = VAR_SHADER_RECORD_BUFFER,
+				.m_u16Flags = u16Flags,
+				.m_u32Binding = _cComp.get_decoration(aShaderBuffer.id, spv::DecorationBinding),
+				.m_u32Set = _cComp.get_decoration(aShaderBuffer.id, spv::DecorationDescriptorSet),
+				.m_u32StaticArraySize = u16Flags == 0 ? 0 : stType.array[0]
 			};
 
-			Console::DebugInfo("Found Shader Record Buffer: \"" + svRecordBuffer.m_strVarName + "\". Parameters:\n"
+			std::string strName = _cComp.get_name(aShaderBuffer.id);
+
+			Console::DebugInfo("Found Shader Record Buffer: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svRecordBuffer.m_u32Binding) + "\n"
 				+ "\tSet: " + std::to_string(svRecordBuffer.m_u32Set) + "\n"
-				+ "\tIs Array: " + (svRecordBuffer.m_u8Flags ? "true" : "false") + "\n"
-				+ "\tArray Size: " + std::to_string(svRecordBuffer.m_u32ArraySize) + "\n"
+				+ "\tIs Array: " + (svRecordBuffer.m_u16Flags ? "true" : "false") + "\n"
+				+ "\tArray Size: " + std::to_string(svRecordBuffer.m_u32StaticArraySize)
 			);
 
-			vShaderVars.push_back(std::make_unique<HCShaderRecordBufferVar>(svRecordBuffer));
+			mShaderVars[strName] = svRecordBuffer;
 		}
 
 		for (const auto& aAtomicCounter : _srRes.atomic_counters) {
-			HCAtomicCounterVar svAtomicCounter = {
-				{
-					.m_svtType = VAR_ATOMIC_COUNTER,
-					.m_strVarName = _cComp.get_name(aAtomicCounter.id)
-				},
-				_cComp.get_decoration(aAtomicCounter.id, spv::DecorationBinding),
-				_cComp.get_decoration(aAtomicCounter.id, spv::DecorationDescriptorSet),
-				TranslateBaseTypeToFlag(_cComp.get_type(aAtomicCounter.type_id).basetype),
-				_cComp.get_decoration(aAtomicCounter.id, spv::DecorationOffset)
+			HCShaderVar svAtomicCounter = {
+				.m_svtType = VAR_ATOMIC_COUNTER,
+				.m_u16Flags = TranslateBaseTypeToFlag(_cComp.get_type(aAtomicCounter.type_id).basetype),
+				.m_u32Binding = _cComp.get_decoration(aAtomicCounter.id, spv::DecorationBinding),
+				.m_u32Set = _cComp.get_decoration(aAtomicCounter.id, spv::DecorationDescriptorSet),
+				.m_u32Offset = _cComp.get_decoration(aAtomicCounter.id, spv::DecorationOffset)
 			};
 
-			Console::DebugInfo("Found Atomic Counter: \"" + svAtomicCounter.m_strVarName + "\". Parameters:\n"
+			std::string strName = _cComp.get_name(aAtomicCounter.id);
+
+			Console::DebugInfo("Found Atomic Counter: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svAtomicCounter.m_u32Binding) + "\n"
 				+ "\tSet: " + std::to_string(svAtomicCounter.m_u32Set) + "\n"
-				+ "\tBase Type: " + m_mTypeNames[svAtomicCounter.m_u16Type] + "\n"
-				+ "\tOffset: " + std::to_string(svAtomicCounter.m_u32Offset) + "\n"
+				+ "\tBase Type: " + m_mTypeNames[svAtomicCounter.m_u16Flags] + "\n"
+				+ "\tOffset: " + std::to_string(svAtomicCounter.m_u32Offset)
 			);
 
-			vShaderVars.push_back(std::make_unique<HCAtomicCounterVar>(svAtomicCounter));
+			mShaderVars[strName] = svAtomicCounter;
 		}
 
 		for (const auto& aGLBuffer : _srRes.gl_plain_uniforms) {
@@ -795,25 +774,24 @@ std::vector<std::unique_ptr<HCShaderVar>> ShaderCompiler::ParseShaderVars(const 
 				}
 			}
 
-			HCGLPlainUniformBufferVar svPlainUniform = {
-				{
-					.m_svtType = VAR_GL_PLAIN_UNIFORM,
-					.m_strVarName = _cComp.get_name(aGLBuffer.id)
-				},
-				_cComp.get_decoration(aGLBuffer.id, spv::DecorationLocation),
-				u32Size
+			HCShaderVar svPlainUniform = {
+				.m_svtType = VAR_GL_PLAIN_UNIFORM,
+				.m_u32StaticSize = u32Size,
+				.m_u32Location = _cComp.get_decoration(aGLBuffer.id, spv::DecorationLocation)
 			};
 
-			Console::DebugInfo("Found Atomic Counter: \"" + svPlainUniform.m_strVarName + "\". Parameters:\n"
+			std::string strName = _cComp.get_name(aGLBuffer.id);
+
+			Console::DebugInfo("Found Atomic Counter: \"" + strName + "\". Parameters:\n"
 				+ "\tLocation: " + std::to_string(svPlainUniform.m_u32Location) + "\n"
-				+ "\tSize: " + std::to_string(svPlainUniform.m_u32Size) + "\n"
+				+ "\tSize: " + std::to_string(svPlainUniform.m_u32StaticSize)
 			);
 
-			vShaderVars.push_back(std::make_unique<HCGLPlainUniformBufferVar>(svPlainUniform));
+			mShaderVars[strName] = svPlainUniform;
 		}
 	}
 
-	Console::DebugSuccess("Successfully gathered shader resources. Final count: " + std::to_string(vShaderVars.size()) + " entries");
+	Console::DebugSuccess("Successfully gathered shader resources. Final count: " + std::to_string(mShaderVars.size()) + " entries");
 
-	return vShaderVars;
+	return mShaderVars;
 }

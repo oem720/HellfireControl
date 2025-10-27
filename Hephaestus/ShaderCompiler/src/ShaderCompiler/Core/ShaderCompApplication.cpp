@@ -176,20 +176,19 @@ void ShaderCompApplication::Run() {
 
 void ShaderCompApplication::End() {
 	for (const auto& aShader : m_vCompiledShaders) {
-		/*File fShaderAsset(aShader.m_pthFilepath.string(), FILE_OPEN_FLAG_WRITE | FILE_OPEN_FLAG_BINARY);
+		File fShaderAsset(aShader.m_pthFilepath.string(), FILE_OPEN_FLAG_WRITE | FILE_OPEN_FLAG_BINARY);
 
 		uint32_t u32VarCount = aShader.m_vShaderVars.size();
 		uint32_t u32CodeSize = aShader.m_vCodeBlob.size();
 
 		fShaderAsset.Write(&aShader.m_u32MagicNumber, sizeof(uint32_t));
-		fShaderAsset.Write(&aShader.m_sstType, sizeof(HCShaderFormat));
+		fShaderAsset.Write(&aShader.m_sstType, sizeof(HCShaderStageType));
 		fShaderAsset.Write(&u32CodeSize, sizeof(uint32_t));
 		fShaderAsset.Write(aShader.m_vCodeBlob.data(), sizeof(uint8_t) * u32CodeSize);
 
-		fShaderAsset.Write(&u32VarCount, sizeof(uint32_t));
-		fShaderAsset.Write(aShader.m_vShaderVars.data(), sizeof(HCShaderVar) * u32VarCount);
+		
 
-		fShaderAsset.Close();*/
+		fShaderAsset.Close();
 	}
 }
 

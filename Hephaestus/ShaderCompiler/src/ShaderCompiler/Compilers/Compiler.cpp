@@ -390,6 +390,8 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 		for (const auto& aImage : _srRes.storage_images) {
 			spirv_cross::SPIRType stType = _cComp.get_type(aImage.type_id);
 
+			uint16_t u16Flags = (stType.array.empty() ? 0 : 1);
+
 			HCShaderVar svImageVar;
 
 			std::string strName = _cComp.get_name(aImage.id);
@@ -397,10 +399,11 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 			if (stType.image.dim == spv::DimBuffer) {
 				svImageVar = {
 					.m_u16Type = VAR_STORAGE_TEXEL_BUFFER,
-					.m_u16Flags = 0,
+					.m_u16Flags = u16Flags,
 					.m_arrData = {
 						_cComp.get_decoration(aImage.id, spv::DecorationBinding),
 						_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
+						stType.array.empty() ? 0 : stType.array[0],
 						static_cast<uint32_t>(stType.image.format)
 					}
 				};
@@ -408,7 +411,10 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				Console::DebugInfo("Found Storage Texel Buffer: \"" + strName + "\". Parameters:\n"
 					+ "\tBinding: " + std::to_string(svImageVar.m_arrData[0]) + "\n"
 					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_arrData[1]) + "\n"
-					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_arrData[2]]
+					+ "\tIs Array: " + (svImageVar.m_u16Flags & 1 ? "true" : "false") + "\n"
+					+ "\tIs Unsized Array: " + ((svImageVar.m_u16Flags & 1) && svImageVar.m_arrData[2] == 0 ? "true" : "false") + "\n"
+					+ "\tArray Size (if not runtime): " + std::to_string(svImageVar.m_arrData[2]) + "\n"
+					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_arrData[3]]
 				);
 			}
 			else {
@@ -446,6 +452,8 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 		for (const auto& aImage : _srRes.separate_images) {
 			spirv_cross::SPIRType stType = _cComp.get_type(aImage.type_id);
 
+			uint16_t u16Flags = (stType.array.empty() ? 0 : 1);
+
 			HCShaderVar svImageVar;
 
 			std::string strName = _cComp.get_name(aImage.id);
@@ -453,10 +461,11 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 			if (stType.image.dim == spv::DimBuffer) {
 				svImageVar = {
 					.m_u16Type = VAR_UNIFORM_TEXEL_BUFFER,
-					.m_u16Flags = 0,
+					.m_u16Flags = u16Flags,
 					.m_arrData = {
 						_cComp.get_decoration(aImage.id, spv::DecorationBinding),
 						_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
+						stType.array.empty() ? 0 : stType.array[0],
 						static_cast<uint32_t>(stType.image.format)
 					}
 				};
@@ -464,7 +473,10 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				Console::DebugInfo("Found Uniform Texel Buffer: \"" + strName + "\". Parameters:\n"
 					+ "\tBinding: " + std::to_string(svImageVar.m_arrData[0]) + "\n"
 					+ "\tDescriptor Set: " + std::to_string(svImageVar.m_arrData[1]) + "\n"
-					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_arrData[2]]
+					+ "\tIs Array: " + (svImageVar.m_u16Flags & 1 ? "true" : "false") + "\n"
+					+ "\tIs Unsized Array: " + ((svImageVar.m_u16Flags & 1) && svImageVar.m_arrData[2] == 0 ? "true" : "false") + "\n"
+					+ "\tArray Size (if not runtime): " + std::to_string(svImageVar.m_arrData[2]) + "\n"
+					+ "\tFormat: " + m_mImageFormatNames[svImageVar.m_arrData[3]]
 				);
 			}
 			else {

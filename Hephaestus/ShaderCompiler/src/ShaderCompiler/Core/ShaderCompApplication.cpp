@@ -12,7 +12,7 @@ std::vector<std::unique_ptr<ShaderCompiler>> ShaderCompApplication::m_vShaderCom
 
 std::vector<std::array<size_t, 3>> ShaderCompApplication::m_vShaderCompilerOrders = {
 	{ SHADER_FORMAT_GLSL, SHADER_FORMAT_HLSL, SHADER_FORMAT_SLANG }, // GLSL
-	{ SHADER_FORMAT_HLSL, SHADER_FORMAT_GLSL, SHADER_FORMAT_SLANG }, // HLSL
+	{ SHADER_FORMAT_HLSL, SHADER_FORMAT_SLANG, SHADER_FORMAT_GLSL }, // HLSL
 	{ SHADER_FORMAT_SLANG, SHADER_FORMAT_HLSL, SHADER_FORMAT_GLSL }  // Slang
 };
 

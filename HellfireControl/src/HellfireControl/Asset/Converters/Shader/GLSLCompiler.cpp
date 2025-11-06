@@ -1,5 +1,5 @@
 
-#include <ShaderCompiler/Compilers/GLSLCompiler.hpp>
+#include <HellfireControl/Asset/Converters/Shader/GLSLCompiler.hpp>
 
 shaderc_compiler_t GLSLCompiler::m_scCompiler = nullptr;
 shaderc_compile_options_t GLSLCompiler::m_scoOptions = nullptr;

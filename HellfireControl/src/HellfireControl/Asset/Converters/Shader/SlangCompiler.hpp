@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ShaderCompiler/Compilers/Compiler.hpp>
+#include <HellfireControl/Asset/Converters/Shader/Compiler.hpp>
 
 #include <slang/slang.h>
 #include <slang/slang-com-ptr.h>

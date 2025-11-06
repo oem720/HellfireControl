@@ -14,6 +14,7 @@ enum FileOpenFlag : uint8_t {
 };
 
 enum FileDelimiter : char {
+	FILE_DELIMITER_NULL_TERMINATOR = '\0',
 	FILE_DELIMITER_SPACE = ' ',
 	FILE_DELIMITER_NEWLINE = '\n',
 	FILE_DELIMITER_TAB = '\t',

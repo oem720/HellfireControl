@@ -23,6 +23,26 @@ void AssetManager::Init() {
 	m_palLoader->Init();
 }
 
+std::shared_ptr<Asset> AssetManager::LoadAssetFromPath(const std::string& _strPath) {
+	if(m_mAssetCache.contains(HCUID::ConstructFromFilepath(_strPath))) {
+		return m_mAssetCache[HCUID::ConstructFromFilepath(_strPath)];
+	}
+
+	if (!std::filesystem::exists(_strPath)) {
+		std::cout << "WARNING: Asset filepath doesn't exist! Path: " << _strPath << std::endl;
+		return nullptr;
+	}
+
+	std::shared_ptr<Asset> pAsset = m_palLoader->LoadAsset(_strPath);
+
+	if (pAsset != nullptr) {
+		HCUID gId = HCUID::ConstructFromFilepath(_strPath);
+		m_mAssetCache[gId] = pAsset;
+	}
+
+	return pAsset;
+}
+
 std::shared_ptr<Asset> AssetManager::GetAsset(const HCUID& _gId) {
 	if (m_mAssetCache.contains(_gId)) {
 		return m_mAssetCache[_gId];

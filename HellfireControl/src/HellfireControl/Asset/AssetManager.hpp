@@ -27,6 +27,8 @@ public:
 
 	void Init();
 
+	std::shared_ptr<Asset> LoadAssetFromPath(const std::string& _strPath);
+
 	std::shared_ptr<Asset> GetAsset(const HCUID& _gId);
 
 	void UnloadAsset(const HCUID& _gId);

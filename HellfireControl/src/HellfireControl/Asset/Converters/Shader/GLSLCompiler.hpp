@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ShaderCompiler/Compilers/Compiler.hpp>
+#include <HellfireControl/Asset/Converters/Shader/Compiler.hpp>
 
 #include <shaderc/shaderc.hpp>
 

@@ -1,6 +1,5 @@
 
-#include <ShaderCompiler/Compilers/Compiler.hpp>
-
+#include <HellfireControl/Asset/Converters/Shader/Compiler.hpp>
 
 std::map<uint32_t, std::string> ShaderCompiler::m_mImageFormatNames = {
 	{spv::ImageFormatUnknown, "UNKNOWN"},

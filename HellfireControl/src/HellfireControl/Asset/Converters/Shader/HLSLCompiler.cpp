@@ -1,5 +1,5 @@
 
-#include <ShaderCompiler/Compilers/HLSLCompiler.hpp>
+#include <HellfireControl/Asset/Converters/Shader/HLSLCompiler.hpp>
 
 #include <HellfireControl/Util/Util.hpp>
 

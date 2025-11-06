@@ -2,7 +2,7 @@
 
 #include <HellfireControl/Core/Application.hpp>
 
-#include <ShaderCompiler/Compilers/Compiler.hpp>
+#include <HellfireControl/Asset/Converters/Shader/Compiler.hpp>
 
 class ShaderCompApplication : public Application {
 private:

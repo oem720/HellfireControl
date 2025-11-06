@@ -1,9 +1,9 @@
 
 #include <ShaderCompiler/Core/ShaderCompApplication.hpp>
 
-#include <ShaderCompiler/Compilers/GLSLCompiler.hpp>
-#include <ShaderCompiler/Compilers/HLSLCompiler.hpp>
-#include <ShaderCompiler/Compilers/SlangCompiler.hpp>
+#include <HellfireControl/Asset/Converters/Shader/GLSLCompiler.hpp>
+#include <HellfireControl/Asset/Converters/Shader/HLSLCompiler.hpp>
+#include <HellfireControl/Asset/Converters/Shader/SlangCompiler.hpp>
 
 #include <HellfireControl/Util/Util.hpp>
 #include <HellfireControl/Core/Console.hpp>
@@ -184,7 +184,7 @@ void ShaderCompApplication::End() {
 		fShaderAsset.Write(&aShader.m_u32MagicNumber, sizeof(uint32_t));
 		fShaderAsset.Write(&aShader.m_sstType, sizeof(HCShaderStageType));
 		fShaderAsset.Write(&u32CodeSize, sizeof(uint32_t));
-		fShaderAsset.Write(aShader.m_vCodeBlob.data(), sizeof(uint8_t) * u32CodeSize);
+		fShaderAsset.Write(aShader.m_vCodeBlob.data(), sizeof(uint32_t) * u32CodeSize);
 		fShaderAsset.Write(&u32VarCount, sizeof(uint32_t));
 
 		for (const auto& aLabelEntry : aShader.m_svtVars.m_vLabels) {

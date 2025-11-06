@@ -1,5 +1,5 @@
 
-#include <ShaderCompiler/Compilers/SlangCompiler.hpp>
+#include <HellfireControl/Asset/Converters/Shader/SlangCompiler.hpp>
 
 Slang::ComPtr<slang::IGlobalSession> SlangCompiler::m_pSlangGlobalSession = nullptr;
 

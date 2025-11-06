@@ -2,6 +2,7 @@
 #include <HellfireControl/Asset/AssetLoader.hpp>
 
 #include <HellfireControl/Asset/Font.hpp>
+#include <HellfireControl/Asset/Shader.hpp>
 
 AssetLoader* AssetLoader::m_pInstance = nullptr;
 
@@ -15,6 +16,7 @@ AssetLoader* AssetLoader::GetInstance() {
 
 void AssetLoader::Init() {
 	m_mAssetParsers[HC_FONT_IDENTIFIER] = std::make_unique<FontParser>();
+	m_mAssetParsers[HC_SHADER_IDENTIFIER] = std::make_unique<ShaderParser>();
 }
 
 std::shared_ptr<Asset> AssetLoader::LoadAsset(const std::string& _strPath) {

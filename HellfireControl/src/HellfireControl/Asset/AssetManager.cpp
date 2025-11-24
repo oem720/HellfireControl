@@ -5,6 +5,8 @@
 
 #include <HellfireControl/Asset/AssetLoader.hpp>
 
+#include <HellfireControl/Core/Console.hpp>
+
 AssetManager* AssetManager::m_pInstance = nullptr;
 
 AssetManager* AssetManager::GetInstance() {
@@ -23,24 +25,35 @@ void AssetManager::Init() {
 	m_palLoader->Init();
 }
 
-std::shared_ptr<Asset> AssetManager::LoadAssetFromPath(const std::string& _strPath) {
-	if(m_mAssetCache.contains(HCUID::ConstructFromFilepath(_strPath))) {
-		return m_mAssetCache[HCUID::ConstructFromFilepath(_strPath)];
-	}
+HCUID AssetManager::LoadAssetFromPath(const std::string& _strPath) {
+	HCUID gId = HCUID::ConstructFromFilepath(_strPath);
 
 	if (!std::filesystem::exists(_strPath)) {
-		std::cout << "WARNING: Asset filepath doesn't exist! Path: " << _strPath << std::endl;
-		return nullptr;
+		Console::DebugWarn("Asset filepath doesn't exist! Path: " + _strPath);
+		return HCUID();
+	}
+
+	if(m_pamManifest->Contains(gId)) {
+		Console::DebugWarn("Attempted to manually load asset that exists within the manifest. ID: " + gId.AsString());
+		return gId;
+	}
+	else {
+		m_pamManifest->SetManifestEntry(gId, _strPath);
+	}
+
+	if(m_mAssetCache.contains(gId)) {
+		Console::DebugWarn("Attempted to manually load asset that exists within the cache. ID: " + gId.AsString());
+		return gId;
 	}
 
 	std::shared_ptr<Asset> pAsset = m_palLoader->LoadAsset(_strPath);
 
 	if (pAsset != nullptr) {
-		HCUID gId = HCUID::ConstructFromFilepath(_strPath);
 		m_mAssetCache[gId] = pAsset;
+		return gId;
 	}
 
-	return pAsset;
+	return HCUID();
 }
 
 std::shared_ptr<Asset> AssetManager::GetAsset(const HCUID& _gId) {
@@ -49,14 +62,14 @@ std::shared_ptr<Asset> AssetManager::GetAsset(const HCUID& _gId) {
 	}
 
 	if (!m_pamManifest->Contains(_gId)) {
-		std::cout << "WARNING: Asset ID not found! ID: " << _gId << std::endl;
+		Console::DebugWarn("Asset ID not found in manifest! ID: " + _gId.AsString());
 		return nullptr;
 	}
 
 	std::string strPath = m_pamManifest->GetManifestEntry(_gId);
 
 	if (!std::filesystem::exists(strPath)) {
-		std::cout << "WARNING: Asset filepath doesn't exist! Path: " << strPath << std::endl;
+		Console::DebugWarn("Asset filepath doesn't exist! Path: " + strPath);
 		return nullptr;
 	}
 
@@ -71,12 +84,12 @@ std::shared_ptr<Asset> AssetManager::GetAsset(const HCUID& _gId) {
 
 void AssetManager::UnloadAsset(const HCUID& _gId) {
 	if (!m_mAssetCache.contains(_gId)) {
-		std::cout << "WARNING: Attempted to unload asset that wasn't loaded! ID: " << _gId << std::endl;
+		Console::DebugWarn("Attempted to unload asset that wasn't loaded! ID: " + _gId.AsString());
 		return;
 	}
 
 	if (m_mAssetCache[_gId].use_count() > 1) {
-		std::cout << "WARNING: Asset being unloaded is still in use -- Unload aborted. Current use count: " << m_mAssetCache[_gId].use_count() - 1 << ". ID: " << _gId << std::endl;
+		Console::DebugWarn("Attempted to unload asset that is still in use! ID: " + _gId.AsString());
 		return;
 	}
 

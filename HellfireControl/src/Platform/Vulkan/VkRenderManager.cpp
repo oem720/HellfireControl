@@ -33,8 +33,6 @@ std::vector<VkImageView> VkRenderManager::m_vSwapchainImageViews = {};
 std::vector<VkSemaphore> VkRenderManager::m_vImageAvailableSemaphores = {};
 std::vector<VkSemaphore> VkRenderManager::m_vRenderFinishedSemaphores = {};
 std::vector<VkFence> VkRenderManager::m_vInFlightFences = {};
-
-std::map<uint32_t, std::shared_ptr<VkRenderer>> VkRenderManager::m_mRenderers = {};
 #pragma endregion
 
 #pragma region Engine Interface

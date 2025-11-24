@@ -5,10 +5,6 @@
 class VkRenderer;
 
 class VkRenderManager {
-public:
-	static void AddRenderer(std::shared_ptr<VkRenderer> _pRenderer);
-	static std::shared_ptr<VkRenderer> GetRenderer(uint32_t _u32Id);
-
 private:
 	static uint32_t m_u32CurrentFrame;
 
@@ -33,8 +29,6 @@ private:
 	static std::vector<VkSemaphore> m_vRenderFinishedSemaphores;
 	static std::vector<VkFence> m_vInFlightFences;
 
-	static std::map<uint32_t, std::shared_ptr<VkRenderer>> m_mRenderers;
-
 	static void CreateInstance(const std::string& _strAppName, uint32_t _u32AppVersion);
 	static void SelectPhysicalDevice();
 	static void CreateLogicalDevice();
@@ -51,4 +45,5 @@ private:
 	static void RecreateSwapchain(WindowHandleGeneric _whgHandle);
 
 	friend class RenderManager;
+	friend class VkRenderer;
 };

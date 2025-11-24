@@ -14,9 +14,9 @@ class RenderManager {
 private:
 	WindowHandleGeneric m_whgWindowHandle = 0;
 
-	std::map<uint32_t, std::unique_ptr<Renderer>> m_mRenderers;
+	std::map<RendererTag, std::shared_ptr<Renderer>> m_mRenderers;
 
-	std::map<uint32_t, std::shared_ptr<Job>> m_mRenderJobs;
+	std::map<RendererTag, std::shared_ptr<Job>> m_mRenderJobs;
 
 	JobManager m_jmRenderJobManager;
 
@@ -30,7 +30,7 @@ private:
 
 	void InitRenderJobs();
 
-	std::shared_ptr<Job> RecursiveInitRenderJobs(uint32_t _u32RenderId, int _iDepthLimit, int _iDepth = 0);
+	std::shared_ptr<Job> RecursiveInitRenderJobs(RendererTag _rtTag, int _iDepthLimit, int _iDepth = 0);
 
 	void CleanupPlatformObjects();
 
@@ -47,7 +47,7 @@ public:
 
 	static RenderManager* GetInstance();
 
-	void AddRenderer(std::unique_ptr<Renderer> _pRenderer);
+	void AddRenderer(RendererTag _rtTag, std::shared_ptr<Renderer> _pRenderer);
 
 	void Init(const std::string& _strAppName, uint32_t _u32AppVersion, WindowHandleGeneric _whgWindowHandle);
 

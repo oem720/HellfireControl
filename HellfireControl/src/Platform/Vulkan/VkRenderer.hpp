@@ -2,10 +2,20 @@
 
 #include <Platform/GLCommon.hpp>
 
-class VkRenderer {
+#include <HellfireControl/Render/Renderer.hpp>
+
+class VkRenderer : public PlatformRenderpass {
 private:
-	VkRenderPass m_rpRenderpass;
+	VkRenderPass m_rpRenderPass;
+
+	std::vector<VkShaderModule> m_vShaders;
+
+	void CreateRenderpass(const RenderpassData& _rdRenderpass);
 
 public:
+	void Init(const RenderpassData& _rdRenderpass);
 
+	void Render();
+
+	void Cleanup();
 };

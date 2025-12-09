@@ -28,9 +28,9 @@ void RenderManager::WindowEventHandler(WindowHandleGeneric _whgHandle, const Win
 }
 
 void RenderManager::AddRenderer(RendererTag _rtTag, std::shared_ptr<Renderer> _pRenderer) {
+	RegisterPlatformRenderer(_pRenderer);
+	
 	m_mRenderers[_rtTag] = _pRenderer;
-
-	//Grab the renderpass descriptor counts for initialization. We will over-estimate the amount to the nearest power of 2.
 }
 
 void RenderManager::Init(const std::string& _strAppName, uint32_t _u32AppVersion, WindowHandleGeneric _whgWindowHandle) {

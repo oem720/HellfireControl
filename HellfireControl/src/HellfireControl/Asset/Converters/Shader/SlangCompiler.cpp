@@ -14,7 +14,7 @@ void SlangCompiler::InitializeCompiler() {
 	SlangGlobalSessionDesc sgsdDesc = {
 		.structureSize = sizeof(SlangGlobalSessionDesc),
 		.apiVersion = SLANG_API_VERSION,
-		.languageVersion = SLANG_LANGUAGE_VERSION_2025,
+		.minLanguageVersion = SLANG_LANGUAGE_VERSION_2025,
 		.enableGLSL = false
 	};
 

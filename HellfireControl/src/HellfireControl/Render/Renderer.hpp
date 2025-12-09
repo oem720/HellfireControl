@@ -20,7 +20,7 @@ enum RendererFlags : uint8_t {
 	IS_PRESENTING = (1 << 4)
 };
 
-class PlatformRenderpass {
+class PlatformRenderer {
 public:
 	virtual void Init(const RenderpassData& _rdRenderpass) = 0;
 	virtual void Render() = 0;
@@ -33,7 +33,7 @@ private:
 	RenderpassData m_rdRenderpass;
 	std::vector<RendererTag> m_vDependencies;
 	
-	std::unique_ptr<PlatformRenderpass> m_pPlatformRenderpass;
+	std::shared_ptr<PlatformRenderer> m_pPlatformRenderer;
 
 	void VerifyRenderpassPipelineData();
 
@@ -47,16 +47,17 @@ public:
 		, m_vDependencies(_vDependencies)
 		, m_rdRenderpass(_rdRenderpass) {
 		VerifyRenderpassPipelineData();
+		CreatePlatformRenderpass();
 	}
 
 	void Init() {
-		CreatePlatformRenderpass();
-		m_pPlatformRenderpass->Init(m_rdRenderpass);
+		m_pPlatformRenderer->Init(m_rdRenderpass);
 	}
 
-	void Render() { m_pPlatformRenderpass->Render(); }
-	void Cleanup() { m_pPlatformRenderpass->Cleanup(); }
+	void Render() { m_pPlatformRenderer->Render(); }
+	void Cleanup() { m_pPlatformRenderer->Cleanup(); }
 
 	[[nodiscard]] HC_INLINE const std::vector<RendererTag>& GetDependencies() const { return m_vDependencies; }
 	[[nodiscard]] HC_INLINE size_t GetDependencyCount() const { return m_vDependencies.size(); }
+	[[nodiscard]] HC_INLINE std::shared_ptr<PlatformRenderer> GetPlatformRenderer() { return m_pPlatformRenderer; }
 };

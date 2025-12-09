@@ -29,6 +29,8 @@ private:
 	static std::vector<VkSemaphore> m_vRenderFinishedSemaphores;
 	static std::vector<VkFence> m_vInFlightFences;
 
+	static std::map<VkDescriptorType, uint32_t> m_mDescriptorTypeCounts;
+
 	static void CreateInstance(const std::string& _strAppName, uint32_t _u32AppVersion);
 	static void SelectPhysicalDevice();
 	static void CreateLogicalDevice();

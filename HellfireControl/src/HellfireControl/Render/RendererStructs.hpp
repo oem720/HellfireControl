@@ -2,6 +2,7 @@
 
 #include <HellfireControl/Core/Common.hpp>
 #include <HellfireControl/Math/Vector.hpp>
+#include <HellfireControl/Asset/Shader.hpp>
 
 enum PipelineBindPoint : uint32_t {
     PIPELINE_BIND_POINT_GRAPHICS = 0,
@@ -346,10 +347,8 @@ struct BlendAttachmentState {
     uint32_t m_u32ColorWriteMask = COLOR_COMPONENT_NONE;
 };
 
-class Asset;
-
 struct ShaderPipelineData {
-    std::vector<std::shared_ptr<Asset>> m_vShaderStages;
+    std::vector<std::shared_ptr<Shader>> m_vShaderStages;
 
 	PipelineType m_ptPipelineType = PIPELINE_TYPE_GRAPHICS;
     CullMode m_cmCullMode = CULL_MODE_NONE;

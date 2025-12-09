@@ -25,8 +25,12 @@ void UIManager::Init() {
 	HCUID shdVertId = pamAssetManager->LoadAssetFromPath("./Assets/Shaders/Builtin/test_vert.hcshd");
 	HCUID shdFragId = pamAssetManager->LoadAssetFromPath("./Assets/Shaders/Builtin/test_frag.hcshd");
 
-	std::shared_ptr<Asset> pVertShaderAsset = pamAssetManager->GetAsset(shdVertId);
-	std::shared_ptr<Asset> pFragShaderAsset = pamAssetManager->GetAsset(shdFragId);
+	std::shared_ptr<Shader> pVertShaderAsset = std::dynamic_pointer_cast<Shader>(pamAssetManager->GetAsset(shdVertId));
+	std::shared_ptr<Shader> pFragShaderAsset = std::dynamic_pointer_cast<Shader>(pamAssetManager->GetAsset(shdFragId));
+
+	if (pVertShaderAsset == nullptr || pFragShaderAsset == nullptr) {
+		throw std::runtime_error("Invalid shader assets!");
+	}
 
 	m_pUIRenderer = std::make_shared<Renderer>(
 		CACHE_FRAME | OUTPUT_FRAME,

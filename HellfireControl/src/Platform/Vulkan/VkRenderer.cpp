@@ -7,15 +7,52 @@
 #include <Platform/Vulkan/VkUtil.hpp>
 
 void Renderer::VerifyRenderpassPipelineData() {
-	//Verify that all pipelines are valid and gather the data necessary for descriptor creation and pipeline inputs.
-	//We will eventually need a check to ensure that whatever is being accessed, such as the texture manager, does not get duplicated.
-	//Future implementation will remove the ability to create descriptors for the texture system, opting instead to enforce the bindless design.
+	for (const auto& aSubpass : m_rdRenderpass.m_vSubpasses) {
+		for (const auto& aPipeline : aSubpass.m_vShaderPipelines) {
+			uint16_t u16PipelineMask = 0;
+			for (const auto& aShader : aPipeline.m_vShaderStages) {
+				u16PipelineMask |= aShader->GetShaderStageBit();
+			}
 
+			switch (aPipeline.m_ptPipelineType) {
+			case PIPELINE_TYPE_GRAPHICS:
+				if (!((u16PipelineMask >= SHADER_STAGE_GRAPHICS_MIN && u16PipelineMask <= SHADER_STAGE_GRAPHICS_MAX) ||
+					(u16PipelineMask >= SHADER_STAGE_TASK_MIN && u16PipelineMask <= SHADER_STAGE_TASK_MAX))) {
+					throw std::runtime_error("Pipeline validation error: Invalid stages or configuration present in a graphics pipeline!");
+				}
 
+				if (u16PipelineMask & SHADER_STAGE_VERTEX_BIT && aPipeline.m_vShaderStages.size() > 5) {
+					throw std::runtime_error("Pipeline validation error: Graphics pipelines with vertex shaders cannot be longer than 5 stages!");
+				}
+				else if (u16PipelineMask & SHADER_STAGE_TASK_BIT && aPipeline.m_vShaderStages.size() > 3) {
+					throw std::runtime_error("Pipeline validation error: Graphics pipelines with task shaders cannot be longer than 3 stages!");
+				}
+				break;
+			case PIPELINE_TYPE_COMPUTE:
+				if (u16PipelineMask != SHADER_STAGE_COMPUTE_BIT) {
+					throw std::runtime_error("Pipeline validation error: Any stage other than a compute shader in a compute pipeline is invalid!");
+				}
+
+				if (aPipeline.m_vShaderStages.size() > 1) {
+					throw std::runtime_error("Pipeline validation error: Compute pipelines cannot have more than 1 stage!");
+				}
+				break;
+			case PIPELINE_TYPE_RAY_TRACING:
+				if (!(u16PipelineMask >= SHADER_STAGE_RAY_TRACING_MIN && u16PipelineMask <= SHADER_STAGE_RAY_TRACING_MAX)) {
+					throw std::runtime_error("Pipeline validation error: Invalid stages or configuration present in a ray tracing pipeline!");
+				}
+
+				if (aPipeline.m_vShaderStages.size() > 6) {
+					throw std::runtime_error("Pipeline validation error: Ray tracing pipelines cannot have more than 6 stages!");
+				}
+				break;
+			}
+		}
+	}
 }
 
 void Renderer::CreatePlatformRenderpass() {
-	m_pPlatformRenderpass = std::make_unique<VkRenderer>();
+	m_pPlatformRenderer = std::make_shared<VkRenderer>();
 }
 
 void VkRenderer::Init(const RenderpassData& _rdRenderpass) {
@@ -30,6 +67,14 @@ void VkRenderer::Render() {
 
 void VkRenderer::Cleanup() {
 	vkDestroyRenderPass(VkRenderManager::m_dDeviceHandle, m_rpRenderPass, nullptr);
+}
+
+std::vector<VkDescriptorTypeCount> VkRenderer::GetDescriptorCounts() const {
+	//Gather the data necessary for descriptor creation.
+	//We will eventually need a check to ensure that whatever is being accessed, such as the texture manager, does not get duplicated.
+	//Future implementation will remove the ability to create descriptors for the texture system, opting instead to enforce the bindless design.
+
+	return std::vector<VkDescriptorTypeCount>();
 }
 
 void VkRenderer::CreateRenderpass(const RenderpassData& _rdRenderpass) {
@@ -130,6 +175,14 @@ void VkRenderer::CreatePipelines(const RenderpassData& _rdRenderpass) {
 }
 
 VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(const ShaderPipelineData& _spdPipelineData) {
-	return {};
+	return VkRenderPipelineData();
+}
+
+VkRenderPipelineData VkRenderer::CreateComputePipeline(const ShaderPipelineData& _spdPipelineData) {
+	return VkRenderPipelineData();
+}
+
+VkRenderPipelineData VkRenderer::CreateRaytracingPipeline(const ShaderPipelineData& _spdPipelineData) {
+	return VkRenderPipelineData();
 }
 #endif

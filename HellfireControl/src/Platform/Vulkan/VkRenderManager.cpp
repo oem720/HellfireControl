@@ -33,6 +33,8 @@ std::vector<VkImageView> VkRenderManager::m_vSwapchainImageViews = {};
 std::vector<VkSemaphore> VkRenderManager::m_vImageAvailableSemaphores = {};
 std::vector<VkSemaphore> VkRenderManager::m_vRenderFinishedSemaphores = {};
 std::vector<VkFence> VkRenderManager::m_vInFlightFences = {};
+
+std::map<VkDescriptorType, uint32_t> VkRenderManager::m_mDescriptorTypeCounts = {};
 #pragma endregion
 
 #pragma region Engine Interface
@@ -58,8 +60,22 @@ void RenderManager::InitPlatformObjects(const std::string& _strAppName, uint32_t
 	//Using the counts determined during the renderer addition phase, create the descriptor pool.
 }
 
+void RenderManager::RegisterPlatformRenderer(const std::shared_ptr<Renderer>& _pRenderer) {
+	std::shared_ptr<VkRenderer> pPlatformRenderer = std::dynamic_pointer_cast<VkRenderer>(_pRenderer->GetPlatformRenderer());
+
+	if (pPlatformRenderer == nullptr) {
+		throw std::runtime_error("Failed to cast to platform renderer. Improperly specified renderer?");
+	}
+
+	std::vector<VkDescriptorTypeCount> vDescriptorCounts = pPlatformRenderer->GetDescriptorCounts();
+
+	for (const auto& aCount : vDescriptorCounts) {
+		VkRenderManager::m_mDescriptorTypeCounts[aCount.m_dtType] += aCount.m_u32DescriptorCount;
+	}
+}
+
 void RenderManager::PresentFrame() {
-	//TODO: Run the final renderpass where we collate the inputs
+	
 }
 
 void RenderManager::CleanupPlatformObjects() {

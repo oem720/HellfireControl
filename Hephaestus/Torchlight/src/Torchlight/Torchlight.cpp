@@ -1,6 +1,8 @@
 
 #include <Torchlight/Core/UICreationToolApplication.hpp>
 
+#include <HellfireControl/Core/Console.hpp>
+
 int main() {
 	UICreationToolApplication appTorchlight;
 
@@ -8,7 +10,7 @@ int main() {
 		appTorchlight.Run();
 	}
 	catch (const std::exception& _exError) {
-		std::cerr << _exError.what() << std::endl;
+		Console::DebugError(_exError.what());
 		return -1;
 	}
 

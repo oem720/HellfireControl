@@ -26,6 +26,8 @@ private:
 
 	void InitPlatformObjects(const std::string& _strAppName, uint32_t _u32AppVersion);
 
+	void RegisterPlatformRenderer(const std::shared_ptr<Renderer>& _pRenderer);
+
 	void PresentFrame();
 
 	void InitRenderJobs();

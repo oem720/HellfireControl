@@ -6,12 +6,22 @@
 #include <Platform/Vulkan/VkRenderManager.hpp>
 #include <Platform/Vulkan/VkUtil.hpp>
 
+void Renderer::VerifyRenderpassPipelineData() {
+	//Verify that all pipelines are valid and gather the data necessary for descriptor creation and pipeline inputs.
+	//We will eventually need a check to ensure that whatever is being accessed, such as the texture manager, does not get duplicated.
+	//Future implementation will remove the ability to create descriptors for the texture system, opting instead to enforce the bindless design.
+
+
+}
+
 void Renderer::CreatePlatformRenderpass() {
 	m_pPlatformRenderpass = std::make_unique<VkRenderer>();
 }
 
 void VkRenderer::Init(const RenderpassData& _rdRenderpass) {
 	CreateRenderpass(_rdRenderpass);
+	
+	CreatePipelines(_rdRenderpass);
 }
 
 void VkRenderer::Render() {
@@ -95,5 +105,31 @@ void VkRenderer::CreateRenderpass(const RenderpassData& _rdRenderpass) {
 	if(vkCreateRenderPass(VkRenderManager::m_dDeviceHandle, &rpciRenderPassInfo, nullptr, &m_rpRenderPass) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create render pass!");
 	}
+}
+
+void VkRenderer::CreatePipelines(const RenderpassData& _rdRenderpass) {
+	for (const auto& aSubpass : _rdRenderpass.m_vSubpasses) {
+		for (const auto& aShaderPipeline : aSubpass.m_vShaderPipelines) {
+			VkRenderPipelineData rpdPipelineData = {};
+
+			switch (aShaderPipeline.m_ptPipelineType) {
+			case PIPELINE_TYPE_GRAPHICS:
+				rpdPipelineData = CreateGraphicsPipeline(aShaderPipeline);
+				break;
+			case PIPELINE_TYPE_COMPUTE:
+				rpdPipelineData = CreateComputePipeline(aShaderPipeline);
+				break;
+			case PIPELINE_TYPE_RAY_TRACING:
+				rpdPipelineData = CreateRaytracingPipeline(aShaderPipeline);
+				break;
+			}
+
+			m_vPipelines.push_back(rpdPipelineData);
+		}
+	}
+}
+
+VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(const ShaderPipelineData& _spdPipelineData) {
+	return {};
 }
 #endif

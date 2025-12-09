@@ -54,6 +54,8 @@ void RenderManager::InitPlatformObjects(const std::string& _strAppName, uint32_t
 	VkRenderManager::CreateDepthResources();
 
 	VkRenderManager::CreateSyncObjects();
+
+	//Using the counts determined during the renderer addition phase, create the descriptor pool.
 }
 
 void RenderManager::PresentFrame() {

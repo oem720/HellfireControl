@@ -63,6 +63,7 @@ void UIManager::Init() {
 					.m_vShaderPipelines = {
 						ShaderPipelineData {
 							.m_vShaderStages = { pVertShaderAsset, pFragShaderAsset },
+							.m_ptPipelineType = PIPELINE_TYPE_GRAPHICS,
 							.m_cmCullMode = CULL_MODE_BACK,
 							.m_woFrontFace = WINDING_ORDER_CLOCKWISE,
 							.m_pmPolygonMode = POLYGON_MODE_FILL,

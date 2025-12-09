@@ -21,8 +21,15 @@ enum RendererFlags : uint8_t {
 };
 
 class PlatformRenderer {
+protected:
+	RenderpassData m_rdRenderpassData;
+
+	virtual void VerifyRenderpassPipelineData() = 0;
+
 public:
-	virtual void Init(const RenderpassData& _rdRenderpass) = 0;
+	PlatformRenderer(const RenderpassData& _rdRenderpass) : m_rdRenderpassData(_rdRenderpass) {}
+
+	virtual void Init() = 0;
 	virtual void Render() = 0;
 	virtual void Cleanup() = 0;
 };
@@ -30,28 +37,23 @@ public:
 class Renderer {
 private:
 	uint8_t m_u8Flags;
-	RenderpassData m_rdRenderpass;
 	std::vector<RendererTag> m_vDependencies;
 	
 	std::shared_ptr<PlatformRenderer> m_pPlatformRenderer;
 
-	void VerifyRenderpassPipelineData();
-
-	void CreatePlatformRenderpass();
+	void CreatePlatformRenderpass(const RenderpassData& _rdRenderpass);
 
 public:
 	Renderer() = delete;
 
 	Renderer(uint8_t _u8Flags, const std::vector<RendererTag>& _vDependencies, const RenderpassData& _rdRenderpass)
 		: m_u8Flags(_u8Flags)
-		, m_vDependencies(_vDependencies)
-		, m_rdRenderpass(_rdRenderpass) {
-		VerifyRenderpassPipelineData();
-		CreatePlatformRenderpass();
+		, m_vDependencies(_vDependencies) {
+		CreatePlatformRenderpass(_rdRenderpass);
 	}
 
 	void Init() {
-		m_pPlatformRenderer->Init(m_rdRenderpass);
+		m_pPlatformRenderer->Init();
 	}
 
 	void Render() { m_pPlatformRenderer->Render(); }

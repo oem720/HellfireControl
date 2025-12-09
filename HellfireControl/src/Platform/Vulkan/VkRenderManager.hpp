@@ -2,6 +2,8 @@
 
 #include <Platform/GLCommon.hpp>
 
+#define HC_VULKAN_DESCRIPTOR_SET_COUNT_HARD_LIMIT 1024 //Find a way to make this value dynamically calculated from the situation.
+
 class VkRenderer;
 
 class VkRenderManager {
@@ -39,6 +41,7 @@ private:
 	static void CreateCommandPool();
 	static void CreateDepthResources();
 	static void CreateSyncObjects();
+	static void CreateDescriptorPool();
 
 	static VkCommandBuffer CreateSingleUseCommandBuffer();
 	static void SubmitSingleUseCommandBuffer(VkCommandBuffer _cbBuffer);

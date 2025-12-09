@@ -6,8 +6,41 @@
 #include <Platform/Vulkan/VkRenderManager.hpp>
 #include <Platform/Vulkan/VkUtil.hpp>
 
-void Renderer::VerifyRenderpassPipelineData() {
-	for (const auto& aSubpass : m_rdRenderpass.m_vSubpasses) {
+std::map<HCShaderVarType, VkDescriptorType> VkRenderer::m_mShaderVarTranslationTable = {
+	{VAR_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER},
+	{VAR_STORAGE_BUFFER, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER},
+	{VAR_COMBINED_IMAGE_SAMPLER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER},
+	{VAR_TEXTURE_2D, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE},
+	{VAR_IMAGE_2D, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE},
+	{VAR_SAMPLER, VK_DESCRIPTOR_TYPE_SAMPLER},
+	{VAR_UNIFORM_TEXEL_BUFFER, VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER},
+	{VAR_STORAGE_TEXEL_BUFFER, VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER},
+	{VAR_SUBPASS_INPUT, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT},
+	{VAR_ACCELERATION_STRUCTURE, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR},
+	{VAR_SHADER_RECORD_BUFFER, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER},
+	{VAR_ATOMIC_COUNTER, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER}
+};
+
+void Renderer::CreatePlatformRenderpass(const RenderpassData& _rdRenderpass) {
+	m_pPlatformRenderer = std::make_shared<VkRenderer>(_rdRenderpass);
+}
+
+void VkRenderer::Init() {
+	CreateRenderpass();
+	
+	CreatePipelines();
+}
+
+void VkRenderer::Render() {
+
+}
+
+void VkRenderer::Cleanup() {
+	vkDestroyRenderPass(VkRenderManager::m_dDeviceHandle, m_rpRenderpass, nullptr);
+}
+
+void VkRenderer::VerifyRenderpassPipelineData() {
+	for (const auto& aSubpass : m_rdRenderpassData.m_vSubpasses) {
 		for (const auto& aPipeline : aSubpass.m_vShaderPipelines) {
 			uint16_t u16PipelineMask = 0;
 			for (const auto& aShader : aPipeline.m_vShaderStages) {
@@ -51,38 +84,42 @@ void Renderer::VerifyRenderpassPipelineData() {
 	}
 }
 
-void Renderer::CreatePlatformRenderpass() {
-	m_pPlatformRenderer = std::make_shared<VkRenderer>();
-}
-
-void VkRenderer::Init(const RenderpassData& _rdRenderpass) {
-	CreateRenderpass(_rdRenderpass);
-	
-	CreatePipelines(_rdRenderpass);
-}
-
-void VkRenderer::Render() {
-
-}
-
-void VkRenderer::Cleanup() {
-	vkDestroyRenderPass(VkRenderManager::m_dDeviceHandle, m_rpRenderPass, nullptr);
-}
-
-std::vector<VkDescriptorTypeCount> VkRenderer::GetDescriptorCounts() const {
+std::vector<VkDescriptorType> VkRenderer::GetDescriptorCounts() const {
 	//Gather the data necessary for descriptor creation.
 	//We will eventually need a check to ensure that whatever is being accessed, such as the texture manager, does not get duplicated.
 	//Future implementation will remove the ability to create descriptors for the texture system, opting instead to enforce the bindless design.
+	std::vector<VkDescriptorType> vDescriptors;
 
-	return std::vector<VkDescriptorTypeCount>();
+	for (const auto& aSubpass : m_rdRenderpassData.m_vSubpasses) {
+		for (const auto& aPipeline : aSubpass.m_vShaderPipelines) {
+			for (const auto& aShader : aPipeline.m_vShaderStages) {
+				auto aVars = aShader->GetShaderVars();
+				for (const auto& aShaderVar : aVars) {
+					if (aShaderVar.second.m_u16Type == VAR_STAGE_INPUT ||
+						aShaderVar.second.m_u16Type == VAR_STAGE_OUTPUT ||
+						aShaderVar.second.m_u16Type == VAR_BUILTIN_STAGE_INPUT ||
+						aShaderVar.second.m_u16Type == VAR_BUILTIN_STAGE_OUTPUT ||
+						aShaderVar.second.m_u16Type == VAR_PUSH_CONSTANT_BUFFER ||
+						aShaderVar.second.m_u16Type == VAR_GL_PLAIN_UNIFORM) {
+						continue; //None of these vars generate descriptors
+					}
+
+					//TODO: fix this such that dynamic ubo/ssbo objects are distinguished from non-dynamic counterparts.
+					vDescriptors.push_back(m_mShaderVarTranslationTable[static_cast<HCShaderVarType>(aShaderVar.second.m_u16Type)]);
+				}
+			}
+		}
+	}
+
+	return vDescriptors;
 }
 
-void VkRenderer::CreateRenderpass(const RenderpassData& _rdRenderpass) {
+void VkRenderer::CreateRenderpass() {
 	std::vector<VkAttachmentDescription> vAttachments;
 	std::vector<VkSubpassDescription> vSubpasses;
 	std::vector<VkSubpassDependency> vDependencies;
 
-	for(const auto& aAttachment : _rdRenderpass.m_vAttachments) {
+	for(const auto& aAttachment : m_rdRenderpassData.m_vAttachments) {
 		VkFormat fFormat = aAttachment.m_ifFormat >= 0
 			? static_cast<VkFormat>(aAttachment.m_ifFormat)
 			: (aAttachment.m_ifFormat == FORMAT_SWAPCHAIN_DETERMINED 
@@ -104,7 +141,7 @@ void VkRenderer::CreateRenderpass(const RenderpassData& _rdRenderpass) {
 		vAttachments.push_back(adAttachmentDesc);
 	}
 
-	for (const auto& aSubpass : _rdRenderpass.m_vSubpasses) {
+	for (const auto& aSubpass : m_rdRenderpassData.m_vSubpasses) {
 		VkSubpassDescription sdSubpassDesc = {
 			.flags = aSubpass.m_u32Flags,
 			.pipelineBindPoint = static_cast<VkPipelineBindPoint>(aSubpass.m_pbpBindPoint),
@@ -147,13 +184,13 @@ void VkRenderer::CreateRenderpass(const RenderpassData& _rdRenderpass) {
 		.pDependencies = vDependencies.data()
 	};
 
-	if(vkCreateRenderPass(VkRenderManager::m_dDeviceHandle, &rpciRenderPassInfo, nullptr, &m_rpRenderPass) != VK_SUCCESS) {
+	if(vkCreateRenderPass(VkRenderManager::m_dDeviceHandle, &rpciRenderPassInfo, nullptr, &m_rpRenderpass) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create render pass!");
 	}
 }
 
-void VkRenderer::CreatePipelines(const RenderpassData& _rdRenderpass) {
-	for (const auto& aSubpass : _rdRenderpass.m_vSubpasses) {
+void VkRenderer::CreatePipelines() {
+	for (const auto& aSubpass : m_rdRenderpassData.m_vSubpasses) {
 		for (const auto& aShaderPipeline : aSubpass.m_vShaderPipelines) {
 			VkRenderPipelineData rpdPipelineData = {};
 

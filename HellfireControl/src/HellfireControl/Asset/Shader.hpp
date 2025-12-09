@@ -14,6 +14,7 @@ public:
 	void Initialize();
 
 	[[nodiscard]] HC_INLINE HCShaderStageBit GetShaderStageBit() const { return m_ssbStage; }
+	[[nodiscard]] HC_INLINE const std::map<std::string, HCShaderVar>& GetShaderVars() const { return m_mVariables; }
 
 	friend class ShaderParser;
 };

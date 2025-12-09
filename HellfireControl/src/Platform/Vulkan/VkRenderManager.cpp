@@ -58,6 +58,7 @@ void RenderManager::InitPlatformObjects(const std::string& _strAppName, uint32_t
 	VkRenderManager::CreateSyncObjects();
 
 	//Using the counts determined during the renderer addition phase, create the descriptor pool.
+	VkRenderManager::CreateDescriptorPool();
 }
 
 void RenderManager::RegisterPlatformRenderer(const std::shared_ptr<Renderer>& _pRenderer) {
@@ -67,10 +68,10 @@ void RenderManager::RegisterPlatformRenderer(const std::shared_ptr<Renderer>& _p
 		throw std::runtime_error("Failed to cast to platform renderer. Improperly specified renderer?");
 	}
 
-	std::vector<VkDescriptorTypeCount> vDescriptorCounts = pPlatformRenderer->GetDescriptorCounts();
+	std::vector<VkDescriptorType> vDescriptors = pPlatformRenderer->GetDescriptorCounts();
 
-	for (const auto& aCount : vDescriptorCounts) {
-		VkRenderManager::m_mDescriptorTypeCounts[aCount.m_dtType] += aCount.m_u32DescriptorCount;
+	for (const auto& aCount : vDescriptors) {
+		VkRenderManager::m_mDescriptorTypeCounts[aCount]++;
 	}
 }
 
@@ -338,6 +339,26 @@ void VkRenderManager::CreateSyncObjects() {
 			throw std::runtime_error("ERROR: Failed to create sync objects!");
 		}
 	}
+}
+
+void VkRenderManager::CreateDescriptorPool() {
+	std::vector<VkDescriptorPoolSize> vDescriptorPoolSizes;
+
+	for (const auto& aDescriptorCount : m_mDescriptorTypeCounts) {
+		vDescriptorPoolSizes.push_back(VkDescriptorPoolSize{
+			.type = aDescriptorCount.first,
+			.descriptorCount = std::bit_ceil(aDescriptorCount.second)
+		});
+	}
+
+	VkDescriptorPoolCreateInfo dpciPoolCreateInfo = {
+		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+		.pNext = nullptr,
+		.flags = 0,
+		.maxSets = HC_VULKAN_DESCRIPTOR_SET_COUNT_HARD_LIMIT,
+		.poolSizeCount = static_cast<uint32_t>(vDescriptorPoolSizes.size()),
+		.pPoolSizes = vDescriptorPoolSizes.data()
+	};
 }
 
 VkCommandBuffer VkRenderManager::CreateSingleUseCommandBuffer() {

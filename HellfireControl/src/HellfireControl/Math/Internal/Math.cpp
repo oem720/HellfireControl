@@ -3,6 +3,8 @@
 
 namespace Math {
 #pragma region Scalar
+	uint32_t Clamp(uint32_t _u32Val, uint32_t _u32Min, uint32_t _u32Max) { return _u32Val > _u32Max ? _u32Max : (_u32Val < _u32Min ? _u32Min : _u32Val); }
+
 	float Clamp(float _fVal, float _fMin, float _fMax) { return _fVal > _fMax ? _fMax : (_fVal < _fMin ? _fMin : _fVal); }
 
 	float Lerp(float _fStart, float _fEnd, float _fRatio) { return (_fEnd - _fStart) * _fRatio + _fStart; }

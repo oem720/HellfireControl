@@ -70,6 +70,7 @@
 #include <map>
 #include <unordered_map>
 #include <set>
+#include <span>
 #include <optional>
 #include <limits>
 

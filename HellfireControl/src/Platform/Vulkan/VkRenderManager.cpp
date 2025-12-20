@@ -20,19 +20,12 @@ VkDevice VkRenderManager::m_dDeviceHandle = VK_NULL_HANDLE;
 VkQueue VkRenderManager::m_qGraphicsQueue = VK_NULL_HANDLE;
 VkQueue VkRenderManager::m_qPresentQueue = VK_NULL_HANDLE;
 VkSwapchainKHR VkRenderManager::m_scSwapchain = VK_NULL_HANDLE;
-VkCommandPool VkRenderManager::m_cpCommandPool = VK_NULL_HANDLE;
-VkImage VkRenderManager::m_iDepth = VK_NULL_HANDLE;
-VkImageView VkRenderManager::m_ivDepthView = VK_NULL_HANDLE;
-VkDeviceMemory VkRenderManager::m_dmDepthMem = VK_NULL_HANDLE;
 
 VkFormat VkRenderManager::m_fFormat = {};
 VkExtent2D VkRenderManager::m_eExtent = {};
 
 std::vector<VkImage> VkRenderManager::m_vSwapchainImages = {};
-std::vector<VkImageView> VkRenderManager::m_vSwapchainImageViews = {};
-std::vector<VkSemaphore> VkRenderManager::m_vImageAvailableSemaphores = {};
-std::vector<VkSemaphore> VkRenderManager::m_vRenderFinishedSemaphores = {};
-std::vector<VkFence> VkRenderManager::m_vInFlightFences = {};
+std::array<VkFrameData, HC_MAX_FRAMES_IN_FLIGHT> VkRenderManager::m_arrFrames = {};
 
 std::map<VkDescriptorType, uint32_t> VkRenderManager::m_mDescriptorTypeCounts = {};
 #pragma endregion
@@ -49,16 +42,7 @@ void RenderManager::InitPlatformObjects(const std::string& _strAppName, uint32_t
 
 	VkRenderManager::CreateSwapchain(m_whgWindowHandle);
 
-	VkRenderManager::CreateSwapchainImageViews();
-
-	VkRenderManager::CreateCommandPool();
-
-	VkRenderManager::CreateDepthResources();
-
-	VkRenderManager::CreateSyncObjects();
-
-	//Using the counts determined during the renderer addition phase, create the descriptor pool.
-	VkRenderManager::CreateDescriptorPool();
+	VkRenderManager::CreateFrameData();
 }
 
 void RenderManager::RegisterPlatformRenderer(const std::shared_ptr<Renderer>& _pRenderer) {
@@ -70,8 +54,8 @@ void RenderManager::RegisterPlatformRenderer(const std::shared_ptr<Renderer>& _p
 
 	std::vector<VkDescriptorType> vDescriptors = pPlatformRenderer->GetDescriptorCounts();
 
-	for (const auto& aCount : vDescriptors) {
-		VkRenderManager::m_mDescriptorTypeCounts[aCount]++;
+	for (const auto& aDescriptor : vDescriptors) {
+		VkRenderManager::m_mDescriptorTypeCounts[aDescriptor]++;
 	}
 }
 
@@ -82,15 +66,11 @@ void RenderManager::PresentFrame() {
 void RenderManager::CleanupPlatformObjects() {
 	vkDeviceWaitIdle(VkRenderManager::m_dDeviceHandle);
 
-	VkRenderManager::CleanupSwapchain();
-
-	for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
-		vkDestroySemaphore(VkRenderManager::m_dDeviceHandle, VkRenderManager::m_vImageAvailableSemaphores[ndx], nullptr);
-		vkDestroySemaphore(VkRenderManager::m_dDeviceHandle, VkRenderManager::m_vRenderFinishedSemaphores[ndx], nullptr);
-		vkDestroyFence(VkRenderManager::m_dDeviceHandle, VkRenderManager::m_vInFlightFences[ndx], nullptr);
+	for(auto& aFrame : VkRenderManager::m_arrFrames) {
+		aFrame.Cleanup(VkRenderManager::m_dDeviceHandle);
 	}
 
-	vkDestroyCommandPool(VkRenderManager::m_dDeviceHandle, VkRenderManager::m_cpCommandPool, nullptr);
+	VkRenderManager::CleanupSwapchain();
 
 	vkDestroyDevice(VkRenderManager::m_dDeviceHandle, nullptr);
 
@@ -277,15 +257,7 @@ void VkRenderManager::CreateSwapchain(WindowHandleGeneric _whgHandle) {
 	m_eExtent = eExtent;
 }
 
-void VkRenderManager::CreateSwapchainImageViews() {
-	m_vSwapchainImageViews.resize(m_vSwapchainImages.size());
-
-	for (int ndx = 0; ndx < m_vSwapchainImages.size(); ++ndx) {
-		m_vSwapchainImageViews[ndx] = VkUtil::CreateImageView(m_dDeviceHandle, m_vSwapchainImages[ndx], m_fFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-	}
-}
-
-void VkRenderManager::CreateCommandPool() {
+void VkRenderManager::CreateFrameData() {
 	VkQueueFamilyIndices qfiIndices = VkUtil::GetQueueFamilies(m_pdPhysicalDevice, m_sSurface);
 
 	VkCommandPoolCreateInfo cpciPoolCreateInfo = {
@@ -294,31 +266,6 @@ void VkRenderManager::CreateCommandPool() {
 		.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
 		.queueFamilyIndex = qfiIndices.m_u32GraphicsFamily.value()
 	};
-
-	if (vkCreateCommandPool(m_dDeviceHandle, &cpciPoolCreateInfo, nullptr, &m_cpCommandPool) != VK_SUCCESS) {
-		throw std::runtime_error("ERROR: Failed to create command pool!");
-	}
-}
-
-void VkRenderManager::CreateDepthResources() {
-	VkFormat fDepthFormat = VkUtil::FindDepthFormat(m_pdPhysicalDevice);
-
-	VkUtil::CreateImage(m_dDeviceHandle, m_pdPhysicalDevice, m_eExtent.width, m_eExtent.height, fDepthFormat, VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_iDepth, m_dmDepthMem);
-
-	m_ivDepthView = VkUtil::CreateImageView(m_dDeviceHandle, m_iDepth, fDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
-
-	VkCommandBuffer cbTemp = CreateSingleUseCommandBuffer();
-
-	VkUtil::TransitionImageLayout(cbTemp, m_iDepth, fDepthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-
-	SubmitSingleUseCommandBuffer(cbTemp);
-}
-
-void VkRenderManager::CreateSyncObjects() {
-	m_vImageAvailableSemaphores.resize(HC_MAX_FRAMES_IN_FLIGHT);
-	m_vRenderFinishedSemaphores.resize(HC_MAX_FRAMES_IN_FLIGHT);
-	m_vInFlightFences.resize(HC_MAX_FRAMES_IN_FLIGHT);
 
 	VkSemaphoreCreateInfo sciSemaphoreInfo = {
 		.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
@@ -332,40 +279,37 @@ void VkRenderManager::CreateSyncObjects() {
 		.flags = VK_FENCE_CREATE_SIGNALED_BIT
 	};
 
-	for (int ndx = 0; ndx < HC_MAX_FRAMES_IN_FLIGHT; ++ndx) {
-		if (vkCreateSemaphore(m_dDeviceHandle, &sciSemaphoreInfo, nullptr, &m_vImageAvailableSemaphores[ndx]) != VK_SUCCESS ||
-			vkCreateSemaphore(m_dDeviceHandle, &sciSemaphoreInfo, nullptr, &m_vRenderFinishedSemaphores[ndx]) != VK_SUCCESS ||
-			vkCreateFence(m_dDeviceHandle, &fciFenceInfo, nullptr, &m_vInFlightFences[ndx]) != VK_SUCCESS) {
-			throw std::runtime_error("ERROR: Failed to create sync objects!");
-		}
-	}
-}
-
-void VkRenderManager::CreateDescriptorPool() {
-	std::vector<VkDescriptorPoolSize> vDescriptorPoolSizes;
+	std::vector<VkDescriptorPoolManager::PoolSizeRatio> vDescriptorPoolSizes;
 
 	for (const auto& aDescriptorCount : m_mDescriptorTypeCounts) {
-		vDescriptorPoolSizes.push_back(VkDescriptorPoolSize{
-			.type = aDescriptorCount.first,
-			.descriptorCount = std::bit_ceil(aDescriptorCount.second)
+		vDescriptorPoolSizes.push_back(VkDescriptorPoolManager::PoolSizeRatio{
+			.m_dtType = aDescriptorCount.first,
+			.m_fRatio = static_cast<float>(aDescriptorCount.second)
 		});
 	}
 
-	VkDescriptorPoolCreateInfo dpciPoolCreateInfo = {
-		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.maxSets = HC_VULKAN_DESCRIPTOR_SET_COUNT_HARD_LIMIT,
-		.poolSizeCount = static_cast<uint32_t>(vDescriptorPoolSizes.size()),
-		.pPoolSizes = vDescriptorPoolSizes.data()
-	};
+	for (int ndx = 0; ndx < m_arrFrames.size(); ++ndx) {
+		m_arrFrames[ndx].m_ivSwapchainImageView = VkUtil::CreateImageView(m_dDeviceHandle, m_vSwapchainImages[ndx], m_fFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+
+		if (vkCreateCommandPool(m_dDeviceHandle, &cpciPoolCreateInfo, nullptr, &m_arrFrames[ndx].m_cpCommandPool) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to create command pool!");
+		}
+
+		if (vkCreateSemaphore(m_dDeviceHandle, &sciSemaphoreInfo, nullptr, &m_arrFrames[ndx].m_sImageAvailableSemaphore) != VK_SUCCESS ||
+			vkCreateSemaphore(m_dDeviceHandle, &sciSemaphoreInfo, nullptr, &m_arrFrames[ndx].m_sRenderFinishedSemaphore) != VK_SUCCESS ||
+			vkCreateFence(m_dDeviceHandle, &fciFenceInfo, nullptr, &m_arrFrames[ndx].m_fInFlightFence) != VK_SUCCESS) {
+			throw std::runtime_error("ERROR: Failed to create sync objects!");
+		}
+
+		m_arrFrames[ndx].m_dpmDescriptorPool.Init(m_dDeviceHandle, HC_VULKAN_DESCRIPTOR_POOL_INITIAL_SIZE, vDescriptorPoolSizes);
+	}
 }
 
 VkCommandBuffer VkRenderManager::CreateSingleUseCommandBuffer() {
 	VkCommandBufferAllocateInfo cbaiBufferInfo = {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 		.pNext = nullptr,
-		.commandPool = m_cpCommandPool,
+		.commandPool = m_arrFrames[m_u32CurrentFrame].m_cpCommandPool,
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = 1
 	};
@@ -404,18 +348,16 @@ void VkRenderManager::SubmitSingleUseCommandBuffer(VkCommandBuffer _cbBuffer) {
 	vkQueueSubmit(m_qGraphicsQueue, 1, &siSubmitInfo, VK_NULL_HANDLE);
 	vkQueueWaitIdle(m_qGraphicsQueue);
 
-	vkFreeCommandBuffers(m_dDeviceHandle, m_cpCommandPool, 1, &_cbBuffer);
+	//TODO: This is currently a bug -- This command buffer is freed from the current frame's pool,
+	//as we assume that the single use command buffer is created and submitted within the same frame.
+	//If this is incorrect, it will cause a validation error and possible crash. May need documentation
+	//for future public use, or a better system to track command buffer ownership.
+	vkFreeCommandBuffers(m_dDeviceHandle, m_arrFrames[m_u32CurrentFrame].m_cpCommandPool, 1, &_cbBuffer);
 }
 
 void VkRenderManager::CleanupSwapchain() {
-	vkDestroyImageView(m_dDeviceHandle, m_ivDepthView, nullptr);
-
-	vkDestroyImage(m_dDeviceHandle, m_iDepth, nullptr);
-
-	vkFreeMemory(m_dDeviceHandle, m_dmDepthMem, nullptr);
-
-	for (auto aView : m_vSwapchainImageViews) {
-		vkDestroyImageView(m_dDeviceHandle, aView, nullptr);
+	for(auto& aFrame : m_arrFrames) {
+		vkDestroyImageView(m_dDeviceHandle, aFrame.m_ivSwapchainImageView, nullptr);
 	}
 
 	vkDestroySwapchainKHR(m_dDeviceHandle, m_scSwapchain, nullptr);
@@ -440,9 +382,9 @@ void VkRenderManager::RecreateSwapchain(WindowHandleGeneric _whgHandle) {
 
 	CreateSwapchain(_whgHandle);
 
-	CreateSwapchainImageViews();
-
-	CreateDepthResources();
+	for (int ndx = 0; ndx < m_arrFrames.size(); ++ndx) {
+		m_arrFrames[ndx].m_ivSwapchainImageView = VkUtil::CreateImageView(m_dDeviceHandle, m_vSwapchainImages[ndx], m_fFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+	}
 
 	m_u32CurrentFrame = 0;
 }

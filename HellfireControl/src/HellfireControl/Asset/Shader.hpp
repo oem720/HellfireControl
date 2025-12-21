@@ -7,22 +7,22 @@
 class Shader : public Asset {
 private:
 	HCShaderStageBit m_ssbStage = SHADER_STAGE_INVALID_BIT;
-	std::vector<uint32_t> m_vCodeBlob;
-	std::map<std::string, HCShaderVar> m_mVariables;
+	Array<uint32> m_vCodeBlob;
+	Map<String, HCShaderVar> m_mVariables;
 
 public:
 	void Initialize();
 
 	[[nodiscard]] HC_INLINE HCShaderStageBit GetShaderStageBit() const { return m_ssbStage; }
-	[[nodiscard]] HC_INLINE const std::map<std::string, HCShaderVar>& GetShaderVars() const { return m_mVariables; }
+	[[nodiscard]] HC_INLINE const Map<String, HCShaderVar>& GetShaderVars() const { return m_mVariables; }
 
 	friend class ShaderParser;
 };
 
 class ShaderParser : public AssetParser {
 private:
-	static std::map<HCShaderStageType, HCShaderStageBit> m_mStageBitTable;
+	static Map<HCShaderStageType, HCShaderStageBit> m_mStageBitTable;
 
 public:
-	std::shared_ptr<Asset> Parse(File& _fAssetFile) const;
+	SharedPointer<Asset> Parse(File& _fAssetFile) const;
 };

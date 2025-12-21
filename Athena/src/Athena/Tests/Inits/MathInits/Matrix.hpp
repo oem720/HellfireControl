@@ -3,7 +3,7 @@
 #include <Athena/Tests/Inits/MathInits/Math_Common.hpp>
 
 namespace MathTests {
-	void InitTests_Matrix(std::vector<TestBlock>& _vBlockList) {
+	void InitTests_Matrix(Array<TestBlock>& _vBlockList) {
 		TestBlock tbBlock = TestBlock("Math Library - MatrixF");
 
 		//Basic Funcs

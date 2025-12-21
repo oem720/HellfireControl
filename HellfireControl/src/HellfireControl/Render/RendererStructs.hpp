@@ -4,13 +4,13 @@
 #include <HellfireControl/Math/Vector.hpp>
 #include <HellfireControl/Asset/Shader.hpp>
 
-enum PipelineBindPoint : uint32_t {
+enum PipelineBindPoint : uint32 {
     PIPELINE_BIND_POINT_GRAPHICS = 0,
     PIPELINE_BIND_POINT_COMPUTE = 1,
     PIPELINE_BIND_POINT_RAY_TRACING = 1000165000
 };
 
-enum ImageFormat : int32_t {
+enum ImageFormat : int32 {
     FORMAT_SWAPCHAIN_DETERMINED = -2,
     FORMAT_DEPTH_DETERMINED = -1,
     FORMAT_UNDEFINED = 0,
@@ -102,7 +102,7 @@ enum ImageFormat : int32_t {
     FORMAT_BC7_SRGB = 146,
 };
 
-enum AttachmentSampleCount : uint32_t {
+enum AttachmentSampleCount : uint32 {
     ATTACHMENT_SAMPLE_COUNT_1_BIT = 1,
     ATTACHMENT_SAMPLE_COUNT_2_BIT = 2,
     ATTACHMENT_SAMPLE_COUNT_4_BIT = 4,
@@ -112,20 +112,20 @@ enum AttachmentSampleCount : uint32_t {
     ATTACHMENT_SAMPLE_COUNT_64_BIT = 64
 };
 
-enum AttachmentLoadOp : uint32_t {
+enum AttachmentLoadOp : uint32 {
     ATTACHMENT_LOAD_OP_LOAD = 0,
     ATTACHMENT_LOAD_OP_CLEAR = 1,
     ATTACHMENT_LOAD_OP_DONT_CARE = 2,
     ATTACHMENT_LOAD_OP_NONE = 1000400000
 };
 
-enum AttachmentStoreOp : uint32_t {
+enum AttachmentStoreOp : uint32 {
     ATTACHMENT_STORE_OP_STORE = 0,
     ATTACHMENT_STORE_OP_DONT_CARE = 1,
     ATTACHMENT_STORE_OP_NONE = 1000301000
 };
 
-enum ImageLayout : uint32_t {
+enum ImageLayout : uint32 {
     IMAGE_LAYOUT_UNDEFINED = 0,
     IMAGE_LAYOUT_GENERAL = 1,
     IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL = 2,
@@ -145,31 +145,31 @@ enum ImageLayout : uint32_t {
     IMAGE_LAYOUT_ALL = 0x7FFFFFFF
 };
 
-enum PipelineType : uint8_t {
+enum PipelineType : uint8 {
     PIPELINE_TYPE_GRAPHICS = 0,
     PIPELINE_TYPE_COMPUTE = 1,
     PIPELINE_TYPE_RAY_TRACING = 2
 };
 
-enum PolygonMode : uint8_t {
+enum PolygonMode : uint8 {
     POLYGON_MODE_FILL = 0,
     POLYGON_MODE_LINE = 1,
     POLYGON_MODE_POINT = 2
 };
 
-enum CullMode : uint8_t {
+enum CullMode : uint8 {
     CULL_MODE_NONE = 0,
     CULL_MODE_FRONT = 1,
     CULL_MODE_BACK = 2,
     CULL_MODE_FRONT_AND_BACK = 3
 };
 
-enum WindingOrder : uint8_t {
+enum WindingOrder : uint8 {
     WINDING_ORDER_COUNTER_CLOCKWISE = 0,
     WINDING_ORDER_CLOCKWISE = 1
 };
 
-enum CompareOperator : uint8_t {
+enum CompareOperator : uint8 {
     COMPARE_OPERATOR_NEVER = 0,
     COMPARE_OPERATOR_LESS = 1,
     COMPARE_OPERATOR_EQUAL = 2,
@@ -180,7 +180,7 @@ enum CompareOperator : uint8_t {
     COMPARE_OPERATOR_ALWAYS = 7
 };
 
-enum StencilOperator : uint8_t {
+enum StencilOperator : uint8 {
     STENCIL_OP_KEEP = 0,
     STENCIL_OP_ZERO = 1,
     STENCIL_OP_REPLACE = 2,
@@ -191,7 +191,7 @@ enum StencilOperator : uint8_t {
     STENCIL_OP_DECREMENT_AND_WRAP = 7,
 };
 
-enum PrimitiveTopology : uint8_t {
+enum PrimitiveTopology : uint8 {
     PRIMITIVE_TOPOLOGY_POINT_LIST = 0,
     PRIMITIVE_TOPOLOGY_LINE_LIST = 1,
     PRIMITIVE_TOPOLOGY_LINE_STRIP = 2,
@@ -205,7 +205,7 @@ enum PrimitiveTopology : uint8_t {
     PRIMITIVE_TOPOLOGY_PATCH_LIST = 10
 };
 
-enum BlendFactor : uint8_t {
+enum BlendFactor : uint8 {
     BLEND_FACTOR_ZERO = 0,
     BLEND_FACTOR_ONE = 1,
     BLEND_FACTOR_SRC_COLOR = 2,
@@ -227,7 +227,7 @@ enum BlendFactor : uint8_t {
     BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA = 18
 };
 
-enum BlendOperator : uint8_t {
+enum BlendOperator : uint8 {
     BLEND_OP_ADD = 0,
     BLEND_OP_SUBTRACT = 1,
     BLEND_OP_REVERSE_SUBTRACT = 2,
@@ -235,7 +235,7 @@ enum BlendOperator : uint8_t {
     BLEND_OP_MAX = 4
 };
 
-enum ColorComponentFlags : uint8_t {
+enum ColorComponentFlags : uint8 {
     COLOR_COMPONENT_NONE = 0,
     COLOR_COMPONENT_R_BIT = (1 << 0),
     COLOR_COMPONENT_G_BIT = (1 << 1),
@@ -243,7 +243,7 @@ enum ColorComponentFlags : uint8_t {
     COLOR_COMPONENT_A_BIT = (1 << 3)
 };
 
-enum DynamicState : uint8_t {
+enum DynamicState : uint8 {
     DYNAMIC_STATE_VIEWPORT = 0,
     DYNAMIC_STATE_SCISSOR = 1,
     DYNAMIC_STATE_LINE_WIDTH = 2,
@@ -255,7 +255,7 @@ enum DynamicState : uint8_t {
     DYNAMIC_STATE_STENCIL_REFERENCE = 8
 };
 
-enum PipelineStageFlags : uint32_t {
+enum PipelineStageFlags : uint32 {
     PIPELINE_STAGE_NONE = 0,
     PIPELINE_STAGE_TOP_OF_PIPE_BIT = (1 << 0),
     PIPELINE_STAGE_DRAW_INDIRECT_BIT = (1 << 1),
@@ -286,7 +286,7 @@ enum PipelineStageFlags : uint32_t {
     PIPELINE_STAGE_FLAG_BITS_ALL = 0x7FFFFFFF
 };
 
-enum AccessFlags : uint32_t {
+enum AccessFlags : uint32 {
     ACCESS_NONE = 0,
     ACCESS_INDIRECT_COMMAND_READ_BIT = (1 << 0),
     ACCESS_INDEX_READ_BIT = (1 << 1),
@@ -319,7 +319,7 @@ enum AccessFlags : uint32_t {
     ACCESS_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
-enum DependencyFlags : uint32_t {
+enum DependencyFlags : uint32 {
     DEPENDENCY_BY_REGION_BIT = (1 << 0),
     DEPENDENCY_VIEW_LOCAL_BIT = (1 << 1),
     DEPENDENCY_DEVICE_GROUP_BIT = (1 << 2),
@@ -331,9 +331,9 @@ struct StencilOperatorState {
     StencilOperator m_soPassOp = STENCIL_OP_KEEP;
     StencilOperator m_soDepthFailOp = STENCIL_OP_KEEP;
     CompareOperator m_coCompareOp = COMPARE_OPERATOR_NEVER;
-    uint32_t m_u32CompareMask = 0;
-    uint32_t m_u32WriteMask = 0;
-    uint32_t m_u32Reference = 0;
+    uint32 m_u32CompareMask = 0;
+    uint32 m_u32WriteMask = 0;
+    uint32 m_u32Reference = 0;
 };
 
 struct BlendAttachmentState {
@@ -344,11 +344,11 @@ struct BlendAttachmentState {
     BlendFactor m_bfSrcAlphaBlendFactor = BLEND_FACTOR_ONE;
     BlendFactor m_bfDstAlphaBlendFactor = BLEND_FACTOR_ZERO;
     BlendOperator m_boAlphaBlendOp = BLEND_OP_ADD;
-    uint32_t m_u32ColorWriteMask = COLOR_COMPONENT_NONE;
+    uint32 m_u32ColorWriteMask = COLOR_COMPONENT_NONE;
 };
 
 struct ShaderPipelineData {
-    std::vector<std::shared_ptr<Shader>> m_vShaderStages;
+    Array<SharedPointer<Shader>> m_vShaderStages;
 
 	PipelineType m_ptPipelineType = PIPELINE_TYPE_GRAPHICS;
     CullMode m_cmCullMode = CULL_MODE_NONE;
@@ -364,21 +364,21 @@ struct ShaderPipelineData {
     bool m_bEnableDepthWrite = true;
     bool m_bEnableStencilTest = false;
 
-    uint32_t m_u32SampleCount = 1;
+    uint32 m_u32SampleCount = 1;
 
-    std::vector<BlendAttachmentState> m_vBlendAttachments;
-    std::vector<DynamicState> m_vDynamicStates;
+    Array<BlendAttachmentState> m_vBlendAttachments;
+    Array<DynamicState> m_vDynamicStates;
 };
 
 struct ClearValue {
     Vec4F m_v4Color = Vec4F(0.0f, 0.0f, 0.0f, 1.0f);
     float m_fDepth = 1.0f;
-    uint32_t m_u32Stencil = 0;
+    uint32 m_u32Stencil = 0;
 };
 
 struct AttachmentData {
     ImageFormat m_ifFormat = FORMAT_UNDEFINED;
-    uint32_t m_u32SampleCount = ATTACHMENT_SAMPLE_COUNT_1_BIT;
+    uint32 m_u32SampleCount = ATTACHMENT_SAMPLE_COUNT_1_BIT;
     AttachmentLoadOp m_aloLoadOp = ATTACHMENT_LOAD_OP_DONT_CARE;
     AttachmentStoreOp m_asoStoreOp = ATTACHMENT_STORE_OP_DONT_CARE;
     AttachmentLoadOp m_aloStencilLoadOp = ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -389,35 +389,35 @@ struct AttachmentData {
 };
 
 struct AttachmentReference {
-    uint32_t m_u32AttachmentNdx;
+    uint32 m_u32AttachmentNdx;
     ImageLayout m_ilLayout;
 };
 
-constexpr uint32_t EXTERNAL_SUBPASS = 0xFFFFFFFF;
+constexpr uint32 EXTERNAL_SUBPASS = 0xFFFFFFFF;
 
 struct SubpassDependency {
-    uint32_t m_u32SrcSubpass;
-    uint32_t m_u32DstSubpass;
-    uint32_t m_u32SrcStageMask;
-    uint32_t m_u32DstStageMask;
-    uint32_t m_u32SrcAccessMask;
-    uint32_t m_u32DstAccessMask;
-    uint32_t m_u32DependencyFlags;
+    uint32 m_u32SrcSubpass;
+    uint32 m_u32DstSubpass;
+    uint32 m_u32SrcStageMask;
+    uint32 m_u32DstStageMask;
+    uint32 m_u32SrcAccessMask;
+    uint32 m_u32DstAccessMask;
+    uint32 m_u32DependencyFlags;
 };
 
 struct RenderSubpassData {
-    uint32_t m_u32Flags = 0;
+    uint32 m_u32Flags = 0;
     PipelineBindPoint m_pbpBindPoint = PIPELINE_BIND_POINT_GRAPHICS;
-    std::vector<ShaderPipelineData> m_vShaderPipelines;
-    std::vector<AttachmentReference> m_vColorAttachments;
+    Array<ShaderPipelineData> m_vShaderPipelines;
+    Array<AttachmentReference> m_vColorAttachments;
     AttachmentReference m_arDepthStencilAttachment;
-    std::vector<AttachmentReference> m_vInputAttachments;
-    std::vector<AttachmentReference> m_vResolveAttachments;
-    std::vector<uint32_t> m_vPreserveAttachments;
-    std::vector<SubpassDependency> m_vDependencies;
+    Array<AttachmentReference> m_vInputAttachments;
+    Array<AttachmentReference> m_vResolveAttachments;
+    Array<uint32> m_vPreserveAttachments;
+    Array<SubpassDependency> m_vDependencies;
 };
 
 struct RenderpassData {
-    std::vector<AttachmentData> m_vAttachments;
-    std::vector<RenderSubpassData> m_vSubpasses;
+    Array<AttachmentData> m_vAttachments;
+    Array<RenderSubpassData> m_vSubpasses;
 };

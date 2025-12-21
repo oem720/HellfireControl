@@ -9,7 +9,7 @@ struct GlyphInfo;
 
 class FontRasterizer {
 public:
-	static std::map<UTF8PaddedChar, BakedGlyphBoxInfo> RasterizeGlyphs(const FontInfo& _fiInfo, const std::map<UTF8PaddedChar, GlyphInfo>& _mGlyphData, std::vector<ImageRGB8>& _vImages, const std::string& _strFilePathTEMP);
+	static Map<UTF8PaddedChar, BakedGlyphBoxInfo> RasterizeGlyphs(const FontInfo& _fiInfo, const Map<UTF8PaddedChar, GlyphInfo>& _mGlyphData, Array<ImageRGB8>& _vImages, const String& _strFilePathTEMP);
 private:
 
 };

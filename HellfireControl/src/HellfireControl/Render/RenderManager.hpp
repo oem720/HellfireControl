@@ -14,9 +14,9 @@ class RenderManager {
 private:
 	WindowHandleGeneric m_whgWindowHandle = 0;
 
-	std::map<RendererTag, std::shared_ptr<Renderer>> m_mRenderers;
+	Map<RendererTag, SharedPointer<Renderer>> m_mRenderers;
 
-	std::map<RendererTag, std::shared_ptr<Job>> m_mRenderJobs;
+	Map<RendererTag, SharedPointer<Job>> m_mRenderJobs;
 
 	JobManager m_jmRenderJobManager;
 
@@ -24,15 +24,15 @@ private:
 
 	static RenderManager* m_prsInstancePtr;
 
-	void InitPlatformObjects(const std::string& _strAppName, uint32_t _u32AppVersion);
+	void InitPlatformObjects(const String& _strAppName, uint32 _u32AppVersion);
 
-	void RegisterPlatformRenderer(const std::shared_ptr<Renderer>& _pRenderer);
+	void RegisterPlatformRenderer(const SharedPointer<Renderer>& _pRenderer);
 
 	void PresentFrame();
 
 	void InitRenderJobs();
 
-	std::shared_ptr<Job> RecursiveInitRenderJobs(RendererTag _rtTag, int _iDepthLimit, int _iDepth = 0);
+	SharedPointer<Job> RecursiveInitRenderJobs(RendererTag _rtTag, int _iDepthLimit, int _iDepth = 0);
 
 	void CleanupPlatformObjects();
 
@@ -40,7 +40,7 @@ private:
 
 	static void MarkSwapchainInvalid() { m_bFramebufferInvalid = true; }
 
-	RenderManager() : m_jmRenderJobManager(HC_MAX(2, (std::thread::hardware_concurrency() >> 2))) {}
+	RenderManager() : m_jmRenderJobManager(HC_MAX(2, (Thread::hardware_concurrency() >> 2))) {}
 
 public:
 	RenderManager(RenderManager& _other) = delete;
@@ -49,9 +49,9 @@ public:
 
 	static RenderManager* GetInstance();
 
-	void AddRenderer(RendererTag _rtTag, std::shared_ptr<Renderer> _pRenderer);
+	void AddRenderer(RendererTag _rtTag, SharedPointer<Renderer> _pRenderer);
 
-	void Init(const std::string& _strAppName, uint32_t _u32AppVersion, WindowHandleGeneric _whgWindowHandle);
+	void Init(const String& _strAppName, uint32 _u32AppVersion, WindowHandleGeneric _whgWindowHandle);
 
 	void RenderFrame();
 

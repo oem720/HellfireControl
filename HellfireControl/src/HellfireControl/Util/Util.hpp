@@ -3,14 +3,14 @@
 #include <HellfireControl/Core/Common.hpp>
 
 namespace Util {
-	[[nodiscard]] std::wstring ConvertToWString(const std::string& _strConvert);
+	[[nodiscard]] std::wstring ConvertToWString(const String& _strConvert);
 
-	[[nodiscard]] std::string ConvertFromWString(const std::wstring& _strConvert);
+	[[nodiscard]] String ConvertFromWString(const std::wstring& _strConvert);
 
-	[[nodiscard]] std::vector<char> ReadFile(const std::string& _strFilename);
+	[[nodiscard]] Array<char> ReadFile(const String& _strFilename);
 
 	template<typename T, HC_SFINAE_REQUIRE_INTEGER(T)>
-	bool IsBitSet(T _value, uint8_t _u8BitToCheck) {
+	bool IsBitSet(T _value, uint8 _u8BitToCheck) {
 		return _value & (1 << _u8BitToCheck);
 	}
 

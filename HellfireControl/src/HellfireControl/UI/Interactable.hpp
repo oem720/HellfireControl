@@ -2,7 +2,7 @@
 
 #include <HellfireControl/Math/Vector.hpp>
 
-enum InteractableType : uint8_t {
+enum InteractableType : uint8 {
 	None,
 	Image,
 	Button,
@@ -11,7 +11,7 @@ enum InteractableType : uint8_t {
 	Radio
 };
 
-enum UIPivot : uint64_t {
+enum UIPivot : uint64 {
 	topLeft = 0, // (0, 0)
 	topMiddle = 4539628424389459968, // (0.5, 0)
 	topRight = 1065353216, // (0, 1)

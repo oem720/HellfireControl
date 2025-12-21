@@ -10,27 +10,27 @@
 #include <spirv-tools/optimizer.hpp>
 
 struct HCUncompiledShader {
-	std::filesystem::path m_pthFilename;
-	std::vector<uint8_t> m_vFileBlob;
+	FilePath m_pthFilename;
+	Array<uint8> m_vFileBlob;
 	HCShaderFormat m_sfFormat = SHADER_FORMAT_INVALID;
 	HCShaderStageType m_sstStage = SHADER_STAGE_INVALID;
-	std::string m_strEntrypointName = "main";
+	String m_strEntrypointName = "main";
 };
 
 struct HCCompiledShader {
-	std::filesystem::path m_pthFilepath;
-	uint32_t m_u32MagicNumber = HC_SHADER_IDENTIFIER;
+	FilePath m_pthFilepath;
+	uint32 m_u32MagicNumber = HC_SHADER_IDENTIFIER;
 	HCShaderStageType m_sstType = SHADER_STAGE_INVALID;
 	HCShaderVarTable m_svtVars;
-	std::vector<uint32_t> m_vCodeBlob;
+	Array<uint32> m_vCodeBlob;
 };
 
 class ShaderCompiler {
 private:
-	static std::map<uint32_t, std::string> m_mImageFormatNames;
-	static std::map<uint32_t, std::string> m_mImageDimensions;
-	static std::map<uint16_t, std::string> m_mTypeNames;
-	static std::map<uint32_t, std::string> m_mBuiltinNames;
+	static Map<uint32, String> m_mImageFormatNames;
+	static Map<uint32, String> m_mImageDimensions;
+	static Map<uint16, String> m_mTypeNames;
+	static Map<uint32, String> m_mBuiltinNames;
 
 public:
 	ShaderCompiler() {}
@@ -41,9 +41,9 @@ protected:
 	virtual void InitializeCompiler() = 0;
 	virtual void CleanupCompiler() = 0;
 
-	HCShaderVarTable HCShaderVarTableReflectSPIRV(const std::vector<uint32_t>& _vCodeBlob);
-	std::vector<uint32_t> OptimizeSPIRV(const std::vector<uint32_t>& _vCodeBlob);
+	HCShaderVarTable HCShaderVarTableReflectSPIRV(const Array<uint32>& _vCodeBlob);
+	Array<uint32> OptimizeSPIRV(const Array<uint32>& _vCodeBlob);
 
 private:
-	std::map<std::string, HCShaderVar> ParseShaderVars(const spirv_cross::Compiler& _cComp, const spirv_cross::ShaderResources& _srRes);
+	Map<String, HCShaderVar> ParseShaderVars(const spirv_cross::Compiler& _cComp, const spirv_cross::ShaderResources& _srRes);
 };

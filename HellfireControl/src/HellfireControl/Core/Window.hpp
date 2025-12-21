@@ -3,14 +3,14 @@
 #include <HellfireControl/Core/Common.hpp>
 #include <HellfireControl/Math/Vector.hpp>
 
-enum WindowType : uint8_t {
+enum WindowType : uint8 {
 	WINDOWED,
 	WINDOWED_FULLSCREEN,
 	BORDERLESS,
 	FULLSCREEN
 };
 
-enum WindowCallbackEventType : uint8_t {
+enum WindowCallbackEventType : uint8 {
 	WINDOW_NONE = 0,
 	WINDOW_RESIZE = 1,
 	WINDOW_MOVE = 2,
@@ -31,11 +31,11 @@ struct WindowCallbackMessage {
 	/// <summary>
 	/// Can contain any data for the message that was sent. Determined by the event callback type.
 	/// </summary>
-	uint64_t upper = 0;
-	uint64_t lower = 0;
+	uint64 upper = 0;
+	uint64 lower = 0;
 };
 
-typedef std::function<void(WindowHandleGeneric, const WindowCallbackMessage&)> WindowCallback;
+typedef Function<void(WindowHandleGeneric, const WindowCallbackMessage&)> WindowCallback;
 
 class Window {
 private:
@@ -52,7 +52,7 @@ private:
 	/// <summary>
 	/// Name of the window to be displayed.
 	/// </summary>
-	std::string m_strWindowName;
+	String m_strWindowName;
 
 	/// <summary>
 	/// Window dimensions.
@@ -67,7 +67,7 @@ private:
 	/// <summary>
 	/// List of the callbacks stored within the window.
 	/// </summary>
-	std::vector<WindowCallback>* m_pWindowEventCallbacks = nullptr;
+	Array<WindowCallback>* m_pWindowEventCallbacks = nullptr;
 
 	/// <summary>
 	/// Helper function to initialize the window.
@@ -106,7 +106,7 @@ public:
 	/// <param name="_wtType: The type of the window"></param>
 	/// <param name="_v2Size: The size of the window (Default: 800x400)"></param>
 	/// <param name="_v2Loc: The location of the window (Default: [0, 0])"></param>
-	explicit Window(const std::string& _strName, WindowType _wtType, const Vec2F& _v2Size, const Vec2F& _v2Loc) : m_strWindowName(_strName), m_wtType(_wtType),
+	explicit Window(const String& _strName, WindowType _wtType, const Vec2F& _v2Size, const Vec2F& _v2Loc) : m_strWindowName(_strName), m_wtType(_wtType),
 	m_v2WindowSize(_v2Size), m_v2WindowLocation(_v2Loc) {
 		InitWindow();
 	}
@@ -153,7 +153,7 @@ public:
 	/// Set the name of the window.
 	/// </summary>
 	/// <param name="_strName: New name for the window"></param>
-	void SetWindowName(const std::string& _strName);
+	void SetWindowName(const String& _strName);
 
 	/// <summary>
 	/// Set the type of the window.
@@ -184,7 +184,7 @@ public:
 	/// <returns>
 	/// string: The current window name
 	/// </returns>
-	[[nodiscard]] HC_INLINE std::string GetWindowName() const { return m_strWindowName; }
+	[[nodiscard]] HC_INLINE String GetWindowName() const { return m_strWindowName; }
 
 	/// <summary>
 	/// Get the window's current type.

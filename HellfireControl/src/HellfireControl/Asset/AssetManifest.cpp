@@ -31,8 +31,8 @@ void AssetManifest::Init() {
 		return;
 	}
 
-	uint32_t u32MagicNumber;
-	fManifest.Read(&u32MagicNumber, sizeof(uint32_t));
+	uint32 u32MagicNumber;
+	fManifest.Read(&u32MagicNumber, sizeof(uint32));
 
 	if (u32MagicNumber != HC_MANIFEST_IDENTIFIER) {
 		throw std::runtime_error("ERROR: Asset manifest malformed or corrupted!");
@@ -44,7 +44,7 @@ void AssetManifest::Init() {
 }
 
 #if HC_EDITOR
-void AssetManifest::SetManifestEntry(const HCUID& _gId, const std::string& _strFilepath) {
+void AssetManifest::SetManifestEntry(const HCUID& _gId, const String& _strFilepath) {
 	m_mManifestData[_gId] = _strFilepath;
 
 	m_bHasChanged = true;
@@ -61,13 +61,13 @@ void AssetManifest::RemoveManifestEntry(const HCUID& _gId) {
 }
 
 void AssetManifest::ParseFile(File& _fManifest) {
-	uint8_t u8Spacer; //Annoyingly, advancing the pointer of the file doesn't remove the newline char from the input stream.
-	_fManifest.Read(&u8Spacer, sizeof(uint8_t)); //This is why I must create a dummy value that I don't care about.
+	uint8 u8Spacer; //Annoyingly, advancing the pointer of the file doesn't remove the newline char from the input stream.
+	_fManifest.Read(&u8Spacer, sizeof(uint8)); //This is why I must create a dummy value that I don't care about.
 
 	struct {
-		std::string m_strId;
-		std::string m_strIndex;
-		std::string m_strPath;
+		String m_strId;
+		String m_strIndex;
+		String m_strPath;
 	} manifestLine;
 
 	while (!_fManifest.AtEOF()) {
@@ -87,8 +87,8 @@ void AssetManifest::ParseFile(File& _fManifest) {
 void AssetManifest::ParseFile(File& _fManifest) {
 	struct {
 		HCUID m_gId;
-		uint16_t m_u16Index;
-		std::string m_strPath;
+		uint16 m_u16Index;
+		String m_strPath;
 	} manifestLine;
 
 	while (!_fManifest.AtEOF()) {
@@ -107,8 +107,8 @@ void AssetManifest::Cleanup() {
 	if (m_bHasChanged) {
 		File fManifest(HC_MANIFEST_PATH, HC_MANIFEST_EDIT_FLAGS);
 
-		uint32_t u32Magic = HC_MANIFEST_IDENTIFIER;
-		fManifest.WriteLine(&u32Magic, sizeof(uint32_t), FILE_DELIMITER_NEWLINE);
+		uint32 u32Magic = HC_MANIFEST_IDENTIFIER;
+		fManifest.WriteLine(&u32Magic, sizeof(uint32), FILE_DELIMITER_NEWLINE);
 
 		for (const auto& aEntry : m_mManifestData) {
 			fManifest.WriteLine(aEntry.first.AsString(), FILE_DELIMITER_SPACE);

@@ -3,5 +3,5 @@
 #include <Athena/Core/TestBlock.hpp>
 
 namespace Tests {
-	void InitTests(std::vector<TestBlock>& _vBlockList);
+	void InitTests(Array<TestBlock>& _vBlockList);
 }

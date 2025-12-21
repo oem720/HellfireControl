@@ -6,20 +6,20 @@
 
 class JobQueue {
 private:
-	std::queue<std::shared_ptr<Job>> m_qJobs;
-	std::mutex m_mutLock;
+	Queue<SharedPointer<Job>> m_qJobs;
+	Mutex m_mutLock;
 
-	std::condition_variable m_cvJobsCheck;
+	ConditionVariable m_cvJobsCheck;
 
 public:
 	JobQueue() : m_qJobs(), m_mutLock() {}
 
-	void AddJob(std::shared_ptr<Job> _pJob);
+	void AddJob(SharedPointer<Job> _pJob);
 
-	std::shared_ptr<Job> PopJob();
+	SharedPointer<Job> PopJob();
 
 	[[nodiscard]] HC_INLINE bool Empty() {
-		std::lock_guard<std::mutex> lgLock(m_mutLock);
+		std::lock_guard<Mutex> lgLock(m_mutLock);
 		return m_qJobs.size() == 0;
 	}
 

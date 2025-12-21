@@ -6,7 +6,7 @@
 
 bool WinConsole::m_bInit = false;
 
-std::string Console::ColorText(const std::string& _strText, ConsoleColor _ccColor) {
+String Console::ColorText(const String& _strText, ConsoleColor _ccColor) {
 	std::stringstream ssStr;
 
 	ssStr << "\033[" << std::to_string(_ccColor) << "m" << _strText << "\033[0m";
@@ -14,7 +14,7 @@ std::string Console::ColorText(const std::string& _strText, ConsoleColor _ccColo
 	return ssStr.str();
 }
 
-void Console::PlatformPrint(const std::string& _strMessage) {
+void Console::PlatformPrint(const String& _strMessage) {
 	if (!WinConsole::m_bInit) {
 		if (!WinConsole::InitConsole()) {
 			throw std::runtime_error("ERROR: Console failed to initialize!");
@@ -27,7 +27,7 @@ void Console::PlatformPrint(const std::string& _strMessage) {
 	std::cout.flush();
 }
 
-void Console::PlatformPrintLine(const std::string& _strMessage) {
+void Console::PlatformPrintLine(const String& _strMessage) {
 	PlatformPrint(_strMessage);
 
 	std::cout << "\r\n";

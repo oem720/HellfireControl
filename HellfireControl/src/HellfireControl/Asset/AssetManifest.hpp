@@ -7,7 +7,7 @@ private:
 	static AssetManifest* m_pInstance;
 
 	//TODO: support redirecting strings to compressed archives
-	std::map<HCUID, std::string> m_mManifestData;
+	Map<HCUID, String> m_mManifestData;
 
 #if HC_EDITOR
 	//This remains here because we only deal with saving to disk if we're in dev mode.
@@ -28,10 +28,10 @@ public:
 
 	[[nodiscard]] HC_INLINE bool Contains(const HCUID& _gId) { return m_mManifestData.contains(_gId); }
 
-	[[nodiscard]] HC_INLINE std::string GetManifestEntry(const HCUID& _gId) { return m_mManifestData[_gId]; }
+	[[nodiscard]] HC_INLINE String GetManifestEntry(const HCUID& _gId) { return m_mManifestData[_gId]; }
 
 #if HC_EDITOR
-	void SetManifestEntry(const HCUID& _gId, const std::string& _strFilepath);
+	void SetManifestEntry(const HCUID& _gId, const String& _strFilepath);
 
 	void RemoveManifestEntry(const HCUID& _gId);
 #endif

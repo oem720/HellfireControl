@@ -17,12 +17,12 @@ namespace PlatformWindow {
 	/// <param name="_strName: The name to be displayed at the top of the window"></param>
 	/// <param name="_v2Size: A vector2 representing the size of the window in pixels"></param>
 	/// <param name="_v2Loc: A vector2 representing the location of the window in pixels"></param>
-	void InitWindow(uint64_t& _u64OutHandle, uint8_t _u8Type, const std::string& _strName, const Vec2F& _v2Size, const Vec2F& _v2Loc);
+	void InitWindow(uint64& _u64OutHandle, uint8 _u8Type, const String& _strName, const Vec2F& _v2Size, const Vec2F& _v2Loc);
 
 	/// <summary>
 	/// Registers the wrapper callbacks with the platform-specific callbacks. Must be called after InitWindow.
 	/// </summary>
-	void RegisterWindowCallbacks(uint64_t _u64Handle, std::vector<WindowCallback>*& _pOutWindowCallbacks);
+	void RegisterWindowCallbacks(uint64 _u64Handle, Array<WindowCallback>*& _pOutWindowCallbacks);
 
 	/// <summary>
 	/// Determines if the window represented by the handle has requested it be closed from the user.
@@ -31,19 +31,19 @@ namespace PlatformWindow {
 	/// <returns>
 	/// bool: True if a window close was requested, false otherwise.
 	/// </returns>
-	[[nodiscard]] bool CloseRequested(uint64_t _u64Handle);
+	[[nodiscard]] bool CloseRequested(uint64 _u64Handle);
 
 	/// <summary>
 	/// Polls the event queue for the window reprenseted by the handle and processes all messages in it.
 	/// </summary>
 	/// <param name="_u64Handle: Handle to the window whose events must be processed"></param>
-	void PollEventQueue(uint64_t _u64Handle);
+	void PollEventQueue(uint64 _u64Handle);
 
 	/// <summary>
 	/// Waits until the event queue spits out a new event.
 	/// </summary>
 	/// <param name="_u64Handle: The handle to the window being polled"></param>
-	void WaitEvents(uint64_t _u64Handle);
+	void WaitEvents(uint64 _u64Handle);
 
 	/// <summary>
 	/// Sets the name of the window represented by the given handle.
@@ -53,7 +53,7 @@ namespace PlatformWindow {
 	/// <returns>
 	/// bool: True if succeeded, false if failed
 	/// </returns>
-	[[nodiscard]] bool SetWindowName(uint64_t _u64Handle, const std::string& _strName);
+	[[nodiscard]] bool SetWindowName(uint64 _u64Handle, const String& _strName);
 
 	/// <summary>
 	/// Sets the style of the window represented by the given handle.
@@ -63,7 +63,7 @@ namespace PlatformWindow {
 	/// <returns>
 	/// bool: True if succeeded, false if failed
 	/// </returns>
-	[[nodiscard]] bool SetWindowStyleParameters(uint64_t _u64Handle, uint8_t _u8Type);
+	[[nodiscard]] bool SetWindowStyleParameters(uint64 _u64Handle, uint8 _u8Type);
 
 	/// <summary>
 	/// Sets the size of the window represented by the given handle.
@@ -73,7 +73,7 @@ namespace PlatformWindow {
 	/// <returns>
 	/// bool: True if succeeded, false if failed
 	/// </returns>
-	[[nodiscard]] bool SetWindowSize(uint64_t _u64Handle, const Vec2F& _v2Size);
+	[[nodiscard]] bool SetWindowSize(uint64 _u64Handle, const Vec2F& _v2Size);
 
 	/// <summary>
 	/// Sets the location of the window represented by the given handle.
@@ -83,13 +83,13 @@ namespace PlatformWindow {
 	/// <returns>
 	/// bool: True if succeeded, false if failed
 	/// </returns>
-	[[nodiscard]] bool SetWindowLocation(uint64_t _u64Handle, const Vec2F& _v2Loc);
+	[[nodiscard]] bool SetWindowLocation(uint64 _u64Handle, const Vec2F& _v2Loc);
 
 	/// <summary>
 	/// Sets the window represented by the handle as the focus.
 	/// </summary>
 	/// <param name="_u64Handle: A handle to the window set to be the focus"></param>
-	[[nodiscard]] void SetWindowFocus(uint64_t _u64Handle);
+	[[nodiscard]] void SetWindowFocus(uint64 _u64Handle);
 
 	/// <summary>
 	/// Returns the up-to-date size of the window represented by the given handle.
@@ -98,7 +98,7 @@ namespace PlatformWindow {
 	/// <returns>
 	/// Vec2F: The current size of the window in pixels
 	/// </returns>
-	[[nodiscard]] Vec2F GetWindowSize(uint64_t _u64Handle);
+	[[nodiscard]] Vec2F GetWindowSize(uint64 _u64Handle);
 
 	/// <summary>
 	/// Returns the up-to-date location of the window represented by the given handle.
@@ -107,27 +107,27 @@ namespace PlatformWindow {
 	/// <returns>
 	/// Vec2F: The current location of the window
 	/// </returns>
-	[[nodiscard]] Vec2F GetWindowLocation(uint64_t _u64Handle);
+	[[nodiscard]] Vec2F GetWindowLocation(uint64 _u64Handle);
 
 	/// <summary>
 	/// Returns the up-to-date parameters of the window represented by the given handle.
 	/// </summary>
 	/// <param name="_u64Handle"></param>
 	/// <returns>
-	/// uint8_t: The current parameters of the window represented by the given handle.
+	/// uint8: The current parameters of the window represented by the given handle.
 	/// </returns>
-	[[nodiscard]] uint8_t GetWindowParameters(uint64_t _u64Handle);
+	[[nodiscard]] uint8 GetWindowParameters(uint64 _u64Handle);
 
 	/// <summary>
 	/// Determines if the window represented by the given handle is the current focus.
 	/// </summary>
 	/// <param name="_u64Handle: A handle to the window that must be checked for focus"></param>
 	/// <returns></returns>
-	[[nodiscard]] bool GetWindowFocus(uint64_t _u64Handle);
+	[[nodiscard]] bool GetWindowFocus(uint64 _u64Handle);
 
 	/// <summary>
 	/// Cleans up the window represented by the given handle
 	/// </summary>
 	/// <param name="_u64Handle: An unsigned 64 bit integer representing the window handle"></param>
-	[[nodiscard]] void CleanupWindow(uint64_t _u64Handle);
+	[[nodiscard]] void CleanupWindow(uint64 _u64Handle);
 }

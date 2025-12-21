@@ -21,7 +21,7 @@ protected:
 	/// <summary>
 	/// The name of the app
 	/// </summary>
-	std::string m_strApplicationName;
+	String m_strApplicationName;
 
 	/// <summary>
 	/// The type of app. This is used for window initialization.
@@ -51,7 +51,7 @@ public:
 	/// </summary>
 	/// <param name="_strName: The name of the application"></param>
 	///  <param name="_atType: The type of the application"></param>
-	explicit Application(const std::string& _strName, AppType _atType) : m_strApplicationName(_strName), m_atType(_atType) {}
+	explicit Application(const String& _strName, AppType _atType) : m_strApplicationName(_strName), m_atType(_atType) {}
 
 	/// <summary>
 	/// The main application system. This is based entirely around the app being built, and as such is left pure virtual.

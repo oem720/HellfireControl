@@ -19,12 +19,12 @@ private:
 	/// <summary>
 	/// The name of the function being tested. This will be replaced with an HC String when completed
 	/// </summary>
-	std::string m_strFuncName;
+	String m_strFuncName;
 
 	/// <summary>
 	/// The actual unit test being performed. This will be replaced with an HC Function when completed
 	/// </summary>
-	std::function<const bool(float&)> m_funcTest;
+	Function<const bool(float&)> m_funcTest;
 public:
 	/// <summary>
 	/// Default constructor has been deleted, as there is no need for one.
@@ -36,7 +36,7 @@ public:
 	/// </summary>
 	/// <param name="_strFuncName: Name of the function being tested"></param>
 	/// <param name="_funcTest: The unit test supplied by the test system"></param>
-	explicit TestCase(const std::string& _strFuncName, const std::function<const bool(float&)> _funcTest) : m_strFuncName(_strFuncName), m_funcTest(_funcTest) {}
+	explicit TestCase(const String& _strFuncName, const Function<const bool(float&)> _funcTest) : m_strFuncName(_strFuncName), m_funcTest(_funcTest) {}
 
 	/// <summary>
 	/// Executes the stored unit test and displays the results.
@@ -67,7 +67,7 @@ public:
 	/// </returns>
 	[[nodiscard]] HC_INLINE float GetExecutionTimeSeconds() const { return m_fExecTimeNs / 1.0E9f; }
 
-	[[nodiscard]] HC_INLINE std::string& GetFunctionName() { return m_strFuncName; }
+	[[nodiscard]] HC_INLINE String& GetFunctionName() { return m_strFuncName; }
 
 	/// <summary>
 	/// Returns whether or not the function passed its unit test

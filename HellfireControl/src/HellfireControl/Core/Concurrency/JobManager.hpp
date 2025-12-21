@@ -7,15 +7,15 @@
 
 class JobManager {
 private:
-	std::vector<std::thread> m_vWorkerPool;
+	Array<Thread> m_vWorkerPool;
 
 	std::atomic<size_t> m_asBlockedThreads = 0;
 	std::atomic<size_t> m_asBusyThreads = 0;
 
 	JobQueue m_jqQueue;
 
-	std::condition_variable m_cvDependencyCheck;
-	std::mutex m_mutDependencyMutex;
+	ConditionVariable m_cvDependencyCheck;
+	Mutex m_mutDependencyMutex;
 
 	void WorkerExecute();
 
@@ -24,9 +24,9 @@ private:
 public:
 	JobManager() = delete;
 
-	JobManager(uint32_t _u32WorkerCount);
+	JobManager(uint32 _u32WorkerCount);
 
-	void AddJob(std::shared_ptr<Job> _pJob);
+	void AddJob(SharedPointer<Job> _pJob);
 
 	bool CheckBusyStatus();
 

@@ -2,7 +2,7 @@
 
 #include <HellfireControl/Core/Common.hpp>
 
-enum JobStatus : uint8_t {
+enum JobStatus : uint8 {
 	IDLING,
 	ASSIGNED,
 	RUNNING,
@@ -12,13 +12,13 @@ enum JobStatus : uint8_t {
 };
 
 struct Job {
-	std::function<void()> m_funcJobAction;
-	std::vector<std::shared_ptr<Job>> m_vDependencies;
+	Function<void()> m_funcJobAction;
+	Array<SharedPointer<Job>> m_vDependencies;
 	std::atomic<JobStatus> m_jsStatus;
 
 	Job() = delete;
 
-	Job(std::function<void()> _funcJob, const std::vector<std::shared_ptr<Job>>& _vDependencies = std::vector<std::shared_ptr<Job>>()) 
+	Job(Function<void()> _funcJob, const Array<SharedPointer<Job>>& _vDependencies = Array<SharedPointer<Job>>()) 
 		: m_funcJobAction(_funcJob), m_vDependencies(_vDependencies), m_jsStatus(IDLING) {}
 
 	bool Ready() {

@@ -6,7 +6,7 @@ class AssetLoader {
 private:
 	static AssetLoader* m_pInstance;
 
-	std::map<uint32_t, std::unique_ptr<AssetParser>> m_mAssetParsers;
+	Map<uint32, UniquePointer<AssetParser>> m_mAssetParsers;
 
 	AssetLoader() {}
 
@@ -19,7 +19,7 @@ public:
 
 	void Init();
 
-	std::shared_ptr<Asset> LoadAsset(const std::string& _strPath);
+	SharedPointer<Asset> LoadAsset(const String& _strPath);
 
 	void Cleanup();
 };

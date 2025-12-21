@@ -8,21 +8,21 @@
 
 #include <HellfireControl/Core/Image.hpp>
 
-Font FontProcessor::ProcessFont(const std::string& _strFilepath, uint16_t _u16FontSize, FontType _ftType) {
+Font FontProcessor::ProcessFont(const String& _strFilepath, uint16 _u16FontSize, FontType _ftType) {
 	File fFontFile(_strFilepath, FILE_OPEN_FLAG_READ | FILE_OPEN_FLAG_BINARY);
 
 	FontInfo fiInfo = FontTTFParser::InitializeFont(fFontFile, static_cast<float>(_u16FontSize));
 
-	std::map<UTF8PaddedChar, GlyphInfo> mGlyphData;
+	Map<UTF8PaddedChar, GlyphInfo> mGlyphData;
 
-	uint16_t spaceIndex = fiInfo.m_cmCMap[static_cast<UTF8PaddedChar>(' ')];
+	uint16 spaceIndex = fiInfo.m_cmCMap[static_cast<UTF8PaddedChar>(' ')];
 
 	for (const auto& aGlyphPair : fiInfo.m_cmCMap) {
 		mGlyphData[aGlyphPair.first] = FontTTFParser::GetGlyphInfo(fFontFile, fiInfo, aGlyphPair.second);
 	}
 
-	std::vector<ImageRGB8> vBitmaps;
-	std::map<UTF8PaddedChar, BakedGlyphBoxInfo> mBakedData = FontRasterizer::RasterizeGlyphs(fiInfo, mGlyphData, vBitmaps, _strFilepath);
+	Array<ImageRGB8> vBitmaps;
+	Map<UTF8PaddedChar, BakedGlyphBoxInfo> mBakedData = FontRasterizer::RasterizeGlyphs(fiInfo, mGlyphData, vBitmaps, _strFilepath);
 
 	Font fFont;
 	fFont.m_ftType = _ftType;
@@ -32,19 +32,19 @@ Font FontProcessor::ProcessFont(const std::string& _strFilepath, uint16_t _u16Fo
 	return fFont;
 }
 
-Font FontProcessor::ProcessFont(const std::string& _strFilepath, CharacterRange _crCharactersToProcess, uint16_t _u16FontSize, FontType _ftType) {
+Font FontProcessor::ProcessFont(const String& _strFilepath, CharacterRange _crCharactersToProcess, uint16 _u16FontSize, FontType _ftType) {
 	//TODO: Implement
 	return Font();
 }
 
-Font FontProcessor::ProcessFont(const std::string& _strFilepath, std::vector<CharacterRange>& _vCharacterRanges, uint16_t _u16FontSize, FontType _ftType) {
+Font FontProcessor::ProcessFont(const String& _strFilepath, Array<CharacterRange>& _vCharacterRanges, uint16 _u16FontSize, FontType _ftType) {
 	//TODO: Implement
 	return Font();
 }
 
-void OrderBoundingVolumes(std::map<UTF8PaddedChar, BakedGlyphBoxInfo>& _mMap, std::vector<HCGRFCMapEntry>& _vOutMap, std::vector<BakedGlyphBoxInfo>& _vOutOrderedBVs);
+void OrderBoundingVolumes(Map<UTF8PaddedChar, BakedGlyphBoxInfo>& _mMap, Array<HCGRFCMapEntry>& _vOutMap, Array<BakedGlyphBoxInfo>& _vOutOrderedBVs);
 
-HCUID FontProcessor::SaveFontToDisk(const std::string& _strFilepath, const Font& _fFontData) {
+HCUID FontProcessor::SaveFontToDisk(const String& _strFilepath, const Font& _fFontData) {
 	File fFileDest(_strFilepath, FILE_OPEN_FLAG_WRITE | FILE_OPEN_FLAG_BINARY);
 
 	HCGRFHeader hHeader = {
@@ -54,25 +54,25 @@ HCUID FontProcessor::SaveFontToDisk(const std::string& _strFilepath, const Font&
 		.m_u8DirectorySize = 3
 	};
 
-	std::map<UTF8PaddedChar, BakedGlyphBoxInfo> mCharacterMapCopy = _fFontData.m_mCharacterMap;
-	std::vector<HCGRFCMapEntry> vCMap;
-	std::vector<BakedGlyphBoxInfo> vOrderedBVs;
+	Map<UTF8PaddedChar, BakedGlyphBoxInfo> mCharacterMapCopy = _fFontData.m_mCharacterMap;
+	Array<HCGRFCMapEntry> vCMap;
+	Array<BakedGlyphBoxInfo> vOrderedBVs;
 	OrderBoundingVolumes(mCharacterMapCopy, vCMap, vOrderedBVs);
-	uint32_t u32SegmentCount = vCMap.size();
-	uint32_t u32BoundingVolumeCount = vOrderedBVs.size();
+	uint32 u32SegmentCount = vCMap.size();
+	uint32 u32BoundingVolumeCount = vOrderedBVs.size();
 
 	//TODO: Change this to be based on the settings of the font. This may include the GAST table as well.
 	HCGRFTableDirectoryEntry tdeCmap = { .m_cTag = {'c', 'm', 'a', 'p'}, .m_u32Offset = sizeof(HCGRFHeader) + (sizeof(HCGRFTableDirectoryEntry) * 3) };
-	HCGRFTableDirectoryEntry tdeUvbv = { .m_cTag = {'u', 'v', 'b', 'v'}, .m_u32Offset = tdeCmap.m_u32Offset + static_cast<uint32_t>(vCMap.size() * sizeof(HCGRFCMapEntry)) + sizeof(uint32_t)};
-	HCGRFTableDirectoryEntry tdeImag = { .m_cTag = {'i', 'm', 'a', 'g'}, .m_u32Offset = tdeUvbv.m_u32Offset + static_cast<uint32_t>(vOrderedBVs.size() * sizeof(BakedGlyphBoxInfo)) + sizeof(uint32_t) };
+	HCGRFTableDirectoryEntry tdeUvbv = { .m_cTag = {'u', 'v', 'b', 'v'}, .m_u32Offset = tdeCmap.m_u32Offset + static_cast<uint32>(vCMap.size() * sizeof(HCGRFCMapEntry)) + sizeof(uint32)};
+	HCGRFTableDirectoryEntry tdeImag = { .m_cTag = {'i', 'm', 'a', 'g'}, .m_u32Offset = tdeUvbv.m_u32Offset + static_cast<uint32>(vOrderedBVs.size() * sizeof(BakedGlyphBoxInfo)) + sizeof(uint32) };
 
 	fFileDest.Write(&hHeader, sizeof(HCGRFHeader));
 	fFileDest.Write(&tdeCmap, sizeof(HCGRFTableDirectoryEntry));
 	fFileDest.Write(&tdeUvbv, sizeof(HCGRFTableDirectoryEntry));
 	fFileDest.Write(&tdeImag, sizeof(HCGRFTableDirectoryEntry));
-	fFileDest.Write(&u32SegmentCount, sizeof(uint32_t));
+	fFileDest.Write(&u32SegmentCount, sizeof(uint32));
 	fFileDest.Write(vCMap.data(), sizeof(HCGRFCMapEntry) * vCMap.size());
-	fFileDest.Write(&u32BoundingVolumeCount, sizeof(uint32_t));
+	fFileDest.Write(&u32BoundingVolumeCount, sizeof(uint32));
 	fFileDest.Write(vOrderedBVs.data(), sizeof(BakedGlyphBoxInfo) * vOrderedBVs.size());
 	
 	for (const ImageRGB8& aImage : _fFontData.m_vAtlases) {
@@ -82,7 +82,7 @@ HCUID FontProcessor::SaveFontToDisk(const std::string& _strFilepath, const Font&
 			.m_u8NumChannels = aImage.GetChannels()
 		};
 
-		fFileDest.Write(&idImageHeader, sizeof(uint32_t) * 2 + sizeof(uint8_t)); //Thanks to alignment, this has to be calculated manually
+		fFileDest.Write(&idImageHeader, sizeof(uint32) * 2 + sizeof(uint8)); //Thanks to alignment, this has to be calculated manually
 		fFileDest.Write(aImage.GetPixelData().get(), sizeof(ImageRGB8::Pixel) * aImage.GetPixelCount());
 	}
 
@@ -95,7 +95,7 @@ HCUID FontProcessor::SaveFontToDisk(const std::string& _strFilepath, const Font&
 	return gId;
 }
 
-void OrderBoundingVolumes(std::map<UTF8PaddedChar, BakedGlyphBoxInfo>& _mMap, std::vector<HCGRFCMapEntry>& _vOutMap, std::vector<BakedGlyphBoxInfo>& _vOutOrderedBVs) {
+void OrderBoundingVolumes(Map<UTF8PaddedChar, BakedGlyphBoxInfo>& _mMap, Array<HCGRFCMapEntry>& _vOutMap, Array<BakedGlyphBoxInfo>& _vOutOrderedBVs) {
 	HCGRFCMapEntry cmeEntry = { .m_u32CodeCount = 0 };
 	
 	for (UTF8PaddedChar u8Char = 0; u8Char < UINT32_MAX && _mMap.size() > 0; ++u8Char) {
@@ -107,7 +107,7 @@ void OrderBoundingVolumes(std::map<UTF8PaddedChar, BakedGlyphBoxInfo>& _mMap, st
 				cmeEntry = {
 					.m_u32StartCode = u8Char,
 					.m_u32CodeCount = 1,
-					.m_u32GlyphIndex = static_cast<uint32_t>(_vOutOrderedBVs.size()) - 1
+					.m_u32GlyphIndex = static_cast<uint32>(_vOutOrderedBVs.size()) - 1
 				};
 			}
 			else {

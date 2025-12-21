@@ -3,7 +3,7 @@
 #include <iostream>
 #include <HellfireControl/Core/Common.hpp>
 
-enum ConsoleColor : uint8_t {
+enum ConsoleColor : uint8 {
 	WHITE = 37,
 	BLACK = 30,
 	RED = 31,
@@ -13,7 +13,7 @@ enum ConsoleColor : uint8_t {
 	MAGENTA = 35
 };
 
-enum MessageType : uint8_t {
+enum MessageType : uint8 {
 	LOG,
 	INFO,
 	SUCCESS,
@@ -24,30 +24,30 @@ enum MessageType : uint8_t {
 
 class Console {
 private:
-	static std::string GetMessagePrefix(MessageType _mtType);
+	static String GetMessagePrefix(MessageType _mtType);
 
-	static std::string ColorText(const std::string& _strText, ConsoleColor _ccColor);
+	static String ColorText(const String& _strText, ConsoleColor _ccColor);
 
-	static void PrintDebugMessage(const std::string& _strMessage, MessageType _mtType);
+	static void PrintDebugMessage(const String& _strMessage, MessageType _mtType);
 
-	static void PlatformPrint(const std::string& _strMessage);
+	static void PlatformPrint(const String& _strMessage);
 
-	static void PlatformPrintLine(const std::string& _strMessage);
+	static void PlatformPrintLine(const String& _strMessage);
 
 public:
-	static void Print(const std::string& _strMessage, ConsoleColor _ccColor = WHITE);
+	static void Print(const String& _strMessage, ConsoleColor _ccColor = WHITE);
 
-	static void PrintLine(const std::string & _strMessage, ConsoleColor _ccColor = WHITE);
+	static void PrintLine(const String & _strMessage, ConsoleColor _ccColor = WHITE);
 
-	static void DebugLog(const std::string& _strMessage) { PrintDebugMessage(_strMessage, LOG); }
+	static void DebugLog(const String& _strMessage) { PrintDebugMessage(_strMessage, LOG); }
 
-	static void DebugInfo(const std::string& _strMessage) { PrintDebugMessage(_strMessage, INFO); }
+	static void DebugInfo(const String& _strMessage) { PrintDebugMessage(_strMessage, INFO); }
 
-	static void DebugSuccess(const std::string& _strMessage) { PrintDebugMessage(_strMessage, SUCCESS); }
+	static void DebugSuccess(const String& _strMessage) { PrintDebugMessage(_strMessage, SUCCESS); }
 
-	static void DebugFail(const std::string& _strMessage) { PrintDebugMessage(_strMessage, FAIL); }
+	static void DebugFail(const String& _strMessage) { PrintDebugMessage(_strMessage, FAIL); }
 
-	static void DebugWarn(const std::string& _strMessage) { PrintDebugMessage(_strMessage, WARNING); }
+	static void DebugWarn(const String& _strMessage) { PrintDebugMessage(_strMessage, WARNING); }
 
-	static void DebugError(const std::string& _strMessage) { PrintDebugMessage(_strMessage, ERROR); }
+	static void DebugError(const String& _strMessage) { PrintDebugMessage(_strMessage, ERROR); }
 };

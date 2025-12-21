@@ -6,7 +6,7 @@
 #include <HellfireControl/Math/Internal/Random/Random_Common.hpp>
 
 Random::Random() {
-	m_uSeed = (uint64_t)time(NULL);
+	m_uSeed = (uint64)time(NULL);
 
 	m_uState[0] = m_uSeed;
 
@@ -17,7 +17,7 @@ Random::Random() {
 	Regenerate();
 }
 
-Random::Random(uint64_t _uSeed) {
+Random::Random(uint64 _uSeed) {
 	m_uSeed = _uSeed;
 
 	m_uState[0] = _uSeed;
@@ -32,7 +32,7 @@ Random::Random(uint64_t _uSeed) {
 char Random::GenerateChar(char _cMin = 0, char _cMax = CHAR_MAX) {
 	if (_cMax < _cMin) return GenerateChar(_cMax, _cMin);
 
-	uint64_t u32Range = static_cast<uint64_t>(_cMax - _cMin + 1);
+	uint64 u32Range = static_cast<uint64>(_cMax - _cMin + 1);
 
 	return static_cast<char>(GetNextVal() % u32Range) + _cMin;
 }
@@ -40,7 +40,7 @@ char Random::GenerateChar(char _cMin = 0, char _cMax = CHAR_MAX) {
 short Random::GenerateShort(short _sMin = 0, short _sMax = SHRT_MAX) {
 	if (_sMax < _sMin) return GenerateShort(_sMax, _sMin);
 
-	uint64_t u32Range = static_cast<uint64_t>(_sMax - _sMin + 1);
+	uint64 u32Range = static_cast<uint64>(_sMax - _sMin + 1);
 
 	return static_cast<short>(GetNextVal() % u32Range) + _sMin;
 }
@@ -48,26 +48,26 @@ short Random::GenerateShort(short _sMin = 0, short _sMax = SHRT_MAX) {
 int Random::GenerateInt(int _iMin = 0, int _iMax = INT_MAX) {
 	if (_iMax < _iMin) return GenerateInt(_iMax, _iMin);
 
-	uint64_t u32Range = static_cast<uint64_t>(_iMax - _iMin + 1);
+	uint64 u32Range = static_cast<uint64>(_iMax - _iMin + 1);
 
 	return static_cast<int>(GetNextVal() % u32Range) + _iMin;
 }
 
-uint64_t Random::GenerateUnsignedInt(uint64_t _uMin = 0, uint64_t _uMax = UINT_MAX) {
+uint64 Random::GenerateUnsignedInt(uint64 _uMin = 0, uint64 _uMax = UINT_MAX) {
 	if (_uMax < _uMin) return GenerateUnsignedInt(_uMax, _uMin);
 
-	uint64_t u32Range = _uMax - _uMin;
+	uint64 u32Range = _uMax - _uMin;
 	
 	return (GetNextVal() % u32Range) + _uMin;
 }
 
-int64_t Random::GenerateLong(int64_t _lMin = 0, int64_t _lMax = LLONG_MAX) {
+int64 Random::GenerateLong(int64 _lMin = 0, int64 _lMax = LLONG_MAX) {
 	if (_lMax < _lMin) return GenerateLong(_lMax, _lMin);
 
-	uint64_t u64Val = static_cast<uint64_t>((static_cast<uint64_t>(GetNextVal()) << 32) | GetNextVal()); //Fuse two generated numbers
-	uint64_t u64Range = static_cast<uint64_t>(_lMax - _lMin + 1);
+	uint64 u64Val = static_cast<uint64>((static_cast<uint64>(GetNextVal()) << 32) | GetNextVal()); //Fuse two generated numbers
+	uint64 u64Range = static_cast<uint64>(_lMax - _lMin + 1);
 
-	return static_cast<int64_t>(u64Val % u64Range) + _lMin;
+	return static_cast<int64>(u64Val % u64Range) + _lMin;
 }
 
 float Random::GenerateFloat(float _fMin = 0.0f, float _fMax = 1.0f) {
@@ -86,7 +86,7 @@ double Random::GenerateDouble(double _dMin = 0.0f, double _dMax = 1.0f) {
 	return (static_cast<double>(GenerateLong()) / dScale) + _dMin;
 }
 
-void Random::SetSeed(uint64_t _uSeed) {
+void Random::SetSeed(uint64 _uSeed) {
 	m_iNext = 0;
 
 	m_uState[0] = _uSeed;
@@ -98,13 +98,13 @@ void Random::SetSeed(uint64_t _uSeed) {
 	Regenerate();
 }
 
-uint64_t Random::GetNextVal() {
+uint64 Random::GetNextVal() {
 	if (m_iNext >= s_iStateSize) {
 		m_iNext = 0;
 		Regenerate();
 	}
 
-	uint64_t uVal = m_uState[m_iNext++];
+	uint64 uVal = m_uState[m_iNext++];
 	uVal ^= uVal >> 11;
 	uVal ^= (uVal << 7) & 0x9d2c5680;
 	uVal ^= (uVal << 15) & 0xefc60000;
@@ -118,7 +118,7 @@ void Random::Regenerate() {
 	const int iFirstHalf = s_iStateSize - iM;
 
 	int iNdx = 0;
-	uint64_t uBits;
+	uint64 uBits;
 	for (; iNdx < iFirstHalf; ++iNdx) {
 		uBits = (m_uState[iNdx] & 0x80000000) | (m_uState[iNdx + 1] & 0x7fffffff);
 		m_uState[iNdx] = m_uState[iNdx + iM] ^ (uBits >> 1) ^ ((uBits & 1) * 0x9908b0df);

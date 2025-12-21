@@ -3,7 +3,7 @@
 #include <HellfireControl/Core/Common.hpp>
 #include <HellfireControl/Render/RendererStructs.hpp>
 
-typedef uint32_t RendererTag;
+typedef uint32 RendererTag;
 
 enum DefaultRendererTags : RendererTag {
 	RENDERER_2D = HC_CREATE_32BIT_TAG('2', 'D', '2', 'D'),
@@ -12,7 +12,7 @@ enum DefaultRendererTags : RendererTag {
 	RENDERER_POST = HC_CREATE_32BIT_TAG('P', 'O', 'S', 'T')
 };
 
-enum RendererFlags : uint8_t {
+enum RendererFlags : uint8 {
 	CACHE_FRAME = (1 << 0),
 	OUTPUT_FRAME = (1 << 1),
 	CACHE_DEPTH_BUFFER = (1 << 2),
@@ -36,17 +36,17 @@ public:
 
 class Renderer {
 private:
-	uint8_t m_u8Flags;
+	uint8 m_u8Flags;
 	std::vector<RendererTag> m_vDependencies;
 	
-	std::shared_ptr<PlatformRenderer> m_pPlatformRenderer;
+	SharedPointer<PlatformRenderer> m_pPlatformRenderer;
 
 	void CreatePlatformRenderpass(const RenderpassData& _rdRenderpass);
 
 public:
 	Renderer() = delete;
 
-	Renderer(uint8_t _u8Flags, const std::vector<RendererTag>& _vDependencies, const RenderpassData& _rdRenderpass)
+	Renderer(uint8 _u8Flags, const std::vector<RendererTag>& _vDependencies, const RenderpassData& _rdRenderpass)
 		: m_u8Flags(_u8Flags)
 		, m_vDependencies(_vDependencies) {
 		CreatePlatformRenderpass(_rdRenderpass);
@@ -61,5 +61,5 @@ public:
 
 	[[nodiscard]] HC_INLINE const std::vector<RendererTag>& GetDependencies() const { return m_vDependencies; }
 	[[nodiscard]] HC_INLINE size_t GetDependencyCount() const { return m_vDependencies.size(); }
-	[[nodiscard]] HC_INLINE std::shared_ptr<PlatformRenderer> GetPlatformRenderer() { return m_pPlatformRenderer; }
+	[[nodiscard]] HC_INLINE SharedPointer<PlatformRenderer> GetPlatformRenderer() { return m_pPlatformRenderer; }
 };

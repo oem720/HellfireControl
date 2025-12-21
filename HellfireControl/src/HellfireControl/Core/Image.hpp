@@ -6,7 +6,7 @@
 
 class File;
 
-template<typename ChannelType, uint8_t ChannelCount, HC_SFINAE_REQUIRE_NUMERIC(ChannelType)>
+template<typename ChannelType, uint8 ChannelCount, HC_SFINAE_REQUIRE_NUMERIC(ChannelType)>
 class Image {
 public:
 	struct Pixel {
@@ -14,10 +14,10 @@ public:
 	};
 private:
 
-	uint32_t m_u32Width;
-	uint32_t m_u32Height;
-	uint32_t m_u32PixelCount;
-	std::unique_ptr<Pixel[]> m_pPixels;
+	uint32 m_u32Width;
+	uint32 m_u32Height;
+	uint32 m_u32PixelCount;
+	UniquePointer<Pixel[]> m_pPixels;
 
 public:
 	Image() :
@@ -26,7 +26,7 @@ public:
 		m_u32PixelCount(0),
 		m_pPixels(nullptr) {}
 
-	Image(uint32_t _u32Width, uint32_t _u32Height) :
+	Image(uint32 _u32Width, uint32 _u32Height) :
 		m_u32Width(_u32Width),
 		m_u32Height(_u32Height),
 		m_u32PixelCount(_u32Width * _u32Height),
@@ -76,21 +76,21 @@ public:
 		throw std::runtime_error("ERROR: Function not implemented!");
 	}
 
-	[[nodiscard]] HC_INLINE uint32_t GetWidth() const { return m_u32Width; }
+	[[nodiscard]] HC_INLINE uint32 GetWidth() const { return m_u32Width; }
 
-	[[nodiscard]] HC_INLINE uint32_t GetHeight() const { return m_u32Height; }
+	[[nodiscard]] HC_INLINE uint32 GetHeight() const { return m_u32Height; }
 
-	[[nodiscard]] HC_INLINE uint8_t GetChannels() const { return ChannelCount; }
+	[[nodiscard]] HC_INLINE uint8 GetChannels() const { return ChannelCount; }
 
-	[[nodiscard]] HC_INLINE uint32_t GetPixelCount() const { return m_u32PixelCount; }
+	[[nodiscard]] HC_INLINE uint32 GetPixelCount() const { return m_u32PixelCount; }
 
-	[[nodiscard]] HC_INLINE const std::unique_ptr<Pixel[]>& GetPixelData() const { return m_pPixels; }
+	[[nodiscard]] HC_INLINE const UniquePointer<Pixel[]>& GetPixelData() const { return m_pPixels; }
 
-	[[nodiscard]] HC_INLINE Pixel GetPixel(uint32_t _u32X, uint32_t _u32Y) { return m_pPixels[_u32Y * m_u32Width + _u32X]; }
+	[[nodiscard]] HC_INLINE Pixel GetPixel(uint32 _u32X, uint32 _u32Y) { return m_pPixels[_u32Y * m_u32Width + _u32X]; }
 };
 
 //TODO: Add more specializations here!
-typedef Image<uint8_t, 1> ImageR8;
-typedef Image<uint8_t, 2> ImageRG8;
-typedef Image<uint8_t, 3> ImageRGB8;
-typedef Image<uint8_t, 4> ImageRGBA8;
+typedef Image<uint8, 1> ImageR8;
+typedef Image<uint8, 2> ImageRG8;
+typedef Image<uint8, 3> ImageRGB8;
+typedef Image<uint8, 4> ImageRGBA8;

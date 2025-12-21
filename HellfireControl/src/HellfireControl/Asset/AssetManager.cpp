@@ -25,7 +25,7 @@ void AssetManager::Init() {
 	m_palLoader->Init();
 }
 
-HCUID AssetManager::LoadAssetFromPath(const std::string& _strPath) {
+HCUID AssetManager::LoadAssetFromPath(const String& _strPath) {
 	HCUID gId = HCUID::ConstructFromFilepath(_strPath);
 
 	if (!std::filesystem::exists(_strPath)) {
@@ -46,7 +46,7 @@ HCUID AssetManager::LoadAssetFromPath(const std::string& _strPath) {
 		return gId;
 	}
 
-	std::shared_ptr<Asset> pAsset = m_palLoader->LoadAsset(_strPath);
+	SharedPointer<Asset> pAsset = m_palLoader->LoadAsset(_strPath);
 
 	if (pAsset != nullptr) {
 		m_mAssetCache[gId] = pAsset;
@@ -56,7 +56,7 @@ HCUID AssetManager::LoadAssetFromPath(const std::string& _strPath) {
 	return HCUID();
 }
 
-std::shared_ptr<Asset> AssetManager::GetAsset(const HCUID& _gId) {
+SharedPointer<Asset> AssetManager::GetAsset(const HCUID& _gId) {
 	if (m_mAssetCache.contains(_gId)) {
 		return m_mAssetCache[_gId];
 	}
@@ -66,14 +66,14 @@ std::shared_ptr<Asset> AssetManager::GetAsset(const HCUID& _gId) {
 		return nullptr;
 	}
 
-	std::string strPath = m_pamManifest->GetManifestEntry(_gId);
+	String strPath = m_pamManifest->GetManifestEntry(_gId);
 
 	if (!std::filesystem::exists(strPath)) {
 		Console::DebugWarn("Asset filepath doesn't exist! Path: " + strPath);
 		return nullptr;
 	}
 
-	std::shared_ptr<Asset> pAsset = m_palLoader->LoadAsset(strPath);
+	SharedPointer<Asset> pAsset = m_palLoader->LoadAsset(strPath);
 
 	if (pAsset != nullptr) {
 		m_mAssetCache[_gId] = pAsset;

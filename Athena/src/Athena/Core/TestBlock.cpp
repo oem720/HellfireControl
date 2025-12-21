@@ -6,7 +6,7 @@ void TestBlock::AddTest(const TestCase& _tcUnitTest) {
 	m_vTests.push_back(_tcUnitTest);
 }
 
-void TestBlock::AddTest(const std::string& _strFuncName, const std::function<const bool(float&)>& _funcTest) {
+void TestBlock::AddTest(const String& _strFuncName, const Function<const bool(float&)>& _funcTest) {
 	m_vTests.push_back(TestCase(_strFuncName, _funcTest));
 }
 

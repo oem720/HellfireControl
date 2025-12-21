@@ -11,9 +11,9 @@
 
 #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
-std::vector<std::string> PlatformFileDialog::m_vUserSelections;
+Array<String> PlatformFileDialog::m_vUserSelections;
 
-std::vector<COMDLG_FILTERSPEC> PlatformFileDialog::m_vFilterNames = {
+Array<COMDLG_FILTERSPEC> PlatformFileDialog::m_vFilterNames = {
 	{ L"JPG Images", L"*.jpg;*.jpeg;*.jpe;*.jif;*.jfif;*.jfi" },
 	{ L"PNG Images", L"*.png" },
 	{ L"GIF Images", L"*.gif" },
@@ -35,7 +35,7 @@ std::vector<COMDLG_FILTERSPEC> PlatformFileDialog::m_vFilterNames = {
 	/*TODO Add new file formats here!*/
 };
 
-std::vector<COMDLG_FILTERSPEC> PlatformFileDialog::m_vFilterCombinations = {
+Array<COMDLG_FILTERSPEC> PlatformFileDialog::m_vFilterCombinations = {
 	{ L"All Supported Formats", L"*.jpg;*.jpeg;*.jpe;*.jif;*.jfif;*.jfi;*.png;*.gif;*.bmp;*.obj;*.fbx;*.gltf;*.dds;*.ktx;*.mtl;*.wav;*.wave;*.mp3;*.ogg;*.ogv;*.oga;*.ogx;*.ogm;*.spx;*.opus;*.mp4;*.m4v;*.mov;*.avi;*.wmv;*.ttf;*.ttc;*.otf;*.otc" },
 	{ L"All Supported Image Formats", L"*.jpg;*.jpeg;*.jpe;*.jif;*.jfif;*.jfi;*.png;*.gif;*.bmp" },
 	{ L"All Supported 3D Model Formats", L"*.obj;*.fbx;*.gltf" },
@@ -68,8 +68,8 @@ HRESULT PlatformFileDialog::CreateEventHandlerInstance(REFIID _rId, void** _ppVo
 	return hRes;
 }
 
-std::vector<COMDLG_FILTERSPEC> PlatformFileDialog::ResolveFileExtensionFlags(uint64_t _u64FileExtensionFlags) {
-	std::vector<COMDLG_FILTERSPEC> vFilters;
+Array<COMDLG_FILTERSPEC> PlatformFileDialog::ResolveFileExtensionFlags(uint64 _u64FileExtensionFlags) {
+	Array<COMDLG_FILTERSPEC> vFilters;
 
 	if (_u64FileExtensionFlags == ALL_SUPPORTED_FILE_FORMATS) {
 		vFilters = m_vFilterCombinations;
@@ -99,7 +99,7 @@ std::vector<COMDLG_FILTERSPEC> PlatformFileDialog::ResolveFileExtensionFlags(uin
 	}
 
 	int iFlagSum = 0;
-	for (uint64_t ndx = 0, flag = 1; ndx < m_vFilterNames.size() && flag < 0xFFFFFFFFFFFFFFFF; ++ndx, flag <<= 1) {
+	for (uint64 ndx = 0, flag = 1; ndx < m_vFilterNames.size() && flag < 0xFFFFFFFFFFFFFFFF; ++ndx, flag <<= 1) {
 		if (_u64FileExtensionFlags & flag) {
 			vFilters.push_back(m_vFilterNames[ndx]);
 		}
@@ -108,7 +108,7 @@ std::vector<COMDLG_FILTERSPEC> PlatformFileDialog::ResolveFileExtensionFlags(uin
 	return vFilters;
 }
 
-std::wstring PlatformFileDialog::ResolveDefaultFileExtension(const std::vector<COMDLG_FILTERSPEC> & _vFilters) {
+std::wstring PlatformFileDialog::ResolveDefaultFileExtension(const Array<COMDLG_FILTERSPEC> & _vFilters) {
 	const std::wstring HC_COMBINATION_NAME = L"All";
 
 	for (int ndx = 0; ndx < _vFilters.size(); ++ndx) {
@@ -172,7 +172,7 @@ void PlatformFileDialog::HandleSaveDialogSelection(IFileSaveDialog* _pDialog) {
 	}
 }
 
-bool PlatformFileDialog::CreateFileDialog(uint8_t _u8Type, uint64_t _u64FileExtensions, const std::string& _strDefaultPath) {
+bool PlatformFileDialog::CreateFileDialog(uint8 _u8Type, uint64 _u64FileExtensions, const String& _strDefaultPath) {
 	m_vUserSelections.clear();
 
 	auto aExtensions = ResolveFileExtensionFlags(_u64FileExtensions);
@@ -264,6 +264,6 @@ bool PlatformFileDialog::CreateFileDialog(uint8_t _u8Type, uint64_t _u64FileExte
 	return true;
 }
 
-std::vector<std::string> PlatformFileDialog::GetUserSelections() {
+Array<String> PlatformFileDialog::GetUserSelections() {
 	return m_vUserSelections;
 }

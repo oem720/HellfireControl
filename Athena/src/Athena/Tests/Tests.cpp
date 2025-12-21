@@ -9,7 +9,7 @@
 
 
 namespace Tests {
-	void InitTests(std::vector<TestBlock>& _vBlockList) {
+	void InitTests(Array<TestBlock>& _vBlockList) {
 		MathTests::InitTests(_vBlockList);
 	}
 }

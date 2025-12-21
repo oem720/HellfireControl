@@ -41,23 +41,23 @@ HCCompiledShader GLSLCompiler::Compile(const HCUncompiledShader& _ucsShader) {
 	);
 
 	if (shaderc_result_get_compilation_status(scrResult) != shaderc_compilation_status_success) {
-		std::string strError = shaderc_result_get_error_message(scrResult);
+		String strError = shaderc_result_get_error_message(scrResult);
 		shaderc_result_release(scrResult);
 		throw std::runtime_error(strError);
 	}
 
 	size_t sByteSize = shaderc_result_get_length(scrResult);
 
-	std::vector<uint32_t> vCodeBlob(sByteSize >> 2);
+	Array<uint32> vCodeBlob(sByteSize >> 2);
 
-	std::memcpy(vCodeBlob.data(), reinterpret_cast<const uint32_t*>(shaderc_result_get_bytes(scrResult)), sByteSize);
+	std::memcpy(vCodeBlob.data(), reinterpret_cast<const uint32*>(shaderc_result_get_bytes(scrResult)), sByteSize);
 
 	Console::DebugSuccess("GLSL shader \"" + _ucsShader.m_pthFilename.string() + "\" compiled successfully. Output size: " + std::to_string(sByteSize) + " bytes");
 
 	shaderc_result_release(scrResult);
 
 	return {
-		.m_pthFilepath = std::filesystem::path(_ucsShader.m_pthFilename).replace_extension(".hcshd").string(),
+		.m_pthFilepath = FilePath(_ucsShader.m_pthFilename).replace_extension(".hcshd").string(),
 		.m_sstType = _ucsShader.m_sstStage,
 		.m_svtVars = HCShaderVarTableReflectSPIRV(vCodeBlob),
 		.m_vCodeBlob = OptimizeSPIRV(vCodeBlob)

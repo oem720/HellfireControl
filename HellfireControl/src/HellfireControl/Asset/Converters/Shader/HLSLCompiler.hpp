@@ -14,7 +14,7 @@ private:
 	void InitializeCompiler();
 	void CleanupCompiler();
 
-	static std::string ConvertShaderStageToDXCProfile(HCShaderStageType _sstType);
+	static String ConvertShaderStageToDXCProfile(HCShaderStageType _sstType);
 
 public:
 	~HLSLCompiler() { this->CleanupCompiler(); }

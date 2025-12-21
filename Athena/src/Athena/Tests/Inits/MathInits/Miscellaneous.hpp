@@ -4,7 +4,7 @@
 
 
 namespace MathTests {
-	void InitTests_Miscellaneous(std::vector<TestBlock>& _vBlockList) {
+	void InitTests_Miscellaneous(Array<TestBlock>& _vBlockList) {
 		TestBlock tbBlock = TestBlock("Math Library - Misc");
 		
 		_vBlockList.push_back(tbBlock);

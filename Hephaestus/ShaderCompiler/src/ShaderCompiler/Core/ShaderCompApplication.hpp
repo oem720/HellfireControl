@@ -6,21 +6,21 @@
 
 class ShaderCompApplication : public Application {
 private:
-	static std::vector<std::unique_ptr<ShaderCompiler>> m_vShaderCompilers;
-	static std::vector<std::array<size_t, 3>> m_vShaderCompilerOrders;
+	static Array<UniquePointer<ShaderCompiler>> m_vShaderCompilers;
+	static Array<FixedArray<size_t, 3>> m_vShaderCompilerOrders;
 
-	static std::map<HCShaderFormat, std::string> m_mShaderFormatNames;
-	static std::map<HCShaderFormat, std::string> m_mShaderCompilerNames;
-	static std::map<HCShaderStageType, std::string> m_mShaderStageNames;
-	static std::map<HCShaderStageType, std::string> m_mShaderStageFilenames;
-	static std::map<HCShaderStageType, std::string> m_mGLSLShaderAttributeNames;
-	static std::map<HCShaderStageType, std::string> m_mHLSLShaderAttributeNames;
+	static Map<HCShaderFormat, String> m_mShaderFormatNames;
+	static Map<HCShaderFormat, String> m_mShaderCompilerNames;
+	static Map<HCShaderStageType, String> m_mShaderStageNames;
+	static Map<HCShaderStageType, String> m_mShaderStageFilenames;
+	static Map<HCShaderStageType, String> m_mGLSLShaderAttributeNames;
+	static Map<HCShaderStageType, String> m_mHLSLShaderAttributeNames;
 
-	std::vector<std::string> m_vArgs;
+	Array<String> m_vArgs;
 
-	std::vector<HCUncompiledShader> m_vUncompiledShaders;
+	Array<HCUncompiledShader> m_vUncompiledShaders;
 
-	std::vector<HCCompiledShader> m_vCompiledShaders;
+	Array<HCCompiledShader> m_vCompiledShaders;
 
 	bool m_bUseMenu = false;
 
@@ -34,18 +34,18 @@ private:
 
 	static HCCompiledShader CompileShader(const HCUncompiledShader& _ucsShader);
 
-	static HCShaderFormat InferShaderFormat(const std::filesystem::path& _strPath);
-	static HCShaderStageType InferShaderStage(const std::filesystem::path & _pthFilename, const std::vector<uint8_t>& _vFileBlob);
+	static HCShaderFormat InferShaderFormat(const FilePath& _strPath);
+	static HCShaderStageType InferShaderStage(const FilePath & _pthFilename, const Array<uint8>& _vFileBlob);
 
-	static HCShaderFormat ParseShaderType(const std::string& _strArg);
-	static HCShaderStageType ParseShaderStage(const std::string& _strArg);
+	static HCShaderFormat ParseShaderType(const String& _strArg);
+	static HCShaderStageType ParseShaderStage(const String& _strArg);
 
 public:
 	ShaderCompApplication(int _iArgCount, char* _pArgs[]) : Application("HC Shader ShaderCompiler", AppType::CONSOLE) {
-		m_vArgs = std::vector<std::string>(_iArgCount - 1);
+		m_vArgs = Array<String>(_iArgCount - 1);
 
 		for (int iNdx = 1; iNdx < _iArgCount; ++iNdx) {
-			m_vArgs[iNdx - 1] = std::string(_pArgs[iNdx]);
+			m_vArgs[iNdx - 1] = String(_pArgs[iNdx]);
 		}
 
 		InitializeCompilers();

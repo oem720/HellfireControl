@@ -9,7 +9,7 @@ class AssetManager {
 private:
 	static AssetManager* m_pInstance;
 
-	std::map<HCUID, std::shared_ptr<Asset>> m_mAssetCache;
+	Map<HCUID, SharedPointer<Asset>> m_mAssetCache;
 
 	AssetManifest* m_pamManifest = nullptr;
 
@@ -27,9 +27,9 @@ public:
 
 	void Init();
 
-	HCUID LoadAssetFromPath(const std::string& _strPath);
+	HCUID LoadAssetFromPath(const String& _strPath);
 
-	std::shared_ptr<Asset> GetAsset(const HCUID& _gId);
+	SharedPointer<Asset> GetAsset(const HCUID& _gId);
 
 	void UnloadAsset(const HCUID& _gId);
 

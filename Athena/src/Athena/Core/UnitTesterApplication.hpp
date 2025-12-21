@@ -24,17 +24,17 @@ private:
 	/// <summary>
 	/// The name of the slowest function of the current block
 	/// </summary>
-	std::string m_strSlowestFuncName = "";
+	String m_strSlowestFuncName = "";
 
 	/// <summary>
 	/// The name of the fastest function of the current block
 	/// </summary>
-	std::string m_strFastestFuncName = "";
+	String m_strFastestFuncName = "";
 
 	/// <summary>
 	/// The unit test blocks to be executed
 	/// </summary>
-	std::vector<TestBlock> m_vTestBlocks;
+	Array<TestBlock> m_vTestBlocks;
 
 	/// <summary>
 	/// Calls all init functions for test initialization.

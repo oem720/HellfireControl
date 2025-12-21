@@ -3,7 +3,7 @@
 
 Slang::ComPtr<slang::IGlobalSession> SlangCompiler::m_pSlangGlobalSession = nullptr;
 
-#define SLANG_THROW_DIAGNOSTIC_ERROR(_blob) if (_blob != nullptr) { throw std::runtime_error(std::string(reinterpret_cast<const char*>(_blob->getBufferPointer()))); }
+#define SLANG_THROW_DIAGNOSTIC_ERROR(_blob) if (_blob != nullptr) { throw std::runtime_error(String(reinterpret_cast<const char*>(_blob->getBufferPointer()))); }
 #define SLANG_THROW_RESULT_ERROR(_res, _msg) if (SLANG_FAILED(_res)) { throw std::runtime_error(_msg); }
 
 void SlangCompiler::InitializeCompiler() {
@@ -39,7 +39,7 @@ HCCompiledShader SlangCompiler::Compile(const HCUncompiledShader& _ucsShader) {
 
 	SlangResult srRes;
 
-	std::vector<const char*> arrSearchPaths = { //TODO: Make this configurable
+	Array<const char*> arrSearchPaths = { //TODO: Make this configurable
 		"./"
 	};
 
@@ -91,7 +91,7 @@ HCCompiledShader SlangCompiler::Compile(const HCUncompiledShader& _ucsShader) {
 
 	SLANG_THROW_RESULT_ERROR(srRes, "Failed to get entry point from module!\n");
 
-	std::vector<slang::IComponentType*> vComponentTypes = {
+	Array<slang::IComponentType*> vComponentTypes = {
 		pModule,
 		pEntryPoint
 	};
@@ -124,14 +124,14 @@ HCCompiledShader SlangCompiler::Compile(const HCUncompiledShader& _ucsShader) {
 
 	size_t sByteSize = pCodeBlob->getBufferSize();
 
-	std::vector<uint32_t> vCodeBlob(sByteSize >> 2);
+	Array<uint32> vCodeBlob(sByteSize >> 2);
 
 	std::memcpy(vCodeBlob.data(), pCodeBlob->getBufferPointer(), sByteSize);
 
 	Console::DebugSuccess("GLSL shader \"" + _ucsShader.m_pthFilename.string() + "\" compiled successfully. Output size: " + std::to_string(sByteSize) + " bytes");
 
 	return {
-		.m_pthFilepath = std::filesystem::path(_ucsShader.m_pthFilename).replace_extension(".hcshd").string(),
+		.m_pthFilepath = FilePath(_ucsShader.m_pthFilename).replace_extension(".hcshd").string(),
 		.m_sstType = _ucsShader.m_sstStage,
 		.m_svtVars = HCShaderVarTableReflectSPIRV(vCodeBlob),
 		.m_vCodeBlob = OptimizeSPIRV(vCodeBlob)

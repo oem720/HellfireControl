@@ -4,23 +4,23 @@
 
 class PlatformFileDialog {
 private:
-	static std::vector<std::string> m_vUserSelections;
+	static Array<String> m_vUserSelections;
 
-	static std::vector<COMDLG_FILTERSPEC> m_vFilterNames;
+	static Array<COMDLG_FILTERSPEC> m_vFilterNames;
 
-	static std::vector<COMDLG_FILTERSPEC> m_vFilterCombinations;
+	static Array<COMDLG_FILTERSPEC> m_vFilterCombinations;
 
 	static HRESULT CreateEventHandlerInstance(REFIID _rId, void** _ppVoid);
 
-	static std::vector<COMDLG_FILTERSPEC> ResolveFileExtensionFlags(uint64_t _u64FileExtensionFlags);
+	static Array<COMDLG_FILTERSPEC> ResolveFileExtensionFlags(uint64 _u64FileExtensionFlags);
 
-	static std::wstring ResolveDefaultFileExtension(const std::vector<COMDLG_FILTERSPEC> & _vFilters);
+	static std::wstring ResolveDefaultFileExtension(const Array<COMDLG_FILTERSPEC> & _vFilters);
 
 	static void HandleOpenDialogSelection(IFileOpenDialog* _pDialog);
 
 	static void HandleSaveDialogSelection(IFileSaveDialog* _pDialog);
 public:
-	static bool CreateFileDialog(uint8_t _u8Type, uint64_t _u64FileExtensions, const std::string& _strDefaultPath);
+	static bool CreateFileDialog(uint8 _u8Type, uint64 _u64FileExtensions, const String& _strDefaultPath);
 
-	static std::vector<std::string> GetUserSelections();
+	static Array<String> GetUserSelections();
 };

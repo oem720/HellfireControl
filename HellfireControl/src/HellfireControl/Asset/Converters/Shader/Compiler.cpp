@@ -1,7 +1,7 @@
 
 #include <HellfireControl/Asset/Converters/Shader/Compiler.hpp>
 
-std::map<uint32_t, std::string> ShaderCompiler::m_mImageFormatNames = {
+Map<uint32, String> ShaderCompiler::m_mImageFormatNames = {
 	{spv::ImageFormatUnknown, "UNKNOWN"},
 	{spv::ImageFormatRgba32f, "RGBA32F"},
 	{spv::ImageFormatRgba16f, "RGBA16F"},
@@ -47,7 +47,7 @@ std::map<uint32_t, std::string> ShaderCompiler::m_mImageFormatNames = {
 	{spv::ImageFormatMax, "ERROR"}
 };
 
-std::map<uint32_t, std::string> ShaderCompiler::m_mImageDimensions = {
+Map<uint32, String> ShaderCompiler::m_mImageDimensions = {
 	{spv::Dim1D, "1D"},
 	{spv::Dim2D, "2D"},
 	{spv::Dim3D, "3D"},
@@ -59,7 +59,7 @@ std::map<uint32_t, std::string> ShaderCompiler::m_mImageDimensions = {
 	{spv::DimMax, "ERROR"}
 };
 
-std::map<uint16_t, std::string> ShaderCompiler::m_mTypeNames = {
+Map<uint16, String> ShaderCompiler::m_mTypeNames = {
 	{IO_INVALID, "INVALID"},
 	{IO_BOOL, "Boolean"},
 	{IO_SIGNED_BYTE, "Signed Byte"},
@@ -73,7 +73,7 @@ std::map<uint16_t, std::string> ShaderCompiler::m_mTypeNames = {
 	{IO_DOUBLE_FLOAT, "Double-precision Float"}
 };
 
-std::map<uint32_t, std::string> ShaderCompiler::m_mBuiltinNames = {
+Map<uint32, String> ShaderCompiler::m_mBuiltinNames = {
 	{spv::BuiltInPosition, "Position"},
 	{spv::BuiltInPointSize, "Point Size"},
 	{spv::BuiltInClipDistance, "Clip Distance"},
@@ -200,7 +200,7 @@ std::map<uint32_t, std::string> ShaderCompiler::m_mBuiltinNames = {
 	{spv::BuiltInMax, "ERROR"},
 };
 
-uint32_t GetRuntimeArrayStride(const spirv_cross::Compiler& _cComp, const spirv_cross::Resource& _rRes) {
+uint32 GetRuntimeArrayStride(const spirv_cross::Compiler& _cComp, const spirv_cross::Resource& _rRes) {
 	const spirv_cross::SPIRType& stType = _cComp.get_type(_rRes.base_type_id);
 	const spirv_cross::SPIRType& stLastMemberType = _cComp.get_type(stType.member_types[stType.member_types.size() - 1]);
 
@@ -214,7 +214,7 @@ uint32_t GetRuntimeArrayStride(const spirv_cross::Compiler& _cComp, const spirv_
 	return _cComp.type_struct_member_array_stride(stType, stType.member_types.size() - 1);;
 }
 
-uint16_t TranslateBaseTypeToFlag(const spirv_cross::SPIRType::BaseType _btType) {
+uint16 TranslateBaseTypeToFlag(const spirv_cross::SPIRType::BaseType _btType) {
 	switch (_btType) {
 	case spirv_cross::SPIRType::BaseType::Boolean: return IO_BOOL;
 	case spirv_cross::SPIRType::BaseType::SByte: return IO_SIGNED_BYTE;
@@ -230,7 +230,7 @@ uint16_t TranslateBaseTypeToFlag(const spirv_cross::SPIRType::BaseType _btType) 
 	}
 }
 
-uint32_t SizeofBaseType(const spirv_cross::SPIRType::BaseType _btType) {
+uint32 SizeofBaseType(const spirv_cross::SPIRType::BaseType _btType) {
 	switch (_btType) {
 	case spirv_cross::SPIRType::BaseType::SByte:
 	case spirv_cross::SPIRType::BaseType::UByte:
@@ -250,8 +250,8 @@ uint32_t SizeofBaseType(const spirv_cross::SPIRType::BaseType _btType) {
 	}
 }
 
-std::string ConstructInterpolationString(uint16_t _u16Flag) {
-	std::string strInterpolatedString;
+String ConstructInterpolationString(uint16 _u16Flag) {
+	String strInterpolatedString;
 
 	if ((_u16Flag & INTERP_SMOOTH) == 0) strInterpolatedString += "Smooth ";
 	if (_u16Flag & INTERP_FLAT) strInterpolatedString += strInterpolatedString.empty() ? "Flat " : "| Flat ";
@@ -262,23 +262,23 @@ std::string ConstructInterpolationString(uint16_t _u16Flag) {
 	return strInterpolatedString;
 }
 
-HCShaderVarTable ShaderCompiler::HCShaderVarTableReflectSPIRV(const std::vector<uint32_t>& _vCodeBlob) {
+HCShaderVarTable ShaderCompiler::HCShaderVarTableReflectSPIRV(const Array<uint32>& _vCodeBlob) {
 	Console::DebugInfo("Gathering CPU-exposed shader variables...");
 
-	spirv_cross::Compiler cComp(const_cast<uint32_t*>(_vCodeBlob.data()), _vCodeBlob.size());
+	spirv_cross::Compiler cComp(const_cast<uint32*>(_vCodeBlob.data()), _vCodeBlob.size());
 
 	std::unordered_set<spirv_cross::VariableID> active = cComp.get_active_interface_variables();
 	spirv_cross::ShaderResources srRes = cComp.get_shader_resources();
 	cComp.set_enabled_interface_variables(std::move(active));
 
-	std::map<std::string, HCShaderVar> vVars = ParseShaderVars(cComp, srRes);
+	Map<String, HCShaderVar> vVars = ParseShaderVars(cComp, srRes);
 
 	HCShaderVarTable svtTable = {};
 
 	for (const auto& aPair : vVars) {
 		svtTable.m_vLabels.push_back({
 			.m_strVarName = aPair.first,
-			.m_u32Index = static_cast<uint32_t>(svtTable.m_vVars.size())
+			.m_u32Index = static_cast<uint32>(svtTable.m_vVars.size())
 		});
 
 		svtTable.m_vVars.push_back(aPair.second);
@@ -287,7 +287,7 @@ HCShaderVarTable ShaderCompiler::HCShaderVarTableReflectSPIRV(const std::vector<
 	return svtTable;
 }
 
-std::vector<uint32_t> ShaderCompiler::OptimizeSPIRV(const std::vector<uint32_t>& _vCodeBlob) {
+Array<uint32> ShaderCompiler::OptimizeSPIRV(const Array<uint32>& _vCodeBlob) {
 	Console::DebugInfo("Attemping to optimize final SPIR-V output...");
 
 	spvtools::Optimizer oOpt(SPV_ENV_VULKAN_1_4);
@@ -295,20 +295,20 @@ std::vector<uint32_t> ShaderCompiler::OptimizeSPIRV(const std::vector<uint32_t>&
 	oOpt.RegisterPass(spvtools::CreateStripDebugInfoPass()); //Need to explicitly strip the debug info from the shader. Maybe add a way to disable this?
 	oOpt.RegisterPerformancePasses();
 
-	std::vector<uint32_t> vOptimizedBlob;
+	Array<uint32> vOptimizedBlob;
 
 	if (!oOpt.Run(_vCodeBlob.data(), _vCodeBlob.size(), &vOptimizedBlob)) {
 		Console::DebugWarn("SPIR-V optimization failed, using original SPIR-V blob");
 		vOptimizedBlob = _vCodeBlob;
 	}
 
-	Console::DebugSuccess("SPIR-V optimization complete. Final code size: " + std::to_string(vOptimizedBlob.size() * sizeof(uint32_t)) + " bytes");
+	Console::DebugSuccess("SPIR-V optimization complete. Final code size: " + std::to_string(vOptimizedBlob.size() * sizeof(uint32)) + " bytes");
 
 	return vOptimizedBlob;
 }
 
-std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_cross::Compiler& _cComp, const spirv_cross::ShaderResources& _srRes) {
-	std::map<std::string, HCShaderVar> mShaderVars;
+Map<String, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_cross::Compiler& _cComp, const spirv_cross::ShaderResources& _srRes) {
+	Map<String, HCShaderVar> mShaderVars;
 
 	//Uniform / Storage Buffers
 	{
@@ -319,12 +319,12 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				.m_arrData = {
 					_cComp.get_decoration(aBuffer.id, spv::DecorationBinding),
 					_cComp.get_decoration(aBuffer.id, spv::DecorationDescriptorSet),
-					static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aBuffer.base_type_id))),
+					static_cast<uint32>(_cComp.get_declared_struct_size(_cComp.get_type(aBuffer.base_type_id))),
 					GetRuntimeArrayStride(_cComp, aBuffer)
 				}
 			};
 
-			std::string strName = _cComp.get_name(aBuffer.id);
+			String strName = _cComp.get_name(aBuffer.id);
 		
 			Console::DebugInfo("Found Uniform Buffer: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svUniform.m_arrData[0]) + "\n"
@@ -343,12 +343,12 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				.m_arrData = {
 					_cComp.get_decoration(aBuffer.id, spv::DecorationBinding),
 					_cComp.get_decoration(aBuffer.id, spv::DecorationDescriptorSet),
-					static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aBuffer.base_type_id))),
+					static_cast<uint32>(_cComp.get_declared_struct_size(_cComp.get_type(aBuffer.base_type_id))),
 					GetRuntimeArrayStride(_cComp, aBuffer)
 				}
 			};
 
-			std::string strName = _cComp.get_name(aBuffer.id);
+			String strName = _cComp.get_name(aBuffer.id);
 		
 			Console::DebugInfo("Found Storage Buffer: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svStorage.m_arrData[0]) + "\n"
@@ -369,11 +369,11 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				.m_u16Flags = 0,
 				.m_arrData = {
 					_cComp.get_decoration(aPushConstant.id, spv::DecorationOffset),
-					static_cast<uint32_t>(_cComp.get_declared_struct_size(_cComp.get_type(aPushConstant.base_type_id)))
+					static_cast<uint32>(_cComp.get_declared_struct_size(_cComp.get_type(aPushConstant.base_type_id)))
 				}
 			};
 
-			std::string strName = _cComp.get_name(aPushConstant.id);
+			String strName = _cComp.get_name(aPushConstant.id);
 
 			Console::DebugInfo("Found Push Constant Buffer: \"" + strName + "\". Parameters:\n"
 				+ "\tOffset: " + std::to_string(svPushConstant.m_arrData[0]) + "\n"
@@ -389,11 +389,11 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 		for (const auto& aImage : _srRes.storage_images) {
 			spirv_cross::SPIRType stType = _cComp.get_type(aImage.type_id);
 
-			uint16_t u16Flags = (stType.array.empty() ? 0 : 1);
+			uint16 u16Flags = (stType.array.empty() ? 0 : 1);
 
 			HCShaderVar svImageVar;
 
-			std::string strName = _cComp.get_name(aImage.id);
+			String strName = _cComp.get_name(aImage.id);
 
 			if (stType.image.dim == spv::DimBuffer) {
 				svImageVar = {
@@ -403,7 +403,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 						_cComp.get_decoration(aImage.id, spv::DecorationBinding),
 						_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
 						stType.array.empty() ? 0 : stType.array[0],
-						static_cast<uint32_t>(stType.image.format)
+						static_cast<uint32>(stType.image.format)
 					}
 				};
 
@@ -419,7 +419,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 			else {
 				const spirv_cross::SPIRType& stType = _cComp.get_type(aImage.type_id);
 
-				uint16_t u16Flags = (stType.array.empty() ? 0 : 1) | (stType.image.ms ? 0 : (1 << 1));
+				uint16 u16Flags = (stType.array.empty() ? 0 : 1) | (stType.image.ms ? 0 : (1 << 1));
 
 				svImageVar = {
 					.m_u16Type = VAR_IMAGE_2D,
@@ -428,8 +428,8 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 						_cComp.get_decoration(aImage.id, spv::DecorationBinding),
 						_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
 						stType.array.empty() ? 0 : stType.array[0],
-						static_cast<uint32_t>(stType.image.dim),
-						static_cast<uint32_t>(stType.image.format)
+						static_cast<uint32>(stType.image.dim),
+						static_cast<uint32>(stType.image.format)
 					}
 				};
 
@@ -451,11 +451,11 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 		for (const auto& aImage : _srRes.separate_images) {
 			spirv_cross::SPIRType stType = _cComp.get_type(aImage.type_id);
 
-			uint16_t u16Flags = (stType.array.empty() ? 0 : 1);
+			uint16 u16Flags = (stType.array.empty() ? 0 : 1);
 
 			HCShaderVar svImageVar;
 
-			std::string strName = _cComp.get_name(aImage.id);
+			String strName = _cComp.get_name(aImage.id);
 
 			if (stType.image.dim == spv::DimBuffer) {
 				svImageVar = {
@@ -465,7 +465,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 						_cComp.get_decoration(aImage.id, spv::DecorationBinding),
 						_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
 						stType.array.empty() ? 0 : stType.array[0],
-						static_cast<uint32_t>(stType.image.format)
+						static_cast<uint32>(stType.image.format)
 					}
 				};
 
@@ -481,7 +481,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 			else {
 				const spirv_cross::SPIRType& stType = _cComp.get_type(aImage.type_id);
 
-				uint16_t u16Flags = (stType.array.empty() ? 0 : 1) | (stType.image.ms ? 0 : (1 << 1));
+				uint16 u16Flags = (stType.array.empty() ? 0 : 1) | (stType.image.ms ? 0 : (1 << 1));
 
 				svImageVar = {
 					.m_u16Type = VAR_TEXTURE_2D,
@@ -490,8 +490,8 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 						_cComp.get_decoration(aImage.id, spv::DecorationBinding),
 						_cComp.get_decoration(aImage.id, spv::DecorationDescriptorSet),
 						stType.array.empty() ? 0 : stType.array[0],
-						static_cast<uint32_t>(stType.image.dim),
-						static_cast<uint32_t>(stType.image.format)
+						static_cast<uint32>(stType.image.dim),
+						static_cast<uint32>(stType.image.format)
 					}
 				};
 
@@ -516,7 +516,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 		for (const auto& aSampler : _srRes.separate_samplers) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aSampler.type_id);
 
-			uint16_t u16Flags = !stType.array.empty();
+			uint16 u16Flags = !stType.array.empty();
 
 			HCShaderVar svSampler = {
 				.m_u16Type = VAR_SAMPLER,
@@ -528,7 +528,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				}
 			};
 
-			std::string strName = _cComp.get_name(aSampler.id);
+			String strName = _cComp.get_name(aSampler.id);
 
 			Console::DebugInfo("Found Sampler: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svSampler.m_arrData[0]) + "\n"
@@ -544,7 +544,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 		for (const auto& aSampler : _srRes.sampled_images) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aSampler.type_id);
 
-			uint16_t u16Flags = !stType.array.empty();
+			uint16 u16Flags = !stType.array.empty();
 
 			HCShaderVar svCombinedSampler = {
 				.m_u16Type = VAR_COMBINED_IMAGE_SAMPLER,
@@ -553,12 +553,12 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 					_cComp.get_decoration(aSampler.id, spv::DecorationBinding),
 					_cComp.get_decoration(aSampler.id, spv::DecorationDescriptorSet),
 					stType.array.empty() ? 0 : stType.array[0],
-					static_cast<uint32_t>(stType.image.dim),
-					static_cast<uint32_t>(stType.image.format)
+					static_cast<uint32>(stType.image.dim),
+					static_cast<uint32>(stType.image.format)
 				}
 			};
 
-			std::string strName = _cComp.get_name(aSampler.id);
+			String strName = _cComp.get_name(aSampler.id);
 
 			Console::DebugInfo("Found Combined Image Sampler: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svCombinedSampler.m_arrData[0]) + "\n"
@@ -579,7 +579,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 		for (const auto& aInput : _srRes.stage_inputs) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aInput.type_id);
 
-			uint16_t u16Flags = !stType.array.empty() | TranslateBaseTypeToFlag(stType.basetype);
+			uint16 u16Flags = !stType.array.empty() | TranslateBaseTypeToFlag(stType.basetype);
 
 			u16Flags |= _cComp.has_decoration(aInput.id, spv::DecorationFlat) ? INTERP_FLAT : 0;
 			u16Flags |= _cComp.has_decoration(aInput.id, spv::DecorationNoPerspective) ? INTERP_NO_PERSPECTIVE : 0;
@@ -598,7 +598,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				}
 			};
 
-			std::string strName = _cComp.get_name(aInput.id);
+			String strName = _cComp.get_name(aInput.id);
 
 			Console::DebugInfo("Found Input: \"" + strName + "\". Parameters:\n"
 				+ "\tLocation: " + std::to_string(svInput.m_arrData[0]) + "\n"
@@ -622,7 +622,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				.m_u16Type = VAR_BUILTIN_STAGE_INPUT,
 				.m_u16Flags = TranslateBaseTypeToFlag(stType.basetype),
 				.m_arrData = {
-					static_cast<uint32_t>(aInput.builtin),
+					static_cast<uint32>(aInput.builtin),
 					stType.vecsize,
 					stType.columns
 				}
@@ -630,7 +630,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 
 			if (svBuiltinInput.m_u16Flags == IO_INVALID) continue;
 
-			std::string strName = _cComp.get_name(aInput.resource.id);
+			String strName = _cComp.get_name(aInput.resource.id);
 
 			Console::DebugInfo("Found Built-in Input: \"" + strName + "\". Parameters:\n"
 				+ "\tBuilt-in: " + m_mBuiltinNames[svBuiltinInput.m_arrData[0]] + "\n"
@@ -652,12 +652,12 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 					_cComp.get_decoration(aSubpassInput.id, spv::DecorationBinding),
 					_cComp.get_decoration(aSubpassInput.id, spv::DecorationDescriptorSet),
 					_cComp.get_decoration(aSubpassInput.id, spv::DecorationInputAttachmentIndex),
-					static_cast<uint32_t>(stType.image.dim),
-					static_cast<uint32_t>(stType.image.format)
+					static_cast<uint32>(stType.image.dim),
+					static_cast<uint32>(stType.image.format)
 				}
 			};
 
-			std::string strName = _cComp.get_name(aSubpassInput.id);
+			String strName = _cComp.get_name(aSubpassInput.id);
 
 			Console::DebugInfo("Found Subpass Input: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svSubpassInput.m_arrData[0]) + "\n"
@@ -676,7 +676,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 		for (const auto& aOutput : _srRes.stage_outputs) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aOutput.type_id);
 
-			uint16_t u16Flags = !stType.array.empty() | TranslateBaseTypeToFlag(stType.basetype);
+			uint16 u16Flags = !stType.array.empty() | TranslateBaseTypeToFlag(stType.basetype);
 
 			u16Flags |= _cComp.has_decoration(aOutput.id, spv::DecorationFlat) ? INTERP_FLAT : 0;
 			u16Flags |= _cComp.has_decoration(aOutput.id, spv::DecorationNoPerspective) ? INTERP_NO_PERSPECTIVE : 0;
@@ -695,7 +695,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				}
 			};
 
-			std::string strName = _cComp.get_name(aOutput.id);
+			String strName = _cComp.get_name(aOutput.id);
 
 			Console::DebugInfo("Found Output: \"" + strName + "\". Parameters:\n"
 				+ "\tLocation: " + std::to_string(svOutput.m_arrData[0]) + "\n"
@@ -719,7 +719,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				.m_u16Type = VAR_BUILTIN_STAGE_INPUT,
 				.m_u16Flags = TranslateBaseTypeToFlag(stType.basetype),
 				.m_arrData = {
-					static_cast<uint32_t>(aOutput.builtin),
+					static_cast<uint32>(aOutput.builtin),
 					stType.vecsize,
 					stType.columns
 				}
@@ -727,7 +727,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 
 			if (svBuiltinOutput.m_u16Flags == IO_INVALID) continue;
 
-			std::string strName = _cComp.get_name(aOutput.resource.id);
+			String strName = _cComp.get_name(aOutput.resource.id);
 
 			Console::DebugInfo("Found Built-in Output: \"" + strName + "\". Parameters:\n"
 				+ "\tBuilt-in: " + m_mBuiltinNames[svBuiltinOutput.m_arrData[0]] + "\n"
@@ -745,7 +745,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 		for (const auto& aAcceleration : _srRes.acceleration_structures) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aAcceleration.type_id);
 
-			uint16_t u16Flags = !stType.array.empty();
+			uint16 u16Flags = !stType.array.empty();
 
 			HCShaderVar svAcceleration = {
 				.m_u16Type = VAR_ACCELERATION_STRUCTURE,
@@ -757,7 +757,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				}
 			};
 
-			std::string strName = _cComp.get_name(aAcceleration.id);
+			String strName = _cComp.get_name(aAcceleration.id);
 
 			Console::DebugInfo("Found Acceleration Structure: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svAcceleration.m_arrData[0]) + "\n"
@@ -773,7 +773,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 		for (const auto& aShaderBuffer : _srRes.shader_record_buffers) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aShaderBuffer.type_id);
 
-			uint16_t u16Flags = !stType.array.empty();
+			uint16 u16Flags = !stType.array.empty();
 
 			HCShaderVar svRecordBuffer = {
 				.m_u16Type = VAR_SHADER_RECORD_BUFFER,
@@ -785,7 +785,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				}
 			};
 
-			std::string strName = _cComp.get_name(aShaderBuffer.id);
+			String strName = _cComp.get_name(aShaderBuffer.id);
 
 			Console::DebugInfo("Found Shader Record Buffer: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svRecordBuffer.m_arrData[0]) + "\n"
@@ -808,7 +808,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				}
 			};
 
-			std::string strName = _cComp.get_name(aAtomicCounter.id);
+			String strName = _cComp.get_name(aAtomicCounter.id);
 
 			Console::DebugInfo("Found Atomic Counter: \"" + strName + "\". Parameters:\n"
 				+ "\tBinding: " + std::to_string(svAtomicCounter.m_arrData[0]) + "\n"
@@ -823,7 +823,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 		for (const auto& aGLBuffer : _srRes.gl_plain_uniforms) {
 			const spirv_cross::SPIRType& stType = _cComp.get_type(aGLBuffer.type_id);
 
-			uint32_t u32Size = 0;
+			uint32 u32Size = 0;
 
 			if (stType.basetype == spirv_cross::SPIRType::BaseType::Struct) {
 				u32Size = _cComp.get_declared_struct_size(stType);
@@ -847,7 +847,7 @@ std::map<std::string, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_c
 				}
 			};
 
-			std::string strName = _cComp.get_name(aGLBuffer.id);
+			String strName = _cComp.get_name(aGLBuffer.id);
 
 			Console::DebugInfo("Found Atomic Counter: \"" + strName + "\". Parameters:\n"
 				+ "\tLocation: " + std::to_string(svPlainUniform.m_arrData[0]) + "\n"

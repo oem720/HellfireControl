@@ -13,7 +13,7 @@
 #include <Athena/Tests/Inits/MathInits/Miscellaneous.hpp>
 
 namespace MathTests {
-	void InitTests(std::vector<TestBlock>& _vBlockList) {
+	void InitTests(Array<TestBlock>& _vBlockList) {
 		Console::Print("Generating tests for Math\n");
 
 		//Vec2

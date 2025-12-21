@@ -1,7 +1,7 @@
 
 #include <HellfireControl/Asset/Shader.hpp>
 
-std::map<HCShaderStageType, HCShaderStageBit> ShaderParser::m_mStageBitTable = {
+Map<HCShaderStageType, HCShaderStageBit> ShaderParser::m_mStageBitTable = {
 	{SHADER_STAGE_VERTEX, SHADER_STAGE_VERTEX_BIT},
 	{SHADER_STAGE_FRAGMENT, SHADER_STAGE_FRAGMENT_BIT},
 	{SHADER_STAGE_GEOMETRY, SHADER_STAGE_GEOMETRY_BIT},
@@ -22,35 +22,35 @@ void Shader::Initialize() {
 
 }
 
-std::shared_ptr<Asset> ShaderParser::Parse(File& _fAssetFile) const {
-	std::shared_ptr<Shader> pShaderAsset = std::make_shared<Shader>();
+SharedPointer<Asset> ShaderParser::Parse(File& _fAssetFile) const {
+	SharedPointer<Shader> pShaderAsset = std::make_shared<Shader>();
 
 	HCShaderStageType sstStage;
 	_fAssetFile.Read(&sstStage, sizeof(HCShaderStageType));
 
 	pShaderAsset->m_ssbStage = m_mStageBitTable[sstStage];
 
-	uint32_t u32CodeBlobSize = 0;
-	_fAssetFile.Read(&u32CodeBlobSize, sizeof(uint32_t));
+	uint32 u32CodeBlobSize = 0;
+	_fAssetFile.Read(&u32CodeBlobSize, sizeof(uint32));
 
 	pShaderAsset->m_vCodeBlob.resize(u32CodeBlobSize);
-	_fAssetFile.Read(pShaderAsset->m_vCodeBlob.data(), u32CodeBlobSize * sizeof(uint32_t));
+	_fAssetFile.Read(pShaderAsset->m_vCodeBlob.data(), u32CodeBlobSize * sizeof(uint32));
 
-	uint32_t u32VarCount = 0;
-	_fAssetFile.Read(&u32VarCount, sizeof(uint32_t));
+	uint32 u32VarCount = 0;
+	_fAssetFile.Read(&u32VarCount, sizeof(uint32));
 
-	std::map<std::string, uint32_t> mVarNameTable;
+	Map<String, uint32> mVarNameTable;
 
 	for (int iCount = 0; iCount < u32VarCount; iCount++) {
-		std::string strVarName;
-		uint32_t u32VarIndex = 0;
+		String strVarName;
+		uint32 u32VarIndex = 0;
 		_fAssetFile.ReadLine(strVarName, FILE_DELIMITER_NULL_TERMINATOR);
-		_fAssetFile.Read(&u32VarIndex, sizeof(uint32_t));
+		_fAssetFile.Read(&u32VarIndex, sizeof(uint32));
 
 		mVarNameTable[strVarName] = u32VarIndex;
 	}
 
-	std::vector<HCShaderVar> mVarDataTable;
+	Array<HCShaderVar> mVarDataTable;
 	mVarDataTable.resize(u32VarCount);
 
 	_fAssetFile.Read(mVarDataTable.data(), u32VarCount * sizeof(HCShaderVar));

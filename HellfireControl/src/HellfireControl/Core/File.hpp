@@ -2,7 +2,7 @@
 
 #include <HellfireControl/Core/Common.hpp>
 
-enum FileOpenFlag : uint8_t {
+enum FileOpenFlag : uint8 {
 	FILE_OPEN_FLAG_ASCII = 1U,
 	FILE_OPEN_FLAG_BINARY = 2U,
 	FILE_OPEN_FLAG_READ = 4U,
@@ -25,11 +25,11 @@ enum FileDelimiter : char {
 
 class File {
 private:
-	std::filesystem::path m_pthFilepath;
+	FilePath m_pthFilepath;
 
-	std::fstream m_fStream;
+	FileStream m_fStream;
 
-	uint8_t m_fofFlags = FILE_OPEN_FLAG_DEFAULT;
+	uint8 m_fofFlags = FILE_OPEN_FLAG_DEFAULT;
 
 	bool m_bNewFile = false;
 
@@ -38,7 +38,7 @@ private:
 	void OpenFile(int _iFlags);
 
 	template<typename T, HC_SFINAE_REQUIRE_NUMERIC(T)>
-	HC_INLINE void ConvertToNumericValue(const std::string& _strVal, T& _output) {
+	HC_INLINE void ConvertToNumericValue(const String& _strVal, T& _output) {
 		auto [ptr, error] = std::from_chars(_strVal.data(), _strVal.data() + _strVal.size(), _output);
 
 		if (error != std::errc{}) {
@@ -46,7 +46,7 @@ private:
 		}
 	}
 
-	HC_INLINE void ConvertToNumericValue(const std::string& _strVal, bool& _output) {
+	HC_INLINE void ConvertToNumericValue(const String& _strVal, bool& _output) {
 		int iIntermediate;
 
 		auto [ptr, error] = std::from_chars(_strVal.data(), _strVal.data() + _strVal.size(), iIntermediate);
@@ -61,17 +61,17 @@ private:
 public:
 	File() {}
 
-	File(const std::string& _strFilename, uint8_t _fofFlags = FILE_OPEN_FLAG_DEFAULT);
+	File(const String& _strFilename, uint8 _fofFlags = FILE_OPEN_FLAG_DEFAULT);
 
 	~File();
 
-	void ChangeOpenFile(const std::string& _strFilename, uint8_t _fofFlags = FILE_OPEN_FLAG_DEFAULT);
+	void ChangeOpenFile(const String& _strFilename, uint8 _fofFlags = FILE_OPEN_FLAG_DEFAULT);
 
 	void Close();
 
-	[[nodiscard]] HC_INLINE std::string GetFileExtension() const { return m_pthFilepath.extension().string(); }
+	[[nodiscard]] HC_INLINE String GetFileExtension() const { return m_pthFilepath.extension().string(); }
 
-	[[nodiscard]] HC_INLINE std::string GetFileName() const { return m_pthFilepath.filename().string(); }
+	[[nodiscard]] HC_INLINE String GetFileName() const { return m_pthFilepath.filename().string(); }
 
 	[[nodiscard]] HC_INLINE bool IsNewlyCreated() const { return m_bNewFile; }
 
@@ -83,9 +83,9 @@ public:
 
 	[[nodiscard]] HC_INLINE size_t ReaderLocation() { return static_cast<size_t>(m_fStream.tellg()); }
 
-	[[nodiscard]] std::vector<uint8_t> ExtractFileBlob();
+	[[nodiscard]] Array<uint8> ExtractFileBlob();
 
-	void AdvanceBytes(int64_t _i64Distance);
+	void AdvanceBytes(int64 _i64Distance);
 
 	void GoToByte(size_t _sLocation);
 
@@ -99,7 +99,7 @@ public:
 	
 	void ReadLine(void* _pData, size_t _sBytes, FileDelimiter _fdDelim);
 
-	void WriteLine(const std::string& _strData, FileDelimiter _fdDelim);
+	void WriteLine(const String& _strData, FileDelimiter _fdDelim);
 
-	void ReadLine(std::string& _strData, FileDelimiter _fdDelim);
+	void ReadLine(String& _strData, FileDelimiter _fdDelim);
 };

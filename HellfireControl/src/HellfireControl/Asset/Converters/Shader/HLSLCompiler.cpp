@@ -52,7 +52,7 @@ HCCompiledShader HLSLCompiler::Compile(const HCUncompiledShader& _ucsShader) {
 	std::wstring strEntrypoint = Util::ConvertToWString(_ucsShader.m_strEntrypointName);
 	std::wstring strProfile = Util::ConvertToWString(ConvertShaderStageToDXCProfile(_ucsShader.m_sstStage));
 
-	std::vector<LPCWSTR> vArguments = {
+	Array<LPCWSTR> vArguments = {
 		strFilename.c_str(),
 		L"-E", strEntrypoint.c_str(),
 		L"-T", strProfile.c_str(),
@@ -84,7 +84,7 @@ HCCompiledShader HLSLCompiler::Compile(const HCUncompiledShader& _ucsShader) {
 		hRes = pResult->GetErrorBuffer(&pErrorBlob);
 
 		SUCCEEDED(hRes) ?
-			throw std::runtime_error(std::string(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()))) :
+			throw std::runtime_error(String(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()))) :
 			throw std::runtime_error("Failed to compile shader, and failed to retrieve error message! HRESULT: " + std::to_string(hRes) + "\n");
 	}
 
@@ -93,21 +93,21 @@ HCCompiledShader HLSLCompiler::Compile(const HCUncompiledShader& _ucsShader) {
 
 	size_t sByteSize = pCode->GetBufferSize();
 
-	std::vector<uint32_t> vCodeBlob(sByteSize >> 2);
+	Array<uint32> vCodeBlob(sByteSize >> 2);
 
 	std::memcpy(vCodeBlob.data(), pCode->GetBufferPointer(), sByteSize);
 
 	Console::DebugSuccess("GLSL shader \"" + _ucsShader.m_pthFilename.string() + "\" compiled successfully. Output size: " + std::to_string(sByteSize) + " bytes");
 
 	return {
-		.m_pthFilepath = std::filesystem::path(_ucsShader.m_pthFilename).replace_extension(".hcshd").string(),
+		.m_pthFilepath = FilePath(_ucsShader.m_pthFilename).replace_extension(".hcshd").string(),
 		.m_sstType = _ucsShader.m_sstStage,
 		.m_svtVars = HCShaderVarTableReflectSPIRV(vCodeBlob),
 		.m_vCodeBlob = OptimizeSPIRV(vCodeBlob)
 	};;
 }
 
-std::string HLSLCompiler::ConvertShaderStageToDXCProfile(HCShaderStageType _sstType) {
+String HLSLCompiler::ConvertShaderStageToDXCProfile(HCShaderStageType _sstType) {
 	switch (_sstType) {
 	case SHADER_STAGE_VERTEX:
 		return "vs_6_3";

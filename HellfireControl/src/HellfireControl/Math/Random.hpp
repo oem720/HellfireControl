@@ -10,7 +10,7 @@ private:
 	/// <summary>
 	/// The current seed that was utilized to generate the state
 	/// </summary>
-	uint64_t m_uSeed;
+	uint64 m_uSeed;
 
 	/// <summary>
 	/// The size of the state of the machine. 624 by default for 32 bit MT
@@ -20,7 +20,7 @@ private:
 	/// <summary>
 	/// The state of the machine. Generated every time the seed updates or the end is reached.
 	/// </summary>
-	uint64_t m_uState[s_iStateSize];
+	uint64 m_uState[s_iStateSize];
 
 	/// <summary>
 	/// The next value that will be used for number generation. Increments with every use.
@@ -37,7 +37,7 @@ public:
 	/// Seeds the new generator with the input seed _uSeed. Value must be unsigned.
 	/// </summary>
 	/// <param name="_uSeed: The seed for the new generator"></param>
-	explicit Random(uint64_t _uSeed);
+	explicit Random(uint64 _uSeed);
 
 	/// <summary>
 	/// Generates a random char between _cMin and _cMax. Defaults to the full range of char.
@@ -75,9 +75,9 @@ public:
 	/// <param name="_uMin: Minimum possible generated value"></param>
 	/// <param name="_uMax: Maximum possible generated value"></param>
 	/// <returns>
-	/// uint32_t: Randomly generated 32-bit integer
+	/// uint32: Randomly generated 32-bit integer
 	/// </returns>
-	[[nodiscard]] uint64_t GenerateUnsignedInt(uint64_t _uMin, uint64_t _uMax);
+	[[nodiscard]] uint64 GenerateUnsignedInt(uint64 _uMin, uint64 _uMax);
 
 	/// <summary>
 	/// Generates a random long between _lMin and _lMax. Defaults to the full range of long.
@@ -87,7 +87,7 @@ public:
 	/// <returns>
 	/// long: Randomly generated long
 	/// </returns>
-	[[nodiscard]] int64_t GenerateLong(int64_t _lMin, int64_t _lMax);
+	[[nodiscard]] int64 GenerateLong(int64 _lMin, int64 _lMax);
 
 	/// <summary>
 	/// Generates a random float between _fMin and _fMax. Defaults to between 0 and 1.
@@ -113,24 +113,24 @@ public:
 	/// Returns the seed utilized in generated the current state.
 	/// </summary>
 	/// <returns>
-	/// uint32_t: The seed used in generating the current state.
+	/// uint32: The seed used in generating the current state.
 	/// </returns>
-	[[nodiscard]] HC_INLINE uint64_t GetSeed() const { return m_uSeed; }
+	[[nodiscard]] HC_INLINE uint64 GetSeed() const { return m_uSeed; }
 
 	/// <summary>
 	/// Sets the seed and regenerates the random number generator.
 	/// </summary>
 	/// <param name="_uSeed: The new seed to utilize"></param>
-	void SetSeed(uint64_t _uSeed);
+	void SetSeed(uint64 _uSeed);
 
 private:
 	/// <summary>
 	/// Returns the next generated value.
 	/// </summary>
 	/// <returns>
-	/// uint32_t: The newly generated value.
+	/// uint32: The newly generated value.
 	/// </returns>
-	[[nodiscard]] uint64_t GetNextVal();
+	[[nodiscard]] uint64 GetNextVal();
 
 	/// <summary>
 	/// Resets the machine and regenerates the state register.

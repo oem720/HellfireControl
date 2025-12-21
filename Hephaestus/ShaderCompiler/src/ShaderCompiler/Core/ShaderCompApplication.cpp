@@ -8,29 +8,29 @@
 #include <HellfireControl/Util/Util.hpp>
 #include <HellfireControl/Core/Console.hpp>
 
-std::vector<std::unique_ptr<ShaderCompiler>> ShaderCompApplication::m_vShaderCompilers;
+Array<UniquePointer<ShaderCompiler>> ShaderCompApplication::m_vShaderCompilers;
 
-std::vector<std::array<size_t, 3>> ShaderCompApplication::m_vShaderCompilerOrders = {
+Array<FixedArray<size_t, 3>> ShaderCompApplication::m_vShaderCompilerOrders = {
 	{ SHADER_FORMAT_GLSL, SHADER_FORMAT_HLSL, SHADER_FORMAT_SLANG }, // GLSL
 	{ SHADER_FORMAT_HLSL, SHADER_FORMAT_SLANG, SHADER_FORMAT_GLSL }, // HLSL
 	{ SHADER_FORMAT_SLANG, SHADER_FORMAT_HLSL, SHADER_FORMAT_GLSL }  // Slang
 };
 
-std::map<HCShaderFormat, std::string> ShaderCompApplication::m_mShaderFormatNames = {
+Map<HCShaderFormat, String> ShaderCompApplication::m_mShaderFormatNames = {
 	{SHADER_FORMAT_GLSL, "GLSL"},
 	{SHADER_FORMAT_HLSL, "HLSL"},
 	{SHADER_FORMAT_SLANG, "Slang"},
 	{SHADER_FORMAT_INVALID, "INVALID"},
 };
 
-std::map<HCShaderFormat, std::string> ShaderCompApplication::m_mShaderCompilerNames = {
+Map<HCShaderFormat, String> ShaderCompApplication::m_mShaderCompilerNames = {
 	{SHADER_FORMAT_GLSL, "ShaderC"},
 	{SHADER_FORMAT_HLSL, "DXC"},
 	{SHADER_FORMAT_SLANG, "SlangC"},
 	{SHADER_FORMAT_INVALID, "INVALID"},
 };
 
-std::map<HCShaderStageType, std::string> ShaderCompApplication::m_mShaderStageNames = {
+Map<HCShaderStageType, String> ShaderCompApplication::m_mShaderStageNames = {
 	{SHADER_STAGE_VERTEX, "Vertex"},
 	{SHADER_STAGE_FRAGMENT, "Fragment/Pixel"},
 	{SHADER_STAGE_GEOMETRY, "Geometry"},
@@ -48,7 +48,7 @@ std::map<HCShaderStageType, std::string> ShaderCompApplication::m_mShaderStageNa
 	{SHADER_STAGE_INVALID, "INVALID"}
 };
 
-std::map<HCShaderStageType, std::string> ShaderCompApplication::m_mShaderStageFilenames = {
+Map<HCShaderStageType, String> ShaderCompApplication::m_mShaderStageFilenames = {
 	{SHADER_STAGE_VERTEX, "vert"},
 	{SHADER_STAGE_FRAGMENT, "frag"},
 	{SHADER_STAGE_GEOMETRY, "geom"},
@@ -66,7 +66,7 @@ std::map<HCShaderStageType, std::string> ShaderCompApplication::m_mShaderStageFi
 	{SHADER_STAGE_INVALID, "INVALID"}
 };
 
-std::map<HCShaderStageType, std::string> ShaderCompApplication::m_mGLSLShaderAttributeNames = {
+Map<HCShaderStageType, String> ShaderCompApplication::m_mGLSLShaderAttributeNames = {
 	{SHADER_STAGE_VERTEX, "vertex"},
 	{SHADER_STAGE_FRAGMENT, "fragment"},
 	{SHADER_STAGE_GEOMETRY, "geometry"},
@@ -83,7 +83,7 @@ std::map<HCShaderStageType, std::string> ShaderCompApplication::m_mGLSLShaderAtt
 	{SHADER_STAGE_CALLABLE, "callable"}
 };
 
-std::map<HCShaderStageType, std::string> ShaderCompApplication::m_mHLSLShaderAttributeNames = {
+Map<HCShaderStageType, String> ShaderCompApplication::m_mHLSLShaderAttributeNames = {
 	{SHADER_STAGE_VERTEX, "vertex"},
 	{SHADER_STAGE_FRAGMENT, "pixel"},
 	{SHADER_STAGE_GEOMETRY, "geometry"},
@@ -107,7 +107,7 @@ void ShaderCompApplication::Start() {
 
 	HCShaderFormat sfType = SHADER_FORMAT_INVALID;
 	HCShaderStageType sstStage = SHADER_STAGE_INVALID;
-	std::string strEntryPoint = "main";
+	String strEntryPoint = "main";
 
 	bool bEntryPointNext = false;
 
@@ -140,7 +140,7 @@ void ShaderCompApplication::Start() {
 
 		if(std::filesystem::exists(aArg) && std::filesystem::is_regular_file(aArg)) {
 			HCUncompiledShader ucsShader = {
-				.m_pthFilename = std::filesystem::path(aArg).filename(),
+				.m_pthFilename = FilePath(aArg).filename(),
 				.m_vFileBlob = File(aArg, FILE_OPEN_FLAG_BLOB).ExtractFileBlob(),
 				.m_sfFormat = sfType,
 				.m_sstStage = sstStage
@@ -178,18 +178,18 @@ void ShaderCompApplication::End() {
 	for (const auto& aShader : m_vCompiledShaders) {
 		File fShaderAsset(aShader.m_pthFilepath.string(), FILE_OPEN_FLAG_WRITE | FILE_OPEN_FLAG_BINARY);
 
-		uint32_t u32CodeSize = aShader.m_vCodeBlob.size();
-		uint32_t u32VarCount = aShader.m_svtVars.m_vVars.size();
+		uint32 u32CodeSize = aShader.m_vCodeBlob.size();
+		uint32 u32VarCount = aShader.m_svtVars.m_vVars.size();
 
-		fShaderAsset.Write(&aShader.m_u32MagicNumber, sizeof(uint32_t));
+		fShaderAsset.Write(&aShader.m_u32MagicNumber, sizeof(uint32));
 		fShaderAsset.Write(&aShader.m_sstType, sizeof(HCShaderStageType));
-		fShaderAsset.Write(&u32CodeSize, sizeof(uint32_t));
-		fShaderAsset.Write(aShader.m_vCodeBlob.data(), sizeof(uint32_t) * u32CodeSize);
-		fShaderAsset.Write(&u32VarCount, sizeof(uint32_t));
+		fShaderAsset.Write(&u32CodeSize, sizeof(uint32));
+		fShaderAsset.Write(aShader.m_vCodeBlob.data(), sizeof(uint32) * u32CodeSize);
+		fShaderAsset.Write(&u32VarCount, sizeof(uint32));
 
 		for (const auto& aLabelEntry : aShader.m_svtVars.m_vLabels) {
 			fShaderAsset.Write(aLabelEntry.m_strVarName.c_str(), aLabelEntry.m_strVarName.size() + 1); //Fingers crossed this doesn't break it
-			fShaderAsset.Write(&aLabelEntry.m_u32Index, sizeof(uint32_t));
+			fShaderAsset.Write(&aLabelEntry.m_u32Index, sizeof(uint32));
 		}
 
 		fShaderAsset.Write(aShader.m_svtVars.m_vVars.data(), sizeof(HCShaderVar) * u32VarCount);
@@ -221,13 +221,13 @@ void ShaderCompApplication::InitializeCompilers() {
 HCCompiledShader ShaderCompApplication::CompileShader(const HCUncompiledShader& _ucsShader) {
 	HCCompiledShader csResult;
 
-	for (const uint8_t u8Compiler : m_vShaderCompilerOrders[_ucsShader.m_sfFormat]) {
+	for (const uint8 u8Compiler : m_vShaderCompilerOrders[_ucsShader.m_sfFormat]) {
 		Console::DebugInfo("Attempting to compile shader \"" + _ucsShader.m_pthFilename.string() + "\" using compiler: " + m_mShaderCompilerNames[static_cast<HCShaderFormat>(u8Compiler)]);
 		try {
 			csResult = m_vShaderCompilers[u8Compiler]->Compile(_ucsShader);
 		}
 		catch (const std::exception& e) {
-			Console::DebugError("Error occurred when compiling shader! Error:\n\n" + std::string(e.what()));
+			Console::DebugError("Error occurred when compiling shader! Error:\n\n" + String(e.what()));
 			Console::DebugFail("Failed to compile shader \"" + _ucsShader.m_pthFilename.string() + "\" using compiler: " +
 				m_mShaderCompilerNames[static_cast<HCShaderFormat>(u8Compiler)] + ". Falling back to next compiler...");
 			continue;
@@ -240,8 +240,8 @@ HCCompiledShader ShaderCompApplication::CompileShader(const HCUncompiledShader& 
 	return csResult;
 }
 
-HCShaderFormat ShaderCompApplication::InferShaderFormat(const std::filesystem::path& _strPath) {
-	std::filesystem::path pthExtension = _strPath.extension();
+HCShaderFormat ShaderCompApplication::InferShaderFormat(const FilePath& _strPath) {
+	FilePath pthExtension = _strPath.extension();
 
 	if (pthExtension == ".hlsl" || pthExtension == ".fx" || pthExtension == ".fxh") {
 		return SHADER_FORMAT_HLSL;
@@ -253,29 +253,29 @@ HCShaderFormat ShaderCompApplication::InferShaderFormat(const std::filesystem::p
 	return SHADER_FORMAT_GLSL; //Default to GLSL if the extensions don't match HLSL or Slang
 }
 
-HCShaderStageType ShaderCompApplication::InferShaderStage(const std::filesystem::path& _pthFilename, const std::vector<uint8_t>& _vFileBlob) {
-	std::string strFilename = _pthFilename.string();
+HCShaderStageType ShaderCompApplication::InferShaderStage(const FilePath& _pthFilename, const Array<uint8>& _vFileBlob) {
+	String strFilename = _pthFilename.string();
 
 	std::transform(strFilename.begin(), strFilename.end(), strFilename.begin(), [](unsigned char cChar) { return std::tolower(cChar); });
 
-	for (uint8_t u8Type = SHADER_STAGE_VERTEX; u8Type < SHADER_STAGE_INVALID; ++u8Type) {
+	for (uint8 u8Type = SHADER_STAGE_VERTEX; u8Type < SHADER_STAGE_INVALID; ++u8Type) {
 		HCShaderStageType sstType = static_cast<HCShaderStageType>(u8Type);
 
-		if (strFilename.find(m_mShaderStageFilenames[sstType]) != std::string::npos) {
+		if (strFilename.find(m_mShaderStageFilenames[sstType]) != String::npos) {
 			return sstType;
 		}
 	}
 	
-	std::string strSource(_vFileBlob.begin(), _vFileBlob.end());
+	String strSource(_vFileBlob.begin(), _vFileBlob.end());
 
-	for (uint8_t u8Type = SHADER_STAGE_VERTEX; u8Type < SHADER_STAGE_INVALID; ++u8Type) {
+	for (uint8 u8Type = SHADER_STAGE_VERTEX; u8Type < SHADER_STAGE_INVALID; ++u8Type) {
 		HCShaderStageType sstType = static_cast<HCShaderStageType>(u8Type);
 
-		std::string strGLSLAttribute = "#pragma shader_stage(" + m_mGLSLShaderAttributeNames[sstType] + ")";
+		String strGLSLAttribute = "#pragma shader_stage(" + m_mGLSLShaderAttributeNames[sstType] + ")";
 
-		std::string strHLSLAttribute = "[shader(\"" + m_mHLSLShaderAttributeNames[sstType] + "\")]";
+		String strHLSLAttribute = "[shader(\"" + m_mHLSLShaderAttributeNames[sstType] + "\")]";
 
-		if (strSource.find(strGLSLAttribute) != std::string::npos || strSource.find(strHLSLAttribute) != std::string::npos) {
+		if (strSource.find(strGLSLAttribute) != String::npos || strSource.find(strHLSLAttribute) != String::npos) {
 			return sstType;
 		}
 	}
@@ -283,8 +283,8 @@ HCShaderStageType ShaderCompApplication::InferShaderStage(const std::filesystem:
 	return SHADER_STAGE_INVALID;
 }
 
-HCShaderFormat ShaderCompApplication::ParseShaderType(const std::string& _strArg) {
-	std::string strArgCopy = _strArg;
+HCShaderFormat ShaderCompApplication::ParseShaderType(const String& _strArg) {
+	String strArgCopy = _strArg;
 
 	//Force it to lowercase to make it casing agnostic
 	std::transform(strArgCopy.begin(), strArgCopy.end(), strArgCopy.begin(), [](unsigned char cChar) { return std::tolower(cChar); });
@@ -296,8 +296,8 @@ HCShaderFormat ShaderCompApplication::ParseShaderType(const std::string& _strArg
 	return SHADER_FORMAT_INVALID;
 }
 
-HCShaderStageType ShaderCompApplication::ParseShaderStage(const std::string& _strArg) {
-	std::string strArgCopy = _strArg;
+HCShaderStageType ShaderCompApplication::ParseShaderStage(const String& _strArg) {
+	String strArgCopy = _strArg;
 
 	//Force it to lowercase to make it casing agnostic
 	std::transform(strArgCopy.begin(), strArgCopy.end(), strArgCopy.begin(), [](unsigned char cChar) { return std::tolower(cChar); });

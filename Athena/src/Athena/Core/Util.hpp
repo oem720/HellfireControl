@@ -9,5 +9,5 @@
 namespace Util {
 	void PauseForUserConfirmation();
 
-	void Wait(uint64_t _u32Time);
+	void Wait(uint64 _u32Time);
 }

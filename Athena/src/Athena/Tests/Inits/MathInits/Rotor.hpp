@@ -3,7 +3,7 @@
 #include <Athena/Tests/Inits/MathInits/Math_Common.hpp>
 
 namespace MathTests {
-	void InitTests_Rotor(std::vector<TestBlock>& _vBlockList) {
+	void InitTests_Rotor(Array<TestBlock>& _vBlockList) {
 		TestBlock tbBlock = TestBlock("Math Library - RotorF");
 		
 		_vBlockList.push_back(tbBlock);

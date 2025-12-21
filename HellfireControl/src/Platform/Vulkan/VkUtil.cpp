@@ -4,7 +4,7 @@
 #include <HellfireControl/Core/Window.hpp>
 
 namespace LayersAndExtensions {
-	std::vector<const char*> m_vValidationLayers = {
+	Array<const char*> m_vValidationLayers = {
 			"VK_LAYER_KHRONOS_validation"
 	};
 
@@ -14,7 +14,7 @@ namespace LayersAndExtensions {
 	const bool m_bEnableValidationLayers = false;
 #	endif
 
-	const std::vector<const char*> m_vInstanceExtensions = {
+	const Array<const char*> m_vInstanceExtensions = {
 		VK_KHR_SURFACE_EXTENSION_NAME,
 #	ifdef WIN32
 			VK_KHR_WIN32_SURFACE_EXTENSION_NAME
@@ -23,7 +23,7 @@ namespace LayersAndExtensions {
 #	endif
 	};
 
-	const std::vector<const char*> m_vDeviceExtensions = {
+	const Array<const char*> m_vDeviceExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 		//VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
 	};
@@ -32,10 +32,10 @@ namespace LayersAndExtensions {
 using namespace LayersAndExtensions;
 
 void VkUtil::ValidateSupportedLayers() {
-	uint32_t u32LayerCount = 0;
+	uint32 u32LayerCount = 0;
 	vkEnumerateInstanceLayerProperties(&u32LayerCount, nullptr);
 
-	std::vector<VkLayerProperties> vLayerProperties(u32LayerCount);
+	Array<VkLayerProperties> vLayerProperties(u32LayerCount);
 	vkEnumerateInstanceLayerProperties(&u32LayerCount, vLayerProperties.data());
 
 	for (int ndx = 0; ndx < m_vValidationLayers.size(); ++ndx) {
@@ -55,13 +55,13 @@ void VkUtil::ValidateSupportedLayers() {
 }
 
 bool VkUtil::ValidateSupportedDeviceExtensions(VkPhysicalDevice _pdDevice) {
-	uint32_t u32ExtensionCount;
+	uint32 u32ExtensionCount;
 	vkEnumerateDeviceExtensionProperties(_pdDevice, nullptr, &u32ExtensionCount, nullptr);
 
-	std::vector<VkExtensionProperties> vAvailableExtensions(u32ExtensionCount);
+	Array<VkExtensionProperties> vAvailableExtensions(u32ExtensionCount);
 	vkEnumerateDeviceExtensionProperties(_pdDevice, nullptr, &u32ExtensionCount, vAvailableExtensions.data());
 
-	std::set<std::string> sRequiredExtensions(m_vDeviceExtensions.begin(), m_vDeviceExtensions.end());
+	Set<String> sRequiredExtensions(m_vDeviceExtensions.begin(), m_vDeviceExtensions.end());
 
 	for (const auto& aExtension : vAvailableExtensions) {
 		sRequiredExtensions.erase(aExtension.extensionName);
@@ -72,11 +72,11 @@ bool VkUtil::ValidateSupportedDeviceExtensions(VkPhysicalDevice _pdDevice) {
 
 bool VkUtil::GetValidationLayersEnabled() { return m_bEnableValidationLayers; }
 
-std::vector<const char*> VkUtil::GetValidationLayers() { return m_vValidationLayers; }
+Array<const char*> VkUtil::GetValidationLayers() { return m_vValidationLayers; }
 
-std::vector<const char*> VkUtil::GetInstanceExtensions() { return m_vInstanceExtensions; }
+Array<const char*> VkUtil::GetInstanceExtensions() { return m_vInstanceExtensions; }
 
-std::vector<const char*> VkUtil::GetDeviceExtensions() { return m_vDeviceExtensions; }
+Array<const char*> VkUtil::GetDeviceExtensions() { return m_vDeviceExtensions; }
 
 bool VkUtil::CheckDeviceSuitability(VkPhysicalDevice _pdDevice, VkSurfaceKHR _sSurface) {
 	VkPhysicalDeviceProperties pdpProperties = {};
@@ -105,7 +105,7 @@ VkSwapChainSupportDetails VkUtil::QuerySwapchainSupport(VkPhysicalDevice _pdDevi
 
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_pdDevice, _sSurface, &scsdDetails.m_scCapabilities);
 
-	uint32_t u32FormatCount = 0;
+	uint32 u32FormatCount = 0;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(_pdDevice, _sSurface, &u32FormatCount, nullptr);
 
 	if (u32FormatCount) {
@@ -113,7 +113,7 @@ VkSwapChainSupportDetails VkUtil::QuerySwapchainSupport(VkPhysicalDevice _pdDevi
 		vkGetPhysicalDeviceSurfaceFormatsKHR(_pdDevice, _sSurface, &u32FormatCount, scsdDetails.m_vFormats.data());
 	}
 
-	uint32_t u32PresentModeCount = 0;
+	uint32 u32PresentModeCount = 0;
 	vkGetPhysicalDeviceSurfacePresentModesKHR(_pdDevice, _sSurface, &u32PresentModeCount, nullptr);
 
 	if (u32PresentModeCount) {
@@ -127,10 +127,10 @@ VkSwapChainSupportDetails VkUtil::QuerySwapchainSupport(VkPhysicalDevice _pdDevi
 VkQueueFamilyIndices VkUtil::GetQueueFamilies(VkPhysicalDevice _pdDevice, VkSurfaceKHR _sSurface) {
 	VkQueueFamilyIndices qfiIndices = {};
 
-	uint32_t u32FamilyCount = 0;
+	uint32 u32FamilyCount = 0;
 	vkGetPhysicalDeviceQueueFamilyProperties(_pdDevice, &u32FamilyCount, nullptr);
 
-	std::vector<VkQueueFamilyProperties> vFamilies(u32FamilyCount);
+	Array<VkQueueFamilyProperties> vFamilies(u32FamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(_pdDevice, &u32FamilyCount, vFamilies.data());
 
 	int iFamilyNumber = 0;
@@ -155,7 +155,7 @@ VkQueueFamilyIndices VkUtil::GetQueueFamilies(VkPhysicalDevice _pdDevice, VkSurf
 	return qfiIndices;
 }
 
-VkSurfaceFormatKHR VkUtil::SelectSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& _vAvailableFormats) {
+VkSurfaceFormatKHR VkUtil::SelectSwapSurfaceFormat(const Array<VkSurfaceFormatKHR>& _vAvailableFormats) {
 	for (const auto& aAvailableFormat : _vAvailableFormats) {
 		if (aAvailableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && aAvailableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
 			return aAvailableFormat;
@@ -165,7 +165,7 @@ VkSurfaceFormatKHR VkUtil::SelectSwapSurfaceFormat(const std::vector<VkSurfaceFo
 	return _vAvailableFormats[0];
 }
 
-VkPresentModeKHR VkUtil::SelectSwapPresentMode(const std::vector<VkPresentModeKHR>& _vAvailablePresentModes) {
+VkPresentModeKHR VkUtil::SelectSwapPresentMode(const Array<VkPresentModeKHR>& _vAvailablePresentModes) {
 	for (const auto& aAvailablePresentMode : _vAvailablePresentModes) {
 		if (aAvailablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
 			return aAvailablePresentMode;
@@ -176,15 +176,15 @@ VkPresentModeKHR VkUtil::SelectSwapPresentMode(const std::vector<VkPresentModeKH
 }
 
 VkExtent2D VkUtil::SelectSwapExtent(const VkSurfaceCapabilitiesKHR& _scCapabilities, WindowHandleGeneric _whgHandle) {
-	if (_scCapabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+	if (_scCapabilities.currentExtent.width != std::numeric_limits<uint32>::max()) {
 		return _scCapabilities.currentExtent;
 	}
 	else {
 		Vec2F v2Size = Window(_whgHandle).GetWindowSize();
 
 		VkExtent2D eViewportSize = {
-			.width = static_cast<uint32_t>(v2Size.x),
-			.height = static_cast<uint32_t>(v2Size.y)
+			.width = static_cast<uint32>(v2Size.x),
+			.height = static_cast<uint32>(v2Size.y)
 		};
 
 		eViewportSize.width = eViewportSize.width > _scCapabilities.maxImageExtent.width ? _scCapabilities.maxImageExtent.width :
@@ -196,14 +196,14 @@ VkExtent2D VkUtil::SelectSwapExtent(const VkSurfaceCapabilitiesKHR& _scCapabilit
 	}
 }
 
-void VkUtil::CreateImage(VkDevice _dDeviceHandle, VkPhysicalDevice _pdPhysicalDevice, uint32_t _iWidth, uint32_t _iHeight, VkFormat _fFormat, VkImageTiling _itTiling, VkImageUsageFlags _iufFlags, VkMemoryPropertyFlags _mpfProperties, VkImage& _iImage, VkDeviceMemory& _dmImageMem) {
+void VkUtil::CreateImage(VkDevice _dDeviceHandle, VkPhysicalDevice _pdPhysicalDevice, uint32 _iWidth, uint32 _iHeight, VkFormat _fFormat, VkImageTiling _itTiling, VkImageUsageFlags _iufFlags, VkMemoryPropertyFlags _mpfProperties, VkImage& _iImage, VkDeviceMemory& _dmImageMem) {
 	VkImageCreateInfo iciImageInfo = {
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.pNext = nullptr,
 		.flags = 0,
 		.imageType = VK_IMAGE_TYPE_2D,
 		.format = _fFormat,
-		.extent = { static_cast<uint32_t>(_iWidth), static_cast<uint32_t>(_iHeight), 1U },
+		.extent = { static_cast<uint32>(_iWidth), static_cast<uint32>(_iHeight), 1U },
 		.mipLevels = 1,
 		.arrayLayers = 1,
 		.samples = VK_SAMPLE_COUNT_1_BIT,
@@ -336,7 +336,7 @@ VkFormat VkUtil::FindDepthFormat(VkPhysicalDevice _pdPhysicalDevice) {
 	);
 }
 
-VkFormat VkUtil::FindSupportedFormat(VkPhysicalDevice _pdPhysicalDevice, const std::vector<VkFormat>& _vCandidates, VkImageTiling _itTiling, VkFormatFeatureFlags _fffFeatures) {
+VkFormat VkUtil::FindSupportedFormat(VkPhysicalDevice _pdPhysicalDevice, const Array<VkFormat>& _vCandidates, VkImageTiling _itTiling, VkFormatFeatureFlags _fffFeatures) {
 	for (VkFormat fFormat : _vCandidates) {
 		VkFormatProperties fpProperties;
 		vkGetPhysicalDeviceFormatProperties(_pdPhysicalDevice, fFormat, &fpProperties);
@@ -350,11 +350,11 @@ VkFormat VkUtil::FindSupportedFormat(VkPhysicalDevice _pdPhysicalDevice, const s
 	throw std::runtime_error("ERROR: Failed to find a supported format!");
 }
 
-uint32_t VkUtil::FindMemoryType(VkPhysicalDevice _pdPhysicalDevice, uint32_t _u32TypeFilter, VkMemoryPropertyFlags _mpfFlags) {
+uint32 VkUtil::FindMemoryType(VkPhysicalDevice _pdPhysicalDevice, uint32 _u32TypeFilter, VkMemoryPropertyFlags _mpfFlags) {
 	VkPhysicalDeviceMemoryProperties pdmpMemProperties;
 	vkGetPhysicalDeviceMemoryProperties(_pdPhysicalDevice, &pdmpMemProperties);
 
-	for (uint32_t ndx = 0; ndx < pdmpMemProperties.memoryTypeCount; ++ndx) {
+	for (uint32 ndx = 0; ndx < pdmpMemProperties.memoryTypeCount; ++ndx) {
 		if (_u32TypeFilter & (1 << ndx) && (pdmpMemProperties.memoryTypes[ndx].propertyFlags & _mpfFlags) == _mpfFlags) {
 			return ndx;
 		}
@@ -367,7 +367,7 @@ bool VkUtil::HasStencilComponent(VkFormat _fFormat) {
 	return _fFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || _fFormat == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-//void VkUtil::CopyBufferToImage(VkBuffer _bBuffer, VkImage _iImage, uint32_t _u32Width, uint32_t _u32Height) {
+//void VkUtil::CopyBufferToImage(VkBuffer _bBuffer, VkImage _iImage, uint32 _u32Width, uint32 _u32Height) {
 //	VkCommandBuffer cbBuffer = BeginSingleTimeCommands();
 //
 //	VkBufferImageCopy bicImageCopy = {
@@ -397,7 +397,7 @@ bool VkUtil::HasStencilComponent(VkFormat _fFormat) {
 //	EndSingleTimeCommands(cbBuffer);
 //}
 //
-//VkShaderModule VkUtil::CreateShaderModule(const std::vector<char>& _vCode) {
+//VkShaderModule VkUtil::CreateShaderModule(const Array<char>& _vCode) {
 //	VkShaderModule smShader = VK_NULL_HANDLE;
 //
 //	VkShaderModuleCreateInfo smciShaderInfo = {
@@ -405,7 +405,7 @@ bool VkUtil::HasStencilComponent(VkFormat _fFormat) {
 //		.pNext = nullptr,
 //		.flags = 0,
 //		.codeSize = _vCode.size(),
-//		.pCode = reinterpret_cast<const uint32_t*>(_vCode.data())
+//		.pCode = reinterpret_cast<const uint32*>(_vCode.data())
 //	};
 //
 //	if (vkCreateShaderModule(PlatformRenderManager::m_dDeviceHandle, &smciShaderInfo, nullptr, &smShader)) {

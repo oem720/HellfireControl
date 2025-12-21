@@ -12,8 +12,8 @@ void UnitTesterApplication::Start() {
 void UnitTesterApplication::Run() {
 	this->Start();
 
-	uint64_t u32Successes = 0;
-	uint64_t u32TotalTests = 0;
+	uint64 u32Successes = 0;
+	uint64 u32TotalTests = 0;
 
 	for (int ndx = 0; ndx < m_vTestBlocks.size(); ++ndx) {
 		m_vTestBlocks[ndx].ExecuteTests(); //Run tests

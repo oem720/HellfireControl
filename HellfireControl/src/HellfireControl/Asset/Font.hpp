@@ -4,7 +4,7 @@
 
 #include <HellfireControl/Core/Image.hpp>
 
-enum FontType : uint8_t {
+enum FontType : uint8 {
 	FONT_BITMAP = 0,
 	FONT_SINGLE_CHANNEL_SDF = 1,
 	FONT_MULTI_CHANNEL_SDF = 2,
@@ -14,8 +14,8 @@ enum FontType : uint8_t {
 class Font : public Asset {
 private:
 	FontType m_ftType = FontType::FONT_BITMAP;
-	std::vector<ImageRGB8> m_vAtlases;
-	std::map<UTF8PaddedChar, BakedGlyphBoxInfo> m_mCharacterMap;
+	Array<ImageRGB8> m_vAtlases;
+	Map<UTF8PaddedChar, BakedGlyphBoxInfo> m_mCharacterMap;
 public:
 	~Font();
 
@@ -27,10 +27,10 @@ public:
 
 class FontParser : public AssetParser {
 public:
-	std::shared_ptr<Asset> Parse(File& _fAssetFile) const;
+	SharedPointer<Asset> Parse(File& _fAssetFile) const;
 
 private:
-	FontType GetTypeFromFlags(uint8_t _u8Flags) const;
-	std::map<UTF8PaddedChar, BakedGlyphBoxInfo> GetCharacterMap(File& _fFontFile, uint32_t _u32CMapOffset, uint32_t _u32UVBVOffset, uint32_t _u32GASTOffset = 0) const;
-	std::vector<ImageRGB8> GetAtlases(File& _fFontFile, uint32_t _u32ImagOffset) const;
+	FontType GetTypeFromFlags(uint8 _u8Flags) const;
+	Map<UTF8PaddedChar, BakedGlyphBoxInfo> GetCharacterMap(File& _fFontFile, uint32 _u32CMapOffset, uint32 _u32UVBVOffset, uint32 _u32GASTOffset = 0) const;
+	Array<ImageRGB8> GetAtlases(File& _fFontFile, uint32 _u32ImagOffset) const;
 };

@@ -15,15 +15,15 @@ public:
 private:
 	VkDescriptorPool GetPool(VkDevice _dDeviceHandle);
 
-	VkDescriptorPool CreatePool(VkDevice _dDeviceHandle, uint32_t _u32SetCount, std::span<PoolSizeRatio> _spRatios);
+	VkDescriptorPool CreatePool(VkDevice _dDeviceHandle, uint32 _u32SetCount, std::span<PoolSizeRatio> _spRatios);
 
-	std::vector<PoolSizeRatio> m_vPoolSizeRatios;
-	std::vector<VkDescriptorPool> m_vFullPools;
-	std::vector<VkDescriptorPool> m_vReadyPools;
-	uint32_t m_u32SetsPerPool = 0;
+	Array<PoolSizeRatio> m_vPoolSizeRatios;
+	Array<VkDescriptorPool> m_vFullPools;
+	Array<VkDescriptorPool> m_vReadyPools;
+	uint32 m_u32SetsPerPool = 0;
 
 public:
-	void Init(VkDevice _dDeviceHandle, uint32_t _u32InitialSetCount, std::span<PoolSizeRatio> _spRatios);
+	void Init(VkDevice _dDeviceHandle, uint32 _u32InitialSetCount, std::span<PoolSizeRatio> _spRatios);
 
 	void ResetPools(VkDevice _dDeviceHandle);
 
@@ -32,6 +32,14 @@ public:
 	VkDescriptorSet AllocateDescriptorSet(VkDevice _dDeviceHandle, VkDescriptorSetLayout _dslLayout);
 };
 
-struct DescriptorWriter {
+struct VkDescriptorWriter {
+	DoubleEndedQueue<VkDescriptorImageInfo> m_dImageInfos;
+	DoubleEndedQueue<VkDescriptorBufferInfo> m_dBufferInfos;
+	Array<VkWriteDescriptorSet> m_vWriteBuffer;
 
+	void WriteImage(uint32 _u32Binding, VkImageView _ivImageView, VkSampler _sSampler, VkImageLayout _ilImageLayout, VkDescriptorType _dtType);
+	void WriteBuffer(uint32 _u32Binding, VkBuffer _bBuffer, size_t _sSize, size_t _sOffset, VkDescriptorType _dtType);
+
+	void Clear();
+	void UpdateDescriptorSets(VkDevice _dDeviceHandle, VkDescriptorSet _dsSet);
 };

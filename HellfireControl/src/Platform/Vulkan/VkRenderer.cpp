@@ -6,7 +6,7 @@
 #include <Platform/Vulkan/VkRenderManager.hpp>
 #include <Platform/Vulkan/VkUtil.hpp>
 
-std::map<HCShaderVarType, VkDescriptorType> VkRenderer::m_mShaderVarTranslationTable = {
+Map<HCShaderVarType, VkDescriptorType> VkRenderer::m_mShaderVarTranslationTable = {
 	{VAR_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER},
 	{VAR_STORAGE_BUFFER, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER},
 	{VAR_COMBINED_IMAGE_SAMPLER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER},
@@ -42,7 +42,7 @@ void VkRenderer::Cleanup() {
 void VkRenderer::VerifyRenderpassPipelineData() {
 	for (const auto& aSubpass : m_rdRenderpassData.m_vSubpasses) {
 		for (const auto& aPipeline : aSubpass.m_vShaderPipelines) {
-			uint16_t u16PipelineMask = 0;
+			uint16 u16PipelineMask = 0;
 			for (const auto& aShader : aPipeline.m_vShaderStages) {
 				u16PipelineMask |= aShader->GetShaderStageBit();
 			}
@@ -84,11 +84,11 @@ void VkRenderer::VerifyRenderpassPipelineData() {
 	}
 }
 
-std::vector<VkDescriptorType> VkRenderer::GetDescriptorCounts() const {
+Array<VkDescriptorType> VkRenderer::GetDescriptorCounts() const {
 	//Gather the data necessary for descriptor creation.
 	//We will eventually need a check to ensure that whatever is being accessed, such as the texture manager, does not get duplicated.
 	//Future implementation will remove the ability to create descriptors for the texture system, opting instead to enforce the bindless design.
-	std::vector<VkDescriptorType> vDescriptors;
+	Array<VkDescriptorType> vDescriptors;
 
 	for (const auto& aSubpass : m_rdRenderpassData.m_vSubpasses) {
 		for (const auto& aPipeline : aSubpass.m_vShaderPipelines) {
@@ -115,9 +115,9 @@ std::vector<VkDescriptorType> VkRenderer::GetDescriptorCounts() const {
 }
 
 void VkRenderer::CreateRenderpass() {
-	std::vector<VkAttachmentDescription> vAttachments;
-	std::vector<VkSubpassDescription> vSubpasses;
-	std::vector<VkSubpassDependency> vDependencies;
+	Array<VkAttachmentDescription> vAttachments;
+	Array<VkSubpassDescription> vSubpasses;
+	Array<VkSubpassDependency> vDependencies;
 
 	for(const auto& aAttachment : m_rdRenderpassData.m_vAttachments) {
 		VkFormat fFormat = aAttachment.m_ifFormat >= 0
@@ -145,13 +145,13 @@ void VkRenderer::CreateRenderpass() {
 		VkSubpassDescription sdSubpassDesc = {
 			.flags = aSubpass.m_u32Flags,
 			.pipelineBindPoint = static_cast<VkPipelineBindPoint>(aSubpass.m_pbpBindPoint),
-			.inputAttachmentCount = static_cast<uint32_t>(aSubpass.m_vInputAttachments.size()),
+			.inputAttachmentCount = static_cast<uint32>(aSubpass.m_vInputAttachments.size()),
 			.pInputAttachments = reinterpret_cast<const VkAttachmentReference*>(aSubpass.m_vInputAttachments.data()),
-			.colorAttachmentCount = static_cast<uint32_t>(aSubpass.m_vColorAttachments.size()),
+			.colorAttachmentCount = static_cast<uint32>(aSubpass.m_vColorAttachments.size()),
 			.pColorAttachments = reinterpret_cast<const VkAttachmentReference*>(aSubpass.m_vColorAttachments.data()),
 			.pResolveAttachments = reinterpret_cast<const VkAttachmentReference*>(aSubpass.m_vResolveAttachments.data()),
 			.pDepthStencilAttachment = reinterpret_cast<const VkAttachmentReference*>(&aSubpass.m_arDepthStencilAttachment),
-			.preserveAttachmentCount = static_cast<uint32_t>(aSubpass.m_vPreserveAttachments.size()),
+			.preserveAttachmentCount = static_cast<uint32>(aSubpass.m_vPreserveAttachments.size()),
 			.pPreserveAttachments = aSubpass.m_vPreserveAttachments.data()
 		};
 
@@ -176,11 +176,11 @@ void VkRenderer::CreateRenderpass() {
 		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
 		.pNext = nullptr,
 		.flags = 0,
-		.attachmentCount = static_cast<uint32_t>(vAttachments.size()),
+		.attachmentCount = static_cast<uint32>(vAttachments.size()),
 		.pAttachments = vAttachments.data(),
-		.subpassCount = static_cast<uint32_t>(vSubpasses.size()),
+		.subpassCount = static_cast<uint32>(vSubpasses.size()),
 		.pSubpasses = vSubpasses.data(),
-		.dependencyCount = static_cast<uint32_t>(vDependencies.size()),
+		.dependencyCount = static_cast<uint32>(vDependencies.size()),
 		.pDependencies = vDependencies.data()
 	};
 

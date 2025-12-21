@@ -29,7 +29,7 @@ struct VkFrameData {
 
 class VkRenderManager {
 private:
-	static uint32_t m_u32CurrentFrame;
+	static uint32 m_u32CurrentFrame;
 
 	static VkInstance m_iInstance;
 	static VkPhysicalDevice m_pdPhysicalDevice;
@@ -42,12 +42,12 @@ private:
 	static VkFormat m_fFormat;
 	static VkExtent2D m_eExtent;
 
-	static std::vector<VkImage> m_vSwapchainImages;
-	static std::array<VkFrameData, HC_MAX_FRAMES_IN_FLIGHT> m_arrFrames;
+	static Array<VkImage> m_vSwapchainImages;
+	static FixedArray<VkFrameData, HC_MAX_FRAMES_IN_FLIGHT> m_arrFrames;
 
-	static std::map<VkDescriptorType, uint32_t> m_mDescriptorTypeCounts;
+	static Map<VkDescriptorType, uint32> m_mDescriptorTypeCounts;
 
-	static void CreateInstance(const std::string& _strAppName, uint32_t _u32AppVersion);
+	static void CreateInstance(const String& _strAppName, uint32 _u32AppVersion);
 	static void SelectPhysicalDevice();
 	static void CreateLogicalDevice();
 	static void CreateSwapchain(WindowHandleGeneric _whgHandle);

@@ -8,15 +8,15 @@ class HCUID {
 private:
 	union {
 		struct {
-			uint64_t upper;
-			uint64_t lower;
+			uint64 upper;
+			uint64 lower;
 		};
 		unsigned char m_arrBytes[16];
 	};
 
-	static uint8_t HexDigitToChar(char _cDigit);
+	static uint8 HexDigitToChar(char _cDigit);
 
-	static uint8_t HexPairToChar(char _cLeft, char _cRight);
+	static uint8 HexPairToChar(char _cLeft, char _cRight);
 
 	static bool CheckValidHexChar(char _cDigit);
 
@@ -34,15 +34,15 @@ public:
 
 	HCUID& operator=(HCUID&& _gOther) = default;
 
-	operator std::string() const;
+	operator String() const;
 
 	static HCUID ConstructRandom();
 
-	static HCUID ConstructFromFilepath(const std::string& _strFilepath);
+	static HCUID ConstructFromFilepath(const String& _strFilepath);
 
-	static HCUID ConstructFromGUIDString(const std::string& _strGUID);
+	static HCUID ConstructFromGUIDString(const String& _strGUID);
 
-	std::string AsString() const;
+	String AsString() const;
 
 	bool IsValid() const;
 };

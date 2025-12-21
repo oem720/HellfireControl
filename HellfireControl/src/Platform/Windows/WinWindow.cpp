@@ -13,11 +13,11 @@ namespace PlatformWindow {
 		int m_iY = 0;
 		int m_iWidth = 0;
 		int m_iHeight = 0;
-		uint8_t m_u8Style = 0;
+		uint8 m_u8Style = 0;
 
 		bool m_bRequestedClose = false;
 
-		std::vector<WindowCallback> m_vCallbacks;
+		Array<WindowCallback> m_vCallbacks;
 	};
 
 	struct Win32Globals {
@@ -26,12 +26,12 @@ namespace PlatformWindow {
 		bool g_bWindowClassRegistered = false;
 		bool g_bFullscreen = false;
 
-		std::map<HWND, Win32WindowData> g_mapWindowData;
+		Map<HWND, Win32WindowData> g_mapWindowData;
 	};
 
 	static Win32Globals g_LocalData = {};
 
-	LONG TranslateWindowStyle(uint8_t _u8Style) {
+	LONG TranslateWindowStyle(uint8 _u8Style) {
 		LONG lVal = 0;
 
 		switch (_u8Style) {
@@ -76,7 +76,7 @@ namespace PlatformWindow {
 		g_LocalData.g_bFullscreen = false;
 	}
 
-	void NotifyCallbacks(uint64_t _u64Handle, const WindowCallbackMessage& _wcmMessage) {
+	void NotifyCallbacks(uint64 _u64Handle, const WindowCallbackMessage& _wcmMessage) {
 		for (const auto& aCallbackFunc : g_LocalData.g_mapWindowData[reinterpret_cast<HWND>(_u64Handle)].m_vCallbacks) {
 			aCallbackFunc(_u64Handle, _wcmMessage);
 		}
@@ -97,10 +97,10 @@ namespace PlatformWindow {
 			WindowCallbackMessage wcmMessage = {
 				.m_wcetType = WINDOW_RESIZE, //Combine move and resize flags
 				.upper = 0, //Unused for resize command
-				.lower = (static_cast<uint64_t>(LOWORD(lParam)) << 32 | static_cast<uint64_t>(HIWORD(lParam))) //Pack size into lower
+				.lower = (static_cast<uint64>(LOWORD(lParam)) << 32 | static_cast<uint64>(HIWORD(lParam))) //Pack size into lower
 			};
 			
-			NotifyCallbacks(reinterpret_cast<uint64_t>(hwnd), wcmMessage);
+			NotifyCallbacks(reinterpret_cast<uint64>(hwnd), wcmMessage);
 
 			return 0;
 		} break;
@@ -113,7 +113,7 @@ namespace PlatformWindow {
 				.lower = 0, 
 			};
 
-			NotifyCallbacks(reinterpret_cast<uint64_t>(hwnd), wcmMessage);
+			NotifyCallbacks(reinterpret_cast<uint64>(hwnd), wcmMessage);
 
 			return 0;
 		} break;
@@ -152,7 +152,7 @@ namespace PlatformWindow {
 		g_LocalData.g_bWindowClassRegistered = false;
 	}
 
-	void InitWindow(uint64_t& _u64OutHandle, uint8_t _u8Type, const std::string& _strName, const Vec2F& _v2Size, const Vec2F& _v2Loc) {
+	void InitWindow(uint64& _u64OutHandle, uint8 _u8Type, const String& _strName, const Vec2F& _v2Size, const Vec2F& _v2Loc) {
 		if (!g_LocalData.g_bWindowClassRegistered) {
 			InitWindowClass();
 		}
@@ -183,7 +183,7 @@ namespace PlatformWindow {
 		ShowWindow(hwndWindowHandle, _u8Type == 1 ? 3 : 1); //Only on the Windowed_Fullscreen type do we start fullscreen
 
 
-		_u64OutHandle = reinterpret_cast<uint64_t>(hwndWindowHandle); //Assign to our generic handle pointer
+		_u64OutHandle = reinterpret_cast<uint64>(hwndWindowHandle); //Assign to our generic handle pointer
 
 		Win32WindowData wwdData = {
 			.m_iX = static_cast<int>(_v2Loc.x),
@@ -195,15 +195,15 @@ namespace PlatformWindow {
 		g_LocalData.g_mapWindowData[hwndWindowHandle] = wwdData; //Insert our window data into the structure
 	}
 
-	void RegisterWindowCallbacks(uint64_t _u64Handle, std::vector<WindowCallback>*& _pOutWindowCallbacks) {
+	void RegisterWindowCallbacks(uint64 _u64Handle, Array<WindowCallback>*& _pOutWindowCallbacks) {
 		_pOutWindowCallbacks = &g_LocalData.g_mapWindowData[reinterpret_cast<HWND>(_u64Handle)].m_vCallbacks;
 	}
 
-	bool CloseRequested(uint64_t _u64Handle) {
+	bool CloseRequested(uint64 _u64Handle) {
 		return g_LocalData.g_mapWindowData[reinterpret_cast<HWND>(_u64Handle)].m_bRequestedClose;
 	}
 
-	void PollEventQueue(uint64_t _u64Handle) {
+	void PollEventQueue(uint64 _u64Handle) {
 		MSG mMessage = {};
 		HWND hwndHandle = reinterpret_cast<HWND>(_u64Handle);
 
@@ -220,17 +220,17 @@ namespace PlatformWindow {
 		}
 	}
 
-	void WaitEvents(uint64_t _u64Handle) {
+	void WaitEvents(uint64 _u64Handle) {
 		WaitMessage();
 
 		PollEventQueue(_u64Handle);
 	}
 
-	bool SetWindowName(uint64_t _u64Handle, const std::string& _strName) {
+	bool SetWindowName(uint64 _u64Handle, const String& _strName) {
 		return SetWindowText(reinterpret_cast<HWND>(_u64Handle), Util::ConvertToWString(_strName).c_str());
 	}
 
-	bool SetWindowStyleParameters(uint64_t _u64Handle, uint8_t _u8Type) {
+	bool SetWindowStyleParameters(uint64 _u64Handle, uint8 _u8Type) {
 		HWND hwnd = reinterpret_cast<HWND>(_u64Handle);
 
 		bool bSucceeded = SetWindowLongPtr(
@@ -262,7 +262,7 @@ namespace PlatformWindow {
 		return bSucceeded; //Returns true if and only if both SetWindowLongPtr and SetWindowPos return true
 	}
 
-	bool SetWindowSize(uint64_t _u64Handle, const Vec2F& _v2Size) {
+	bool SetWindowSize(uint64 _u64Handle, const Vec2F& _v2Size) {
 		HWND hwnd = reinterpret_cast<HWND>(_u64Handle);
 
 		bool bSucceeded = SetWindowPos(
@@ -283,7 +283,7 @@ namespace PlatformWindow {
 		return bSucceeded;
 	}
 
-	bool SetWindowLocation(uint64_t _u64Handle, const Vec2F& _v2Loc) {
+	bool SetWindowLocation(uint64 _u64Handle, const Vec2F& _v2Loc) {
 		HWND hwnd = reinterpret_cast<HWND>(_u64Handle);
 
 		bool bSucceeded = SetWindowPos(
@@ -304,31 +304,31 @@ namespace PlatformWindow {
 		return bSucceeded;
 	}
 
-	void SetWindowFocus(uint64_t _u64Handle) {
+	void SetWindowFocus(uint64 _u64Handle) {
 		SetFocus(reinterpret_cast<HWND>(_u64Handle));
 	}
 
-	Vec2F GetWindowSize(uint64_t _u64Handle) {
+	Vec2F GetWindowSize(uint64 _u64Handle) {
 		HWND hwnd = reinterpret_cast<HWND>(_u64Handle);
 
 		return Vec2F(g_LocalData.g_mapWindowData[hwnd].m_iWidth, g_LocalData.g_mapWindowData[hwnd].m_iHeight);
 	}
 
-	Vec2F GetWindowLocation(uint64_t _u64Handle) {
+	Vec2F GetWindowLocation(uint64 _u64Handle) {
 		HWND hwnd = reinterpret_cast<HWND>(_u64Handle);
 
 		return Vec2F(g_LocalData.g_mapWindowData[hwnd].m_iX, g_LocalData.g_mapWindowData[hwnd].m_iY);
 	}
 
-	uint8_t GetWindowParameters(uint64_t _u64Handle) {
+	uint8 GetWindowParameters(uint64 _u64Handle) {
 		return g_LocalData.g_mapWindowData[reinterpret_cast<HWND>(_u64Handle)].m_u8Style;
 	}
 
-	bool GetWindowFocus(uint64_t _u64Handle) {
+	bool GetWindowFocus(uint64 _u64Handle) {
 		return GetFocus() == reinterpret_cast<HWND>(_u64Handle);
 	}
 
-	void CleanupWindow(uint64_t _u64Handle) {
+	void CleanupWindow(uint64 _u64Handle) {
 		HWND hwnd = reinterpret_cast<HWND>(_u64Handle);
 
 		if (g_LocalData.g_bFullscreen) {

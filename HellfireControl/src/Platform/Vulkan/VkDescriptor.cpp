@@ -2,12 +2,12 @@
 #include <Platform/Vulkan/VkDescriptor.hpp>
 #include <HellfireControl/Math/Math.hpp>
 
-void VkDescriptorPoolManager::Init(VkDevice _dDeviceHandle, uint32_t _u32InitialSetCount, std::span<PoolSizeRatio> _spRatios) {
-	m_vPoolSizeRatios = std::vector<PoolSizeRatio>(_spRatios.begin(), _spRatios.end());
+void VkDescriptorPoolManager::Init(VkDevice _dDeviceHandle, uint32 _u32InitialSetCount, Span<PoolSizeRatio> _spRatios) {
+	m_vPoolSizeRatios = Array<PoolSizeRatio>(_spRatios.begin(), _spRatios.end());
 
 	m_vReadyPools.push_back(CreatePool(_dDeviceHandle, _u32InitialSetCount, _spRatios));
 
-	m_u32SetsPerPool = Math::Clamp(static_cast<uint32_t>(_u32InitialSetCount * 1.5f), 0U, HC_VULKAN_DESCRIPTOR_POOL_SIZE_HARD_LIMIT);
+	m_u32SetsPerPool = Math::Clamp(static_cast<uint32>(_u32InitialSetCount * 1.5f), 0U, HC_VULKAN_DESCRIPTOR_POOL_SIZE_HARD_LIMIT);
 }
 
 void VkDescriptorPoolManager::ResetPools(VkDevice _dDeviceHandle) {
@@ -81,19 +81,19 @@ VkDescriptorPool VkDescriptorPoolManager::GetPool(VkDevice _dDeviceHandle) {
 	else {
 		dpPoolToReturn = CreatePool(_dDeviceHandle, m_u32SetsPerPool, m_vPoolSizeRatios);
 
-		m_u32SetsPerPool = Math::Clamp(static_cast<uint32_t>(m_u32SetsPerPool * 1.5f), 0U, HC_VULKAN_DESCRIPTOR_POOL_SIZE_HARD_LIMIT);
+		m_u32SetsPerPool = Math::Clamp(static_cast<uint32>(m_u32SetsPerPool * 1.5f), 0U, HC_VULKAN_DESCRIPTOR_POOL_SIZE_HARD_LIMIT);
 	}
 
 	return dpPoolToReturn;
 }
 
-VkDescriptorPool VkDescriptorPoolManager::CreatePool(VkDevice _dDeviceHandle, uint32_t _u32SetCount, std::span<PoolSizeRatio> _spRatios) {
-	std::vector<VkDescriptorPoolSize> vPoolSizes;
+VkDescriptorPool VkDescriptorPoolManager::CreatePool(VkDevice _dDeviceHandle, uint32 _u32SetCount, Span<PoolSizeRatio> _spRatios) {
+	Array<VkDescriptorPoolSize> vPoolSizes;
 
 	for (PoolSizeRatio psrRatio : _spRatios) {
 		vPoolSizes.push_back(VkDescriptorPoolSize{
 			.type = psrRatio.m_dtType,
-			.descriptorCount = static_cast<uint32_t>(_u32SetCount * psrRatio.m_fRatio)
+			.descriptorCount = static_cast<uint32>(_u32SetCount * psrRatio.m_fRatio)
 			});
 	}
 
@@ -102,7 +102,7 @@ VkDescriptorPool VkDescriptorPoolManager::CreatePool(VkDevice _dDeviceHandle, ui
 		.pNext = nullptr,
 		.flags = 0,
 		.maxSets = _u32SetCount,
-		.poolSizeCount = static_cast<uint32_t>(vPoolSizes.size()),
+		.poolSizeCount = static_cast<uint32>(vPoolSizes.size()),
 		.pPoolSizes = vPoolSizes.data()
 	};
 

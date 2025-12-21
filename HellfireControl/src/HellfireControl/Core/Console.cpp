@@ -1,20 +1,20 @@
 
 #include <HellfireControl/Core/Console.hpp>
 
-void Console::Print(const std::string& _strMessage, ConsoleColor _ccColor) {
+void Console::Print(const String& _strMessage, ConsoleColor _ccColor) {
 	PlatformPrint(ColorText(_strMessage, _ccColor));
 }
 
-void Console::PrintLine(const std::string& _strMessage, ConsoleColor _ccColor) {
+void Console::PrintLine(const String& _strMessage, ConsoleColor _ccColor) {
 	PlatformPrintLine(ColorText(_strMessage, _ccColor));
 }
 
-void Console::PrintDebugMessage(const std::string& _strMessage, MessageType _mtType) {
+void Console::PrintDebugMessage(const String& _strMessage, MessageType _mtType) {
 	PlatformPrintLine(GetMessagePrefix(_mtType) + _strMessage);
 }
 
-std::string Console::GetMessagePrefix(MessageType _mtType) {
-	std::string strPrefix;
+String Console::GetMessagePrefix(MessageType _mtType) {
+	String strPrefix;
 
 	switch (_mtType) {
 	case LOG: {

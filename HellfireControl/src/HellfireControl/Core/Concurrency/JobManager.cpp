@@ -1,16 +1,16 @@
 
 #include <HellfireControl/Core/Concurrency/JobManager.hpp>
 
-JobManager::JobManager(uint32_t _u32WorkerCount) {
-	uint32_t u32WorkerCount = HC_MIN(_u32WorkerCount, HC_ABSOLUTE_THREAD_MAX);
+JobManager::JobManager(uint32 _u32WorkerCount) {
+	uint32 u32WorkerCount = HC_MIN(_u32WorkerCount, HC_ABSOLUTE_THREAD_MAX);
 
-	for (uint32_t u32Count = 0; u32Count < u32WorkerCount; ++u32Count) {
-		m_vWorkerPool.push_back(std::thread(&JobManager::WorkerExecute, this));
+	for (uint32 u32Count = 0; u32Count < u32WorkerCount; ++u32Count) {
+		m_vWorkerPool.push_back(Thread(&JobManager::WorkerExecute, this));
 		m_vWorkerPool[u32Count].detach();
 	}
 }
 
-void JobManager::AddJob(std::shared_ptr<Job> _pJob) {
+void JobManager::AddJob(SharedPointer<Job> _pJob) {
 	m_jqQueue.AddJob(_pJob);
 
 	Poll();
@@ -27,7 +27,7 @@ void JobManager::BlockUntilQueueClear() {
 }
 
 void JobManager::WorkerExecute() {
-	std::shared_ptr<Job> pJob = nullptr;
+	SharedPointer<Job> pJob = nullptr;
 
 	while (true) {
 		if (pJob == nullptr) {
@@ -62,7 +62,7 @@ void JobManager::WorkerExecute() {
 				pJob = nullptr;
 			}
 			else {
-				std::unique_lock<std::mutex> ulLock(m_mutDependencyMutex);
+				std::unique_lock<Mutex> ulLock(m_mutDependencyMutex);
 				m_cvDependencyCheck.wait(ulLock, [&] { return pJob->Ready(); });
 			}
 		}

@@ -27,13 +27,13 @@ void RenderManager::WindowEventHandler(WindowHandleGeneric _whgHandle, const Win
 	}
 }
 
-void RenderManager::AddRenderer(RendererTag _rtTag, std::shared_ptr<Renderer> _pRenderer) {
+void RenderManager::AddRenderer(RendererTag _rtTag, SharedPointer<Renderer> _pRenderer) {
 	RegisterPlatformRenderer(_pRenderer);
 	
 	m_mRenderers[_rtTag] = _pRenderer;
 }
 
-void RenderManager::Init(const std::string& _strAppName, uint32_t _u32AppVersion, WindowHandleGeneric _whgWindowHandle) {
+void RenderManager::Init(const String& _strAppName, uint32 _u32AppVersion, WindowHandleGeneric _whgWindowHandle) {
 	m_whgWindowHandle = _whgWindowHandle;
 
 	Window(_whgWindowHandle).RegisterEventCallback(WindowEventHandler);
@@ -67,7 +67,7 @@ void RenderManager::InitRenderJobs() {
 	}
 }
 
-std::shared_ptr<Job> RenderManager::RecursiveInitRenderJobs(RendererTag _rtTag, int _iDepthLimit, int _iDepth) {
+SharedPointer<Job> RenderManager::RecursiveInitRenderJobs(RendererTag _rtTag, int _iDepthLimit, int _iDepth) {
 	if (_iDepth == _iDepthLimit) {
 		throw std::runtime_error("ERROR: Depth limit of " + std::to_string(_iDepthLimit) + " reached! Circular dependency or improbably large render system is unsupported!");
 	}
@@ -78,10 +78,10 @@ std::shared_ptr<Job> RenderManager::RecursiveInitRenderJobs(RendererTag _rtTag, 
 
 	m_mRenderers[_rtTag]->Init();
 
-	std::shared_ptr<Job> pJob = std::make_shared<Job>([this, _rtTag]() { m_mRenderers[_rtTag]->Render(); }, std::vector<std::shared_ptr<Job>>());
+	SharedPointer<Job> pJob = std::make_shared<Job>([this, _rtTag]() { m_mRenderers[_rtTag]->Render(); }, Array<SharedPointer<Job>>());
 
 	//Now we need to create the dependencies
-	for (const uint32_t& u32Dependency : m_mRenderers[_rtTag]->GetDependencies()) {
+	for (const uint32& u32Dependency : m_mRenderers[_rtTag]->GetDependencies()) {
 		pJob->m_vDependencies.push_back(RecursiveInitRenderJobs(u32Dependency, _iDepthLimit, _iDepth + 1));
 	}
 

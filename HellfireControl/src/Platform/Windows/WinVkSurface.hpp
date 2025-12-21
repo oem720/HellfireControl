@@ -4,7 +4,7 @@
 
 class PlatformSurface {
 public:
-	static void CreatePlatformSurface(uint64_t _u64WindowHandle, VkInstance _iInstance, VkSurfaceKHR& _sOutSurface) {
+	static void CreatePlatformSurface(uint64 _u64WindowHandle, VkInstance _iInstance, VkSurfaceKHR& _sOutSurface) {
 		VkWin32SurfaceCreateInfoKHR sciSurfaceInfo = {
 			.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
 			.pNext = nullptr,

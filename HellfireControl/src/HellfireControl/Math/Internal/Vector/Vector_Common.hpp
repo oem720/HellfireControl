@@ -9,14 +9,14 @@
 
 typedef struct {
 	union {
-		uint32_t m_iInts[4];
+		uint32 m_iInts[4];
 		__m128 m_fVec;
 	};
 } maskf_t;
 
 typedef struct {
 	union {
-		uint64_t m_iInts[4];
+		uint64 m_iInts[4];
 		__m256d m_dVec;
 	};
 } maskd_t;

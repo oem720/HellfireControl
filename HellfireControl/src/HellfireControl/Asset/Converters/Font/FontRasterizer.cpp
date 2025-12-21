@@ -12,7 +12,7 @@
 
 #define HC_MISSING_CHAR_GLYPH_INDEX 65535
 
-Vec2F GetFontAtlasSize(const FontInfo& fiInfo, const std::vector<GlyphInfo>& vGlyphData)
+Vec2F GetFontAtlasSize(const FontInfo& fiInfo, const Array<GlyphInfo>& vGlyphData)
 {
 	Vec2F v2GlyphSize;
 	for (const auto& aGlyph : vGlyphData) {
@@ -21,11 +21,11 @@ Vec2F GetFontAtlasSize(const FontInfo& fiInfo, const std::vector<GlyphInfo>& vGl
 
 	v2GlyphSize /= vGlyphData.size();
 
-	uint32_t u32RowCount = static_cast<uint32_t>(Math::Ceiling(Math::Sqrt(static_cast<float>(vGlyphData.size()))));
-	uint32_t u32ColCount = static_cast<uint32_t>(Math::Ceiling(vGlyphData.size() / static_cast<float>(u32RowCount)));
+	uint32 u32RowCount = static_cast<uint32>(Math::Ceiling(Math::Sqrt(static_cast<float>(vGlyphData.size()))));
+	uint32 u32ColCount = static_cast<uint32>(Math::Ceiling(vGlyphData.size() / static_cast<float>(u32RowCount)));
 
-	uint32_t u32Width = static_cast<uint32_t>(Math::Ceiling(u32ColCount * v2GlyphSize.x));
-	uint32_t u32Height = static_cast<uint32_t>(Math::Ceiling(u32RowCount * v2GlyphSize.y));
+	uint32 u32Width = static_cast<uint32>(Math::Ceiling(u32ColCount * v2GlyphSize.x));
+	uint32 u32Height = static_cast<uint32>(Math::Ceiling(u32RowCount * v2GlyphSize.y));
 
 	if (u32Width < u32Height) {
 		u32Width = u32Width ^ u32Height;
@@ -36,11 +36,11 @@ Vec2F GetFontAtlasSize(const FontInfo& fiInfo, const std::vector<GlyphInfo>& vGl
 	return Vec2F(static_cast<float>(u32Width), static_cast<float>(u32Height));
 }
 
-std::map<UTF8PaddedChar, BakedGlyphBoxInfo> FontRasterizer::RasterizeGlyphs(const FontInfo& _fiInfo, const std::map<UTF8PaddedChar, GlyphInfo>& _mGlyphData, std::vector<ImageRGB8>& _vImages, const std::string& _strFilePathTEMP) {
+Map<UTF8PaddedChar, BakedGlyphBoxInfo> FontRasterizer::RasterizeGlyphs(const FontInfo& _fiInfo, const Map<UTF8PaddedChar, GlyphInfo>& _mGlyphData, Array<ImageRGB8>& _vImages, const String& _strFilePathTEMP) {
 	//TODO: At the moment, this whole function is designed to hack in all the ASCII characters + missing char glyph.
 	//This then goes into a single bitmap image using STB's truetype implementation. This is incorrect for various reasons.
 	//Future implementation will require that we draw all of the glyphs given, and into pre-defined segments.
-	std::vector<GlyphInfo> vGlyphsToRender;
+	Array<GlyphInfo> vGlyphsToRender;
 	
 	for (UTF8PaddedChar u8Char = 31; u8Char < 127; ++u8Char) {
 		if (_mGlyphData.find(u8Char) == _mGlyphData.end()) {
@@ -54,7 +54,7 @@ std::map<UTF8PaddedChar, BakedGlyphBoxInfo> FontRasterizer::RasterizeGlyphs(cons
 	Vec2F v2ImageSize = GetFontAtlasSize(_fiInfo, vGlyphsToRender);
 
 	//TEMPORARY SO WE CAN USE STB, VERY HORRIFYING HACKS UP AHEAD
-	ImageR8 iBitmap(static_cast<uint32_t>(v2ImageSize.x), static_cast<uint32_t>(v2ImageSize.y));
+	ImageR8 iBitmap(static_cast<uint32>(v2ImageSize.x), static_cast<uint32>(v2ImageSize.y));
 
 	File fFile(_strFilePathTEMP, FILE_OPEN_FLAG_READ | FILE_OPEN_FLAG_BINARY | FILE_OPEN_FLAG_BEGIN_AT_END);
 
@@ -64,7 +64,7 @@ std::map<UTF8PaddedChar, BakedGlyphBoxInfo> FontRasterizer::RasterizeGlyphs(cons
 
 	stbi_write_bmp("./Assets/Fonts/TestOutput/TestImage.bmp", iBitmap.GetWidth(), iBitmap.GetHeight(), 1, iBitmap.GetPixelData().get());
 
-	std::map<UTF8PaddedChar, BakedGlyphBoxInfo> mBakedData;
+	Map<UTF8PaddedChar, BakedGlyphBoxInfo> mBakedData;
 
 	for (UTF8PaddedChar u8Char = 31; u8Char < 127; ++u8Char) {
 		stbtt_bakedchar bcBounds = pData[u8Char - 31];
@@ -80,11 +80,11 @@ std::map<UTF8PaddedChar, BakedGlyphBoxInfo> FontRasterizer::RasterizeGlyphs(cons
 
 	delete[] pData;
 
-	ImageRGB8 iFinalBitmap(static_cast<uint32_t>(v2ImageSize.x), static_cast<uint32_t>(v2ImageSize.y));
+	ImageRGB8 iFinalBitmap(static_cast<uint32>(v2ImageSize.x), static_cast<uint32>(v2ImageSize.y));
 
 	for (int x = 0; x < iBitmap.GetWidth(); ++x) {
 		for (int y = 0; y < iBitmap.GetHeight(); ++y) {
-			uint8_t u8Color = iBitmap.GetPixel(x, y).m_arrChannelValues[0];
+			uint8 u8Color = iBitmap.GetPixel(x, y).m_arrChannelValues[0];
 
 			iFinalBitmap.PlotPixel(x, y, { u8Color, u8Color, u8Color });
 		}

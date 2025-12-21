@@ -19,14 +19,24 @@
 #include <charconv>
 #include <variant>
 
+typedef uint8_t uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+typedef uint64_t uint64;
+
+typedef int8_t int8;
+typedef int16_t int16;
+typedef int32_t int32;
+typedef int64_t int64;
+
 //Borrowed from Vulkan docs
-#define HC_CONVERT_TO_VERSION_NO(_variant, _major, _minor, _patch)  ((((uint64_t)(_variant)) << 29U) | (((uint64_t)(_major)) << 22U) | (((uint64_t)(_minor)) << 12U) | ((uint64_t)(_patch)))
+#define HC_CONVERT_TO_VERSION_NO(_variant, _major, _minor, _patch)  ((((uint64)(_variant)) << 29U) | (((uint64)(_major)) << 22U) | (((uint64)(_minor)) << 12U) | ((uint64)(_patch)))
 //Engine Version No.
 #define HC_ENGINE_VERSION HC_CONVERT_TO_VERSION_NO(1, 1, 0, 0)
 //File Format Version No.
-#define HC_FILE_FORMAT_VERSION_NUMBER(major, minor) (static_cast<uint16_t>((major)) << 8) | static_cast<uint16_t>((minor))
+#define HC_FILE_FORMAT_VERSION_NUMBER(major, minor) (static_cast<uint16>((major)) << 8) | static_cast<uint16>((minor))
 //Engine ref tag
-#define HC_CREATE_32BIT_TAG(char1, char2, char3, char4) (static_cast<uint32_t>(char4) << 24) | (static_cast<uint32_t>(char3) << 16) | (static_cast<uint32_t>(char2) << 8) | static_cast<uint32_t>(char1)
+#define HC_CREATE_32BIT_TAG(char1, char2, char3, char4) (static_cast<uint32>(char4) << 24) | (static_cast<uint32>(char3) << 16) | (static_cast<uint32>(char2) << 8) | static_cast<uint32>(char1)
 
 //Defines for commonly used math functions
 #define HC_PI 3.14159265358979323846f
@@ -67,20 +77,45 @@
 #include <array>
 #include <list>
 #include <queue>
-#include <map>
-#include <unordered_map>
+#include <deque>
 #include <set>
 #include <span>
 #include <optional>
+#include <map>
+#include <unordered_map>
 #include <limits>
 
-typedef uint32_t UTF8PaddedChar;
+//Aliasing for types that will be replaced with custom implementation.
+typedef std::string String;
+template<typename T> using Array = std::vector<T>;
+template<typename T, size_t S> using FixedArray = std::array<T, S>;
+template<typename T> using List = std::list<T>;
+template<typename T> using Queue = std::queue<T>;
+template<typename T> using DoubleEndedQueue = std::deque<T>;
+template<typename T> using Set = std::set<T>;
+template<typename T> using Optional = std::optional<T>;
+template<typename T> using Span = std::span<T>;
+template<typename K, typename V> using Map = std::map<K, V>;
+template<typename K, typename V> using UnorderedMap = std::unordered_map<K, V>;
+
+//Aliasing for types that will not be replaced, or may be replaced in the far future.
+typedef std::thread Thread;
+typedef std::mutex Mutex;
+typedef std::condition_variable ConditionVariable;
+typedef std::filesystem::path FilePath;
+typedef std::fstream FileStream;
+template<typename T> using Function = std::function<T>;
+template<typename T, class D = std::default_delete<T>> using UniquePointer = std::unique_ptr<T, D>;
+template<typename T> using SharedPointer = std::shared_ptr<T>;
+template<typename T> using WeakPointer = std::weak_ptr<T>;
+
+typedef uint32 UTF8PaddedChar;
 
 //Generic Platform Handles
-typedef uint64_t WindowHandleGeneric;
+typedef uint64 WindowHandleGeneric;
 
 //TODO: Move all enums to their own file!
-enum DialogAllowedFileTypes : uint64_t {
+enum DialogAllowedFileTypes : uint64 {
 	JPEG = 0x1,
 	PNG = 0x2,
 	GIF = 0x4,

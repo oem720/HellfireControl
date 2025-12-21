@@ -7,7 +7,7 @@
 
 class AssetParser {
 public:
-	virtual std::shared_ptr<Asset> Parse(File& _fAssetFile) const = 0;
+	virtual SharedPointer<Asset> Parse(File& _fAssetFile) const = 0;
 };
 
 struct BakedGlyphBoxInfo {
@@ -15,10 +15,10 @@ struct BakedGlyphBoxInfo {
 	float m_fAdvanceWidth = 0.0f;
 	float m_fHorizontalShift = 0.0f;
 	float m_fVerticalShift = 0.0f;
-	uint32_t m_u32AtlasIndex = 0;
+	uint32 m_u32AtlasIndex = 0;
 };
 
-enum AssetMagicNumbers : uint32_t {
+enum AssetMagicNumbers : uint32 {
 	HC_MANIFEST_IDENTIFIER = HC_CREATE_32BIT_TAG('M', 'A', 'N', 'I'),
 	HC_FONT_IDENTIFIER = HC_CREATE_32BIT_TAG('H', 'G', 'R', 'F'),
 	HC_SHADER_IDENTIFIER = HC_CREATE_32BIT_TAG('S', 'H', 'A', 'D')

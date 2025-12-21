@@ -11,7 +11,7 @@
 #include <HellfireControl/Core/Window.hpp>
 
 #pragma region Static Members
-uint32_t VkRenderManager::m_u32CurrentFrame = 0;
+uint32 VkRenderManager::m_u32CurrentFrame = 0;
 
 VkInstance VkRenderManager::m_iInstance = VK_NULL_HANDLE;
 VkPhysicalDevice VkRenderManager::m_pdPhysicalDevice = VK_NULL_HANDLE;
@@ -24,14 +24,14 @@ VkSwapchainKHR VkRenderManager::m_scSwapchain = VK_NULL_HANDLE;
 VkFormat VkRenderManager::m_fFormat = {};
 VkExtent2D VkRenderManager::m_eExtent = {};
 
-std::vector<VkImage> VkRenderManager::m_vSwapchainImages = {};
-std::array<VkFrameData, HC_MAX_FRAMES_IN_FLIGHT> VkRenderManager::m_arrFrames = {};
+Array<VkImage> VkRenderManager::m_vSwapchainImages = {};
+FixedArray<VkFrameData, HC_MAX_FRAMES_IN_FLIGHT> VkRenderManager::m_arrFrames = {};
 
-std::map<VkDescriptorType, uint32_t> VkRenderManager::m_mDescriptorTypeCounts = {};
+Map<VkDescriptorType, uint32> VkRenderManager::m_mDescriptorTypeCounts = {};
 #pragma endregion
 
 #pragma region Engine Interface
-void RenderManager::InitPlatformObjects(const std::string& _strAppName, uint32_t _u32AppVersion) {
+void RenderManager::InitPlatformObjects(const String& _strAppName, uint32 _u32AppVersion) {
 	VkRenderManager::CreateInstance(_strAppName, _u32AppVersion);
 
 	PlatformSurface::CreatePlatformSurface(m_whgWindowHandle, VkRenderManager::m_iInstance, VkRenderManager::m_sSurface);
@@ -45,14 +45,14 @@ void RenderManager::InitPlatformObjects(const std::string& _strAppName, uint32_t
 	VkRenderManager::CreateFrameData();
 }
 
-void RenderManager::RegisterPlatformRenderer(const std::shared_ptr<Renderer>& _pRenderer) {
-	std::shared_ptr<VkRenderer> pPlatformRenderer = std::dynamic_pointer_cast<VkRenderer>(_pRenderer->GetPlatformRenderer());
+void RenderManager::RegisterPlatformRenderer(const SharedPointer<Renderer>& _pRenderer) {
+	SharedPointer<VkRenderer> pPlatformRenderer = std::dynamic_pointer_cast<VkRenderer>(_pRenderer->GetPlatformRenderer());
 
 	if (pPlatformRenderer == nullptr) {
 		throw std::runtime_error("Failed to cast to platform renderer. Improperly specified renderer?");
 	}
 
-	std::vector<VkDescriptorType> vDescriptors = pPlatformRenderer->GetDescriptorCounts();
+	Array<VkDescriptorType> vDescriptors = pPlatformRenderer->GetDescriptorCounts();
 
 	for (const auto& aDescriptor : vDescriptors) {
 		VkRenderManager::m_mDescriptorTypeCounts[aDescriptor]++;
@@ -81,9 +81,9 @@ void RenderManager::CleanupPlatformObjects() {
 #pragma endregion
 
 #pragma region Platform Functionality
-void VkRenderManager::CreateInstance(const std::string& _strAppName, uint32_t _u32AppVersion) {
-	std::vector<const char*> vInstanceExtensions = VkUtil::GetInstanceExtensions();
-	std::vector<const char*> vValidationLayers = VkUtil::GetValidationLayers();
+void VkRenderManager::CreateInstance(const String& _strAppName, uint32 _u32AppVersion) {
+	Array<const char*> vInstanceExtensions = VkUtil::GetInstanceExtensions();
+	Array<const char*> vValidationLayers = VkUtil::GetValidationLayers();
 
 	VkApplicationInfo aiAppInfo = {
 		.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -102,14 +102,14 @@ void VkRenderManager::CreateInstance(const std::string& _strAppName, uint32_t _u
 		.pApplicationInfo = &aiAppInfo,
 		.enabledLayerCount = 0,
 		.ppEnabledLayerNames = nullptr,
-		.enabledExtensionCount = static_cast<uint32_t>(vInstanceExtensions.size()),
+		.enabledExtensionCount = static_cast<uint32>(vInstanceExtensions.size()),
 		.ppEnabledExtensionNames = vInstanceExtensions.data()
 	};
 
 	if (VkUtil::GetValidationLayersEnabled()) {
 		VkUtil::ValidateSupportedLayers();
 	
-		icInstanceInfo.enabledLayerCount = static_cast<uint32_t>(vValidationLayers.size());
+		icInstanceInfo.enabledLayerCount = static_cast<uint32>(vValidationLayers.size());
 		icInstanceInfo.ppEnabledLayerNames = vValidationLayers.data();
 	}
 
@@ -119,14 +119,14 @@ void VkRenderManager::CreateInstance(const std::string& _strAppName, uint32_t _u
 }
 
 void VkRenderManager::SelectPhysicalDevice() {
-	uint32_t u32DeviceCount = 0;
+	uint32 u32DeviceCount = 0;
 	vkEnumeratePhysicalDevices(m_iInstance, &u32DeviceCount, nullptr);
 
 	if (!u32DeviceCount) {
 		throw std::runtime_error("ERROR: Failed to find compatible GPUs!");
 	}
 
-	std::vector<VkPhysicalDevice> vDevices(u32DeviceCount);
+	Array<VkPhysicalDevice> vDevices(u32DeviceCount);
 	vkEnumeratePhysicalDevices(m_iInstance, &u32DeviceCount, vDevices.data());
 
 	for (const auto& aDevice : vDevices) {
@@ -144,15 +144,15 @@ void VkRenderManager::SelectPhysicalDevice() {
 void VkRenderManager::CreateLogicalDevice() {
 	VkQueueFamilyIndices qfiIndices = VkUtil::GetQueueFamilies(m_pdPhysicalDevice, m_sSurface);
 
-	std::vector<VkDeviceQueueCreateInfo> vQueueCreateInfos;
-	std::set<uint32_t> sUniqueQueueFamilies = {
+	Array<VkDeviceQueueCreateInfo> vQueueCreateInfos;
+	Set<uint32> sUniqueQueueFamilies = {
 		qfiIndices.m_u32GraphicsFamily.value(),
 		qfiIndices.m_u32PresentFamily.value()
 	};
 
 	float fQueuePriority = 1.0f;
 
-	for (uint32_t u32QueueFamily : sUniqueQueueFamilies) {
+	for (uint32 u32QueueFamily : sUniqueQueueFamilies) {
 		VkDeviceQueueCreateInfo dqciQueueInfo = {
 			.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
 			.pNext = nullptr,
@@ -168,24 +168,24 @@ void VkRenderManager::CreateLogicalDevice() {
 	VkPhysicalDeviceFeatures pdfFeatures = {};
 	pdfFeatures.samplerAnisotropy = VK_TRUE;
 
-	std::vector<const char*> vDeviceExtensions = VkUtil::GetDeviceExtensions();
-	std::vector<const char*> vValidationLayers = VkUtil::GetValidationLayers();
+	Array<const char*> vDeviceExtensions = VkUtil::GetDeviceExtensions();
+	Array<const char*> vValidationLayers = VkUtil::GetValidationLayers();
 
 	VkDeviceCreateInfo dciDeviceInfo = {
 		.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
 		.pNext = nullptr,
 		.flags = 0,
-		.queueCreateInfoCount = static_cast<uint32_t>(vQueueCreateInfos.size()),
+		.queueCreateInfoCount = static_cast<uint32>(vQueueCreateInfos.size()),
 		.pQueueCreateInfos = vQueueCreateInfos.data(),
 		.enabledLayerCount = 0,
 		.ppEnabledLayerNames = nullptr,
-		.enabledExtensionCount = static_cast<uint32_t>(vDeviceExtensions.size()),
+		.enabledExtensionCount = static_cast<uint32>(vDeviceExtensions.size()),
 		.ppEnabledExtensionNames = vDeviceExtensions.data(),
 		.pEnabledFeatures = &pdfFeatures,
 	};
 
 	if (VkUtil::GetValidationLayersEnabled()) {
-		dciDeviceInfo.enabledLayerCount = static_cast<uint64_t>(vValidationLayers.size());
+		dciDeviceInfo.enabledLayerCount = static_cast<uint64>(vValidationLayers.size());
 		dciDeviceInfo.ppEnabledLayerNames = vValidationLayers.data();
 	}
 
@@ -204,7 +204,7 @@ void VkRenderManager::CreateSwapchain(WindowHandleGeneric _whgHandle) {
 	VkPresentModeKHR pmMode = VkUtil::SelectSwapPresentMode(scsdSupport.m_vPresentModes);
 	VkExtent2D eExtent = VkUtil::SelectSwapExtent(scsdSupport.m_scCapabilities, _whgHandle);
 
-	uint32_t u32ImageCount = scsdSupport.m_scCapabilities.minImageCount + 1;
+	uint32 u32ImageCount = scsdSupport.m_scCapabilities.minImageCount + 1;
 
 	if (scsdSupport.m_scCapabilities.maxImageCount > 0 && u32ImageCount > scsdSupport.m_scCapabilities.maxImageCount) {
 		u32ImageCount = scsdSupport.m_scCapabilities.maxImageCount;
@@ -229,7 +229,7 @@ void VkRenderManager::CreateSwapchain(WindowHandleGeneric _whgHandle) {
 	};
 
 	VkQueueFamilyIndices qfiIndices = VkUtil::GetQueueFamilies(m_pdPhysicalDevice, m_sSurface);
-	uint32_t u32QueueFamilyIndices[] = { 
+	uint32 u32QueueFamilyIndices[] = { 
 		qfiIndices.m_u32GraphicsFamily.value(),
 		qfiIndices.m_u32PresentFamily.value()
 	};
@@ -279,7 +279,7 @@ void VkRenderManager::CreateFrameData() {
 		.flags = VK_FENCE_CREATE_SIGNALED_BIT
 	};
 
-	std::vector<VkDescriptorPoolManager::PoolSizeRatio> vDescriptorPoolSizes;
+	Array<VkDescriptorPoolManager::PoolSizeRatio> vDescriptorPoolSizes;
 
 	for (const auto& aDescriptorCount : m_mDescriptorTypeCounts) {
 		vDescriptorPoolSizes.push_back(VkDescriptorPoolManager::PoolSizeRatio{

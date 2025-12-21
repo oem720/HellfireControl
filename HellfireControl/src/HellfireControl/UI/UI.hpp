@@ -8,7 +8,7 @@ class UIManager {
 private:
 	static UIManager* m_pInstance;
 
-	static std::shared_ptr<Renderer> m_pUIRenderer;
+	static SharedPointer<Renderer> m_pUIRenderer;
 
 	UIManager() {}
 

@@ -25,7 +25,7 @@ void Window::Cleanup() {
 	PlatformWindow::CleanupWindow(m_whgHandle);
 }
 
-void Window::SetWindowName(const std::string& _strName) {
+void Window::SetWindowName(const String& _strName) {
 	if (!PlatformWindow::SetWindowName(m_whgHandle, _strName)) {
 		assert(!"ERROR: Window name failed to change!");
 	}

@@ -12,7 +12,7 @@
 
 namespace Math {
 #pragma region Scalar
-	[[nodiscard]] uint32_t Clamp(uint32_t _u32Val, uint32_t _u32Min = 0, uint32_t _u32Max = 1);
+	[[nodiscard]] uint32 Clamp(uint32 _u32Val, uint32 _u32Min = 0, uint32 _u32Max = 1);
 
 	/// <summary>
 	/// Clamps the floating point _fVal to the range [_fMin, _fMax]. Defaults to between 0 and 1.

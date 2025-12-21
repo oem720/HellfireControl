@@ -1,7 +1,7 @@
 
 #include <HellfireControl/Core/File.hpp>
 
-File::File(const std::string& _strFilename, uint8_t _fofFlags) {
+File::File(const String& _strFilename, uint8 _fofFlags) {
 	m_pthFilepath = _strFilename;
 
 	m_fofFlags = _fofFlags;
@@ -17,7 +17,7 @@ File::~File() {
 	}
 }
 
-void File::ChangeOpenFile(const std::string& _strFilename, uint8_t _fofFlags) {
+void File::ChangeOpenFile(const String& _strFilename, uint8 _fofFlags) {
 	Close();
 
 	m_pthFilepath = _strFilename;
@@ -63,14 +63,14 @@ void File::WriteLine(const void* _pData, size_t _sBytes, FileDelimiter _fdDelim)
 }
 
 void File::ReadLine(void* _pData, size_t _sBytes, FileDelimiter _fdDelim) {
-	std::string dataBuffer;
+	String dataBuffer;
 
 	std::getline(m_fStream, dataBuffer, static_cast<char>(_fdDelim));
 
 	memcpy_s(_pData, _sBytes, dataBuffer.c_str(), dataBuffer.size());
 }
 
-void File::WriteLine(const std::string& _strData, FileDelimiter _fdDelim) {
+void File::WriteLine(const String& _strData, FileDelimiter _fdDelim) {
 	if (_fdDelim == FILE_DELIMITER_QUOTE) {
 		m_fStream << _fdDelim; //Put a quote at the front as well, denotes a string in text files.
 	}
@@ -80,11 +80,11 @@ void File::WriteLine(const std::string& _strData, FileDelimiter _fdDelim) {
 	m_fStream << _fdDelim;
 }
 
-void File::ReadLine(std::string& _strData, FileDelimiter _fdDelim) {
+void File::ReadLine(String& _strData, FileDelimiter _fdDelim) {
 	std::getline(m_fStream, _strData, static_cast<char>(_fdDelim));
 }
 
-void File::AdvanceBytes(int64_t _i64Distance) {
+void File::AdvanceBytes(int64 _i64Distance) {
 	if (m_fStream.fail()) {
 		//TODO: more robust error handling.
 		m_fStream.clear();
@@ -124,7 +124,7 @@ void File::OpenFile(int _iFlags) {
 	if (_iFlags & (std::ios_base::out | std::ios_base::in) && !std::filesystem::exists(m_pthFilepath)) {
 		//Here we manually create a new empty file. This is because R/W files do not get created
 		//properly, while simple W files do. This is a bit of a hack, but whatever.
-		std::fstream fNewFile(m_pthFilepath, std::ios_base::out);
+		FileStream fNewFile(m_pthFilepath, std::ios_base::out);
 
 		if (!fNewFile.is_open()) {
 			throw std::runtime_error("ERROR: Failed to create new file! Filepath: " + m_pthFilepath.string());
@@ -135,7 +135,7 @@ void File::OpenFile(int _iFlags) {
 		m_bNewFile = true;
 	}
 
-	m_fStream = std::fstream(m_pthFilepath, _iFlags);
+	m_fStream = FileStream(m_pthFilepath, _iFlags);
 
 	if (!m_fStream.is_open()) {
 		throw std::runtime_error("ERROR: Failed to open file! Filepath: " + m_pthFilepath.string());
@@ -145,8 +145,8 @@ void File::OpenFile(int _iFlags) {
 	m_fStream.exceptions(std::ios_base::badbit);
 }
 
-std::vector<uint8_t> File::ExtractFileBlob() {
-	std::vector<uint8_t> vBlob;
+Array<uint8> File::ExtractFileBlob() {
+	Array<uint8> vBlob;
 
 	size_t sFileSize = static_cast<size_t>(m_fStream.tellg());
 	vBlob.resize(sFileSize);

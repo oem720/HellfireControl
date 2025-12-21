@@ -12,10 +12,10 @@ struct VkRenderPipelineData {
 
 class VkRenderer : public PlatformRenderer {
 private:
-	static std::map<HCShaderVarType, VkDescriptorType> m_mShaderVarTranslationTable;
+	static Map<HCShaderVarType, VkDescriptorType> m_mShaderVarTranslationTable;
 
 	VkRenderPass m_rpRenderpass = VK_NULL_HANDLE;
-	std::vector<VkRenderPipelineData> m_vPipelines;
+	Array<VkRenderPipelineData> m_vPipelines;
 
 	void VerifyRenderpassPipelineData();
 
@@ -35,5 +35,5 @@ public:
 
 	void Cleanup();
 
-	std::vector<VkDescriptorType> GetDescriptorCounts() const;
+	Array<VkDescriptorType> GetDescriptorCounts() const;
 };

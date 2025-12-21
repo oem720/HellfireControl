@@ -2,7 +2,7 @@
 
 #include <HellfireControl/Core/Common.hpp>
 
-enum HCShaderVarType : uint8_t {
+enum HCShaderVarType : uint8 {
 	VAR_UNIFORM_BUFFER,
 	VAR_STORAGE_BUFFER,
 	VAR_STAGE_INPUT,
@@ -23,7 +23,7 @@ enum HCShaderVarType : uint8_t {
 	VAR_GL_PLAIN_UNIFORM
 };
 
-enum HCInputOutputType : uint16_t {
+enum HCInputOutputType : uint16 {
 	IO_INVALID = 0,
 	IO_BOOL = (1 << 2),
 	IO_SIGNED_BYTE = (1 << 3),
@@ -38,7 +38,7 @@ enum HCInputOutputType : uint16_t {
 	IO_MAX = 0xFFC
 };
 
-enum HCInterpolationType : uint16_t {
+enum HCInterpolationType : uint16 {
 	INTERP_SMOOTH = 0,
 	INTERP_FLAT = (1 << 12),
 	INTERP_NO_PERSPECTIVE = (1 << 13),
@@ -48,29 +48,29 @@ enum HCInterpolationType : uint16_t {
 };
 
 struct HCShaderVar {
-	uint16_t m_u16Type = 0;
-	uint16_t m_u16Flags = 0;
-	uint32_t m_arrData[8];
+	uint16 m_u16Type = 0;
+	uint16 m_u16Flags = 0;
+	uint32 m_arrData[8];
 };
 
 struct HCShaderVarLabelEntry {
-	std::string m_strVarName;
-	uint32_t m_u32Index;
+	String m_strVarName;
+	uint32 m_u32Index;
 };
 
 struct HCShaderVarTable {
-	std::vector<HCShaderVarLabelEntry> m_vLabels;
-	std::vector<HCShaderVar> m_vVars;
+	Array<HCShaderVarLabelEntry> m_vLabels;
+	Array<HCShaderVar> m_vVars;
 };
 
-enum HCShaderFormat : uint8_t {
+enum HCShaderFormat : uint8 {
 	SHADER_FORMAT_GLSL,
 	SHADER_FORMAT_HLSL,
 	SHADER_FORMAT_SLANG,
 	SHADER_FORMAT_INVALID
 };
 
-enum HCShaderStageType : uint8_t {
+enum HCShaderStageType : uint8 {
 	SHADER_STAGE_VERTEX,
 	SHADER_STAGE_FRAGMENT,
 	SHADER_STAGE_GEOMETRY,
@@ -88,7 +88,7 @@ enum HCShaderStageType : uint8_t {
 	SHADER_STAGE_INVALID
 };
 
-enum HCShaderStageBit : uint16_t {
+enum HCShaderStageBit : uint16 {
 	SHADER_STAGE_INVALID_BIT = 0,
 	SHADER_STAGE_VERTEX_BIT = (1 << 0),
 	SHADER_STAGE_TESSELLATION_CONTROL_BIT = (1 << 1),

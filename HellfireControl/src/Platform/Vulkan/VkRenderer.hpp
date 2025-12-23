@@ -7,7 +7,7 @@
 struct VkRenderPipelineData {
 	VkPipelineLayout m_plPipelineLayout;
 	VkPipeline m_pPipeline;
-	VkDescriptorSetLayout m_dslDescriptorSetLayout;
+	Array<VkDescriptorSetLayout> m_vDescriptorSetLayouts;
 };
 
 class VkRenderer : public PlatformRenderer {
@@ -25,6 +25,10 @@ private:
 	VkRenderPipelineData CreateGraphicsPipeline(const ShaderPipelineData& _spdPipelineData);
 	VkRenderPipelineData CreateComputePipeline(const ShaderPipelineData& _spdPipelineData);
 	VkRenderPipelineData CreateRaytracingPipeline(const ShaderPipelineData& _spdPipelineData);
+
+	Array<VkPipelineShaderStageCreateInfo> CreateShaderStages(const ShaderPipelineData& _spdPipelineData);
+	Array<VkDescriptorSetLayout> CreateDescriptorSetLayouts(const ShaderPipelineData& _spdPipelineData);
+	Array<VkPushConstantRange> CreatePushConstantRanges(const ShaderPipelineData& _spdPipelineData);
 
 public:
 	VkRenderer(const RenderpassData& _rdRenderpass) : PlatformRenderer(_rdRenderpass) { VerifyRenderpassPipelineData(); }

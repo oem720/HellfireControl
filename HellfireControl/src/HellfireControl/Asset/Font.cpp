@@ -7,12 +7,12 @@ Font::~Font() {
 	//TODO: Bitmap textures must be removed from VRAM
 }
 
-void Font::Initialize() {
+void Font::Init() {
 	//TODO: Bitmap textures must be submitted to the GPU and the character map must be prepped for rendering.
 }
 
-SharedPointer<Asset> FontParser::Parse(File& _fAssetFile) const {
-	SharedPointer<Font> pFontAsset = std::make_shared<Font>();
+Shared<Asset> FontParser::Parse(File& _fAssetFile) const {
+	Shared<Font> pFontAsset = std::make_shared<Font>();
 
 	_fAssetFile.GoToStart();
 

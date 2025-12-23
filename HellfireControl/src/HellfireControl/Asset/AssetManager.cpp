@@ -46,7 +46,7 @@ HCUID AssetManager::LoadAssetFromPath(const String& _strPath) {
 		return gId;
 	}
 
-	SharedPointer<Asset> pAsset = m_palLoader->LoadAsset(_strPath);
+	Shared<Asset> pAsset = m_palLoader->LoadAsset(_strPath);
 
 	if (pAsset != nullptr) {
 		m_mAssetCache[gId] = pAsset;
@@ -56,7 +56,7 @@ HCUID AssetManager::LoadAssetFromPath(const String& _strPath) {
 	return HCUID();
 }
 
-SharedPointer<Asset> AssetManager::GetAsset(const HCUID& _gId) {
+Shared<Asset> AssetManager::GetAsset(const HCUID& _gId) {
 	if (m_mAssetCache.contains(_gId)) {
 		return m_mAssetCache[_gId];
 	}
@@ -73,7 +73,7 @@ SharedPointer<Asset> AssetManager::GetAsset(const HCUID& _gId) {
 		return nullptr;
 	}
 
-	SharedPointer<Asset> pAsset = m_palLoader->LoadAsset(strPath);
+	Shared<Asset> pAsset = m_palLoader->LoadAsset(strPath);
 
 	if (pAsset != nullptr) {
 		m_mAssetCache[_gId] = pAsset;

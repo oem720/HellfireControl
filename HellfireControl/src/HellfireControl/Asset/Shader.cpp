@@ -18,12 +18,8 @@ Map<HCShaderStageType, HCShaderStageBit> ShaderParser::m_mStageBitTable = {
 	{SHADER_STAGE_CALLABLE, SHADER_STAGE_CALLABLE_BIT}
 };
 
-void Shader::Initialize() {
-
-}
-
-SharedPointer<Asset> ShaderParser::Parse(File& _fAssetFile) const {
-	SharedPointer<Shader> pShaderAsset = std::make_shared<Shader>();
+Shared<Asset> ShaderParser::Parse(File& _fAssetFile) const {
+	Shared<Shader> pShaderAsset = std::make_shared<Shader>();
 
 	HCShaderStageType sstStage;
 	_fAssetFile.Read(&sstStage, sizeof(HCShaderStageType));

@@ -591,7 +591,7 @@ Map<String, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_cross::Comp
 				.m_u16Flags = u16Flags,
 				.m_arrData = {
 					_cComp.get_decoration(aInput.id, spv::DecorationLocation),
-					_cComp.get_decoration(aInput.id, spv::DecorationComponent),
+					_cComp.get_decoration(aInput.id, spv::DecorationBinding),
 					stType.array.empty() ? 0 : stType.array[0],
 					stType.vecsize,
 					stType.columns
@@ -602,7 +602,7 @@ Map<String, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_cross::Comp
 
 			Console::DebugInfo("Found Input: \"" + strName + "\". Parameters:\n"
 				+ "\tLocation: " + std::to_string(svInput.m_arrData[0]) + "\n"
-				+ "\tComponent: " + std::to_string(svInput.m_arrData[1]) + "\n"
+				+ "\tBinding: " + std::to_string(svInput.m_arrData[1]) + "\n"
 				+ "\tIs Array: " + (svInput.m_u16Flags & 1 ? "true" : "false") + "\n"
 				+ "\tIs Unsized Array: " + ((svInput.m_u16Flags & 1) && svInput.m_arrData[2] == 0 ? "true" : "false") + "\n"
 				+ "\tArray Size (if not runtime): " + std::to_string(svInput.m_arrData[2]) + "\n"
@@ -688,7 +688,7 @@ Map<String, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_cross::Comp
 				.m_u16Flags = u16Flags,
 				.m_arrData = {
 					_cComp.get_decoration(aOutput.id, spv::DecorationLocation),
-					_cComp.get_decoration(aOutput.id, spv::DecorationComponent),
+					_cComp.get_decoration(aOutput.id, spv::DecorationBinding),
 					stType.array.empty() ? 0 : stType.array[0],
 					stType.vecsize,
 					stType.columns
@@ -699,7 +699,7 @@ Map<String, HCShaderVar> ShaderCompiler::ParseShaderVars(const spirv_cross::Comp
 
 			Console::DebugInfo("Found Output: \"" + strName + "\". Parameters:\n"
 				+ "\tLocation: " + std::to_string(svOutput.m_arrData[0]) + "\n"
-				+ "\tComponent: " + std::to_string(svOutput.m_arrData[1]) + "\n"
+				+ "\tBinding: " + std::to_string(svOutput.m_arrData[1]) + "\n"
 				+ "\tIs Array: " + (svOutput.m_u16Flags & 1 ? "true" : "false") + "\n"
 				+ "\tIs Unsized Array: " + ((svOutput.m_u16Flags & 1) && svOutput.m_arrData[2] == 0 ? "true" : "false") + "\n"
 				+ "\tArray Size (if not runtime): " + std::to_string(svOutput.m_arrData[2]) + "\n"

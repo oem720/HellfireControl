@@ -41,7 +41,7 @@ VkDescriptorSet VkDescriptorPoolManager::AllocateDescriptorSet(VkDevice _dDevice
 
 	VkDescriptorSetAllocateInfo dsaiAllocInfo = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-		.pNext = nullptr,
+		.pNext = VK_NULL_HANDLE,
 		.descriptorPool = dpPool,
 		.descriptorSetCount = 1,
 		.pSetLayouts = &_dslLayout
@@ -99,7 +99,7 @@ VkDescriptorPool VkDescriptorPoolManager::CreatePool(VkDevice _dDeviceHandle, ui
 
 	VkDescriptorPoolCreateInfo dpciPoolCreateInfo = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-		.pNext = nullptr,
+		.pNext = VK_NULL_HANDLE,
 		.flags = 0,
 		.maxSets = _u32SetCount,
 		.poolSizeCount = static_cast<uint32>(vPoolSizes.size()),
@@ -113,4 +113,62 @@ VkDescriptorPool VkDescriptorPoolManager::CreatePool(VkDevice _dDeviceHandle, ui
 	}
 
 	return dpCreatedPool;
+}
+
+void VkDescriptorWriter::WriteImage(uint32 _u32Binding, VkImageView _ivImageView, VkSampler _sSampler, VkImageLayout _ilImageLayout, VkDescriptorType _dtType) {
+	VkDescriptorImageInfo& diiInfo = m_dImageInfos.emplace_back(
+		VkDescriptorImageInfo{
+			.sampler = _sSampler,
+			.imageView = _ivImageView,
+			.imageLayout = _ilImageLayout
+		}
+	);
+
+	VkWriteDescriptorSet wdsWrite = {
+		.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+		.pNext = VK_NULL_HANDLE,
+		.dstSet = VK_NULL_HANDLE,
+		.dstBinding = _u32Binding,
+		.descriptorCount = 1,
+		.descriptorType = _dtType,
+		.pImageInfo = &diiInfo
+	};
+
+	m_vWriteBuffer.push_back(wdsWrite);
+}
+
+void VkDescriptorWriter::WriteBuffer(uint32 _u32Binding, VkBuffer _bBuffer, size_t _sSize, size_t _sOffset, VkDescriptorType _dtType) {
+	VkDescriptorBufferInfo& dbiInfo = m_dBufferInfos.emplace_back(
+		VkDescriptorBufferInfo {
+			.buffer = _bBuffer,
+			.offset = _sOffset,
+			.range = _sSize
+		}
+	);
+
+	VkWriteDescriptorSet wdsWrite = {
+		.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+		.pNext = VK_NULL_HANDLE,
+		.dstSet = VK_NULL_HANDLE,
+		.dstBinding = _u32Binding,
+		.descriptorCount = 1,
+		.descriptorType = _dtType,
+		.pBufferInfo = &dbiInfo
+	};
+
+	m_vWriteBuffer.push_back(wdsWrite);
+}
+
+void VkDescriptorWriter::Clear() {
+	m_dBufferInfos.clear();
+	m_dImageInfos.clear();
+	m_vWriteBuffer.clear();
+}
+
+void VkDescriptorWriter::UpdateDescriptorSets(VkDevice _dDeviceHandle, VkDescriptorSet _dsSet) {
+	for (auto& aWrite : m_vWriteBuffer) {
+		aWrite.dstSet = _dsSet;
+	}
+
+	vkUpdateDescriptorSets(_dDeviceHandle, static_cast<uint32>(m_vWriteBuffer.size()), m_vWriteBuffer.data(), 0, VK_NULL_HANDLE);
 }

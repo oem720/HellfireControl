@@ -8,7 +8,7 @@
 #include <HellfireControl/Util/Util.hpp>
 #include <HellfireControl/Core/Console.hpp>
 
-Array<UniquePointer<ShaderCompiler>> ShaderCompApplication::m_vShaderCompilers;
+Array<Unique<ShaderCompiler>> ShaderCompApplication::m_vShaderCompilers;
 
 Array<FixedArray<size_t, 3>> ShaderCompApplication::m_vShaderCompilerOrders = {
 	{ SHADER_FORMAT_GLSL, SHADER_FORMAT_HLSL, SHADER_FORMAT_SLANG }, // GLSL

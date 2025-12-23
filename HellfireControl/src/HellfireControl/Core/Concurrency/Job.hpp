@@ -13,12 +13,12 @@ enum JobStatus : uint8 {
 
 struct Job {
 	Function<void()> m_funcJobAction;
-	Array<SharedPointer<Job>> m_vDependencies;
+	Array<Shared<Job>> m_vDependencies;
 	std::atomic<JobStatus> m_jsStatus;
 
 	Job() = delete;
 
-	Job(Function<void()> _funcJob, const Array<SharedPointer<Job>>& _vDependencies = Array<SharedPointer<Job>>()) 
+	Job(Function<void()> _funcJob, const Array<Shared<Job>>& _vDependencies = Array<Shared<Job>>()) 
 		: m_funcJobAction(_funcJob), m_vDependencies(_vDependencies), m_jsStatus(IDLING) {}
 
 	bool Ready() {

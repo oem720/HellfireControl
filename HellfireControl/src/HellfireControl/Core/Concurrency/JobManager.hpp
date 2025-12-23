@@ -26,7 +26,7 @@ public:
 
 	JobManager(uint32 _u32WorkerCount);
 
-	void AddJob(SharedPointer<Job> _pJob);
+	void AddJob(Shared<Job> _pJob);
 
 	bool CheckBusyStatus();
 

@@ -8,7 +8,7 @@
 
 UIManager* UIManager::m_pInstance = nullptr;
 
-SharedPointer<Renderer> UIManager::m_pUIRenderer = nullptr;
+Shared<Renderer> UIManager::m_pUIRenderer = nullptr;
 
 UIManager* UIManager::GetInstance() {
 	if (m_pInstance == nullptr) {
@@ -25,8 +25,8 @@ void UIManager::Init() {
 	HCUID shdVertId = pamAssetManager->LoadAssetFromPath("./Assets/Shaders/Builtin/test_vert.hcshd");
 	HCUID shdFragId = pamAssetManager->LoadAssetFromPath("./Assets/Shaders/Builtin/test_frag.hcshd");
 
-	SharedPointer<Shader> pVertShaderAsset = std::dynamic_pointer_cast<Shader>(pamAssetManager->GetAsset(shdVertId));
-	SharedPointer<Shader> pFragShaderAsset = std::dynamic_pointer_cast<Shader>(pamAssetManager->GetAsset(shdFragId));
+	Shared<Shader> pVertShaderAsset = std::dynamic_pointer_cast<Shader>(pamAssetManager->GetAsset(shdVertId));
+	Shared<Shader> pFragShaderAsset = std::dynamic_pointer_cast<Shader>(pamAssetManager->GetAsset(shdFragId));
 
 	if (pVertShaderAsset == nullptr || pFragShaderAsset == nullptr) {
 		throw std::runtime_error("Invalid shader assets!");

@@ -1,4 +1,5 @@
 #version 450
+#pragma shader_stage(vertex)
 
 layout(binding = 0) uniform UniformBufferObject {
     mat4 model;

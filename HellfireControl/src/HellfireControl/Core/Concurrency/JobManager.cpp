@@ -10,7 +10,7 @@ JobManager::JobManager(uint32 _u32WorkerCount) {
 	}
 }
 
-void JobManager::AddJob(SharedPointer<Job> _pJob) {
+void JobManager::AddJob(Shared<Job> _pJob) {
 	m_jqQueue.AddJob(_pJob);
 
 	Poll();
@@ -27,7 +27,7 @@ void JobManager::BlockUntilQueueClear() {
 }
 
 void JobManager::WorkerExecute() {
-	SharedPointer<Job> pJob = nullptr;
+	Shared<Job> pJob = nullptr;
 
 	while (true) {
 		if (pJob == nullptr) {

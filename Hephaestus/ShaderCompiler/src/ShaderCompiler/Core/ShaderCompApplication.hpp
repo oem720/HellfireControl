@@ -6,7 +6,7 @@
 
 class ShaderCompApplication : public Application {
 private:
-	static Array<UniquePointer<ShaderCompiler>> m_vShaderCompilers;
+	static Array<Unique<ShaderCompiler>> m_vShaderCompilers;
 	static Array<FixedArray<size_t, 3>> m_vShaderCompilerOrders;
 
 	static Map<HCShaderFormat, String> m_mShaderFormatNames;

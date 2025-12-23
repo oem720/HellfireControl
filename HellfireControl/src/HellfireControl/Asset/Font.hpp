@@ -19,7 +19,7 @@ private:
 public:
 	~Font();
 
-	void Initialize();
+	void Init();
 
 	friend class FontProcessor;
 	friend class FontParser;
@@ -27,7 +27,7 @@ public:
 
 class FontParser : public AssetParser {
 public:
-	SharedPointer<Asset> Parse(File& _fAssetFile) const;
+	Shared<Asset> Parse(File& _fAssetFile) const;
 
 private:
 	FontType GetTypeFromFlags(uint8 _u8Flags) const;

@@ -14,9 +14,9 @@ class RenderManager {
 private:
 	WindowHandleGeneric m_whgWindowHandle = 0;
 
-	Map<RendererTag, SharedPointer<Renderer>> m_mRenderers;
+	Map<RendererTag, Shared<Renderer>> m_mRenderers;
 
-	Map<RendererTag, SharedPointer<Job>> m_mRenderJobs;
+	Map<RendererTag, Shared<Job>> m_mRenderJobs;
 
 	JobManager m_jmRenderJobManager;
 
@@ -26,13 +26,13 @@ private:
 
 	void InitPlatformObjects(const String& _strAppName, uint32 _u32AppVersion);
 
-	void RegisterPlatformRenderer(const SharedPointer<Renderer>& _pRenderer);
+	void RegisterPlatformRenderer(const Shared<Renderer>& _pRenderer);
 
 	void PresentFrame();
 
 	void InitRenderJobs();
 
-	SharedPointer<Job> RecursiveInitRenderJobs(RendererTag _rtTag, int _iDepthLimit, int _iDepth = 0);
+	Shared<Job> RecursiveInitRenderJobs(RendererTag _rtTag, int _iDepthLimit, int _iDepth = 0);
 
 	void CleanupPlatformObjects();
 
@@ -49,7 +49,7 @@ public:
 
 	static RenderManager* GetInstance();
 
-	void AddRenderer(RendererTag _rtTag, SharedPointer<Renderer> _pRenderer);
+	void AddRenderer(RendererTag _rtTag, Shared<Renderer> _pRenderer);
 
 	void Init(const String& _strAppName, uint32 _u32AppVersion, WindowHandleGeneric _whgWindowHandle);
 

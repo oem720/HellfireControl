@@ -2,6 +2,8 @@
 
 #include <Platform/GLCommon.hpp>
 
+#include <HellfireControl/Render/RendererStructs.hpp>
+
 struct VkQueueFamilyIndices {
 	Optional<uint32> m_u32GraphicsFamily;
 	Optional<uint32> m_u32PresentFamily;

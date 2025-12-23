@@ -205,7 +205,7 @@ enum PrimitiveTopology : uint8 {
     PRIMITIVE_TOPOLOGY_PATCH_LIST = 10
 };
 
-enum BlendFactor : uint8 {
+enum BlendFactor : uint32 {
     BLEND_FACTOR_ZERO = 0,
     BLEND_FACTOR_ONE = 1,
     BLEND_FACTOR_SRC_COLOR = 2,
@@ -227,7 +227,7 @@ enum BlendFactor : uint8 {
     BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA = 18
 };
 
-enum BlendOperator : uint8 {
+enum BlendOperator : uint32 {
     BLEND_OP_ADD = 0,
     BLEND_OP_SUBTRACT = 1,
     BLEND_OP_REVERSE_SUBTRACT = 2,
@@ -243,7 +243,7 @@ enum ColorComponentFlags : uint8 {
     COLOR_COMPONENT_A_BIT = (1 << 3)
 };
 
-enum DynamicState : uint8 {
+enum DynamicState : uint32 {
     DYNAMIC_STATE_VIEWPORT = 0,
     DYNAMIC_STATE_SCISSOR = 1,
     DYNAMIC_STATE_LINE_WIDTH = 2,
@@ -337,7 +337,7 @@ struct StencilOperatorState {
 };
 
 struct BlendAttachmentState {
-    bool m_bEnableBlend = false;
+    uint32 m_bEnableBlend = false;
     BlendFactor m_bfSrcColorBlendFactor = BLEND_FACTOR_ONE;
     BlendFactor m_bfDstColorBlendFactor = BLEND_FACTOR_ZERO;
     BlendOperator m_boColorBlendOp = BLEND_OP_ADD;
@@ -348,7 +348,7 @@ struct BlendAttachmentState {
 };
 
 struct ShaderPipelineData {
-    Array<SharedPointer<Shader>> m_vShaderStages;
+    Array<Shared<Shader>> m_vShaderStages;
 
 	PipelineType m_ptPipelineType = PIPELINE_TYPE_GRAPHICS;
     CullMode m_cmCullMode = CULL_MODE_NONE;

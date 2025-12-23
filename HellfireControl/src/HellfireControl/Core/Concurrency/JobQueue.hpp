@@ -6,7 +6,7 @@
 
 class JobQueue {
 private:
-	Queue<SharedPointer<Job>> m_qJobs;
+	Queue<Shared<Job>> m_qJobs;
 	Mutex m_mutLock;
 
 	ConditionVariable m_cvJobsCheck;
@@ -14,9 +14,9 @@ private:
 public:
 	JobQueue() : m_qJobs(), m_mutLock() {}
 
-	void AddJob(SharedPointer<Job> _pJob);
+	void AddJob(Shared<Job> _pJob);
 
-	SharedPointer<Job> PopJob();
+	Shared<Job> PopJob();
 
 	[[nodiscard]] HC_INLINE bool Empty() {
 		std::lock_guard<Mutex> lgLock(m_mutLock);

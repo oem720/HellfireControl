@@ -37,16 +37,16 @@ public:
 class Renderer {
 private:
 	uint8 m_u8Flags;
-	std::vector<RendererTag> m_vDependencies;
+	Array<RendererTag> m_vDependencies;
 	
-	SharedPointer<PlatformRenderer> m_pPlatformRenderer;
+	Shared<PlatformRenderer> m_pPlatformRenderer;
 
 	void CreatePlatformRenderpass(const RenderpassData& _rdRenderpass);
 
 public:
 	Renderer() = delete;
 
-	Renderer(uint8 _u8Flags, const std::vector<RendererTag>& _vDependencies, const RenderpassData& _rdRenderpass)
+	Renderer(uint8 _u8Flags, const Array<RendererTag>& _vDependencies, const RenderpassData& _rdRenderpass)
 		: m_u8Flags(_u8Flags)
 		, m_vDependencies(_vDependencies) {
 		CreatePlatformRenderpass(_rdRenderpass);
@@ -59,7 +59,7 @@ public:
 	void Render() { m_pPlatformRenderer->Render(); }
 	void Cleanup() { m_pPlatformRenderer->Cleanup(); }
 
-	[[nodiscard]] HC_INLINE const std::vector<RendererTag>& GetDependencies() const { return m_vDependencies; }
+	[[nodiscard]] HC_INLINE const Array<RendererTag>& GetDependencies() const { return m_vDependencies; }
 	[[nodiscard]] HC_INLINE size_t GetDependencyCount() const { return m_vDependencies.size(); }
-	[[nodiscard]] HC_INLINE SharedPointer<PlatformRenderer> GetPlatformRenderer() { return m_pPlatformRenderer; }
+	[[nodiscard]] HC_INLINE Shared<PlatformRenderer> GetPlatformRenderer() { return m_pPlatformRenderer; }
 };

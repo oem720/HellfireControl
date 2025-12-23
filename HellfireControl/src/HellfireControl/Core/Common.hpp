@@ -92,7 +92,7 @@ template<typename T, size_t S> using FixedArray = std::array<T, S>;
 template<typename T> using List = std::list<T>;
 template<typename T> using Queue = std::queue<T>;
 template<typename T> using DoubleEndedQueue = std::deque<T>;
-template<typename T> using Set = std::set<T>;
+template<typename T, typename C = std::less<T>> using Set = std::set<T, C>;
 template<typename T> using Optional = std::optional<T>;
 template<typename T> using Span = std::span<T>;
 template<typename K, typename V> using Map = std::map<K, V>;
@@ -105,9 +105,9 @@ typedef std::condition_variable ConditionVariable;
 typedef std::filesystem::path FilePath;
 typedef std::fstream FileStream;
 template<typename T> using Function = std::function<T>;
-template<typename T, class D = std::default_delete<T>> using UniquePointer = std::unique_ptr<T, D>;
-template<typename T> using SharedPointer = std::shared_ptr<T>;
-template<typename T> using WeakPointer = std::weak_ptr<T>;
+template<typename T, class D = std::default_delete<T>> using Unique = std::unique_ptr<T, D>;
+template<typename T> using Shared = std::shared_ptr<T>;
+template<typename T> using Weak = std::weak_ptr<T>;
 
 typedef uint32 UTF8PaddedChar;
 

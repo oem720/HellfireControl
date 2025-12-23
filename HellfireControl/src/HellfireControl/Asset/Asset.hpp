@@ -7,5 +7,5 @@
 
 class Asset {
 public:
-	virtual void Initialize() = 0;
+	virtual void Init() = 0;
 };

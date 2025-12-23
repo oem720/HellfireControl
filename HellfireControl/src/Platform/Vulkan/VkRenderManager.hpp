@@ -16,14 +16,14 @@ struct VkFrameData {
 
 	void Cleanup(VkDevice _dDevice) {
 		//Image views are cleaned up during swapchain cleanup
-		vkDestroySemaphore(_dDevice, m_sImageAvailableSemaphore, nullptr);
-		vkDestroySemaphore(_dDevice, m_sRenderFinishedSemaphore, nullptr);
-		vkDestroyFence(_dDevice, m_fInFlightFence, nullptr);
+		vkDestroySemaphore(_dDevice, m_sImageAvailableSemaphore, VK_NULL_HANDLE);
+		vkDestroySemaphore(_dDevice, m_sRenderFinishedSemaphore, VK_NULL_HANDLE);
+		vkDestroyFence(_dDevice, m_fInFlightFence, VK_NULL_HANDLE);
 
 		m_dpmDescriptorPool.Cleanup(_dDevice);
 
 		vkFreeCommandBuffers(_dDevice, m_cpCommandPool, 1, &m_cbMasterCommandBuffer);
-		vkDestroyCommandPool(_dDevice, m_cpCommandPool, nullptr);
+		vkDestroyCommandPool(_dDevice, m_cpCommandPool, VK_NULL_HANDLE);
 	}
 };
 
@@ -60,5 +60,6 @@ private:
 	static void RecreateSwapchain(WindowHandleGeneric _whgHandle);
 
 	friend class RenderManager;
+	friend class VkShader;
 	friend class VkRenderer;
 };

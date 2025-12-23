@@ -15,7 +15,7 @@ public:
 private:
 	VkDescriptorPool GetPool(VkDevice _dDeviceHandle);
 
-	VkDescriptorPool CreatePool(VkDevice _dDeviceHandle, uint32 _u32SetCount, std::span<PoolSizeRatio> _spRatios);
+	VkDescriptorPool CreatePool(VkDevice _dDeviceHandle, uint32 _u32SetCount, Span<PoolSizeRatio> _spRatios);
 
 	Array<PoolSizeRatio> m_vPoolSizeRatios;
 	Array<VkDescriptorPool> m_vFullPools;
@@ -23,7 +23,7 @@ private:
 	uint32 m_u32SetsPerPool = 0;
 
 public:
-	void Init(VkDevice _dDeviceHandle, uint32 _u32InitialSetCount, std::span<PoolSizeRatio> _spRatios);
+	void Init(VkDevice _dDeviceHandle, uint32 _u32InitialSetCount, Span<PoolSizeRatio> _spRatios);
 
 	void ResetPools(VkDevice _dDeviceHandle);
 

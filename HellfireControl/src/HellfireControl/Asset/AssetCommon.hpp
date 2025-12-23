@@ -7,7 +7,7 @@
 
 class AssetParser {
 public:
-	virtual SharedPointer<Asset> Parse(File& _fAssetFile) const = 0;
+	virtual Shared<Asset> Parse(File& _fAssetFile) const = 0;
 };
 
 struct BakedGlyphBoxInfo {

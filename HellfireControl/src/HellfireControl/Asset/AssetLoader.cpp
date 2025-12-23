@@ -19,7 +19,7 @@ void AssetLoader::Init() {
 	m_mAssetParsers[HC_SHADER_IDENTIFIER] = std::make_unique<ShaderParser>();
 }
 
-SharedPointer<Asset> AssetLoader::LoadAsset(const String& _strPath) {
+Shared<Asset> AssetLoader::LoadAsset(const String& _strPath) {
 	File fAsset(_strPath, FILE_OPEN_FLAG_READ | FILE_OPEN_FLAG_BINARY);
 
 	uint32 u32MagicNumber;

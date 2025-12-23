@@ -17,7 +17,7 @@ private:
 	uint32 m_u32Width;
 	uint32 m_u32Height;
 	uint32 m_u32PixelCount;
-	UniquePointer<Pixel[]> m_pPixels;
+	Unique<Pixel[]> m_pPixels;
 
 public:
 	Image() :
@@ -84,7 +84,7 @@ public:
 
 	[[nodiscard]] HC_INLINE uint32 GetPixelCount() const { return m_u32PixelCount; }
 
-	[[nodiscard]] HC_INLINE const UniquePointer<Pixel[]>& GetPixelData() const { return m_pPixels; }
+	[[nodiscard]] HC_INLINE const Unique<Pixel[]>& GetPixelData() const { return m_pPixels; }
 
 	[[nodiscard]] HC_INLINE Pixel GetPixel(uint32 _u32X, uint32 _u32Y) { return m_pPixels[_u32Y * m_u32Width + _u32X]; }
 };

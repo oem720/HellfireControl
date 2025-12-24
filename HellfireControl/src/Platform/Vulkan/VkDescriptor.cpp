@@ -2,6 +2,8 @@
 #include <Platform/Vulkan/VkDescriptor.hpp>
 #include <HellfireControl/Math/Math.hpp>
 
+#include <Platform/Vulkan/VkRenderer.hpp>
+
 void VkDescriptorPoolManager::Init(VkDevice _dDeviceHandle, uint32 _u32InitialSetCount, Span<PoolSizeRatio> _spRatios) {
 	m_vPoolSizeRatios = Array<PoolSizeRatio>(_spRatios.begin(), _spRatios.end());
 
@@ -171,4 +173,56 @@ void VkDescriptorWriter::UpdateDescriptorSets(VkDevice _dDeviceHandle, VkDescrip
 	}
 
 	vkUpdateDescriptorSets(_dDeviceHandle, static_cast<uint32>(m_vWriteBuffer.size()), m_vWriteBuffer.data(), 0, VK_NULL_HANDLE);
+}
+
+VkDescriptorSetLayoutBuilder& VkDescriptorSetLayoutBuilder::AddBinding(const HCShaderVar& _svVar, VkShaderStageFlagBits _ssfbStage) {
+	auto aIter = std::find_if(
+		m_vBindings.begin(),
+		m_vBindings.end(),
+		[&](const VkDescriptorSetLayoutBinding& _dslbBinding) {
+			return _dslbBinding.binding == _svVar.m_arrData[0];
+		}
+	);
+
+	if(aIter != m_vBindings.end()) {
+		if (aIter->descriptorType == VkRenderer::m_mShaderVarTranslationTable[static_cast<HCShaderVarType>(_svVar.m_u16Type)]) {
+			aIter->stageFlags |= _ssfbStage;
+		}
+		
+		return *this;
+	}
+
+	m_vBindings.push_back(
+		VkDescriptorSetLayoutBinding {
+			.binding = _svVar.m_arrData[0],
+			.descriptorType = VkRenderer::m_mShaderVarTranslationTable[static_cast<HCShaderVarType>(_svVar.m_u16Type)],
+			.descriptorCount = 1,
+			.stageFlags = static_cast<VkShaderStageFlags>(_ssfbStage),
+			.pImmutableSamplers = VK_NULL_HANDLE
+		}
+	);
+
+	return *this;
+}
+
+VkDescriptorSetLayout VkDescriptorSetLayoutBuilder::Build(VkDevice _dDeviceHandle) {
+	VkDescriptorSetLayoutCreateInfo dslciLayoutInfo = {
+		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+		.pNext = VK_NULL_HANDLE,
+		.flags = 0,
+		.bindingCount = static_cast<uint32>(m_vBindings.size()),
+		.pBindings = m_vBindings.data()
+	};
+
+	VkDescriptorSetLayout dslLayout = VK_NULL_HANDLE;
+
+	if (vkCreateDescriptorSetLayout(_dDeviceHandle, &dslciLayoutInfo, nullptr, &dslLayout) != VK_SUCCESS) {
+		throw std::runtime_error("ERROR: Failed to create descriptor set layout!");
+	}
+
+	return dslLayout;
+}
+
+void VkDescriptorSetLayoutBuilder::Clear() {
+	m_vBindings.clear();
 }

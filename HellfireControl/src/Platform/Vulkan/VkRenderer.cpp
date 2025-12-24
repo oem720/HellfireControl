@@ -221,9 +221,9 @@ void VkRenderer::CreatePipelines() {
 }
 
 VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(const ShaderPipelineData& _spdPipelineData) {
+	Array<VkPipelineShaderStageCreateInfo> vShaderStages = CreateShaderStages(_spdPipelineData);
 	Array<VkDescriptorSetLayout> vDescriptorSetLayouts = CreateDescriptorSetLayouts(_spdPipelineData);
 	Array<VkPushConstantRange> vPushConstantRanges = CreatePushConstantRanges(_spdPipelineData);
-	Array<VkPipelineShaderStageCreateInfo> vShaderStages = CreateShaderStages(_spdPipelineData);
 	
 	VkPipelineLayout plPipelineLayout = VK_NULL_HANDLE;
 	VkPipeline pPipeline = VK_NULL_HANDLE;
@@ -285,7 +285,7 @@ VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(const ShaderPipelineData
 		.depthClampEnable = VK_FALSE,
 		.rasterizerDiscardEnable = VK_FALSE,
 		.polygonMode = static_cast<VkPolygonMode>(_spdPipelineData.m_pmPolygonMode),
-		.cullMode = static_cast<VkCullModeFlagBits>(_spdPipelineData.m_cmCullMode),
+		.cullMode = static_cast<VkCullModeFlags>(_spdPipelineData.m_cmCullMode),
 		.frontFace = static_cast<VkFrontFace>(_spdPipelineData.m_woFrontFace),
 		.depthBiasEnable = VK_FALSE,
 		.depthBiasClamp = 0.0f,
@@ -354,6 +354,7 @@ VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(const ShaderPipelineData
 		.flags = 0,
 		.stageCount = static_cast<uint32>(vShaderStages.size()),
 		.pStages = vShaderStages.data(),
+		.pVertexInputState = &pvisciVertexInputInfo,
 		.pInputAssemblyState = &piasciInputAssemblyInfo,
 		.pTessellationState = nullptr, //TODO: Add tessellation support
 		.pViewportState = &pvsiViewportStateInfo,
@@ -388,13 +389,85 @@ VkRenderPipelineData VkRenderer::CreateRaytracingPipeline(const ShaderPipelineDa
 	return VkRenderPipelineData();
 }
 
-Array<VkDescriptorSetLayout> VkRenderer::CreateDescriptorSetLayouts(const ShaderPipelineData& _spdPipelineData) {
+Array<VkPipelineShaderStageCreateInfo> VkRenderer::CreateShaderStages(const ShaderPipelineData& _spdPipelineData) {
+	Array<VkPipelineShaderStageCreateInfo> vShaderStages;
 
-	return Array<VkDescriptorSetLayout>();
+	for(const auto& aShader : _spdPipelineData.m_vShaderStages) {
+		Shared<VkShader> pVkShader = std::dynamic_pointer_cast<VkShader>(aShader->GetPlatformShader());
+
+		VkPipelineShaderStageCreateInfo pssciShaderStageInfo = {
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0,
+			.stage = static_cast<VkShaderStageFlagBits>(aShader->GetShaderStageBit()),
+			.module = pVkShader->GetShaderModule(),
+			.pName = "main", //TODO: Make shader entry point and specialization info configurable.
+			.pSpecializationInfo = nullptr
+		};
+
+		vShaderStages.push_back(pssciShaderStageInfo);
+	}
+
+	return vShaderStages;
+}
+
+Array<VkDescriptorSetLayout> VkRenderer::CreateDescriptorSetLayouts(const ShaderPipelineData& _spdPipelineData) {
+	Array<VkDescriptorSetLayout> vDescriptorSetLayouts;
+
+	Map<uint32, VkDescriptorSetLayoutBuilder> mSetBindings;
+	for(const auto& aShader : _spdPipelineData.m_vShaderStages) {
+		auto aVars = aShader->GetShaderVars();
+
+		for (const auto& aShaderVar : aVars) {
+			if (aShaderVar.second.m_u16Type == VAR_STAGE_INPUT ||
+				aShaderVar.second.m_u16Type == VAR_STAGE_OUTPUT ||
+				aShaderVar.second.m_u16Type == VAR_BUILTIN_STAGE_INPUT ||
+				aShaderVar.second.m_u16Type == VAR_BUILTIN_STAGE_OUTPUT ||
+				aShaderVar.second.m_u16Type == VAR_PUSH_CONSTANT_BUFFER ||
+				aShaderVar.second.m_u16Type == VAR_GL_PLAIN_UNIFORM) {
+				continue; //None of these vars generate descriptors
+			}
+
+			mSetBindings[aShaderVar.second.m_arrData[1]].AddBinding(aShaderVar.second, static_cast<VkShaderStageFlagBits>(aShader->GetShaderStageBit()));
+		}
+	}
+
+	for (auto& aSetBindingsPair : mSetBindings) {
+		vDescriptorSetLayouts.push_back(aSetBindingsPair.second.Build(VkRenderManager::m_dDeviceHandle));
+	}
+
+	return vDescriptorSetLayouts;
 }
 
 Array<VkPushConstantRange> VkRenderer::CreatePushConstantRanges(const ShaderPipelineData& _spdPipelineData) {
+	Map<String, VkPushConstantRange> mPushConstantRangeNames;
 
-	return Array<VkPushConstantRange>();
+	for(const auto& aShader : _spdPipelineData.m_vShaderStages) {
+		auto aVars = aShader->GetShaderVars();
+		for (const auto& aShaderVar : aVars) {
+			if (aShaderVar.second.m_u16Type != VAR_PUSH_CONSTANT_BUFFER) {
+				continue; //Only push constant buffers are relevant here.
+			}
+
+			if (mPushConstantRangeNames.find(aShaderVar.first) != mPushConstantRangeNames.end()) {
+				mPushConstantRangeNames[aShaderVar.first].stageFlags |= aShader->GetShaderStageBit();
+				continue;
+			}
+
+			mPushConstantRangeNames[aShaderVar.first] = {
+				.stageFlags = static_cast<VkShaderStageFlags>(aShader->GetShaderStageBit()),
+				.offset = aShaderVar.second.m_arrData[0],
+				.size = aShaderVar.second.m_arrData[1]
+			};
+		}
+	}
+
+	Array<VkPushConstantRange> vPushConstantRanges;
+
+	for(const auto& aRangePair : mPushConstantRangeNames) {
+		vPushConstantRanges.push_back(aRangePair.second);
+	}
+
+	return vPushConstantRanges;
 }
 #endif

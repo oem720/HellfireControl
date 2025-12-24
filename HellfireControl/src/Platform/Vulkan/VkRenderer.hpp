@@ -40,4 +40,6 @@ public:
 	void Cleanup();
 
 	Array<VkDescriptorType> GetDescriptorCounts() const;
+
+	friend class VkDescriptorSetLayoutBuilder;
 };

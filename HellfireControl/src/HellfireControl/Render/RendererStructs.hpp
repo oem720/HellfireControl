@@ -271,7 +271,9 @@ enum DynamicState : uint32 {
     DYNAMIC_STATE_DEPTH_BOUNDS = 5,
     DYNAMIC_STATE_STENCIL_COMPARE_MASK = 6,
     DYNAMIC_STATE_STENCIL_WRITE_MASK = 7,
-    DYNAMIC_STATE_STENCIL_REFERENCE = 8
+    DYNAMIC_STATE_STENCIL_REFERENCE = 8,
+    DYNAMIC_STATE_VIEWPORT_WITH_COUNT = 1000267003, //These have been directly pulled from Vulkan. It's possible we may
+    DYNAMIC_STATE_SCISSOR_WITH_COUNT = 1000267004   //need to add more of them in the future, but will only do so if requested.
 };
 
 enum PipelineStageFlags : uint32 {

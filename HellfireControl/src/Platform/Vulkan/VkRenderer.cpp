@@ -271,13 +271,25 @@ VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(uint32 _u32Renderpass, c
 		.pDynamicStates = reinterpret_cast<const VkDynamicState*>(_spdPipelineData.m_vDynamicStates.data())
 	};
 
+	uint32 u32ViewportMin = std::find(
+		_spdPipelineData.m_vDynamicStates.begin(),
+		_spdPipelineData.m_vDynamicStates.end(),
+		DYNAMIC_STATE_VIEWPORT_WITH_COUNT
+	) != _spdPipelineData.m_vDynamicStates.end() ? 0 : 1;
+	
+	uint32 u32ScissorMin = std::find(
+		_spdPipelineData.m_vDynamicStates.begin(),
+		_spdPipelineData.m_vDynamicStates.end(),
+		DYNAMIC_STATE_SCISSOR_WITH_COUNT
+	) != _spdPipelineData.m_vDynamicStates.end() ? 0 : 1;
+
 	VkPipelineViewportStateCreateInfo pvsiViewportStateInfo = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
 		.pNext = nullptr,
 		.flags = 0,
-		.viewportCount = static_cast<uint32>(_spdPipelineData.m_vViewports.size()),
+		.viewportCount = Math::Clamp(static_cast<uint32>(_spdPipelineData.m_vViewports.size()), u32ViewportMin, UINT32_MAX),
 		.pViewports = reinterpret_cast<const VkViewport*>(_spdPipelineData.m_vViewports.data()),
-		.scissorCount = static_cast<uint32>(_spdPipelineData.m_vScissors.size()),
+		.scissorCount = Math::Clamp(static_cast<uint32>(_spdPipelineData.m_vScissors.size()), u32ScissorMin, UINT32_MAX),
 		.pScissors = reinterpret_cast<const VkRect2D*>(_spdPipelineData.m_vScissors.data())
 	};
 

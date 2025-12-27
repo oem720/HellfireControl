@@ -31,6 +31,17 @@ public:
 	VkDescriptorSet AllocateDescriptorSet(VkDevice _dDeviceHandle, VkDescriptorSetLayout _dslLayout);
 };
 
+class VkDescriptorSetLayoutBuilder {
+private:
+	Array<VkDescriptorSetLayoutBinding> m_vBindings;
+
+public:
+	VkDescriptorSetLayoutBuilder& AddBinding(const HCShaderVar& _svVar, VkShaderStageFlagBits _ssfbStage);
+	VkDescriptorSetLayout Build(VkDevice _dDeviceHandle);
+	
+	void Clear();
+};
+
 class VkDescriptorWriter {
 private:
 	DoubleEndedQueue<VkDescriptorImageInfo> m_dImageInfos;
@@ -43,15 +54,4 @@ public:
 
 	void Clear();
 	void UpdateDescriptorSets(VkDevice _dDeviceHandle, VkDescriptorSet _dsSet);
-};
-
-class VkDescriptorSetLayoutBuilder {
-private:
-	Array<VkDescriptorSetLayoutBinding> m_vBindings;
-
-public:
-	VkDescriptorSetLayoutBuilder& AddBinding(const HCShaderVar& _svVar, VkShaderStageFlagBits _ssfbStage);
-	VkDescriptorSetLayout Build(VkDevice _dDeviceHandle);
-	
-	void Clear();
 };

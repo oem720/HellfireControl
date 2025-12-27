@@ -235,6 +235,25 @@ enum BlendOperator : uint32 {
     BLEND_OP_MAX = 4
 };
 
+enum LogicOperator : uint32 {
+    LOGIC_OP_CLEAR = 0,
+    LOGIC_OP_AND = 1,
+    LOGIC_OP_AND_REVERSE = 2,
+    LOGIC_OP_COPY = 3,
+    LOGIC_OP_AND_INVERTED = 4,
+    LOGIC_OP_NO_OP = 5,
+    LOGIC_OP_XOR = 6,
+    LOGIC_OP_OR = 7,
+    LOGIC_OP_NOR = 8,
+    LOGIC_OP_EQUIVALENT = 9,
+    LOGIC_OP_INVERT = 10,
+    LOGIC_OP_OR_REVERSE = 11,
+    LOGIC_OP_COPY_INVERTED = 12,
+    LOGIC_OP_OR_INVERTED = 13,
+    LOGIC_OP_NAND = 14,
+    LOGIC_OP_SET = 15
+};
+
 enum ColorComponentFlags : uint8 {
     COLOR_COMPONENT_NONE = 0,
     COLOR_COMPONENT_R_BIT = (1 << 0),
@@ -336,6 +355,22 @@ struct StencilOperatorState {
     uint32 m_u32Reference = 0;
 };
 
+struct Viewport {
+    float m_fX = 0.0f;
+    float m_fY = 0.0f;
+    float m_fWidth = 0.0f;
+    float m_fHeight = 0.0f;
+    float m_fMinDepth = 0.0f;
+    float m_fMaxDepth = 1.0f;
+};
+
+struct Scissor {
+    int32 m_i32OffsetX = 0;
+    int32 m_i32OffsetY = 0;
+    uint32 m_u32ExtentX = 0;
+    uint32 m_u32ExtentY = 0;
+};
+
 struct BlendAttachmentState {
     uint32 m_bEnableBlend = false;
     BlendFactor m_bfSrcColorBlendFactor = BLEND_FACTOR_ONE;
@@ -356,16 +391,39 @@ struct ShaderPipelineData {
     PolygonMode m_pmPolygonMode = POLYGON_MODE_FILL;
     CompareOperator m_coDepthCompareOp = COMPARE_OPERATOR_NEVER;
     PrimitiveTopology m_ptTopology = PRIMITIVE_TOPOLOGY_POINT_LIST;
+	LogicOperator m_loLogicOp = LOGIC_OP_CLEAR;
 
     StencilOperatorState m_sosStencilFront;
     StencilOperatorState m_sosStencilBack;
 
+	bool m_bEnablePrimitiveRestart = false;
+    bool m_bEnableDepthClamp = false;
+	bool m_bEnableRasterizerDiscard = false;
+	bool m_bEnableDepthBias = false;
+    bool m_bEnableSampleShading = false;
+	bool m_bEnableAlphaToCoverage = false;
+	bool m_bEnableAlphaToOne = false;
     bool m_bEnableDepthTest = true;
     bool m_bEnableDepthWrite = true;
+	bool m_bEnableDepthBoundsTest = false;
     bool m_bEnableStencilTest = false;
+    bool m_bEnableLogicOperator = false;
 
+    float m_fDepthBiasClamp = 0.0f;
+	float m_fDepthBiasSlopeFactor = 0.0f;
+	float m_fLineWidth = 1.0f;
+	float m_fMinSampleShading = 1.0f;
+	float m_fMinDepthBounds = 0.0f;
+	float m_fMaxDepthBounds = 1.0f;
+
+	Vec4F m_v4BlendConstants = Vec4F(0.0f, 0.0f, 0.0f, 0.0f);
+
+	uint32 m_u32PatchControlPoints = 0;
     uint32 m_u32SampleCount = 1;
 
+    Array<Viewport> m_vViewports;
+    Array<Scissor> m_vScissors;
+    Array<uint32> m_vSampleMasks;
     Array<BlendAttachmentState> m_vBlendAttachments;
     Array<DynamicState> m_vDynamicStates;
 };

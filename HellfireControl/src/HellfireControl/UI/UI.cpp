@@ -78,6 +78,8 @@ void UIManager::Init() {
 							.m_bEnableDepthTest = true,
 							.m_bEnableDepthWrite = true,
 							.m_bEnableStencilTest = false,
+							.m_fMinDepthBounds = 1.0f,
+							.m_fMaxDepthBounds = 0.0f,
 							.m_u32SampleCount = 1,
 							.m_vBlendAttachments = {
 								BlendAttachmentState {

@@ -22,7 +22,7 @@ private:
 	void CreateRenderpass();
 	void CreatePipelines();
 
-	VkRenderPipelineData CreateGraphicsPipeline(const ShaderPipelineData& _spdPipelineData);
+	VkRenderPipelineData CreateGraphicsPipeline(uint32 _u32Renderpass, const ShaderPipelineData& _spdPipelineData);
 	VkRenderPipelineData CreateComputePipeline(const ShaderPipelineData& _spdPipelineData);
 	VkRenderPipelineData CreateRaytracingPipeline(const ShaderPipelineData& _spdPipelineData);
 

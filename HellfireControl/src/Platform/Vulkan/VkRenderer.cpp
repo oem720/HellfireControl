@@ -250,6 +250,7 @@ VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(uint32 _u32Subpass, cons
 		.SetRenderpass(m_rpRenderpass)
 		.SetSubpass(_u32Subpass)
 		.SetPipelineLayout(plPipelineLayout)
+		.SetShaderStages(vShaderStages)
 		.SetVertexInputState(pVertexShader->GetVertexInputBindings(), pVertexShader->GetVertexInputAttributes())
 		.SetInputAssemblyState(_spdPipelineData)
 		.SetTessellationState(_spdPipelineData)

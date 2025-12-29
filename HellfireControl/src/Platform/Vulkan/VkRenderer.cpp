@@ -5,6 +5,7 @@
 #include <Platform/Vulkan/VkRenderer.hpp>
 #include <Platform/Vulkan/VkRenderManager.hpp>
 #include <Platform/Vulkan/VkShader.hpp>
+#include <Platform/Vulkan/VkPipelineBuilder.hpp>
 #include <Platform/Vulkan/VkUtil.hpp>
 
 Map<HCShaderVarType, VkDescriptorType> VkRenderer::m_mShaderVarTranslationTable = {
@@ -220,14 +221,22 @@ void VkRenderer::CreatePipelines() {
 	}
 }
 
-VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(uint32 _u32Renderpass, const ShaderPipelineData& _spdPipelineData) {
+VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(uint32 _u32Subpass, const ShaderPipelineData& _spdPipelineData) {
+	VkGraphicsPipelineLayoutBuilder plbBuilder;
+	VkGraphicsPipelineBuilder pbBuilder;
+
 	Array<VkPipelineShaderStageCreateInfo> vShaderStages = CreateShaderStages(_spdPipelineData);
 	Array<VkDescriptorSetLayout> vDescriptorSetLayouts = CreateDescriptorSetLayouts(_spdPipelineData);
-	Array<VkPushConstantRange> vPushConstantRanges = CreatePushConstantRanges(_spdPipelineData);
 	
-	VkPipelineLayout plPipelineLayout = VK_NULL_HANDLE;
-	VkPipeline pPipeline = VK_NULL_HANDLE;
+	VkPipelineLayout plPipelineLayout = plbBuilder
+		.SetDescriptorSetLayouts(vDescriptorSetLayouts)
+		.SetPushConstants(_spdPipelineData)
+		.Build();
 
+	plbBuilder.Clear();
+
+	//TODO: Properly handle this such that it doesn't risk attempting to dereference a null pointer, as will happen
+	//with task/mesh shader pipelines. It should also gracefully fail should a vertex shader not be provided.
 	Shared<VkShader> pVertexShader = std::dynamic_pointer_cast<VkShader>(
 		(*std::find_if(
 			_spdPipelineData.m_vShaderStages.begin(),
@@ -237,154 +246,22 @@ VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(uint32 _u32Renderpass, c
 		->GetPlatformShader()
 	);
 
-	//TODO: Handle Task/Mesh shaders, which do not use this structure at all.
-	VkPipelineVertexInputStateCreateInfo pvisciVertexInputInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.vertexBindingDescriptionCount = static_cast<uint32>(pVertexShader->GetVertexInputBindings().size()),
-		.pVertexBindingDescriptions = pVertexShader->GetVertexInputBindings().data(),
-		.vertexAttributeDescriptionCount = static_cast<uint32>(pVertexShader->GetVertexInputAttributes().size()),
-		.pVertexAttributeDescriptions = pVertexShader->GetVertexInputAttributes().data()
-	};
+	VkPipeline pPipeline = pbBuilder
+		.SetRenderpass(m_rpRenderpass)
+		.SetSubpass(_u32Subpass)
+		.SetPipelineLayout(plPipelineLayout)
+		.SetVertexInputState(pVertexShader->GetVertexInputBindings(), pVertexShader->GetVertexInputAttributes())
+		.SetInputAssemblyState(_spdPipelineData)
+		.SetTessellationState(_spdPipelineData)
+		.SetDynamicState(_spdPipelineData)
+		.SetViewportState(_spdPipelineData)
+		.SetRasterizationState(_spdPipelineData)
+		.SetMultisampleState(_spdPipelineData)
+		.SetDepthStencilState(_spdPipelineData)
+		.SetColorBlendState(_spdPipelineData)
+		.Build();
 
-	VkPipelineInputAssemblyStateCreateInfo piasciInputAssemblyInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.topology = static_cast<VkPrimitiveTopology>(_spdPipelineData.m_ptTopology),
-		.primitiveRestartEnable = _spdPipelineData.m_bEnablePrimitiveRestart
-	};
-
-	VkPipelineTessellationStateCreateInfo ptsciTessellationInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.patchControlPoints = _spdPipelineData.m_u32PatchControlPoints
-	};
-
-	VkPipelineDynamicStateCreateInfo pdsciDynamicStateInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.dynamicStateCount = static_cast<uint32>(_spdPipelineData.m_vDynamicStates.size()),
-		.pDynamicStates = reinterpret_cast<const VkDynamicState*>(_spdPipelineData.m_vDynamicStates.data())
-	};
-
-	uint32 u32ViewportMin = std::find(
-		_spdPipelineData.m_vDynamicStates.begin(),
-		_spdPipelineData.m_vDynamicStates.end(),
-		DYNAMIC_STATE_VIEWPORT_WITH_COUNT
-	) != _spdPipelineData.m_vDynamicStates.end() ? 0 : 1;
-	
-	uint32 u32ScissorMin = std::find(
-		_spdPipelineData.m_vDynamicStates.begin(),
-		_spdPipelineData.m_vDynamicStates.end(),
-		DYNAMIC_STATE_SCISSOR_WITH_COUNT
-	) != _spdPipelineData.m_vDynamicStates.end() ? 0 : 1;
-
-	VkPipelineViewportStateCreateInfo pvsiViewportStateInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.viewportCount = Math::Clamp(static_cast<uint32>(_spdPipelineData.m_vViewports.size()), u32ViewportMin, UINT32_MAX),
-		.pViewports = reinterpret_cast<const VkViewport*>(_spdPipelineData.m_vViewports.data()),
-		.scissorCount = Math::Clamp(static_cast<uint32>(_spdPipelineData.m_vScissors.size()), u32ScissorMin, UINT32_MAX),
-		.pScissors = reinterpret_cast<const VkRect2D*>(_spdPipelineData.m_vScissors.data())
-	};
-
-	VkPipelineRasterizationStateCreateInfo prsciRasterizationInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.depthClampEnable = _spdPipelineData.m_bEnableDepthClamp,
-		.rasterizerDiscardEnable = _spdPipelineData.m_bEnableRasterizerDiscard,
-		.polygonMode = static_cast<VkPolygonMode>(_spdPipelineData.m_pmPolygonMode),
-		.cullMode = static_cast<VkCullModeFlags>(_spdPipelineData.m_cmCullMode),
-		.frontFace = static_cast<VkFrontFace>(_spdPipelineData.m_woFrontFace),
-		.depthBiasEnable = _spdPipelineData.m_bEnableDepthBias,
-		.depthBiasClamp = _spdPipelineData.m_fDepthBiasClamp,
-		.depthBiasSlopeFactor = _spdPipelineData.m_fDepthBiasSlopeFactor,
-		.lineWidth = _spdPipelineData.m_fLineWidth
-	};
-
-	VkPipelineMultisampleStateCreateInfo pmsciMultisampleInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.rasterizationSamples = static_cast<VkSampleCountFlagBits>(_spdPipelineData.m_u32SampleCount),
-		.sampleShadingEnable = _spdPipelineData.m_bEnableSampleShading,
-		.minSampleShading = _spdPipelineData.m_fMinSampleShading,
-		.pSampleMask = _spdPipelineData.m_vSampleMasks.data(),
-		.alphaToCoverageEnable = _spdPipelineData.m_bEnableAlphaToCoverage,
-		.alphaToOneEnable = _spdPipelineData.m_bEnableAlphaToOne
-	};
-
-	VkPipelineDepthStencilStateCreateInfo pdssciDepthStencilStateInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.depthTestEnable = _spdPipelineData.m_bEnableDepthTest,
-		.depthWriteEnable = _spdPipelineData.m_bEnableDepthWrite,
-		.depthCompareOp = static_cast<VkCompareOp>(_spdPipelineData.m_coDepthCompareOp),
-		.depthBoundsTestEnable = _spdPipelineData.m_bEnableDepthBoundsTest,
-		.stencilTestEnable = _spdPipelineData.m_bEnableStencilTest,
-		.front = *reinterpret_cast<const VkStencilOpState*>(&_spdPipelineData.m_sosStencilFront),
-		.back = *reinterpret_cast<const VkStencilOpState*>(&_spdPipelineData.m_sosStencilBack),
-		.minDepthBounds = _spdPipelineData.m_fMinDepthBounds,
-		.maxDepthBounds = _spdPipelineData.m_fMaxDepthBounds
-	};
-
-	VkPipelineColorBlendStateCreateInfo pcbsciColorBlendStateInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.logicOpEnable = _spdPipelineData.m_bEnableLogicOperator,
-		.logicOp = static_cast<VkLogicOp>(_spdPipelineData.m_loLogicOp),
-		.attachmentCount = static_cast<uint32>(_spdPipelineData.m_vBlendAttachments.size()),
-		.pAttachments = reinterpret_cast<const VkPipelineColorBlendAttachmentState*>(_spdPipelineData.m_vBlendAttachments.data()),
-		.blendConstants = { _spdPipelineData.m_v4BlendConstants.x, _spdPipelineData.m_v4BlendConstants.y, _spdPipelineData.m_v4BlendConstants.z, _spdPipelineData.m_v4BlendConstants.w }
-	};
-
-	VkPipelineLayoutCreateInfo plciPipelineLayoutInfo = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.setLayoutCount = static_cast<uint32>(vDescriptorSetLayouts.size()),
-		.pSetLayouts = vDescriptorSetLayouts.data(),
-		.pushConstantRangeCount = static_cast<uint32>(vPushConstantRanges.size()),
-		.pPushConstantRanges = vPushConstantRanges.data()
-	};
-
-	if (vkCreatePipelineLayout(VkRenderManager::m_dDeviceHandle, &plciPipelineLayoutInfo, nullptr, &plPipelineLayout) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create pipeline layout!");
-	}
-
-	VkGraphicsPipelineCreateInfo gpciGraphicsPipelineInfo = {
-		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-		.pNext = nullptr,
-		.flags = 0,
-		.stageCount = static_cast<uint32>(vShaderStages.size()),
-		.pStages = vShaderStages.data(),
-		.pVertexInputState = &pvisciVertexInputInfo,
-		.pInputAssemblyState = &piasciInputAssemblyInfo,
-		.pTessellationState = &ptsciTessellationInfo,
-		.pViewportState = &pvsiViewportStateInfo,
-		.pRasterizationState = &prsciRasterizationInfo,
-		.pMultisampleState = &pmsciMultisampleInfo,
-		.pDepthStencilState = &pdssciDepthStencilStateInfo,
-		.pColorBlendState = &pcbsciColorBlendStateInfo,
-		.pDynamicState = &pdsciDynamicStateInfo,
-		.layout = plPipelineLayout,
-		.renderPass = m_rpRenderpass,
-		.subpass = _u32Renderpass,
-		.basePipelineHandle = VK_NULL_HANDLE,
-		.basePipelineIndex = 0
-	};
-
-	if(vkCreateGraphicsPipelines(VkRenderManager::m_dDeviceHandle, VK_NULL_HANDLE, 1, &gpciGraphicsPipelineInfo, nullptr, &pPipeline) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create graphics pipeline!");
-	}
+	pbBuilder.Clear();
 
 	return VkRenderPipelineData {
 		.m_plPipelineLayout = plPipelineLayout,
@@ -449,37 +326,5 @@ Array<VkDescriptorSetLayout> VkRenderer::CreateDescriptorSetLayouts(const Shader
 	}
 
 	return vDescriptorSetLayouts;
-}
-
-Array<VkPushConstantRange> VkRenderer::CreatePushConstantRanges(const ShaderPipelineData& _spdPipelineData) {
-	Map<String, VkPushConstantRange> mPushConstantRangeNames;
-
-	for(const auto& aShader : _spdPipelineData.m_vShaderStages) {
-		auto aVars = aShader->GetShaderVars();
-		for (const auto& aShaderVar : aVars) {
-			if (aShaderVar.second.m_u16Type != VAR_PUSH_CONSTANT_BUFFER) {
-				continue; //Only push constant buffers are relevant here.
-			}
-
-			if (mPushConstantRangeNames.find(aShaderVar.first) != mPushConstantRangeNames.end()) {
-				mPushConstantRangeNames[aShaderVar.first].stageFlags |= aShader->GetShaderStageBit();
-				continue;
-			}
-
-			mPushConstantRangeNames[aShaderVar.first] = {
-				.stageFlags = static_cast<VkShaderStageFlags>(aShader->GetShaderStageBit()),
-				.offset = aShaderVar.second.m_arrData[0],
-				.size = aShaderVar.second.m_arrData[1]
-			};
-		}
-	}
-
-	Array<VkPushConstantRange> vPushConstantRanges;
-
-	for(const auto& aRangePair : mPushConstantRangeNames) {
-		vPushConstantRanges.push_back(aRangePair.second);
-	}
-
-	return vPushConstantRanges;
 }
 #endif

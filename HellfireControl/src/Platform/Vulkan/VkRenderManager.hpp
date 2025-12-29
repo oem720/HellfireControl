@@ -60,6 +60,8 @@ private:
 	static void RecreateSwapchain(WindowHandleGeneric _whgHandle);
 
 	friend class RenderManager;
-	friend class VkShader;
 	friend class VkRenderer;
+	friend class VkShader;
+	friend class VkGraphicsPipelineLayoutBuilder;
+	friend class VkGraphicsPipelineBuilder;
 };

@@ -69,6 +69,9 @@ VkPipeline VkGraphicsPipelineBuilder::Build() {
 
 	//TODO: Allow for base pipelines to be specified. At the moment, this is entirely unsupported behavior,
 	//but is very useful for optimization, especially during shader compiles as we're actively rendering.
+	//EDIT: Evaluate this TODO in the future to see if it's even necessary or worth it. It's possible
+	//that it won't actually be feasible and won't actually provide any benefit, since the pipelines are
+	//generally created before rendering starts, and with all the data provided to begin with.
 	VkGraphicsPipelineCreateInfo gpciGraphicsPipelineInfo = {
 		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
 		.pNext = nullptr,

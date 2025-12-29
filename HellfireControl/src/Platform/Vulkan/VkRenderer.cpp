@@ -233,36 +233,44 @@ VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(uint32 _u32Subpass, cons
 		.SetPushConstants(_spdPipelineData)
 		.Build();
 
-	//TODO: Properly handle this such that it doesn't risk attempting to dereference a null pointer, as will happen
-	//with task/mesh shader pipelines. It should also gracefully fail should a vertex shader not be provided.
-	Shared<VkShader> pVertexShader = std::dynamic_pointer_cast<VkShader>(
-		(*std::find_if(
-			_spdPipelineData.m_vShaderStages.begin(),
-			_spdPipelineData.m_vShaderStages.end(),
-			[](const Shared<Shader>& _sShader) { return (_sShader->GetShaderStageBit() == SHADER_STAGE_VERTEX_BIT); }
-		))
-		->GetPlatformShader()
-	);
-
-	VkPipeline pPipeline = pbBuilder
+	pbBuilder
 		.SetRenderpass(m_rpRenderpass)
 		.SetSubpass(_u32Subpass)
 		.SetPipelineLayout(plPipelineLayout)
 		.SetShaderStages(vShaderStages)
-		.SetVertexInputState(pVertexShader->GetVertexInputBindings(), pVertexShader->GetVertexInputAttributes())
-		.SetInputAssemblyState(_spdPipelineData)
 		.SetTessellationState(_spdPipelineData)
 		.SetDynamicState(_spdPipelineData)
 		.SetViewportState(_spdPipelineData)
 		.SetRasterizationState(_spdPipelineData)
 		.SetMultisampleState(_spdPipelineData)
 		.SetDepthStencilState(_spdPipelineData)
-		.SetColorBlendState(_spdPipelineData)
-		.Build();
+		.SetColorBlendState(_spdPipelineData);
+
+	if (std::find_if(vShaderStages.begin(), vShaderStages.end(),
+		[](VkPipelineShaderStageCreateInfo _shader) { return _shader.stage == VK_SHADER_STAGE_VERTEX_BIT; }) != vShaderStages.end()) {
+		Shared<VkShader> pVertexShader = std::dynamic_pointer_cast<VkShader>(
+			(*std::find_if(
+				_spdPipelineData.m_vShaderStages.begin(),
+				_spdPipelineData.m_vShaderStages.end(),
+				[](Shared<Shader> _pShader) {
+					return _pShader->GetShaderStageBit() == SHADER_STAGE_VERTEX;
+				}
+			))
+			->GetPlatformShader()
+		);
+
+		pbBuilder
+			.SetVertexInputState(pVertexShader->GetVertexInputBindings(), pVertexShader->GetVertexInputAttributes())
+			.SetInputAssemblyState(_spdPipelineData);
+	}
+	else if (std::find_if(vShaderStages.begin(), vShaderStages.end(),
+		[](VkPipelineShaderStageCreateInfo _shader) { return _shader.stage == VK_SHADER_STAGE_TASK_BIT_EXT; }) == vShaderStages.end()) {
+		throw std::runtime_error("Missing entrypoint shader!");
+	}
 
 	return VkRenderPipelineData {
 		.m_plPipelineLayout = plPipelineLayout,
-		.m_pPipeline = pPipeline,
+		.m_pPipeline = pbBuilder.Build(),
 		.m_vDescriptorSetLayouts = vDescriptorSetLayouts
 	};
 }

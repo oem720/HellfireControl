@@ -162,6 +162,8 @@ VkDescriptorSetLayout VkDescriptorSetLayoutBuilder::Build(VkDevice _dDeviceHandl
 		throw std::runtime_error("ERROR: Failed to create descriptor set layout!");
 	}
 
+	Clear();
+
 	return dslLayout;
 }
 

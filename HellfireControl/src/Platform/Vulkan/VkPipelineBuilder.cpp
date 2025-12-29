@@ -18,6 +18,8 @@ VkPipelineLayout VkGraphicsPipelineLayoutBuilder::Build() {
 		throw std::runtime_error("Failed to create pipeline layout!");
 	}
 
+	Clear();
+
 	return plPipelineLayout;
 }
 
@@ -92,6 +94,8 @@ VkPipeline VkGraphicsPipelineBuilder::Build() {
 	if (vkCreateGraphicsPipelines(VkRenderManager::m_dDeviceHandle, VK_NULL_HANDLE, 1, &gpciGraphicsPipelineInfo, nullptr, &pPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create graphics pipeline!");
 	}
+
+	Clear();
 
 	return pPipeline;
 }

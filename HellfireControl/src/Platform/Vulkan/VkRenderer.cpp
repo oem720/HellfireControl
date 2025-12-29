@@ -233,8 +233,6 @@ VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(uint32 _u32Subpass, cons
 		.SetPushConstants(_spdPipelineData)
 		.Build();
 
-	plbBuilder.Clear();
-
 	//TODO: Properly handle this such that it doesn't risk attempting to dereference a null pointer, as will happen
 	//with task/mesh shader pipelines. It should also gracefully fail should a vertex shader not be provided.
 	Shared<VkShader> pVertexShader = std::dynamic_pointer_cast<VkShader>(
@@ -261,8 +259,6 @@ VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(uint32 _u32Subpass, cons
 		.SetDepthStencilState(_spdPipelineData)
 		.SetColorBlendState(_spdPipelineData)
 		.Build();
-
-	pbBuilder.Clear();
 
 	return VkRenderPipelineData {
 		.m_plPipelineLayout = plPipelineLayout,

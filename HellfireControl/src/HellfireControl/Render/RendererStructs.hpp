@@ -386,6 +386,7 @@ struct BlendAttachmentState {
 
 struct ShaderPipelineData {
     Array<Shared<Shader>> m_vShaderStages;
+    const uint16 m_u16ShaderStageMask = CalculateAndVerifyShaderStageMask();
 
 	PipelineType m_ptPipelineType = PIPELINE_TYPE_GRAPHICS;
     CullMode m_cmCullMode = CULL_MODE_NONE;
@@ -428,6 +429,51 @@ struct ShaderPipelineData {
     Array<uint32> m_vSampleMasks;
     Array<BlendAttachmentState> m_vBlendAttachments;
     Array<DynamicState> m_vDynamicStates;
+
+private:
+    uint16 CalculateAndVerifyShaderStageMask() {
+        uint16 u16Mask = 0;
+
+        for (const auto& aShader : m_vShaderStages) {
+            u16Mask |= aShader->GetShaderStageBit();
+        }
+
+        switch (m_ptPipelineType) {
+        case PIPELINE_TYPE_GRAPHICS:
+            if (!((u16Mask >= SHADER_STAGE_GRAPHICS_MIN && u16Mask <= SHADER_STAGE_GRAPHICS_MAX) ||
+                (u16Mask >= SHADER_STAGE_TASK_MIN && u16Mask <= SHADER_STAGE_TASK_MAX))) {
+                throw std::runtime_error("Pipeline validation error: Invalid stages or configuration present in a graphics pipeline!");
+            }
+
+            if (u16Mask & SHADER_STAGE_VERTEX_BIT && m_vShaderStages.size() > 5) {
+                throw std::runtime_error("Pipeline validation error: Graphics pipelines with vertex shaders cannot be longer than 5 stages!");
+            }
+            else if (u16Mask & SHADER_STAGE_TASK_BIT && m_vShaderStages.size() > 3) {
+                throw std::runtime_error("Pipeline validation error: Graphics pipelines with task shaders cannot be longer than 3 stages!");
+            }
+            break;
+        case PIPELINE_TYPE_COMPUTE:
+            if (u16Mask != SHADER_STAGE_COMPUTE_BIT) {
+                throw std::runtime_error("Pipeline validation error: Any stage other than a compute shader in a compute pipeline is invalid!");
+            }
+
+            if (m_vShaderStages.size() > 1) {
+                throw std::runtime_error("Pipeline validation error: Compute pipelines cannot have more than 1 stage!");
+            }
+            break;
+        case PIPELINE_TYPE_RAY_TRACING:
+            if (!(u16Mask >= SHADER_STAGE_RAY_TRACING_MIN && u16Mask <= SHADER_STAGE_RAY_TRACING_MAX)) {
+                throw std::runtime_error("Pipeline validation error: Invalid stages or configuration present in a ray tracing pipeline!");
+            }
+
+            if (m_vShaderStages.size() > 6) {
+                throw std::runtime_error("Pipeline validation error: Ray tracing pipelines cannot have more than 6 stages!");
+            }
+            break;
+        }
+
+        return u16Mask;
+    }
 };
 
 struct ClearValue {

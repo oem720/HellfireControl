@@ -43,7 +43,7 @@ VkDescriptorSet VkDescriptorPoolManager::AllocateDescriptorSet(VkDevice _dDevice
 
 	VkDescriptorSetAllocateInfo dsaiAllocInfo = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-		.pNext = VK_NULL_HANDLE,
+		.pNext = nullptr,
 		.descriptorPool = dpPool,
 		.descriptorSetCount = 1,
 		.pSetLayouts = &_dslLayout
@@ -101,7 +101,7 @@ VkDescriptorPool VkDescriptorPoolManager::CreatePool(VkDevice _dDeviceHandle, ui
 
 	VkDescriptorPoolCreateInfo dpciPoolCreateInfo = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-		.pNext = VK_NULL_HANDLE,
+		.pNext = nullptr,
 		.flags = 0,
 		.maxSets = _u32SetCount,
 		.poolSizeCount = static_cast<uint32>(vPoolSizes.size()),
@@ -150,7 +150,7 @@ VkDescriptorSetLayoutBuilder& VkDescriptorSetLayoutBuilder::AddBinding(const HCS
 VkDescriptorSetLayout VkDescriptorSetLayoutBuilder::Build(VkDevice _dDeviceHandle) {
 	VkDescriptorSetLayoutCreateInfo dslciLayoutInfo = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-		.pNext = VK_NULL_HANDLE,
+		.pNext = nullptr,
 		.flags = 0,
 		.bindingCount = static_cast<uint32>(m_vBindings.size()),
 		.pBindings = m_vBindings.data()
@@ -182,7 +182,7 @@ void VkDescriptorWriter::WriteImage(uint32 _u32Binding, VkImageView _ivImageView
 
 	VkWriteDescriptorSet wdsWrite = {
 		.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-		.pNext = VK_NULL_HANDLE,
+		.pNext = nullptr,
 		.dstSet = VK_NULL_HANDLE,
 		.dstBinding = _u32Binding,
 		.descriptorCount = 1,
@@ -204,7 +204,7 @@ void VkDescriptorWriter::WriteBuffer(uint32 _u32Binding, VkBuffer _bBuffer, size
 
 	VkWriteDescriptorSet wdsWrite = {
 		.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-		.pNext = VK_NULL_HANDLE,
+		.pNext = nullptr,
 		.dstSet = VK_NULL_HANDLE,
 		.dstBinding = _u32Binding,
 		.descriptorCount = 1,
@@ -226,5 +226,5 @@ void VkDescriptorWriter::UpdateDescriptorSets(VkDevice _dDeviceHandle, VkDescrip
 		aWrite.dstSet = _dsSet;
 	}
 
-	vkUpdateDescriptorSets(_dDeviceHandle, static_cast<uint32>(m_vWriteBuffer.size()), m_vWriteBuffer.data(), 0, VK_NULL_HANDLE);
+	vkUpdateDescriptorSets(_dDeviceHandle, static_cast<uint32>(m_vWriteBuffer.size()), m_vWriteBuffer.data(), 0, nullptr);
 }

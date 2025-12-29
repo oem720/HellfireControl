@@ -49,51 +49,6 @@ void VkRenderer::Cleanup() {
 	vkDestroyRenderPass(VkRenderManager::m_dDeviceHandle, m_rpRenderpass, nullptr);
 }
 
-void VkRenderer::VerifyRenderpassPipelineData() {
-	for (const auto& aSubpass : m_rdRenderpassData.m_vSubpasses) {
-		for (const auto& aPipeline : aSubpass.m_vShaderPipelines) {
-			uint16 u16PipelineMask = 0;
-			for (const auto& aShader : aPipeline.m_vShaderStages) {
-				u16PipelineMask |= aShader->GetShaderStageBit();
-			}
-
-			switch (aPipeline.m_ptPipelineType) {
-			case PIPELINE_TYPE_GRAPHICS:
-				if (!((u16PipelineMask >= SHADER_STAGE_GRAPHICS_MIN && u16PipelineMask <= SHADER_STAGE_GRAPHICS_MAX) ||
-					(u16PipelineMask >= SHADER_STAGE_TASK_MIN && u16PipelineMask <= SHADER_STAGE_TASK_MAX))) {
-					throw std::runtime_error("Pipeline validation error: Invalid stages or configuration present in a graphics pipeline!");
-				}
-
-				if (u16PipelineMask & SHADER_STAGE_VERTEX_BIT && aPipeline.m_vShaderStages.size() > 5) {
-					throw std::runtime_error("Pipeline validation error: Graphics pipelines with vertex shaders cannot be longer than 5 stages!");
-				}
-				else if (u16PipelineMask & SHADER_STAGE_TASK_BIT && aPipeline.m_vShaderStages.size() > 3) {
-					throw std::runtime_error("Pipeline validation error: Graphics pipelines with task shaders cannot be longer than 3 stages!");
-				}
-				break;
-			case PIPELINE_TYPE_COMPUTE:
-				if (u16PipelineMask != SHADER_STAGE_COMPUTE_BIT) {
-					throw std::runtime_error("Pipeline validation error: Any stage other than a compute shader in a compute pipeline is invalid!");
-				}
-
-				if (aPipeline.m_vShaderStages.size() > 1) {
-					throw std::runtime_error("Pipeline validation error: Compute pipelines cannot have more than 1 stage!");
-				}
-				break;
-			case PIPELINE_TYPE_RAY_TRACING:
-				if (!(u16PipelineMask >= SHADER_STAGE_RAY_TRACING_MIN && u16PipelineMask <= SHADER_STAGE_RAY_TRACING_MAX)) {
-					throw std::runtime_error("Pipeline validation error: Invalid stages or configuration present in a ray tracing pipeline!");
-				}
-
-				if (aPipeline.m_vShaderStages.size() > 6) {
-					throw std::runtime_error("Pipeline validation error: Ray tracing pipelines cannot have more than 6 stages!");
-				}
-				break;
-			}
-		}
-	}
-}
-
 Array<VkDescriptorType> VkRenderer::GetDescriptorCounts() const {
 	//Gather the data necessary for descriptor creation.
 	//We will eventually need a check to ensure that whatever is being accessed, such as the texture manager, does not get duplicated.
@@ -233,7 +188,27 @@ VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(uint32 _u32Subpass, cons
 		.SetPushConstants(_spdPipelineData)
 		.Build();
 
-	pbBuilder
+	if (_spdPipelineData.m_u16ShaderStageMask & SHADER_STAGE_VERTEX_BIT) {
+		//This still has a chance of total failure with no graceful escape. This is very unlikely since
+		//we perform verification on the pipeline at initialization, but it's still a possibility.
+		Shared<VkShader> pVertexShader = std::dynamic_pointer_cast<VkShader>(
+			(*std::find_if(
+				_spdPipelineData.m_vShaderStages.begin(),
+				_spdPipelineData.m_vShaderStages.end(),
+				[](const Shared<Shader>& _sShader) { return (_sShader->GetShaderStageBit() == SHADER_STAGE_VERTEX_BIT); }
+			))
+			->GetPlatformShader()
+		);
+
+		pbBuilder
+			.SetVertexInputState(pVertexShader->GetVertexInputBindings(), pVertexShader->GetVertexInputAttributes())
+			.SetInputAssemblyState(_spdPipelineData);
+	}
+	else if (!(_spdPipelineData.m_u16ShaderStageMask & SHADER_STAGE_TASK_BIT)) {
+		throw std::runtime_error("Missing entrypoint shader!");
+	}
+
+	VkPipeline pPipeline = pbBuilder
 		.SetRenderpass(m_rpRenderpass)
 		.SetSubpass(_u32Subpass)
 		.SetPipelineLayout(plPipelineLayout)
@@ -244,33 +219,12 @@ VkRenderPipelineData VkRenderer::CreateGraphicsPipeline(uint32 _u32Subpass, cons
 		.SetRasterizationState(_spdPipelineData)
 		.SetMultisampleState(_spdPipelineData)
 		.SetDepthStencilState(_spdPipelineData)
-		.SetColorBlendState(_spdPipelineData);
-
-	if (std::find_if(vShaderStages.begin(), vShaderStages.end(),
-		[](VkPipelineShaderStageCreateInfo _shader) { return _shader.stage == VK_SHADER_STAGE_VERTEX_BIT; }) != vShaderStages.end()) {
-		Shared<VkShader> pVertexShader = std::dynamic_pointer_cast<VkShader>(
-			(*std::find_if(
-				_spdPipelineData.m_vShaderStages.begin(),
-				_spdPipelineData.m_vShaderStages.end(),
-				[](Shared<Shader> _pShader) {
-					return _pShader->GetShaderStageBit() == SHADER_STAGE_VERTEX;
-				}
-			))
-			->GetPlatformShader()
-		);
-
-		pbBuilder
-			.SetVertexInputState(pVertexShader->GetVertexInputBindings(), pVertexShader->GetVertexInputAttributes())
-			.SetInputAssemblyState(_spdPipelineData);
-	}
-	else if (std::find_if(vShaderStages.begin(), vShaderStages.end(),
-		[](VkPipelineShaderStageCreateInfo _shader) { return _shader.stage == VK_SHADER_STAGE_TASK_BIT_EXT; }) == vShaderStages.end()) {
-		throw std::runtime_error("Missing entrypoint shader!");
-	}
+		.SetColorBlendState(_spdPipelineData)
+		.Build();
 
 	return VkRenderPipelineData {
 		.m_plPipelineLayout = plPipelineLayout,
-		.m_pPipeline = pbBuilder.Build(),
+		.m_pPipeline = pPipeline,
 		.m_vDescriptorSetLayouts = vDescriptorSetLayouts
 	};
 }

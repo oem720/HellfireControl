@@ -72,11 +72,11 @@ void RenderManager::CleanupPlatformObjects() {
 
 	VkRenderManager::CleanupSwapchain();
 
-	vkDestroyDevice(VkRenderManager::m_dDeviceHandle, VK_NULL_HANDLE);
+	vkDestroyDevice(VkRenderManager::m_dDeviceHandle, nullptr);
 
-	vkDestroySurfaceKHR(VkRenderManager::m_iInstance, VkRenderManager::m_sSurface, VK_NULL_HANDLE);
+	vkDestroySurfaceKHR(VkRenderManager::m_iInstance, VkRenderManager::m_sSurface, nullptr);
 
-	vkDestroyInstance(VkRenderManager::m_iInstance, VK_NULL_HANDLE);
+	vkDestroyInstance(VkRenderManager::m_iInstance, nullptr);
 }
 #pragma endregion
 
@@ -87,7 +87,7 @@ void VkRenderManager::CreateInstance(const String& _strAppName, uint32 _u32AppVe
 
 	VkApplicationInfo aiAppInfo = {
 		.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-		.pNext = VK_NULL_HANDLE,
+		.pNext = nullptr,
 		.pApplicationName = _strAppName.c_str(),
 		.applicationVersion = HC_ENGINE_VERSION,
 		.pEngineName = "Hellfire Control Engine",
@@ -97,7 +97,7 @@ void VkRenderManager::CreateInstance(const String& _strAppName, uint32 _u32AppVe
 
 	VkInstanceCreateInfo icInstanceInfo = {
 		.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-		.pNext = VK_NULL_HANDLE,
+		.pNext = nullptr,
 		.flags = 0,
 		.pApplicationInfo = &aiAppInfo,
 		.enabledLayerCount = 0,
@@ -113,14 +113,14 @@ void VkRenderManager::CreateInstance(const String& _strAppName, uint32 _u32AppVe
 		icInstanceInfo.ppEnabledLayerNames = vValidationLayers.data();
 	}
 
-	if (vkCreateInstance(&icInstanceInfo, VK_NULL_HANDLE, &m_iInstance) != VK_SUCCESS) {
+	if (vkCreateInstance(&icInstanceInfo, nullptr, &m_iInstance) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create Vulkan Instance!");
 	}
 }
 
 void VkRenderManager::SelectPhysicalDevice() {
 	uint32 u32DeviceCount = 0;
-	vkEnumeratePhysicalDevices(m_iInstance, &u32DeviceCount, VK_NULL_HANDLE);
+	vkEnumeratePhysicalDevices(m_iInstance, &u32DeviceCount, nullptr);
 
 	if (!u32DeviceCount) {
 		throw std::runtime_error("ERROR: Failed to find compatible GPUs!");
@@ -155,7 +155,7 @@ void VkRenderManager::CreateLogicalDevice() {
 	for (uint32 u32QueueFamily : sUniqueQueueFamilies) {
 		VkDeviceQueueCreateInfo dqciQueueInfo = {
 			.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-			.pNext = VK_NULL_HANDLE,
+			.pNext = nullptr,
 			.flags = 0,
 			.queueFamilyIndex = qfiIndices.m_u32GraphicsFamily.value(),
 			.queueCount = 1,
@@ -173,7 +173,7 @@ void VkRenderManager::CreateLogicalDevice() {
 
 	VkDeviceCreateInfo dciDeviceInfo = {
 		.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-		.pNext = VK_NULL_HANDLE,
+		.pNext = nullptr,
 		.flags = 0,
 		.queueCreateInfoCount = static_cast<uint32>(vQueueCreateInfos.size()),
 		.pQueueCreateInfos = vQueueCreateInfos.data(),
@@ -212,7 +212,7 @@ void VkRenderManager::CreateSwapchain(WindowHandleGeneric _whgHandle) {
 
 	VkSwapchainCreateInfoKHR scciSwapChainInfo = {
 		.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-		.pNext = VK_NULL_HANDLE,
+		.pNext = nullptr,
 		.flags = 0,
 		.surface = m_sSurface,
 		.minImageCount = u32ImageCount,
@@ -245,11 +245,11 @@ void VkRenderManager::CreateSwapchain(WindowHandleGeneric _whgHandle) {
 		scciSwapChainInfo.pQueueFamilyIndices = VK_NULL_HANDLE;
 	}
 
-	if (vkCreateSwapchainKHR(m_dDeviceHandle, &scciSwapChainInfo, VK_NULL_HANDLE, &m_scSwapchain) != VK_SUCCESS) {
+	if (vkCreateSwapchainKHR(m_dDeviceHandle, &scciSwapChainInfo, nullptr, &m_scSwapchain) != VK_SUCCESS) {
 		throw std::runtime_error("ERROR: Failed to create swapchain!");
 	}
 
-	vkGetSwapchainImagesKHR(m_dDeviceHandle, m_scSwapchain, &u32ImageCount, VK_NULL_HANDLE);
+	vkGetSwapchainImagesKHR(m_dDeviceHandle, m_scSwapchain, &u32ImageCount, nullptr);
 	m_vSwapchainImages.resize(u32ImageCount);
 	vkGetSwapchainImagesKHR(m_dDeviceHandle, m_scSwapchain, &u32ImageCount, m_vSwapchainImages.data());
 
@@ -291,13 +291,13 @@ void VkRenderManager::CreateFrameData() {
 	for (int ndx = 0; ndx < m_arrFrames.size(); ++ndx) {
 		m_arrFrames[ndx].m_ivSwapchainImageView = VkUtil::CreateImageView(m_dDeviceHandle, m_vSwapchainImages[ndx], m_fFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 
-		if (vkCreateCommandPool(m_dDeviceHandle, &cpciPoolCreateInfo, VK_NULL_HANDLE, &m_arrFrames[ndx].m_cpCommandPool) != VK_SUCCESS) {
+		if (vkCreateCommandPool(m_dDeviceHandle, &cpciPoolCreateInfo, nullptr, &m_arrFrames[ndx].m_cpCommandPool) != VK_SUCCESS) {
 			throw std::runtime_error("ERROR: Failed to create command pool!");
 		}
 
-		if (vkCreateSemaphore(m_dDeviceHandle, &sciSemaphoreInfo, VK_NULL_HANDLE, &m_arrFrames[ndx].m_sImageAvailableSemaphore) != VK_SUCCESS ||
-			vkCreateSemaphore(m_dDeviceHandle, &sciSemaphoreInfo, VK_NULL_HANDLE, &m_arrFrames[ndx].m_sRenderFinishedSemaphore) != VK_SUCCESS ||
-			vkCreateFence(m_dDeviceHandle, &fciFenceInfo, VK_NULL_HANDLE, &m_arrFrames[ndx].m_fInFlightFence) != VK_SUCCESS) {
+		if (vkCreateSemaphore(m_dDeviceHandle, &sciSemaphoreInfo, nullptr, &m_arrFrames[ndx].m_sImageAvailableSemaphore) != VK_SUCCESS ||
+			vkCreateSemaphore(m_dDeviceHandle, &sciSemaphoreInfo, nullptr, &m_arrFrames[ndx].m_sRenderFinishedSemaphore) != VK_SUCCESS ||
+			vkCreateFence(m_dDeviceHandle, &fciFenceInfo, nullptr, &m_arrFrames[ndx].m_fInFlightFence) != VK_SUCCESS) {
 			throw std::runtime_error("ERROR: Failed to create sync objects!");
 		}
 
@@ -308,7 +308,7 @@ void VkRenderManager::CreateFrameData() {
 VkCommandBuffer VkRenderManager::CreateSingleUseCommandBuffer() {
 	VkCommandBufferAllocateInfo cbaiBufferInfo = {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.pNext = VK_NULL_HANDLE,
+		.pNext = nullptr,
 		.commandPool = m_arrFrames[m_u32CurrentFrame].m_cpCommandPool,
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = 1
@@ -320,7 +320,7 @@ VkCommandBuffer VkRenderManager::CreateSingleUseCommandBuffer() {
 
 	VkCommandBufferBeginInfo cbbiBeginInfo = {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-		.pNext = VK_NULL_HANDLE,
+		.pNext = nullptr,
 		.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
 		.pInheritanceInfo = VK_NULL_HANDLE
 	};
@@ -335,7 +335,7 @@ void VkRenderManager::SubmitSingleUseCommandBuffer(VkCommandBuffer _cbBuffer) {
 
 	VkSubmitInfo siSubmitInfo = {
 		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-		.pNext = VK_NULL_HANDLE,
+		.pNext = nullptr,
 		.waitSemaphoreCount = 0,
 		.pWaitSemaphores = VK_NULL_HANDLE,
 		.pWaitDstStageMask = VK_NULL_HANDLE,
@@ -345,7 +345,7 @@ void VkRenderManager::SubmitSingleUseCommandBuffer(VkCommandBuffer _cbBuffer) {
 		.pSignalSemaphores = VK_NULL_HANDLE
 	};
 
-	vkQueueSubmit(m_qGraphicsQueue, 1, &siSubmitInfo, VK_NULL_HANDLE);
+	vkQueueSubmit(m_qGraphicsQueue, 1, &siSubmitInfo, nullptr);
 	vkQueueWaitIdle(m_qGraphicsQueue);
 
 	//TODO: This is currently a bug -- This command buffer is freed from the current frame's pool,
@@ -357,10 +357,10 @@ void VkRenderManager::SubmitSingleUseCommandBuffer(VkCommandBuffer _cbBuffer) {
 
 void VkRenderManager::CleanupSwapchain() {
 	for(auto& aFrame : m_arrFrames) {
-		vkDestroyImageView(m_dDeviceHandle, aFrame.m_ivSwapchainImageView, VK_NULL_HANDLE);
+		vkDestroyImageView(m_dDeviceHandle, aFrame.m_ivSwapchainImageView, nullptr);
 	}
 
-	vkDestroySwapchainKHR(m_dDeviceHandle, m_scSwapchain, VK_NULL_HANDLE);
+	vkDestroySwapchainKHR(m_dDeviceHandle, m_scSwapchain, nullptr);
 }
 
 void VkRenderManager::RecreateSwapchain(WindowHandleGeneric _whgHandle) {

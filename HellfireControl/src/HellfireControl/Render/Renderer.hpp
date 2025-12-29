@@ -24,8 +24,6 @@ class PlatformRenderer {
 protected:
 	RenderpassData m_rdRenderpassData;
 
-	virtual void VerifyRenderpassPipelineData() = 0;
-
 public:
 	PlatformRenderer(const RenderpassData& _rdRenderpass) : m_rdRenderpassData(_rdRenderpass) {}
 

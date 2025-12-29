@@ -17,8 +17,6 @@ private:
 	VkRenderPass m_rpRenderpass = VK_NULL_HANDLE;
 	Array<VkRenderPipelineData> m_vPipelines;
 
-	void VerifyRenderpassPipelineData();
-
 	void CreateRenderpass();
 	void CreatePipelines();
 
@@ -28,10 +26,9 @@ private:
 
 	Array<VkPipelineShaderStageCreateInfo> CreateShaderStages(const ShaderPipelineData& _spdPipelineData);
 	Array<VkDescriptorSetLayout> CreateDescriptorSetLayouts(const ShaderPipelineData& _spdPipelineData);
-	Array<VkPushConstantRange> CreatePushConstantRanges(const ShaderPipelineData& _spdPipelineData);
 
 public:
-	VkRenderer(const RenderpassData& _rdRenderpass) : PlatformRenderer(_rdRenderpass) { VerifyRenderpassPipelineData(); }
+	VkRenderer(const RenderpassData& _rdRenderpass) : PlatformRenderer(_rdRenderpass) {}
 
 	void Init();
 

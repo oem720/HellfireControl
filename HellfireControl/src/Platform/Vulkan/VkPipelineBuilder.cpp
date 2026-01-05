@@ -14,7 +14,7 @@ VkPipelineLayout VkGraphicsPipelineLayoutBuilder::Build() {
 		.pPushConstantRanges = m_vPushConstants.data()
 	};
 
-	if (vkCreatePipelineLayout(VkRenderManager::m_dDeviceHandle, &plciPipelineLayoutInfo, nullptr, &plPipelineLayout) != VK_SUCCESS) {
+	if (vkCreatePipelineLayout(VkRenderManager::GetDevice(), &plciPipelineLayoutInfo, nullptr, &plPipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create pipeline layout!");
 	}
 
@@ -94,7 +94,7 @@ VkPipeline VkGraphicsPipelineBuilder::Build() {
 		.basePipelineIndex = 0
 	};
 
-	if (vkCreateGraphicsPipelines(VkRenderManager::m_dDeviceHandle, VK_NULL_HANDLE, 1, &gpciGraphicsPipelineInfo, nullptr, &pPipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(VkRenderManager::GetDevice(), VK_NULL_HANDLE, 1, &gpciGraphicsPipelineInfo, nullptr, &pPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create graphics pipeline!");
 	}
 

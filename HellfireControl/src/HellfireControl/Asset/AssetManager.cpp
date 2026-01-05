@@ -25,6 +25,19 @@ void AssetManager::Init() {
 	m_palLoader->Init();
 }
 
+HCUID AssetManager::AddAssetFromMemory(const Shared<Asset>& _pAsset) {
+	if (_pAsset == nullptr) {
+		Console::DebugWarn("Attempted to add null asset to AssetManager from memory!");
+		return HCUID();
+	}
+
+	HCUID gId = HCUID::ConstructRandom();
+
+	m_mAssetCache[gId] = _pAsset;
+
+	return gId;
+}
+
 HCUID AssetManager::LoadAssetFromPath(const String& _strPath) {
 	HCUID gId = HCUID::ConstructFromFilepath(_strPath);
 
@@ -99,6 +112,8 @@ void AssetManager::UnloadAsset(const HCUID& _gId) {
 void AssetManager::Cleanup() {
 	m_pamManifest->Cleanup();
 	m_palLoader->Cleanup();
+
+	m_mAssetCache.clear();
 
 	delete m_pInstance;
 }

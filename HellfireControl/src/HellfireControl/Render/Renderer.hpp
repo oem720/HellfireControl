@@ -50,10 +50,7 @@ public:
 		CreatePlatformRenderpass(_rdRenderpass);
 	}
 
-	void Init() {
-		m_pPlatformRenderer->Init();
-	}
-
+	void Init() { m_pPlatformRenderer->Init(); }
 	void Render() { m_pPlatformRenderer->Render(); }
 	void Cleanup() { m_pPlatformRenderer->Cleanup(); }
 

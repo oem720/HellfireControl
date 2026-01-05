@@ -27,6 +27,8 @@ public:
 
 	void Init();
 
+	HCUID AddAssetFromMemory(const Shared<Asset>& _pAsset);
+
 	HCUID LoadAssetFromPath(const String& _strPath);
 
 	Shared<Asset> GetAsset(const HCUID& _gId);

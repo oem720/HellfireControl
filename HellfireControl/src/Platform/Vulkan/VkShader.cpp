@@ -10,7 +10,7 @@ void Shader::Init() {
 		return;
 	}
 
-	m_pPlatformShader = std::make_shared<VkShader>();
+	m_pPlatformShader = Shared<VkShader>(new VkShader(), PlatformShader::Deleter);
 
 	m_pPlatformShader->Init(m_vCodeBlob, m_mVariables);
 	m_vCodeBlob.clear();
@@ -25,7 +25,7 @@ void VkShader::Init(const Array<uint32>& _vCodeBlob, const Map<String, HCShaderV
 		.pCode = _vCodeBlob.data()
 	};
 
-	if (vkCreateShaderModule(VkRenderManager::m_dDeviceHandle, &smciCreateInfo, nullptr, &m_smShaderModule) != VK_SUCCESS) {
+	if (vkCreateShaderModule(VkRenderManager::GetDevice(), &smciCreateInfo, nullptr, &m_smShaderModule) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create Vulkan shader module!");
 	}
 
@@ -60,8 +60,11 @@ void VkShader::Init(const Array<uint32>& _vCodeBlob, const Map<String, HCShaderV
 }
 
 void VkShader::Cleanup() {
+	//TODO: Find a way to remove this entirely to save memory. There's almost certain to be a way to check if the shader module is no longer needed,
+	//and it is likely after initialization is complete. Of course, because shader recompiles can cause stuttering, it may be best to not worry about
+	//it for a while, especially not until solutions can be profiled and stuttering can be accounted for.
 	if (m_smShaderModule != VK_NULL_HANDLE) {
-		vkDestroyShaderModule(VkRenderManager::m_dDeviceHandle, m_smShaderModule, nullptr);
+		vkDestroyShaderModule(VkRenderManager::GetDevice(), m_smShaderModule, nullptr);
 	}
 
 	m_vVertexInputAttributes.clear();

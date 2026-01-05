@@ -430,6 +430,12 @@ struct ShaderPipelineData {
     Array<BlendAttachmentState> m_vBlendAttachments;
     Array<DynamicState> m_vDynamicStates;
 
+    void InitShaders() {
+        for (const auto& aShader : m_vShaderStages) {
+            aShader->Init();
+        }
+    }
+
 private:
     uint16 CalculateAndVerifyShaderStageMask() {
         uint16 u16Mask = 0;
@@ -521,6 +527,12 @@ struct RenderSubpassData {
     Array<AttachmentReference> m_vResolveAttachments;
     Array<uint32> m_vPreserveAttachments;
     Array<SubpassDependency> m_vDependencies;
+
+    void InitShaders() {
+        for (auto& aPipeline : m_vShaderPipelines) {
+            aPipeline.InitShaders();
+        }
+    }
 };
 
 struct RenderpassData {

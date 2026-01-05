@@ -6,8 +6,19 @@
 
 class PlatformShader {
 public:
+	virtual ~PlatformShader() = default;
 	virtual void Init(const Array<uint32>& _vCodeBlob, const Map<String, HCShaderVar>& _mVars) = 0;
 	virtual void Cleanup() = 0;
+
+	friend class Shader;
+
+protected:
+	static void Deleter(PlatformShader* _pShader) {
+		if (_pShader != nullptr) {
+			_pShader->Cleanup();
+			delete _pShader;
+		}
+	}
 };
 
 class Shader : public Asset {

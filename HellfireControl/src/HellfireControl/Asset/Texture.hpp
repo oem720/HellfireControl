@@ -7,5 +7,5 @@
 class Texture : public Asset {
 
 public:
-	~Texture();
+	
 };

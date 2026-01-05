@@ -53,15 +53,15 @@ private:
 	static void CreateSwapchain(WindowHandleGeneric _whgHandle);
 	static void CreateFrameData();
 
-	static VkCommandBuffer CreateSingleUseCommandBuffer();
-	static void SubmitSingleUseCommandBuffer(VkCommandBuffer _cbBuffer);
-
 	static void CleanupSwapchain();
 	static void RecreateSwapchain(WindowHandleGeneric _whgHandle);
 
 	friend class RenderManager;
 	friend class VkRenderer;
-	friend class VkShader;
-	friend class VkGraphicsPipelineLayoutBuilder;
-	friend class VkGraphicsPipelineBuilder;
+public:
+	static [[nodiscard]] HC_INLINE const VkDevice GetDevice() { return m_dDeviceHandle; }
+	static [[nodiscard]] HC_INLINE const VkPhysicalDevice GetPhysicalDevice() { return m_pdPhysicalDevice; }
+
+	static VkCommandBuffer CreateSingleUseCommandBuffer();
+	static void SubmitSingleUseCommandBuffer(VkCommandBuffer _cbBuffer);
 };

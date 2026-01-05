@@ -15,7 +15,7 @@ private:
 	static Map<HCShaderVarType, VkDescriptorType> m_mShaderVarTranslationTable;
 
 	VkRenderPass m_rpRenderpass = VK_NULL_HANDLE;
-	Array<VkRenderPipelineData> m_vPipelines;
+	Map<uint32, Array<VkRenderPipelineData>> m_mSubpassData;
 
 	void CreateRenderpass();
 	void CreatePipelines();
@@ -31,9 +31,7 @@ public:
 	VkRenderer(const RenderpassData& _rdRenderpass) : PlatformRenderer(_rdRenderpass) {}
 
 	void Init();
-
 	void Render();
-
 	void Cleanup();
 
 	Array<VkDescriptorType> GetDescriptorCounts() const;

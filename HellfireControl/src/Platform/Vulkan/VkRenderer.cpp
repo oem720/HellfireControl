@@ -29,11 +29,7 @@ void Renderer::CreatePlatformRenderpass(const RenderpassData& _rdRenderpass) {
 
 void VkRenderer::Init() {
 	for(auto& aSubpass : m_rdRenderpassData.m_vSubpasses) {
-		for (auto& aPipeline : aSubpass.m_vShaderPipelines) {
-			for (auto& aShader : aPipeline.m_vShaderStages) {
-				aShader->Init(); //Start every shader.
-			}
-		}
+		aSubpass.InitShaders();
 	}
 
 	CreateRenderpass();
@@ -46,6 +42,17 @@ void VkRenderer::Render() {
 }
 
 void VkRenderer::Cleanup() {
+	for (auto& aSubpass : m_mSubpassData) {
+		for (auto& aPipeline : aSubpass.second) {
+			for (auto& aDescriptorSetLayout : aPipeline.m_vDescriptorSetLayouts) {
+				vkDestroyDescriptorSetLayout(VkRenderManager::m_dDeviceHandle, aDescriptorSetLayout, nullptr);
+			}
+
+			vkDestroyPipelineLayout(VkRenderManager::m_dDeviceHandle, aPipeline.m_plPipelineLayout, nullptr);
+			vkDestroyPipeline(VkRenderManager::m_dDeviceHandle, aPipeline.m_pPipeline, nullptr);
+		}
+	}
+
 	vkDestroyRenderPass(VkRenderManager::m_dDeviceHandle, m_rpRenderpass, nullptr);
 }
 
@@ -171,8 +178,14 @@ void VkRenderer::CreatePipelines() {
 				break;
 			}
 
-			m_vPipelines.push_back(rpdPipelineData);
+			m_mSubpassData[u32Ndx].push_back(rpdPipelineData);
 		}
+
+		//This data is no longer needed, as it now exists within the GPU.
+		//TODO: Find a way to cache this data for reinitialization if needed.
+		//Also, find out how much of m_rdRenderpassData is not needed, as we may get away
+		//with removing it entirely after initialization.
+		m_rdRenderpassData.m_vSubpasses[u32Ndx].m_vShaderPipelines.clear();
 	}
 }
 

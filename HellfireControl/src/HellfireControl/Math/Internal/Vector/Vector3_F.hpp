@@ -137,7 +137,7 @@ HC_INLINE Vec3F HC_VECTORCALL Abs(Vec3F _vVector) { _vVector.m_fVec = _mm_andnot
 
 #else
 
-struct HC_ALIGNAS(16) Vec3F
+struct Vec3F
 {
 	union
 	{

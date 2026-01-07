@@ -32,6 +32,13 @@ public:
 	virtual void Cleanup() = 0;
 };
 
+struct MeshData {
+	uint32 m_u32VertexOffset = 0;
+	uint32 m_u32VertexCount = 0;
+	uint32 m_u32IndexOffset = 0;
+	uint32 m_u32IndexCount = 0;
+};
+
 class Renderer {
 private:
 	uint8 m_u8Flags;

@@ -8,7 +8,7 @@ struct VkBufferData {
 	VkBuffer m_bBuffer = VK_NULL_HANDLE;
 	VkDeviceMemory m_dmBufferMemory = VK_NULL_HANDLE;
 
-	void Destroy() {
+	void Cleanup() {
 		vkDestroyBuffer(VkRenderManager::GetDevice(), m_bBuffer, nullptr);
 		vkFreeMemory(VkRenderManager::GetDevice(), m_dmBufferMemory, nullptr);
 	}

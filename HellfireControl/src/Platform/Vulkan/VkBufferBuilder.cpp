@@ -30,7 +30,7 @@ VkBufferData VkBufferBuilder::Build() {
 
 	CopyBuffer(bdStagingBuffer.m_bBuffer, bdReturnedBuffer.m_bBuffer);
 
-	bdStagingBuffer.Destroy();
+	bdStagingBuffer.Cleanup();
 
 	Clear();
 

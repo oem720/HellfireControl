@@ -1,5 +1,5 @@
 
-#include <HellfireControl/Render/Mesh/Primitives.hpp>
+#include <HellfireControl/Render/Primitives.hpp>
 
 #include <HellfireControl/Asset/AssetManager.hpp>
 

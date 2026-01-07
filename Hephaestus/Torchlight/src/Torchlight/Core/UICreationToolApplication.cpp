@@ -4,9 +4,8 @@
 #include <HellfireControl/Render/RenderManager.hpp>
 #include <HellfireControl/Asset/AssetManager.hpp>
 #include <HellfireControl/UI/UI.hpp>
-#include <HellfireControl/Render/Mesh/MeshManager.hpp>
 
-#include <HellfireControl/Render/Mesh/Primitives.hpp>
+#include <HellfireControl/Render/Primitives.hpp>
 
 #include <HellfireControl/Asset/Font.hpp>
 
@@ -17,19 +16,15 @@ void UICreationToolApplication::Start() {
 
 	m_pamAssetManager = AssetManager::GetInstance();
 	m_pumUIManager = UIManager::GetInstance();
-	m_pmmMeshManager = MeshManager::GetInstance();
 	m_prmRenderManager = RenderManager::GetInstance();
 
 	m_pamAssetManager->Init();
 	m_pumUIManager->Init();
-	m_pmmMeshManager->Init();
 	m_prmRenderManager->Init(m_strApplicationName, HC_ENGINE_VERSION, m_wWindow.GetNativeWindowHandle());
 }
 
 void UICreationToolApplication::Run() {
 	this->Start();
-
-	
 
 	
 
@@ -39,7 +34,6 @@ void UICreationToolApplication::Run() {
 void UICreationToolApplication::End() {
 	m_pamAssetManager->Cleanup();
 	m_pumUIManager->Cleanup();
-	m_pmmMeshManager->Cleanup();
 	m_prmRenderManager->Cleanup();
 
 	m_wWindow.Cleanup();

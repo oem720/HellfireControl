@@ -12,7 +12,6 @@ private:
 	RenderManager* m_prmRenderManager = nullptr;
 	AssetManager* m_pamAssetManager = nullptr;
 	UIManager* m_pumUIManager = nullptr;
-	MeshManager* m_pmmMeshManager = nullptr;
 
 	void Start();
 

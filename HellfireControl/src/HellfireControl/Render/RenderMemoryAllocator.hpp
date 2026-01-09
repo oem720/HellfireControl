@@ -2,3 +2,6 @@
 
 #include <HellfireControl/Core/Common.hpp>
 
+class RenderMemoryAllocator {
+
+};

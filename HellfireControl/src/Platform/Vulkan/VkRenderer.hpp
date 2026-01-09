@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Platform/GLCommon.hpp>
-#include <Platform/Vulkan/VkBufferPool.hpp>
 
 #include <HellfireControl/Render/Renderer.hpp>
 
@@ -14,9 +13,6 @@ struct VkRenderPipelineData {
 class VkRenderer : public PlatformRenderer {
 private:
 	static Map<HCShaderVarType, VkDescriptorType> m_mShaderVarTranslationTable;
-
-	VkBufferPool m_bgVertexBuffer;
-	VkBufferPool m_bgIndexBuffer;
 
 	VkRenderPass m_rpRenderpass = VK_NULL_HANDLE;
 	Map<uint32, Array<VkRenderPipelineData>> m_mSubpassData;

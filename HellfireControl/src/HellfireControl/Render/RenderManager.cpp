@@ -1,6 +1,8 @@
 
 #include <HellfireControl/Render/RenderManager.hpp>
 
+#include <HellfireControl/Render/RenderMemoryManager.hpp>
+
 RenderManager* RenderManager::m_prsInstancePtr = nullptr;
 
 bool RenderManager::m_bFramebufferInvalid = false;
@@ -33,14 +35,18 @@ void RenderManager::AddRenderer(RendererTag _rtTag, Shared<Renderer> _pRenderer)
 	m_mRenderers[_rtTag] = _pRenderer;
 }
 
-void RenderManager::Init(const String& _strAppName, uint32 _u32AppVersion, WindowHandleGeneric _whgWindowHandle) {
+void RenderManager::Init(const String& _strAppName, uint32 _u32AppVersion, WindowHandleGeneric _whgWindowHandle, uint32 _u32InitialMemorySize) {
 	m_whgWindowHandle = _whgWindowHandle;
 
 	Window(_whgWindowHandle).RegisterEventCallback(WindowEventHandler);
 
 	InitPlatformObjects(_strAppName, _u32AppVersion);
 
+	m_prmmMemoryManager = RenderMemoryManager::GetInstance();
+	m_prmmMemoryManager->Init(_u32InitialMemorySize);
+
 	InitRenderJobs();
+
 }
 
 void RenderManager::RenderFrame() {
@@ -94,6 +100,8 @@ void RenderManager::Cleanup() {
 	for (const auto& aRenderer : m_mRenderers) {
 		aRenderer.second->Cleanup();
 	}
+
+	m_prmmMemoryManager->Cleanup();
 
 	CleanupPlatformObjects();
 

@@ -404,7 +404,7 @@ bool VkUtil::HasStencilComponent(VkFormat _fFormat) {
 //		.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
 //		.pNext = nullptr,
 //		.flags = 0,
-//		.codeSize = _vCode.size(),
+//		.codeSize = _vCode.m_dsSize(),
 //		.pCode = reinterpret_cast<const uint32*>(_vCode.data())
 //	};
 //

@@ -15,7 +15,7 @@ namespace PlatformWindow {
 	/// <param name="_u64OutHandle: An unsigned 64 bit integer representing the window handle"></param>
 	/// <param name="_u8Type: An unsigned 8 bit integer representing the window type"></param>
 	/// <param name="_strName: The name to be displayed at the top of the window"></param>
-	/// <param name="_v2Size: A vector2 representing the size of the window in pixels"></param>
+	/// <param name="_v2Size: A vector2 representing the m_dsSize of the window in pixels"></param>
 	/// <param name="_v2Loc: A vector2 representing the location of the window in pixels"></param>
 	void InitWindow(uint64& _u64OutHandle, uint8 _u8Type, const String& _strName, const Vec2F& _v2Size, const Vec2F& _v2Loc);
 
@@ -66,10 +66,10 @@ namespace PlatformWindow {
 	[[nodiscard]] bool SetWindowStyleParameters(uint64 _u64Handle, uint8 _u8Type);
 
 	/// <summary>
-	/// Sets the size of the window represented by the given handle.
+	/// Sets the m_dsSize of the window represented by the given handle.
 	/// </summary>
 	/// <param name="_u64Handle: An unsigned 64 bit integer representing the window handle"></param>
-	/// <param name="_v2Size: The size to be set within the window"></param>
+	/// <param name="_v2Size: The m_dsSize to be set within the window"></param>
 	/// <returns>
 	/// bool: True if succeeded, false if failed
 	/// </returns>
@@ -92,11 +92,11 @@ namespace PlatformWindow {
 	[[nodiscard]] void SetWindowFocus(uint64 _u64Handle);
 
 	/// <summary>
-	/// Returns the up-to-date size of the window represented by the given handle.
+	/// Returns the up-to-date m_dsSize of the window represented by the given handle.
 	/// </summary>
 	/// <param name="_u64Handle: An unsigned 64 bit integer representing the window handle"></param>
 	/// <returns>
-	/// Vec2F: The current size of the window in pixels
+	/// Vec2F: The current m_dsSize of the window in pixels
 	/// </returns>
 	[[nodiscard]] Vec2F GetWindowSize(uint64 _u64Handle);
 

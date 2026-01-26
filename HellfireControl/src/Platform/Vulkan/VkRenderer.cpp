@@ -53,9 +53,6 @@ void VkRenderer::Cleanup() {
 		}
 	}
 
-	m_bgVertexBuffer.Cleanup();
-	m_bgIndexBuffer.Cleanup();
-
 	vkDestroyRenderPass(VkRenderManager::m_dDeviceHandle, m_rpRenderpass, nullptr);
 }
 

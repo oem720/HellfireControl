@@ -39,7 +39,7 @@ void Window::SetWindowType(WindowType _wtType) {
 
 void Window::SetWindowSize(const Vec2F& _v2Size) {
 	if (!PlatformWindow::SetWindowSize(m_whgHandle, _v2Size)) {
-		assert(!"ERROR: Window size failed to change!");
+		assert(!"ERROR: Window m_dsSize failed to change!");
 	}
 }
 

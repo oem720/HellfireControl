@@ -52,7 +52,7 @@ HCCompiledShader GLSLCompiler::Compile(const HCUncompiledShader& _ucsShader) {
 
 	std::memcpy(vCodeBlob.data(), reinterpret_cast<const uint32*>(shaderc_result_get_bytes(scrResult)), sByteSize);
 
-	Console::DebugSuccess("GLSL shader \"" + _ucsShader.m_pthFilename.string() + "\" compiled successfully. Output size: " + std::to_string(sByteSize) + " bytes");
+	Console::DebugSuccess("GLSL shader \"" + _ucsShader.m_pthFilename.string() + "\" compiled successfully. Output m_dsSize: " + std::to_string(sByteSize) + " bytes");
 
 	shaderc_result_release(scrResult);
 

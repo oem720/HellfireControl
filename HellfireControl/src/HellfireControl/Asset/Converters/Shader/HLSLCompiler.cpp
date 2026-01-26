@@ -97,7 +97,7 @@ HCCompiledShader HLSLCompiler::Compile(const HCUncompiledShader& _ucsShader) {
 
 	std::memcpy(vCodeBlob.data(), pCode->GetBufferPointer(), sByteSize);
 
-	Console::DebugSuccess("GLSL shader \"" + _ucsShader.m_pthFilename.string() + "\" compiled successfully. Output size: " + std::to_string(sByteSize) + " bytes");
+	Console::DebugSuccess("GLSL shader \"" + _ucsShader.m_pthFilename.string() + "\" compiled successfully. Output m_dsSize: " + std::to_string(sByteSize) + " bytes");
 
 	return {
 		.m_pthFilepath = FilePath(_ucsShader.m_pthFilename).replace_extension(".hcshd").string(),

@@ -302,7 +302,7 @@ Array<uint32> ShaderCompiler::OptimizeSPIRV(const Array<uint32>& _vCodeBlob) {
 		vOptimizedBlob = _vCodeBlob;
 	}
 
-	Console::DebugSuccess("SPIR-V optimization complete. Final code size: " + std::to_string(vOptimizedBlob.size() * sizeof(uint32)) + " bytes");
+	Console::DebugSuccess("SPIR-V optimization complete. Final code m_dsSize: " + std::to_string(vOptimizedBlob.size() * sizeof(uint32)) + " bytes");
 
 	return vOptimizedBlob;
 }

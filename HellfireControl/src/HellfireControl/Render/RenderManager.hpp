@@ -10,6 +10,8 @@
 
 constexpr int g_iMaxRenderLayerComplexity = 10;
 
+class RenderMemoryManager;
+
 class RenderManager {
 private:
 	WindowHandleGeneric m_whgWindowHandle = 0;
@@ -19,6 +21,8 @@ private:
 	Map<RendererTag, Shared<Job>> m_mRenderJobs;
 
 	JobManager m_jmRenderJobManager;
+
+	RenderMemoryManager* m_prmmMemoryManager = nullptr;
 
 	static bool m_bFramebufferInvalid;
 
@@ -51,7 +55,7 @@ public:
 
 	void AddRenderer(RendererTag _rtTag, Shared<Renderer> _pRenderer);
 
-	void Init(const String& _strAppName, uint32 _u32AppVersion, WindowHandleGeneric _whgWindowHandle);
+	void Init(const String& _strAppName, uint32 _u32AppVersion, WindowHandleGeneric _whgWindowHandle, uint32 _u32InitialMemorySize);
 
 	void RenderFrame();
 

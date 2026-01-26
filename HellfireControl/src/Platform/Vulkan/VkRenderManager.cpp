@@ -348,10 +348,10 @@ void VkRenderManager::SubmitSingleUseCommandBuffer(VkCommandBuffer _cbBuffer) {
 	vkQueueSubmit(m_qGraphicsQueue, 1, &siSubmitInfo, nullptr);
 	vkQueueWaitIdle(m_qGraphicsQueue);
 
-	//TODO: This is currently a bug -- This command buffer is freed from the current frame's pool,
-	//as we assume that the single use command buffer is created and submitted within the same frame.
+	//TODO: This is currently a bug -- This command m_bBuffer is freed from the current frame's pool,
+	//as we assume that the single use command m_bBuffer is created and submitted within the same frame.
 	//If this is incorrect, it will cause a validation error and possible crash. May need documentation
-	//for future public use, or a better system to track command buffer ownership.
+	//for future public use, or a better system to track command m_bBuffer ownership.
 	vkFreeCommandBuffers(m_dDeviceHandle, m_arrFrames[m_u32CurrentFrame].m_cpCommandPool, 1, &_cbBuffer);
 }
 
@@ -368,7 +368,7 @@ void VkRenderManager::RecreateSwapchain(WindowHandleGeneric _whgHandle) {
 
 	Vec2F v2WindowSize = wWindow.GetWindowSize();
 
-	//Wait here to until the window is no longer 0,0 size.
+	//Wait here to until the window is no longer 0,0 m_dsSize.
 	//This is terrible right now, as this is not on a separate thread. In the future,
 	//this should pause rendering and return when the window reports it is no longer minimized
 	while (v2WindowSize == Vec2F(0, 0)) {

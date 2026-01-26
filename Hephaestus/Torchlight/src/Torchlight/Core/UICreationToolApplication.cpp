@@ -11,6 +11,8 @@
 
 #include <HellfireControl/Asset/Converters/Font/FontProcessor.hpp>
 
+#include <HellfireControl/Render/RenderMemoryManager.hpp>
+
 void UICreationToolApplication::Start() {
 	m_wWindow = Window(m_strApplicationName, WINDOWED, Vec2F(800, 600), Vec2F(0, 0));
 
@@ -20,13 +22,13 @@ void UICreationToolApplication::Start() {
 
 	m_pamAssetManager->Init();
 	m_pumUIManager->Init();
-	m_prmRenderManager->Init(m_strApplicationName, HC_ENGINE_VERSION, m_wWindow.GetNativeWindowHandle());
+	m_prmRenderManager->Init(m_strApplicationName, HC_ENGINE_VERSION, m_wWindow.GetNativeWindowHandle(), 1024 * 1024); //1 MB initial render memory pool for testing.
 }
 
 void UICreationToolApplication::Run() {
 	this->Start();
 
-	
+	RenderMemoryManager::GetInstance()->Grow();
 
 	this->End();
 }

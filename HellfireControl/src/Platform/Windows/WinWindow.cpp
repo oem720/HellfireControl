@@ -97,7 +97,7 @@ namespace PlatformWindow {
 			WindowCallbackMessage wcmMessage = {
 				.m_wcetType = WINDOW_RESIZE, //Combine move and resize flags
 				.upper = 0, //Unused for resize command
-				.lower = (static_cast<uint64>(LOWORD(lParam)) << 32 | static_cast<uint64>(HIWORD(lParam))) //Pack size into lower
+				.lower = (static_cast<uint64>(LOWORD(lParam)) << 32 | static_cast<uint64>(HIWORD(lParam))) //Pack m_dsSize into lower
 			};
 			
 			NotifyCallbacks(reinterpret_cast<uint64>(hwnd), wcmMessage);
@@ -293,7 +293,7 @@ namespace PlatformWindow {
 			static_cast<int>(_v2Loc.y),			//Unused
 			0,									//Unused
 			0,									//Unused
-			SWP_NOSIZE | SWP_FRAMECHANGED		//Mark for no size changes and to repaint the screen
+			SWP_NOSIZE | SWP_FRAMECHANGED		//Mark for no m_dsSize changes and to repaint the screen
 		);
 
 		if (bSucceeded) {

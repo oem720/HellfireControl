@@ -18,7 +18,7 @@ ABOUT:
    written by a decent optimizing implementation; though providing a custom
    zlib compress function (see STBIW_ZLIB_COMPRESS) can mitigate that.
    This library is designed for source code compactness and simplicity,
-   not optimal image file size or run-time performance.
+   not optimal image file m_dsSize or run-time performance.
 
 BUILDING:
 
@@ -62,7 +62,7 @@ USAGE:
      int stbi_write_jpg_to_func(stbi_write_func *func, void *context, int x, int y, int comp, const void *data, int quality);
 
    where the callback is:
-      void stbi_write_func(void *context, void *data, int size);
+      void stbi_write_func(void *context, void *data, int m_dsSize);
 
    You can configure it with these global variables:
       int stbi_write_tga_with_rle;             // defaults to true; set to 0 to disable RLE
@@ -697,7 +697,7 @@ static void stbiw__write_hdr_scanline(stbi__write_context *s, int width, int nco
       }
    } else {
       int c,r;
-      /* encode into scratch buffer */
+      /* encode into scratch m_bBuffer */
       for (x=0; x < width; x++) {
          switch(ncomp) {
             case 4: /* fallthrough */
@@ -810,7 +810,7 @@ STBIWDEF int stbi_write_hdr(char const *filename, int x, int y, int comp, const 
 //
 
 #ifndef STBIW_ZLIB_COMPRESS
-// stretchy buffer; stbiw__sbpush() == vector<>::push_back() -- stbiw__sbcount() == vector<>::size()
+// stretchy m_bBuffer; stbiw__sbpush() == vector<>::push_back() -- stbiw__sbcount() == vector<>::m_dsSize()
 #define stbiw__sbraw(a) ((int *) (void *) (a) - 2)
 #define stbiw__sbm(a)   stbiw__sbraw(a)[0]
 #define stbiw__sbn(a)   stbiw__sbraw(a)[1]

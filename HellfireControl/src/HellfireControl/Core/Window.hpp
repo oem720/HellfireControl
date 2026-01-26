@@ -80,7 +80,7 @@ private:
 	void UpdateWindowData();
 
 	/// <summary>
-	/// Helper function to request only the up-to-date window size from OS.
+	/// Helper function to request only the up-to-date window m_dsSize from OS.
 	/// </summary>
 	void UpdateWindowSize();
 
@@ -104,7 +104,7 @@ public:
 	/// </summary>
 	/// <param name="_strName: The name of the window"></param>
 	/// <param name="_wtType: The type of the window"></param>
-	/// <param name="_v2Size: The size of the window (Default: 800x400)"></param>
+	/// <param name="_v2Size: The m_dsSize of the window (Default: 800x400)"></param>
 	/// <param name="_v2Loc: The location of the window (Default: [0, 0])"></param>
 	explicit Window(const String& _strName, WindowType _wtType, const Vec2F& _v2Size, const Vec2F& _v2Loc) : m_strWindowName(_strName), m_wtType(_wtType),
 	m_v2WindowSize(_v2Size), m_v2WindowLocation(_v2Loc) {
@@ -162,9 +162,9 @@ public:
 	void SetWindowType(WindowType _wtType);
 
 	/// <summary>
-	/// Set the size of the window.
+	/// Set the m_dsSize of the window.
 	/// </summary>
-	/// <param name="_v2Size: New size for the window"></param>
+	/// <param name="_v2Size: New m_dsSize for the window"></param>
 	void SetWindowSize(const Vec2F& _v2Size);
 
 	/// <summary>
@@ -201,10 +201,10 @@ public:
 	}
 
 	/// <summary>
-	/// Get the window's current size.
+	/// Get the window's current m_dsSize.
 	/// </summary>
 	/// <returns>
-	/// Vec2F: The current window size
+	/// Vec2F: The current window m_dsSize
 	/// </returns>
 	[[nodiscard]] HC_INLINE Vec2F GetWindowSize() {
 		if (m_wtType == WindowType::WINDOWED || m_wtType == WindowType::WINDOWED_FULLSCREEN) {

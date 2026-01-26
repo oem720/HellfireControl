@@ -13,7 +13,7 @@ private:
 	uint64 m_uSeed;
 
 	/// <summary>
-	/// The size of the state of the machine. 624 by default for 32 bit MT
+	/// The m_dsSize of the state of the machine. 624 by default for 32 bit MT
 	/// </summary>
 	const static int s_iStateSize = 624;
 

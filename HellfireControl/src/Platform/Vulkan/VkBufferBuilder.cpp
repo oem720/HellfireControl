@@ -59,7 +59,7 @@ VkBufferData VkBufferBuilder::CreateBuffer(VkBufferUsageFlags _bufFlags) {
 	};
 
 	if (vkCreateBuffer(VkRenderManager::GetDevice(), &bciBufferInfo, nullptr, &bdReturn.m_bBuffer) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create buffer object!");
+		throw std::runtime_error("Failed to create m_bBuffer object!");
 	}
 
 	VkMemoryRequirements mrRequirements = {};
@@ -73,7 +73,7 @@ VkBufferData VkBufferBuilder::CreateBuffer(VkBufferUsageFlags _bufFlags) {
 	};
 
 	if (vkAllocateMemory(VkRenderManager::GetDevice(), &maiAllocateInfo, nullptr, &bdReturn.m_dmBufferMemory) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to allocate buffer memory!");
+		throw std::runtime_error("Failed to allocate m_bBuffer memory!");
 	}
 
 	vkBindBufferMemory(VkRenderManager::GetDevice(), bdReturn.m_bBuffer, bdReturn.m_dmBufferMemory, 0);

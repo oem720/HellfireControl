@@ -28,7 +28,7 @@ void UICreationToolApplication::Start() {
 void UICreationToolApplication::Run() {
 	this->Start();
 
-	RenderMemoryManager::GetInstance()->Grow();
+
 
 	this->End();
 }

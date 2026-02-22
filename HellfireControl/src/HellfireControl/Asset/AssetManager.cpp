@@ -7,16 +7,6 @@
 
 #include <HellfireControl/Core/Console.hpp>
 
-AssetManager* AssetManager::m_pInstance = nullptr;
-
-AssetManager* AssetManager::GetInstance() {
-	if (m_pInstance == nullptr) {
-		m_pInstance = new AssetManager();
-	}
-
-	return m_pInstance;
-}
-
 void AssetManager::Init() {
 	m_pamManifest = AssetManifest::GetInstance();
 	m_palLoader = AssetLoader::GetInstance();
@@ -115,5 +105,5 @@ void AssetManager::Cleanup() {
 
 	m_mAssetCache.clear();
 
-	delete m_pInstance;
+	Singleton<AssetManager>::DestroyInstance();
 }

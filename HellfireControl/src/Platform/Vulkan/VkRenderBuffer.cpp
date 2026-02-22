@@ -1,5 +1,5 @@
 
-#include <Platform/Vulkan/VkBufferBuilder.hpp>
+#include <Platform/Vulkan/VkRenderBuffer.hpp>
 
 VkBufferBuilder& VkBufferBuilder::SetBufferFlags(VkBufferUsageFlags _bufFlags, VkMemoryPropertyFlags _mpfFlags) {
 	m_bufFlags = _bufFlags;

@@ -51,6 +51,11 @@ typedef int64_t int64;
 #define HC_MAX(_val1, _val2) (_val1 > _val2) ? _val1 : _val2
 #define HC_MIN(_val1, _val2) (_val1 < _val2) ? _val1 : _val2
 
+//Defines for storage units
+#define HC_KILOBYTES(_val) ((_val) * 1024ULL)
+#define HC_MEGABYTES(_val) (HC_KILOBYTES(_val) * 1024ULL)
+#define HC_GIGABYTES(_val) (HC_MEGABYTES(_val) * 1024ULL)
+
 //SFINAE
 #define HC_SFINAE_REQUIRE_NUMERIC(_typename) typename = typename std::enable_if<std::disjunction<std::is_integral<_typename>, std::is_floating_point<_typename>>::value>::type
 #define HC_SFINAE_REQUIRE_INTEGER(_typename) typename = typename std::enable_if<std::is_integral<_typename>::value>::type

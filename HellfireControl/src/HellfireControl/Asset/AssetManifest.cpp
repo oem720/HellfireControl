@@ -12,16 +12,6 @@
 #define HC_MANIFEST_OPEN_FLAGS FILE_OPEN_FLAG_READ | FILE_OPEN_FLAG_BINARY
 #endif
 
-AssetManifest* AssetManifest::m_pInstance = nullptr;
-
-AssetManifest* AssetManifest::GetInstance() {
-	if (m_pInstance == nullptr) {
-		m_pInstance = new AssetManifest();
-	}
-
-	return m_pInstance;
-}
-
 void AssetManifest::Init() {
 	File fManifest(HC_MANIFEST_PATH, HC_MANIFEST_OPEN_FLAGS);
 
@@ -120,5 +110,5 @@ void AssetManifest::Cleanup() {
 	}
 #endif
 
-	delete m_pInstance;
+	Singleton<AssetManifest>::DestroyInstance();
 }

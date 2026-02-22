@@ -1,27 +1,19 @@
 #pragma once
 
 #include <HellfireControl/Core/Common.hpp>
+#include <HellfireControl/Core/Singleton.hpp>
 
 class Renderer;
 
-class UIManager {
+class UIManager : public Singleton<UIManager> {
 private:
-	static UIManager* m_pInstance;
-
-	static Shared<Renderer> m_pUIRenderer;
-
-	UIManager() {}
-
-
+	Shared<Renderer> m_pUIRenderer;
 public:
-	UIManager(UIManager& _other) = delete;
-
-	void operator=(const UIManager& _other) = delete;
-
-	static UIManager* GetInstance();
-
 	void Init();
-
 	void Cleanup();
 
+private:
+	UIManager() {}
+
+	friend class Singleton<UIManager>;
 };

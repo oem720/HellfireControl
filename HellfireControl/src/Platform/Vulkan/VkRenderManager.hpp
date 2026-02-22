@@ -46,7 +46,14 @@ private:
 	static FixedArray<VkFrameData, HC_MAX_FRAMES_IN_FLIGHT> m_arrFrames;
 
 	static Map<VkDescriptorType, uint32> m_mDescriptorTypeCounts;
+public:
+	static [[nodiscard]] HC_INLINE const VkDevice GetDevice() { return m_dDeviceHandle; }
+	static [[nodiscard]] HC_INLINE const VkPhysicalDevice GetPhysicalDevice() { return m_pdPhysicalDevice; }
 
+	static VkCommandBuffer CreateSingleUseCommandBuffer();
+	static void SubmitSingleUseCommandBuffer(VkCommandBuffer _cbBuffer);
+
+private:
 	static void CreateInstance(const String& _strAppName, uint32 _u32AppVersion);
 	static void SelectPhysicalDevice();
 	static void CreateLogicalDevice();
@@ -58,10 +65,4 @@ private:
 
 	friend class RenderManager;
 	friend class VkRenderer;
-public:
-	static [[nodiscard]] HC_INLINE const VkDevice GetDevice() { return m_dDeviceHandle; }
-	static [[nodiscard]] HC_INLINE const VkPhysicalDevice GetPhysicalDevice() { return m_pdPhysicalDevice; }
-
-	static VkCommandBuffer CreateSingleUseCommandBuffer();
-	static void SubmitSingleUseCommandBuffer(VkCommandBuffer _cbBuffer);
 };

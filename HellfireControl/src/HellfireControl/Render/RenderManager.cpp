@@ -1,19 +1,9 @@
 
 #include <HellfireControl/Render/RenderManager.hpp>
 
-#include <HellfireControl/Render/RenderMemoryManager.hpp>
-
-RenderManager* RenderManager::m_prsInstancePtr = nullptr;
+#include <HellfireControl/Render/RenderMemory.hpp>
 
 bool RenderManager::m_bFramebufferInvalid = false;
-
-RenderManager* RenderManager::GetInstance() {
-	if (m_prsInstancePtr == nullptr) {
-		m_prsInstancePtr = new RenderManager();
-	}
-
-	return m_prsInstancePtr;
-}
 
 void RenderManager::WindowEventHandler(WindowHandleGeneric _whgHandle, const WindowCallbackMessage& _wcmMessage) {
 	if (_wcmMessage.m_wcetType & WINDOW_RESIZE) {
@@ -42,11 +32,9 @@ void RenderManager::Init(const String& _strAppName, uint32 _u32AppVersion, Windo
 
 	InitPlatformObjects(_strAppName, _u32AppVersion);
 
-	m_prmmMemoryManager = RenderMemoryManager::GetInstance();
-	m_prmmMemoryManager->Init(_u32InitialMemorySize);
-
 	InitRenderJobs();
 
+	RenderMemoryAllocator::GetInstance()->Init();
 }
 
 void RenderManager::RenderFrame() {
@@ -101,9 +89,7 @@ void RenderManager::Cleanup() {
 		aRenderer.second->Cleanup();
 	}
 
-	m_prmmMemoryManager->Cleanup();
-
 	CleanupPlatformObjects();
 
-	delete m_prsInstancePtr;
+	Singleton<RenderManager>::DestroyInstance();
 }

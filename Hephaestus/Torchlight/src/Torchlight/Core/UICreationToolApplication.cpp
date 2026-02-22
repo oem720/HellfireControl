@@ -11,7 +11,7 @@
 
 #include <HellfireControl/Asset/Converters/Font/FontProcessor.hpp>
 
-#include <HellfireControl/Render/RenderMemoryManager.hpp>
+#include <HellfireControl/Render/RenderMemory.hpp>
 
 void UICreationToolApplication::Start() {
 	m_wWindow = Window(m_strApplicationName, WINDOWED, Vec2F(800, 600), Vec2F(0, 0));

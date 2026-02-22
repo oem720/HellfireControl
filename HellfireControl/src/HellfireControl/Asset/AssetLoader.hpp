@@ -1,25 +1,19 @@
 #pragma once
 
 #include <HellfireControl/Asset/AssetCommon.hpp>
+#include <HellfireControl/Core/Singleton.hpp>
 
-class AssetLoader {
+class AssetLoader : public Singleton<AssetLoader> {
 private:
-	static AssetLoader* m_pInstance;
-
 	Map<uint32, Unique<AssetParser>> m_mAssetParsers;
-
-	AssetLoader() {}
-
-public:	
-	AssetLoader(AssetLoader& _other) = delete;
-
-	void operator=(const AssetLoader& _other) = delete;
-
-	static AssetLoader* GetInstance();
-
+public:
 	void Init();
+	void Cleanup();
 
 	Shared<Asset> LoadAsset(const String& _strPath);
 
-	void Cleanup();
+private:
+	AssetLoader() {}
+
+	friend class Singleton<AssetLoader>;
 };

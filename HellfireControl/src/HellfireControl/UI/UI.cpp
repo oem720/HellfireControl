@@ -6,18 +6,6 @@
 #include <HellfireControl/Render/RenderManager.hpp>
 #include <HellfireControl/Render/Renderer.hpp>
 
-UIManager* UIManager::m_pInstance = nullptr;
-
-Shared<Renderer> UIManager::m_pUIRenderer = nullptr;
-
-UIManager* UIManager::GetInstance() {
-	if (m_pInstance == nullptr) {
-		m_pInstance = new UIManager();
-	}
-
-	return m_pInstance;
-}
-
 void UIManager::Init() {
 	AssetManager* pamAssetManager = AssetManager::GetInstance();
 	RenderManager* prmRenderManager = RenderManager::GetInstance();
@@ -129,5 +117,5 @@ void UIManager::Init() {
 }
 
 void UIManager::Cleanup() {
-	delete m_pInstance;
+	Singleton<UIManager>::DestroyInstance();
 }

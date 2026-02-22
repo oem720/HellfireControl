@@ -9,6 +9,7 @@
 #include <Platform/OSInclude.hpp>
 
 #include <HellfireControl/Core/Window.hpp>
+#include <HellfireControl/Render/RenderMemory.hpp>
 
 #pragma region Static Members
 uint32 VkRenderManager::m_u32CurrentFrame = 0;
@@ -43,6 +44,15 @@ void RenderManager::InitPlatformObjects(const String& _strAppName, uint32 _u32Ap
 	VkRenderManager::CreateSwapchain(m_whgWindowHandle);
 
 	VkRenderManager::CreateFrameData();
+
+	VkPhysicalDeviceProperties pdpProperties = {};
+	vkGetPhysicalDeviceProperties(VkRenderManager::m_pdPhysicalDevice, &pdpProperties);
+
+	RenderMemoryAllocator::GetInstance()
+		->SetAllocationLimitAndGranularity(
+			pdpProperties.limits.maxMemoryAllocationCount,
+			pdpProperties.limits.bufferImageGranularity
+		);
 }
 
 void RenderManager::RegisterPlatformRenderer(const Shared<Renderer>& _pRenderer) {
